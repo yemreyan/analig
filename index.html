@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="description" content="TCF Okul Spor Cimnastik Yarışma Yönetim Sistemi" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <title>TCF Okul Sporları — Yönetim Sistemi</title>
+  <script type="module" crossorigin src="/assets/main-C2LpyYUG.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-Cxw6bqwh.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-firebase-940mxgRV.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-D62xJRRP.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+    // Service Worker'ı kaldır — agresif cache real-time için sorun çıkarıyordu
+    // Mevcut kullanıcıların kayıtlı SW'leri ilk ziyarette otomatik unregister olur
+    // ve cache'leri temizlenir (sw.js içinde self-destruct logic var).
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => { reg.unregister().catch(() => { /* noop */ }); });
+      }).catch(() => { /* noop */ });
+      // Tüm cache'leri sil (browser cache API)
+      if (window.caches && caches.keys) {
+        caches.keys().then((keys) => {
+          keys.forEach((k) => caches.delete(k).catch(() => { /* noop */ }));
+        }).catch(() => { /* noop */ });
+      }
+    }
+  </script>
+</body>
+
+</html>

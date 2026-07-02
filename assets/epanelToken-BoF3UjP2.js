@@ -1,0 +1,1 @@
+function n(){const t=new Uint8Array(16);return crypto.getRandomValues(t),Array.from(t).map(e=>e.toString(16).padStart(2,"0")).join("")}function i(t,e){if(!t||!e||t.length!==e.length)return!1;let a=0;for(let r=0;r<t.length;r++)a|=t.charCodeAt(r)^e.charCodeAt(r);return a===0}export{n as g,i as v};
