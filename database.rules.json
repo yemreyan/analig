@@ -1,0 +1,20 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "competitions":        { ".read": true, ".write": true },
+    "criteria":            { ".read": true, ".write": true },
+    "referees":            { ".read": true, ".write": true },
+    "announcements":       { ".read": true, ".write": true },
+    "applications":        { ".read": true, ".write": true },
+    "reports":             { ".read": true, ".write": true },
+    "logs":                { ".read": true, ".write": true },
+    "kullanicilar":        { ".read": true, ".write": true },
+
+    "ritmik_yarismalar":    { ".read": true, ".write": true },
+    "aerobik_yarismalar":   { ".read": true, ".write": true },
+    "trampolin_yarismalar": { ".read": true, ".write": true },
+    "parkur_yarismalar":    { ".read": true, ".write": true }
+  }
+}
