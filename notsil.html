@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOT SİLME — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--warn:#ef4444;--ok:#22c55e}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
+.brand .material-icons-round{color:var(--warn)}
+.selects{display:flex;gap:.6rem;flex-wrap:wrap;margin-left:auto;align-items:center}
+select{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;max-width:280px}
+select:focus{outline:2px solid var(--accent)}
+.wrap{max-width:900px;margin:0 auto;padding:1rem}
+.warn-note{display:flex;gap:.5rem;align-items:center;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:.7rem .9rem;border-radius:12px;font-size:.85rem;font-weight:600;margin-bottom:1rem}
+.list{display:flex;flex-direction:column;gap:.6rem}
+.row{display:flex;align-items:center;gap:1rem;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem}
+.row-info{flex:1;min-width:0}
+.row-name{font-weight:800;font-size:1.02rem}
+.row-sub{color:var(--muted);font-size:.8rem;font-weight:600;margin-top:.15rem}
+.row-scores{display:flex;gap:.9rem;align-items:baseline;margin-right:.5rem;flex-wrap:wrap}
+.sc{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.sc .k{font-size:.6rem;font-weight:800;color:var(--muted)}
+.sc .v{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums}
+.sc.final .v{color:var(--accent)}
+.btn-del{display:flex;align-items:center;gap:.35rem;background:var(--warn);color:#fff;border:none;border-radius:10px;padding:.6rem .9rem;font:inherit;font-weight:800;font-size:.85rem;cursor:pointer;white-space:nowrap}
+.btn-del:hover{filter:brightness(1.1)}
+.btn-del:disabled{opacity:.5;cursor:default}
+.empty{text-align:center;color:var(--muted);padding:3.5rem 1rem;font-weight:600}
+.empty .material-icons-round{font-size:2.6rem;opacity:.4;display:block;margin-bottom:.7rem}
+.count{color:var(--muted);font-size:.85rem;font-weight:700;margin-bottom:.7rem}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="material-icons-round">delete_sweep</span> NOT SİLME</div>
+  <div class="selects">
+    <select id="compSelect"><option value="">Yarışma yükleniyor…</option></select>
+    <select id="catSelect"><option value="">Önce yarışma</option></select>
+    <select id="aletSelect"><option value="">Önce kategori</option></select>
+  </div>
+</div>
+<div class="wrap">
+  <div class="warn-note"><span class="material-icons-round" style="font-size:1.1rem">warning</span> Silinen not "hiç verilmemiş" gibi olur — sporcu o alette yeniden puanlanabilir. Geri alınamaz.</div>
+  <div id="count" class="count"></div>
+  <div id="list" class="list"></div>
+  <div id="empty" class="empty"><span class="material-icons-round">rule</span>Yarışma, kategori ve alet seçin</div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",
+  authDomain: "analig.firebaseapp.com",
+  databaseURL: "https://analig-default-rtdb.firebaseio.com",
+  projectId: "analig",
+  storageBucket: "analig.firebasestorage.app",
+  messagingSenderId: "724523220392",
+  appId: "1:724523220392:web:5141cbdb98d5c85f9cb19d"
+};
+const db = getDatabase(initializeApp(firebaseConfig));
+const FB = "competitions";
+const ALET_TR = { yer:"Yer", atlama:"Atlama", paralel:"Paralel", barfiks:"Barfiks", halka:"Halka", kulplu:"Kulplu", mantar:"Mantar", denge:"Denge", asimetrik:"Asimetrik" };
+const $ = id => document.getElementById(id);
+let comps = {}, comp = "", cat = "", alet = "", scoreUnsub = null;
+
+function toast(msg, type){ const t=$("toast"); t.textContent=msg; t.className="toast show "+(type||""); setTimeout(()=>t.className="toast",2200); }
+
+onValue(ref(db, FB), s => {
+  comps = s.val() || {};
+  const es = Object.entries(comps).filter(([id,c])=>c&&c.kategoriler).sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
+  const sel=$("compSelect"), prev=sel.value;
+  sel.innerHTML='<option value="">— Yarışma seçin —</option>'+es.map(([id,c])=>`<option value="${id}">${(c.isim||c.ad||id).replace(/</g,"&lt;")}</option>`).join("");
+  if(prev&&comps[prev]) sel.value=prev;
+});
+
+$("compSelect").addEventListener("change", e=>{
+  comp=e.target.value; cat=""; alet="";
+  const cats = comp&&comps[comp]?.kategoriler ? comps[comp].kategoriler : {};
+  $("catSelect").innerHTML='<option value="">— Kategori seçin —</option>'+Object.entries(cats).map(([k,v])=>`<option value="${k}">${(v.name||v.ad||k).replace(/</g,"&lt;")}</option>`).join("");
+  $("aletSelect").innerHTML='<option value="">Önce kategori</option>';
+  render();
+});
+$("catSelect").addEventListener("change", e=>{
+  cat=e.target.value; alet="";
+  let al = comps[comp]?.kategoriler?.[cat]?.aletler || [];
+  if(!Array.isArray(al)) al=Object.keys(al||{});
+  $("aletSelect").innerHTML='<option value="">— Alet seçin —</option>'+al.map(a=>`<option value="${a}">${ALET_TR[a]||a}</option>`).join("");
+  render();
+});
+$("aletSelect").addEventListener("change", e=>{ alet=e.target.value; render(); });
+
+function render(){
+  if(scoreUnsub){ scoreUnsub(); scoreUnsub=null; }
+  $("list").innerHTML=""; $("count").textContent="";
+  if(!comp||!cat||!alet){ $("empty").style.display="block"; return; }
+  $("empty").style.display="none";
+  const pRef = ref(db, `${FB}/${comp}/puanlar/${cat}/${alet}`);
+  scoreUnsub = onValue(pRef, async snap => {
+    const scores = snap.val() || {};
+    const spSnap = await get(ref(db, `${FB}/${comp}/sporcular/${cat}`));
+    const sporcular = spSnap.val() || {};
+    const ids = Object.keys(scores).filter(id => id!=="ePanel" && scores[id] && typeof scores[id]==="object" && (scores[id].dScore!=null||scores[id].e1!=null||scores[id].finalScore!=null||scores[id].durum));
+    $("count").textContent = ids.length ? `${ids.length} sporcunun notu var` : "";
+    if(!ids.length){ $("list").innerHTML=`<div class="empty"><span class="material-icons-round">check_circle</span>Bu alette puanlanmış sporcu yok</div>`; return; }
+    $("list").innerHTML = ids.map(id=>{
+      const sc=scores[id], ath=sporcular[id]||{};
+      const name=(ath.adSoyad||ath.ad&&(ath.ad+" "+(ath.soyad||""))||sc.athName||id).toString().replace(/</g,"&lt;");
+      const club=(ath.kulup||ath.okul||"").toString().replace(/</g,"&lt;");
+      const fin = sc.finalScore??sc.sonuc;
+      const es=[1,2,3,4].map(i=>sc["e"+i]).filter(v=>v!=null).map(v=>Number(v).toFixed(1)).join(" / ");
+      return `<div class="row" data-id="${id}">
+        <div class="row-info"><div class="row-name">${name}</div><div class="row-sub">${club} · ${sc.durum==="tamamlandi"?"tamamlandı":"girişte"}</div></div>
+        <div class="row-scores">
+          <div class="sc"><span class="k">D</span><span class="v">${sc.dScore!=null?Number(sc.dScore).toFixed(2):"—"}</span></div>
+          <div class="sc"><span class="k">E</span><span class="v" style="font-size:.85rem">${es||"—"}</span></div>
+          <div class="sc final"><span class="k">TOP</span><span class="v">${fin!=null?Number(fin).toFixed(3).replace(/0+$/,"").replace(/\.$/,""):"—"}</span></div>
+        </div>
+        <button class="btn-del"><span class="material-icons-round" style="font-size:1.1rem">delete</span> SİL</button>
+      </div>`;
+    }).join("");
+    $("list").querySelectorAll(".row").forEach(row=>{
+      const id=row.dataset.id, name=row.querySelector(".row-name").textContent;
+      row.querySelector(".btn-del").addEventListener("click", async ()=>{
+        if(!confirm(`"${name}" sporcusunun ${ALET_TR[alet]||alet} notu silinecek — hiç verilmemiş gibi olacak.\n\nGeri alınamaz. Emin misin?`)) return;
+        const btn=row.querySelector(".btn-del"); btn.disabled=true; btn.textContent="Siliniyor…";
+        try{
+          await set(ref(db, `${FB}/${comp}/puanlar/${cat}/${alet}/${id}`), null);
+          // son puanlanan bu sporcuysa temizle
+          const lsRef = ref(db, `${FB}/${comp}/broadcast/lastScored/${cat}/${alet}`);
+          const ls = (await get(lsRef)).val();
+          if(ls && (ls.athId===id || ls.athName && name.startsWith(ls.athName))) await set(lsRef, null);
+          toast("Not silindi ✓","ok");
+        }catch(err){ toast("Hata: "+(err?.message||err),"err"); btn.disabled=false; btn.textContent="SİL"; }
+      });
+    });
+  });
+}
+</script>
+</body>
+</html>
