@@ -65,7 +65,7 @@ select:focus{outline:2px solid var(--accent)}
 .p-foot{padding:.7rem .9rem;border-top:1px solid var(--line);margin-top:auto}
 .btn-mud{width:100%;display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.7rem;border:none;border-radius:11px;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer;transition:.15s;background:var(--warn);color:#fff}
 .btn-mud:hover{filter:brightness(1.1)}
-.btn-mud.active{background:#fff;color:var(--warn);box-shadow:0 0 0 2px var(--warn)}
+.btn-mud.active{background:var(--go);color:#fff}
 .lock-banner{display:none;align-items:center;gap:.4rem;background:rgba(239,68,68,.15);color:var(--warn);font-weight:800;font-size:.78rem;padding:.45rem .6rem;border-radius:9px;margin-bottom:.5rem}
 .panel.locked .lock-banner{display:flex}
 .empty-state{text-align:center;color:var(--muted);padding:4rem 1rem;font-weight:600}
@@ -163,7 +163,7 @@ function makePanel(alet){
       <div class="spread ok"><span>E FARKI</span><span class="s-val">—</span></div>
       <div class="final"><span class="fl">TOPLAM</span><span class="fv">—</span></div>
     </div>
-    <div class="p-foot"><button class="btn-mud"><span class="material-icons-round" style="font-size:1.1rem">pan_tool</span> MÜDAHALE ET</button></div>`;
+    <div class="p-foot"><button class="btn-mud"><span class="material-icons-round mud-icon" style="font-size:1.1rem">pan_tool</span> <span class="mud-label">MÜDAHALE ET</span></button></div>`;
 
   const stateEl = el.querySelector(".p-state");
   const athEl = el.querySelector(".ath");
@@ -183,9 +183,11 @@ function makePanel(alet){
     stateEl.textContent = STATE_TR[st] || st.toUpperCase();
     stateEl.className = "p-state " + st;
     // lock
-    el.classList.toggle("locked", !!b.ustJuriKilit);
-    btn.classList.toggle("active", !!b.ustJuriKilit);
-    btn.querySelector("span:last-child")?.remove?.();
+    const lk = !!b.ustJuriKilit;
+    el.classList.toggle("locked", lk);
+    btn.classList.toggle("active", lk);
+    el.querySelector(".mud-label").textContent = lk ? "DEVAM ET" : "MÜDAHALE ET";
+    el.querySelector(".mud-icon").textContent = lk ? "play_arrow" : "pan_tool";
     // sporcu
     if(b.athId){
       athEl.innerHTML = `<div class="ath-name">${(b.athName||"Sporcu").replace(/</g,"&lt;")}</div><div class="ath-club">${(b.athClub||b.kulup||"").replace(/</g,"&lt;")}</div>`;
