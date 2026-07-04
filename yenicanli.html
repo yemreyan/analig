@@ -71,6 +71,10 @@ select:focus{outline:2px solid var(--accent)}
 .st-head .material-icons-round{color:var(--gold)}
 .st-head h2{font-size:1.3rem;font-weight:800;letter-spacing:.5px}
 .st-head .cat{margin-left:auto;color:var(--muted);font-weight:700}
+.st-tabs{display:flex;gap:.4rem;margin-left:1rem}
+.st-tab{background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;font:inherit;font-weight:800;font-size:.8rem;cursor:pointer}
+.st-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.st-tab:hover{filter:brightness(1.1)}
 .st-scroll{flex:1;overflow:hidden}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 th,td{padding:.6rem .9rem;text-align:center}
@@ -181,16 +185,21 @@ function subscribe(){
   const ub = onValue(bRef, s=>{ boardData=s.val()||{}; detectActivity(); render(); });
   const up = onValue(pRef, s=>{ puanData=s.val()||{}; render(); });
   const us = onValue(sRef, s=>{ sporcuData=s.val()||{}; render(); });
-  const uy = onValue(ycViewRef, s=>{ const v=s.val(); ycOverride=(v==="panels"||v==="standings")?v:null; render(); });
+  const uy = onValue(ycViewRef, s=>{ const v=s.val(); ycOverride=(v==="panels"||v==="standings"||v==="team")?v:null; render(); });
   subs=[()=>off(bRef),()=>off(pRef),()=>off(sRef),()=>off(ycViewRef)];
   render();
 }
 
-// etkin görünüm: uzaktan override varsa o, yoksa 5dk boşta otomatik
-function isStandings(){
-  if(ycOverride==="standings") return true;
-  if(ycOverride==="panels") return false;
-  return (Date.now()-lastActivity) > IDLE_MS;
+// etkin görünüm: uzaktan override varsa o, yoksa 5dk boşta bireysel klasman
+function effectiveView(){
+  if(ycOverride==="panels") return "panels";
+  if(ycOverride==="standings") return "standings";
+  if(ycOverride==="team") return "team";
+  return (Date.now()-lastActivity > IDLE_MS) ? "standings" : "panels";
+}
+function teamK(){ const c=(cat||"").toLowerCase(); return (c.includes("yild")||c.includes("yıld")||c.includes("genc")||c.includes("genç"))?2:3; }
+function tabsHTML(active){
+  return `<div class="st-tabs"><button class="st-tab ${active==='standings'?'active':''}" data-view="standings">Bireysel</button><button class="st-tab ${active==='team'?'active':''}" data-view="team">Takım</button></div>`;
 }
 
 // board state/athId değişince aktivite say (çağır veya not girişi)
@@ -283,7 +292,7 @@ function computeStandings(){
 function standingsHTML(){
   const rows = computeStandings();
   const catName = comps[comp]?.kategoriler?.[cat]?.name || cat;
-  const head = `<div class="st-head"><span class="material-icons-round">emoji_events</span><h2>GENEL KLASMAN</h2><span class="cat">${esc(catName)}</span></div>`;
+  const head = `<div class="st-head"><span class="material-icons-round">emoji_events</span><h2>BİREYSEL KLASMAN</h2>${tabsHTML("standings")}<span class="cat">${esc(catName)}</span></div>`;
   if(!rows.length) return head+`<div class="notice" style="position:static;height:auto;padding:3rem">Henüz tamamlanmış puan yok</div>`;
   const cols = aletler.map(a=>`<th>${ALET_ABBR[a]||ALET_TR[a]||a}</th>`).join("");
   const body = rows.map((r,i)=>{
@@ -300,34 +309,90 @@ function standingsHTML(){
   return head+`<div class="st-scroll"><table><thead><tr><th>#</th><th style="text-align:left">Sporcu</th><th style="text-align:left">Kulüp</th>${cols}<th>Toplam</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
+// ---- TAKIM KLASMANI ----
+function computeTeamStandings(){
+  const teams = {};
+  const anyTeam = Object.values(sporcuData).some(a=>a&&/tak[iı]m/i.test(String(a.yarismaTuru||a.katilimTuru||"")));
+  Object.entries(sporcuData).forEach(([id,a])=>{
+    if(!a||typeof a!=="object") return;
+    if(anyTeam){ const t=String(a.yarismaTuru||a.katilimTuru||"").toLowerCase(); if(t!=="takim"&&t!=="takım") return; }
+    const club = a.okul||a.kulup; if(!club) return;
+    (teams[club]||(teams[club]=[])).push(id);
+  });
+  const u = teamK();
+  const rows = [];
+  Object.entries(teams).forEach(([club,ids])=>{
+    let total=0; const appScores={};
+    aletler.forEach(alet=>{
+      const sc=[];
+      ids.forEach(id=>{ const p=(puanData[alet]||{})[id]; const v=p?(p.finalScore??p.sonuc):null; if(v!=null&&Number(v)>0) sc.push(Number(v)); });
+      sc.sort((a,b)=>b-a);
+      const top=sc.slice(0,u).reduce((a,b)=>a+b,0);
+      appScores[alet]=top; total+=top;
+    });
+    rows.push({club, total, appScores, memberCount:ids.length});
+  });
+  return rows.filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+}
+
+function teamStandingsHTML(){
+  const rows = computeTeamStandings();
+  const catName = comps[comp]?.kategoriler?.[cat]?.name || cat;
+  const u = teamK();
+  const head = `<div class="st-head"><span class="material-icons-round">groups</span><h2>TAKIM KLASMANI</h2>${tabsHTML("team")}<span class="cat">${esc(catName)} · alet başı en iyi ${u}</span></div>`;
+  if(!rows.length) return head+`<div class="notice" style="position:static;height:auto;padding:3rem">Henüz takım sonucu yok</div>`;
+  const cols = aletler.map(a=>`<th>${ALET_ABBR[a]||ALET_TR[a]||a}</th>`).join("");
+  const body = rows.map((r,i)=>{
+    const rk = i+1;
+    const sc = aletler.map(a=>`<td>${r.appScores[a]>0?num(r.appScores[a],3):"—"}</td>`).join("");
+    return `<tr>
+      <td class="st-rank ${rk<=3?'r'+rk:''}">${rk}</td>
+      <td class="st-name">${esc(r.club)}</td>
+      <td class="st-club">${r.memberCount} sporcu</td>
+      ${sc}
+      <td class="st-total">${num(r.total,3)}</td>
+    </tr>`;
+  }).join("");
+  return head+`<div class="st-scroll"><table><thead><tr><th>#</th><th style="text-align:left">Takım</th><th style="text-align:left">Sporcu</th>${cols}<th>Toplam</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
 // ---- RENDER ----
 function render(){
   const pv=$("panelsView"), sv=$("standingsView"), nt=$("notice");
   if(!comp||!cat){ pv.classList.add("hidden"); sv.classList.add("hidden"); nt.classList.remove("hidden"); nt.textContent="Yarışma ve kategori seçin"; return; }
   nt.classList.add("hidden");
-  if(isStandings()){
-    pv.classList.add("hidden"); sv.classList.remove("hidden");
-    const _s = standingsHTML(); if(_s!==lastStandingsHTML){ sv.innerHTML=_s; lastStandingsHTML=_s; }
-    $("modePill").className="mode-pill mode-standings"; $("modeText").textContent = ycOverride==="standings"?"SONUÇLAR (elle)":"GENEL SONUÇLAR";
-    lastMode = "standings";
-  } else {
+  const view = effectiveView();
+  if(view==="panels"){
     sv.classList.add("hidden"); pv.classList.remove("hidden");
     const n = aletler.length;
     pv.className = "grid " + (n<=1?"g1":n===2?"g2":n===3?"g3":n===4?"g4":"g6");
     const _h = aletler.map(panelHTML).join(""); if(_h!==lastPanelsHTML){ pv.innerHTML=_h; lastPanelsHTML=_h; }
     $("modePill").className="mode-pill mode-live"; $("modeText").textContent = ycOverride==="panels"?"CANLI (elle)":"CANLI";
-    lastMode = "panels";
+  } else {
+    pv.classList.add("hidden"); sv.classList.remove("hidden");
+    const _s = view==="team" ? teamStandingsHTML() : standingsHTML();
+    if(_s!==lastStandingsHTML){ sv.innerHTML=_s; lastStandingsHTML=_s; }
+    $("modePill").className="mode-pill mode-standings"; $("modeText").textContent = view==="team" ? "TAKIM" : "BİREYSEL";
   }
+  lastMode = view;
 }
 
-// Uzaktan görünüm değiştirme butonu — nerede açık olursa olsun tüm ekranlar geçiş yapar
+// Sekmeler (Bireysel/Takım) — tıklayınca ycView flag'ini yazar (tüm ekranlar senkron)
+$("standingsView").addEventListener("click", e=>{
+  const t = e.target.closest(".st-tab"); if(!t||!ycViewRef) return;
+  set(ycViewRef, t.dataset.view).catch(()=>{});
+});
+
+// Uzaktan görünüm butonu — Panel → Bireysel → Takım → Panel (nerede açıksa tüm ekranlar geçer)
 $("ycToggle").addEventListener("click", async ()=>{
-  if(!ycViewRef){ return; }
-  try{ await set(ycViewRef, isStandings() ? "panels" : "standings"); }catch(e){}
+  if(!ycViewRef) return;
+  const order=["panels","standings","team"];
+  const next=order[(order.indexOf(effectiveView())+1)%order.length];
+  try{ await set(ycViewRef, next); }catch(e){}
 });
 
 // boşta kalma sayacı: SADECE etkin mod değişince yeniden çiz (her saniye DOM'u yenileyip yanıp söndürme)
-setInterval(()=>{ if(!comp||!cat) return; const m=isStandings()?"standings":"panels"; if(m!==lastMode) render(); }, 1000);
+setInterval(()=>{ if(!comp||!cat) return; const m=effectiveView(); if(m!==lastMode) render(); }, 1000);
 </script>
 </body>
 </html>
