@@ -25,6 +25,9 @@ select:focus{outline:2px solid var(--accent)}
 .mode-live{background:rgba(34,197,94,.14);color:#86efac;border:1px solid rgba(34,197,94,.35)}
 .mode-standings{background:rgba(251,191,36,.14);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}
 .mode-pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.yc-toggle{display:flex;align-items:center;gap:.35rem;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .8rem;font:inherit;font-size:.82rem;font-weight:800;cursor:pointer}
+.yc-toggle:hover{filter:brightness(1.1)}
+.yc-toggle .material-icons-round{font-size:1.1rem}
 .stage{position:fixed;top:52px;left:0;right:0;bottom:0;padding:.9rem}
 /* PANELS */
 .grid{display:grid;gap:.9rem;height:100%}
@@ -87,6 +90,7 @@ tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
 <div class="topbar">
   <div class="brand"><span class="material-icons-round">stadium</span> <span>YENİ CANLI SONUÇLAR</span></div>
   <div class="selects">
+    <button id="ycToggle" class="yc-toggle" title="Görünümü değiştir (Panel ↔ Sonuçlar)"><span class="material-icons-round">swap_horiz</span> Görünüm</button>
     <span id="modePill" class="mode-pill mode-live"><span class="dot"></span> <span id="modeText">CANLI</span></span>
     <select id="compSelect"><option value="">Yarışma yükleniyor…</option></select>
     <select id="catSelect"><option value="">Önce yarışma</option></select>
@@ -100,7 +104,7 @@ tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, off, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",
   authDomain: "analig.firebaseapp.com",
@@ -134,6 +138,8 @@ let lastActivity = Date.now();
 let lastSnap = "";
 let lastMode = null;
 let lastPanelsHTML = "", lastStandingsHTML = "";
+let ycOverride = null; // null=oto (5dk), "panels", "standings"
+let ycViewRef = null;
 const params = new URLSearchParams(location.search);
 
 function clearSubs(){ subs.forEach(u=>{try{u()}catch(e){}}); subs=[]; }
@@ -141,7 +147,7 @@ function clearSubs(){ subs.forEach(u=>{try{u()}catch(e){}}); subs=[]; }
 // ---- yarışma listesi ----
 onValue(ref(db, FB), s => {
   comps = s.val() || {};
-  const es = Object.entries(comps).filter(([id,c])=>c&&c.kategoriler)
+  const es = Object.entries(comps).filter(([id,c])=>c&&c.kategoriler&&!c.arsivli)
     .sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
   const sel=$("compSelect");
   sel.innerHTML='<option value="">— Yarışma seçin —</option>'+es.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
@@ -171,11 +177,20 @@ function subscribe(){
   const bRef = ref(db, `${FB}/${comp}/board/${cat}`);
   const pRef = ref(db, `${FB}/${comp}/puanlar/${cat}`);
   const sRef = ref(db, `${FB}/${comp}/sporcular/${cat}`);
+  ycViewRef = ref(db, `${FB}/${comp}/broadcast/ycView`);
   const ub = onValue(bRef, s=>{ boardData=s.val()||{}; detectActivity(); render(); });
   const up = onValue(pRef, s=>{ puanData=s.val()||{}; render(); });
   const us = onValue(sRef, s=>{ sporcuData=s.val()||{}; render(); });
-  subs=[()=>off(bRef),()=>off(pRef),()=>off(sRef)];
+  const uy = onValue(ycViewRef, s=>{ const v=s.val(); ycOverride=(v==="panels"||v==="standings")?v:null; render(); });
+  subs=[()=>off(bRef),()=>off(pRef),()=>off(sRef),()=>off(ycViewRef)];
   render();
+}
+
+// etkin görünüm: uzaktan override varsa o, yoksa 5dk boşta otomatik
+function isStandings(){
+  if(ycOverride==="standings") return true;
+  if(ycOverride==="panels") return false;
+  return (Date.now()-lastActivity) > IDLE_MS;
 }
 
 // board state/athId değişince aktivite say (çağır veya not girişi)
@@ -290,24 +305,29 @@ function render(){
   const pv=$("panelsView"), sv=$("standingsView"), nt=$("notice");
   if(!comp||!cat){ pv.classList.add("hidden"); sv.classList.add("hidden"); nt.classList.remove("hidden"); nt.textContent="Yarışma ve kategori seçin"; return; }
   nt.classList.add("hidden");
-  const idle = (Date.now()-lastActivity) > IDLE_MS;
-  if(idle){
+  if(isStandings()){
     pv.classList.add("hidden"); sv.classList.remove("hidden");
     const _s = standingsHTML(); if(_s!==lastStandingsHTML){ sv.innerHTML=_s; lastStandingsHTML=_s; }
-    $("modePill").className="mode-pill mode-standings"; $("modeText").textContent="GENEL SONUÇLAR";
+    $("modePill").className="mode-pill mode-standings"; $("modeText").textContent = ycOverride==="standings"?"SONUÇLAR (elle)":"GENEL SONUÇLAR";
     lastMode = "standings";
   } else {
     sv.classList.add("hidden"); pv.classList.remove("hidden");
     const n = aletler.length;
     pv.className = "grid " + (n<=1?"g1":n===2?"g2":n===3?"g3":n===4?"g4":"g6");
     const _h = aletler.map(panelHTML).join(""); if(_h!==lastPanelsHTML){ pv.innerHTML=_h; lastPanelsHTML=_h; }
-    $("modePill").className="mode-pill mode-live"; $("modeText").textContent="CANLI";
+    $("modePill").className="mode-pill mode-live"; $("modeText").textContent = ycOverride==="panels"?"CANLI (elle)":"CANLI";
     lastMode = "panels";
   }
 }
 
-// boşta kalma sayacı: SADECE mod değişince yeniden çiz (her saniye DOM'u yenileyip yanıp söndürme)
-setInterval(()=>{ if(!comp||!cat) return; const m=(Date.now()-lastActivity>IDLE_MS)?"standings":"panels"; if(m!==lastMode) render(); }, 1000);
+// Uzaktan görünüm değiştirme butonu — nerede açık olursa olsun tüm ekranlar geçiş yapar
+$("ycToggle").addEventListener("click", async ()=>{
+  if(!ycViewRef){ return; }
+  try{ await set(ycViewRef, isStandings() ? "panels" : "standings"); }catch(e){}
+});
+
+// boşta kalma sayacı: SADECE etkin mod değişince yeniden çiz (her saniye DOM'u yenileyip yanıp söndürme)
+setInterval(()=>{ if(!comp||!cat) return; const m=isStandings()?"standings":"panels"; if(m!==lastMode) render(); }, 1000);
 </script>
 </body>
 </html>
