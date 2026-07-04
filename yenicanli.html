@@ -50,8 +50,7 @@ select:focus{outline:2px solid var(--accent)}
 .empty-panel .material-icons-round{font-size:2.4rem}
 /* flashcard */
 .panel.is-flash{border-color:rgba(14,165,233,.6);box-shadow:0 0 0 1px rgba(14,165,233,.35),0 0 40px rgba(14,165,233,.15) inset}
-.flash-wrap{width:100%;animation:flashIn .5s cubic-bezier(.2,.9,.3,1.4)}
-@keyframes flashIn{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+.flash-wrap{width:100%}
 .flash-name{font-weight:800;font-size:clamp(1.3rem,2.4vw,2.1rem);line-height:1.1}
 .flash-club{color:var(--muted);font-weight:700;font-size:clamp(.8rem,1.3vw,1rem);margin-top:.2rem;margin-bottom:.9rem}
 .flash-total{font-weight:800;font-variant-numeric:tabular-nums;font-size:clamp(2.6rem,6vw,5rem);line-height:1;color:#fff;text-shadow:0 0 30px rgba(14,165,233,.5)}
@@ -115,7 +114,7 @@ const db = getDatabase(initializeApp(firebaseConfig));
 const FB = "competitions";
 const IDLE_MS = (parseFloat(new URLSearchParams(location.search).get("idle")) || 300) * 1000; // varsayılan 5 dk; ?idle=saniye ile ayarlanır
 
-const ALET_TR = { yer:"Yer", atlama:"Atlama", asimetrik:"Asimetrik", denge:"Denge", halka:"Halka", kulplu:"Kulplu", paralel:"Paralel", barfiks:"Barfiks", mantar:"Mantar", sirik:"Sırık", serbest:"Serbest" };
+const ALET_TR = { yer:"Yer", atlama:"Atlama", asimetrik:"Asimetrik P.", denge:"Denge", halka:"Halka", kulplu:"Kulplu", paralel:"Paralel", barfiks:"Barfiks", mantar:"Mantar", sirik:"Sırık", serbest:"Serbest" };
 const ALET_ABBR = { yer:"FX", atlama:"VT", asimetrik:"UB", denge:"BB", halka:"SR", kulplu:"PH", paralel:"PB", barfiks:"HB", mantar:"MH", sirik:"PV", serbest:"FX" };
 const OLYMP_W = ["atlama","asimetrik","denge","yer","serbest"];
 const OLYMP_M = ["yer","kulplu","mantar","halka","atlama","paralel","barfiks","sirik"];
@@ -134,6 +133,7 @@ let subs = [];
 let lastActivity = Date.now();
 let lastSnap = "";
 let lastMode = null;
+let lastPanelsHTML = "", lastStandingsHTML = "";
 const params = new URLSearchParams(location.search);
 
 function clearSubs(){ subs.forEach(u=>{try{u()}catch(e){}}); subs=[]; }
@@ -293,14 +293,14 @@ function render(){
   const idle = (Date.now()-lastActivity) > IDLE_MS;
   if(idle){
     pv.classList.add("hidden"); sv.classList.remove("hidden");
-    sv.innerHTML = standingsHTML();
+    const _s = standingsHTML(); if(_s!==lastStandingsHTML){ sv.innerHTML=_s; lastStandingsHTML=_s; }
     $("modePill").className="mode-pill mode-standings"; $("modeText").textContent="GENEL SONUÇLAR";
     lastMode = "standings";
   } else {
     sv.classList.add("hidden"); pv.classList.remove("hidden");
     const n = aletler.length;
     pv.className = "grid " + (n<=1?"g1":n===2?"g2":n===3?"g3":n===4?"g4":"g6");
-    pv.innerHTML = aletler.map(panelHTML).join("");
+    const _h = aletler.map(panelHTML).join(""); if(_h!==lastPanelsHTML){ pv.innerHTML=_h; lastPanelsHTML=_h; }
     $("modePill").className="mode-pill mode-live"; $("modeText").textContent="CANLI";
     lastMode = "panels";
   }
