@@ -164,8 +164,11 @@ onValue(ref(db, FB), s => {
     .sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
   const sel=$("compSelect");
   sel.innerHTML='<option value="">— Yarışma seçin —</option>'+es.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
-  const want = comp || params.get("comp") || localStorage.getItem("ycs_comp") || "";
-  if(want && comps[want]){ sel.value=want; if(want!==comp){ comp=want; fillCats(); } }
+  const urlC = params.get("comp");
+  let want = comp || urlC || localStorage.getItem("ycs_comp") || "";
+  // arşivli/geçersiz hatırlanan yarışmayı seçme (URL ile açıkça istenmediyse); en yeni AKTİF yarışmaya düş
+  if(!(want && comps[want] && (want===urlC || !comps[want].arsivli))) want = es.length ? es[0][0] : "";
+  if(want && comps[want]){ sel.value=want; if(want!==comp){ comp=want; try{localStorage.setItem("ycs_comp",comp)}catch(e){} fillCats(); } }
 });
 
 $("compSelect").addEventListener("change", e=>{ comp=e.target.value; localStorage.setItem("ycs_comp",comp); cat=""; fillCats(); });
@@ -174,8 +177,10 @@ $("catSelect").addEventListener("change", e=>{ cat=e.target.value; localStorage.
 function fillCats(){
   const cats = comp&&comps[comp]?.kategoriler ? comps[comp].kategoriler : {};
   $("catSelect").innerHTML='<option value="">— Kategori seçin —</option>'+Object.entries(cats).map(([k,v])=>`<option value="${k}">${esc(v.name||v.ad||k)}</option>`).join("");
-  const want = cat || params.get("cat") || localStorage.getItem("ycs_cat") || "";
-  if(want && cats[want]){ $("catSelect").value=want; cat=want; subscribe(); }
+  let want = cat || params.get("cat") || localStorage.getItem("ycs_cat") || "";
+  // hatırlanan kategori bu yarışmada yoksa ilk kategoriye düş
+  if(!(want && cats[want])) want = Object.keys(cats)[0] || "";
+  if(want && cats[want]){ $("catSelect").value=want; cat=want; try{localStorage.setItem("ycs_cat",cat)}catch(e){} subscribe(); }
   else { cat=""; clearSubs(); render(); }
 }
 
