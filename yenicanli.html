@@ -35,7 +35,7 @@ select:focus{outline:2px solid var(--accent)}
 .grid.g3{grid-template-columns:1fr 1fr 1fr}
 .panel{position:relative;background:linear-gradient(160deg,var(--panel),#0d1526);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .panel-head{position:relative;display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.75rem 1rem;min-height:66px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
-.panel-head img{position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:42px;height:42px;object-fit:contain;filter:brightness(0) invert(1);opacity:.85}
+.panel-head img{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 .panel-head .ap-name{font-weight:800;font-size:clamp(1.6rem,2.7vw,2.6rem);letter-spacing:1.5px;text-transform:uppercase;text-align:center}
 .panel-head .ap-abbr{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-weight:800;font-size:.82rem;color:var(--muted);background:var(--panel2);padding:.22rem .6rem;border-radius:8px;border:1px solid var(--line)}
 .panel-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem;min-height:0}
@@ -133,6 +133,7 @@ let boardData = {}, puanData = {}, sporcuData = {}, aletler = [];
 let subs = [];
 let lastActivity = Date.now();
 let lastSnap = "";
+let lastMode = null;
 const params = new URLSearchParams(location.search);
 
 function clearSubs(){ subs.forEach(u=>{try{u()}catch(e){}}); subs=[]; }
@@ -294,17 +295,19 @@ function render(){
     pv.classList.add("hidden"); sv.classList.remove("hidden");
     sv.innerHTML = standingsHTML();
     $("modePill").className="mode-pill mode-standings"; $("modeText").textContent="GENEL SONUÇLAR";
+    lastMode = "standings";
   } else {
     sv.classList.add("hidden"); pv.classList.remove("hidden");
     const n = aletler.length;
     pv.className = "grid " + (n<=1?"g1":n===2?"g2":n===3?"g3":n===4?"g4":"g6");
     pv.innerHTML = aletler.map(panelHTML).join("");
     $("modePill").className="mode-pill mode-live"; $("modeText").textContent="CANLI";
+    lastMode = "panels";
   }
 }
 
-// boşta kalma sayacı (5 dk not/çağır yoksa genel klasmana dön)
-setInterval(()=>{ if(comp&&cat) render(); }, 1000);
+// boşta kalma sayacı: SADECE mod değişince yeniden çiz (her saniye DOM'u yenileyip yanıp söndürme)
+setInterval(()=>{ if(!comp||!cat) return; const m=(Date.now()-lastActivity>IDLE_MS)?"standings":"panels"; if(m!==lastMode) render(); }, 1000);
 </script>
 </body>
 </html>
