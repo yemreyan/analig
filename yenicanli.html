@@ -24,8 +24,7 @@ select:focus{outline:2px solid var(--accent)}
 .mode-pill{display:flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:800;padding:.35rem .7rem;border-radius:999px;letter-spacing:.5px}
 .mode-live{background:rgba(34,197,94,.14);color:#86efac;border:1px solid rgba(34,197,94,.35)}
 .mode-standings{background:rgba(251,191,36,.14);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}
-.mode-pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.mode-pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
 .stage{position:fixed;top:52px;left:0;right:0;bottom:0;padding:.9rem}
 /* PANELS */
 .grid{display:grid;gap:.9rem;height:100%}
@@ -213,11 +212,13 @@ function panelHTML(alet){
     } else if(inv){
       body = `<div class="flash-wrap"><div class="flash-name">${nm}</div><div class="flash-club">${cl}</div><span class="flash-tag badge-inv">GEÇERSİZ</span></div>`;
     } else {
-      const d = p.dScore ?? p.calc_D ?? b.dScore;
-      const e = p.eScore ?? p.calc_E ?? b.eScore;
+      const d = p.calc_D ?? p.dScore ?? b.dScore;
+      // E = kesintiden sonra KALAN skor (uygulama: se = 10 - ort(kesinti)); calc_E bunu saklar
+      let e = p.calc_E ?? p.eScore;
+      if(e==null){ const ded=[p.e1,p.e2,p.e3,p.e4].map(Number).filter(v=>!isNaN(v)); if(ded.length) e=Math.max(0,10-ded.reduce((x,y)=>x+y,0)/ded.length); }
+      if(e==null) e = b.eScore;
       const total = p.finalScore ?? p.sonuc ?? b.score;
-      const bonus = Number(p.calc_Bonus ?? p.manualBonus ?? p.bonus ?? 0) || 0;
-      const pen = Math.max(0, (Number(d)||0) + (Number(e)||0) + bonus - (Number(total)||0));
+      const pen = Math.max(0, (Number(d)||0) + (Number(e)||0) - (Number(total)||0));
       body = `<div class="flash-wrap">
         <div class="flash-name">${nm}</div><div class="flash-club">${cl}</div>
         <div class="flash-total">${num(total,3)}</div>
