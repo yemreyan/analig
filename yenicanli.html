@@ -35,10 +35,10 @@ select:focus{outline:2px solid var(--accent)}
 .grid.g1{grid-template-columns:1fr}
 .grid.g3{grid-template-columns:1fr 1fr 1fr}
 .panel{position:relative;background:linear-gradient(160deg,var(--panel),#0d1526);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
-.panel-head{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
-.panel-head img{width:34px;height:34px;object-fit:contain;filter:brightness(0) invert(1);opacity:.85}
-.panel-head .ap-name{font-weight:800;font-size:1.15rem;letter-spacing:.5px}
-.panel-head .ap-abbr{margin-left:auto;font-weight:800;font-size:.8rem;color:var(--muted);background:var(--panel2);padding:.2rem .55rem;border-radius:8px;border:1px solid var(--line)}
+.panel-head{position:relative;display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.75rem 1rem;min-height:66px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+.panel-head img{position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:42px;height:42px;object-fit:contain;filter:brightness(0) invert(1);opacity:.85}
+.panel-head .ap-name{font-weight:800;font-size:clamp(1.6rem,2.7vw,2.6rem);letter-spacing:1.5px;text-transform:uppercase;text-align:center}
+.panel-head .ap-abbr{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-weight:800;font-size:.82rem;color:var(--muted);background:var(--panel2);padding:.22rem .6rem;border-radius:8px;border:1px solid var(--line)}
 .panel-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem;min-height:0}
 /* competing */
 .state-badge{display:inline-flex;align-items:center;gap:.4rem;font-weight:800;font-size:.78rem;letter-spacing:1px;padding:.3rem .8rem;border-radius:999px;margin-bottom:.9rem}
@@ -56,10 +56,11 @@ select:focus{outline:2px solid var(--accent)}
 .flash-name{font-weight:800;font-size:clamp(1.3rem,2.4vw,2.1rem);line-height:1.1}
 .flash-club{color:var(--muted);font-weight:700;font-size:clamp(.8rem,1.3vw,1rem);margin-top:.2rem;margin-bottom:.9rem}
 .flash-total{font-weight:800;font-variant-numeric:tabular-nums;font-size:clamp(2.6rem,6vw,5rem);line-height:1;color:#fff;text-shadow:0 0 30px rgba(14,165,233,.5)}
-.flash-de{display:flex;gap:1.4rem;justify-content:center;margin-top:.8rem}
-.flash-de .cell{display:flex;flex-direction:column;align-items:center}
-.flash-de .k{font-size:.7rem;font-weight:800;color:var(--muted);letter-spacing:1px}
-.flash-de .v{font-size:clamp(1rem,1.8vw,1.5rem);font-weight:800;font-variant-numeric:tabular-nums}
+.flash-de{display:flex;gap:1.9rem;justify-content:center;margin-top:1rem}
+.flash-de .cell{display:flex;flex-direction:column;align-items:center;min-width:56px}
+.flash-de .k{font-size:.92rem;font-weight:800;color:var(--muted);letter-spacing:1.5px}
+.flash-de .v{font-size:clamp(1.5rem,2.7vw,2.3rem);font-weight:800;font-variant-numeric:tabular-nums;margin-top:.15rem}
+.flash-de .cell.pen .v{color:#fca5a5}
 .flash-tag{display:inline-block;margin-top:.7rem;font-weight:800;font-size:.75rem;letter-spacing:1px;padding:.25rem .7rem;border-radius:8px;background:rgba(14,165,233,.16);color:#7dd3fc;border:1px solid rgba(14,165,233,.4)}
 .badge-dns{background:rgba(148,163,184,.16);color:#cbd5e1;border-color:rgba(148,163,184,.4)}
 .badge-inv{background:rgba(239,68,68,.16);color:#fca5a5;border-color:rgba(239,68,68,.4)}
@@ -215,12 +216,15 @@ function panelHTML(alet){
       const d = p.dScore ?? p.calc_D ?? b.dScore;
       const e = p.eScore ?? p.calc_E ?? b.eScore;
       const total = p.finalScore ?? p.sonuc ?? b.score;
+      const bonus = Number(p.calc_Bonus ?? p.manualBonus ?? p.bonus ?? 0) || 0;
+      const pen = Math.max(0, (Number(d)||0) + (Number(e)||0) + bonus - (Number(total)||0));
       body = `<div class="flash-wrap">
         <div class="flash-name">${nm}</div><div class="flash-club">${cl}</div>
         <div class="flash-total">${num(total,3)}</div>
         <div class="flash-de">
           <div class="cell"><span class="k">D</span><span class="v">${num(d,2)}</span></div>
           <div class="cell"><span class="k">E</span><span class="v">${num(e,3)}</span></div>
+          <div class="cell pen"><span class="k">P</span><span class="v">${pen>0?"−"+num(pen,2):"0"}</span></div>
         </div>
         <span class="flash-tag">PUAN İLAN EDİLDİ</span>
       </div>`;
