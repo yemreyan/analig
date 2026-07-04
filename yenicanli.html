@@ -28,6 +28,14 @@ select:focus{outline:2px solid var(--accent)}
 .yc-toggle{display:flex;align-items:center;gap:.35rem;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .8rem;font:inherit;font-size:.82rem;font-weight:800;cursor:pointer}
 .yc-toggle:hover{filter:brightness(1.1)}
 .yc-toggle .material-icons-round{font-size:1.1rem}
+.cam-btn{background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.cam-btn.on{background:var(--go);color:#fff;border-color:var(--go)}
+.cam-wrap{position:absolute;inset:0;background:#000;overflow:hidden;z-index:0}
+.cam-video{width:100%;height:100%;object-fit:cover;display:block}
+.panel.has-cam .panel-head{position:relative;z-index:2;background:rgba(7,11,22,.72);border-bottom-color:rgba(255,255,255,.15)}
+.panel.has-cam .panel-body{position:relative;z-index:2;justify-content:flex-end;background:linear-gradient(to top,rgba(7,11,22,.75),rgba(7,11,22,.05) 55%);text-shadow:0 2px 10px rgba(0,0,0,.95)}
+.panel.has-cam.is-flash .panel-body{background:rgba(7,11,22,.72)}
+.panel.has-cam .empty-panel{opacity:.85}
 .stage{position:fixed;top:52px;left:0;right:0;bottom:0;padding:.9rem}
 /* PANELS */
 .grid{display:grid;gap:.9rem;height:100%}
@@ -94,6 +102,7 @@ tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
 <div class="topbar">
   <div class="brand"><span class="material-icons-round">stadium</span> <span>YENİ CANLI SONUÇLAR</span></div>
   <div class="selects">
+    <button id="camToggle" class="yc-toggle cam-btn" title="Kamera A aç/kapat"><span class="material-icons-round">videocam</span> Kamera A</button>
     <button id="ycToggle" class="yc-toggle" title="Görünümü değiştir (Panel ↔ Sonuçlar)"><span class="material-icons-round">swap_horiz</span> Görünüm</button>
     <span id="modePill" class="mode-pill mode-live"><span class="dot"></span> <span id="modeText">CANLI</span></span>
     <select id="compSelect"><option value="">Yarışma yükleniyor…</option></select>
@@ -108,7 +117,7 @@ tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, off, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, off, set, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",
   authDomain: "analig.firebaseapp.com",
@@ -172,6 +181,7 @@ function fillCats(){
 
 function subscribe(){
   clearSubs();
+  stopAllCams();
   boardData={}; puanData={}; sporcuData={};
   if(!comp||!cat){ render(); return; }
   let al = comps[comp]?.kategoriler?.[cat]?.aletler || [];
@@ -218,6 +228,62 @@ function athClub(alet, id){
   return (sp?.kulup || sp?.okul || boardData[alet]?.athClub || "");
 }
 
+// ---- KAMERA A (WebRTC alıcı — BroadcastGrid ile aynı sinyalleşme) ----
+const ICE=[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},{urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}];
+let camOn=false;
+const cams={}; // alet -> {video, pc, offUnsub, candUnsub}
+function camVideo(alet){
+  if(!cams[alet]) cams[alet]={};
+  if(!cams[alet].video){
+    const v=document.createElement("video");
+    v.autoplay=!0; v.playsInline=!0; v.muted=!0; v.className="cam-video";
+    cams[alet].video=v;
+  }
+  return cams[alet].video;
+}
+function startCam(alet){
+  const c=cams[alet]||{}; cams[alet]=c;
+  if(c.offUnsub||!comp||!cat) return; // zaten bağlı
+  const base=`${FB}/${comp}/broadcast/webrtc/${cat}/${alet}/a`;
+  const video=camVideo(alet);
+  set(ref(db,`${base}/viewerEpoch`),Date.now()).catch(()=>{});
+  let pc=null;
+  c.offUnsub = onValue(ref(db,`${base}/offer`), async snap=>{
+    if(c.candUnsub){ c.candUnsub(); c.candUnsub=null; }
+    if(pc){ try{pc.close()}catch(e){} pc=null; c.pc=null; }
+    if(video) video.srcObject=null;
+    if(!snap.exists()) return;
+    pc=new RTCPeerConnection({iceServers:ICE}); c.pc=pc;
+    pc.ontrack=e=>{ if(e.streams&&e.streams[0]) video.srcObject=e.streams[0]; };
+    pc.onicecandidate=e=>{ if(e.candidate) push(ref(db,`${base}/answerCandidates`), e.candidate.toJSON()).catch(()=>{}); };
+    try{
+      await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
+      const ans=await pc.createAnswer();
+      await pc.setLocalDescription(ans);
+      await set(ref(db,`${base}/answer`),{sdp:ans.sdp,type:ans.type});
+    }catch(e){ return; }
+    c.candUnsub = onChildAdded(ref(db,`${base}/offerCandidates`), async s=>{ try{ await pc.addIceCandidate(new RTCIceCandidate(s.val())); }catch(e){} });
+  });
+}
+function stopCam(alet){
+  const c=cams[alet]; if(!c) return;
+  try{ c.offUnsub&&c.offUnsub(); }catch(e){}
+  try{ c.candUnsub&&c.candUnsub(); }catch(e){}
+  try{ c.pc&&c.pc.close(); }catch(e){}
+  if(c.video){ c.video.srcObject=null; if(c.video.parentNode) c.video.parentNode.removeChild(c.video); }
+  delete cams[alet];
+}
+function stopAllCams(){ Object.keys(cams).forEach(stopCam); }
+function attachCams(){
+  if(!camOn) return;
+  aletler.forEach(alet=>{
+    startCam(alet);
+    const slot=document.querySelector(`.cam-wrap[data-cam-alet="${alet}"]`);
+    const v=camVideo(alet);
+    if(slot && v.parentNode!==slot) slot.appendChild(v);
+  });
+}
+
 function panelHTML(alet){
   const b = boardData[alet] || {};
   const st = b.state;
@@ -225,13 +291,15 @@ function panelHTML(alet){
   const logo = `<img src="/apparatus/${alet}.png" alt="" onerror="this.style.display='none'">`;
   const head = `<div class="panel-head">${logo}<span class="ap-name">${esc(name)}</span><span class="ap-abbr">${abbr}</span></div>`;
 
+  let body="", isFlash=false;
+
   // NOT İLAN EDİLDİ → flashcard
   if(st==="scored" && b.athId){
     const p = (puanData[alet]||{})[b.athId] || {};
     const dns = p.yarismadi || p.durum==="yarishmadi" || p.durum==="yarismadi";
     const inv = p.gecersiz || p.durum==="gecersiz";
     const nm = esc(athName(alet,b.athId)), cl = esc(athClub(alet,b.athId));
-    let body;
+    isFlash=true;
     if(dns){
       body = `<div class="flash-wrap"><div class="flash-name">${nm}</div><div class="flash-club">${cl}</div><span class="flash-tag badge-dns">YARIŞMADI</span></div>`;
     } else if(inv){
@@ -255,21 +323,20 @@ function panelHTML(alet){
         <span class="flash-tag">PUAN İLAN EDİLDİ</span>
       </div>`;
     }
-    return `<div class="panel is-flash">${head}<div class="panel-body">${body}</div></div>`;
-  }
-
-  // SPORCU ÇAĞRILDI / YARIŞIYOR → bilgi kartı
-  if((st==="wait"||st==="go"||st==="fall"||st==="finishing") && (b.athId||b.athName)){
+  } else if((st==="wait"||st==="go"||st==="fall"||st==="finishing") && (b.athId||b.athName)){
+    // SPORCU ÇAĞRILDI / YARIŞIYOR → bilgi kartı
     const nm = esc(athName(alet,b.athId)||b.athName), cl = esc(athClub(alet,b.athId)||b.athClub);
     let badge = '<span class="state-badge sb-wait">SIRADA</span>';
     if(st==="go") badge='<span class="state-badge sb-go">YARIŞIYOR</span>';
     else if(st==="fall") badge='<span class="state-badge sb-fall">DÜŞME</span>';
     else if(st==="finishing") badge='<span class="state-badge sb-wait">PUAN BEKLENİYOR</span>';
-    return `<div class="panel">${head}<div class="panel-body">${badge}<div class="ath-name">${nm}</div><div class="ath-club">${cl}</div></div></div>`;
+    body = `${badge}<div class="ath-name">${nm}</div><div class="ath-club">${cl}</div>`;
+  } else {
+    // BOŞ
+    body = `<div class="empty-panel"><span class="material-icons-round">hourglass_empty</span>Bekleniyor</div>`;
   }
-
-  // BOŞ
-  return `<div class="panel">${head}<div class="panel-body"><div class="empty-panel"><span class="material-icons-round">hourglass_empty</span>Bekleniyor</div></div></div>`;
+  const camWrap = camOn ? `<div class="cam-wrap" data-cam-alet="${esc(alet)}"></div>` : "";
+  return `<div class="panel${isFlash?' is-flash':''}${camOn?' has-cam':''}">${camWrap}${head}<div class="panel-body">${body}</div></div>`;
 }
 
 // ---- GENEL KLASMAN ----
@@ -367,6 +434,7 @@ function render(){
     const n = aletler.length;
     pv.className = "grid " + (n<=1?"g1":n===2?"g2":n===3?"g3":n===4?"g4":"g6");
     const _h = aletler.map(panelHTML).join(""); if(_h!==lastPanelsHTML){ pv.innerHTML=_h; lastPanelsHTML=_h; }
+    if(camOn) attachCams();
     $("modePill").className="mode-pill mode-live"; $("modeText").textContent = ycOverride==="panels"?"CANLI (elle)":"CANLI";
   } else {
     pv.classList.add("hidden"); sv.classList.remove("hidden");
@@ -381,6 +449,15 @@ function render(){
 $("standingsView").addEventListener("click", e=>{
   const t = e.target.closest(".st-tab"); if(!t||!ycViewRef) return;
   set(ycViewRef, t.dataset.view).catch(()=>{});
+});
+
+// Kamera A aç/kapat — yerel (her ekran kendi kamerasını yönetir)
+$("camToggle").addEventListener("click", ()=>{
+  camOn=!camOn;
+  $("camToggle").classList.toggle("on",camOn);
+  if(!camOn) stopAllCams();
+  lastPanelsHTML=""; // panelleri yeniden kur (cam-wrap ekle/çıkar)
+  render();
 });
 
 // Uzaktan görünüm butonu — Panel → Bireysel → Takım → Panel (nerede açıksa tüm ekranlar geçer)
