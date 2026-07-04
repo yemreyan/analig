@@ -126,7 +126,7 @@ const olympOrder = cat => {
 };
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?"":s).replace(/</g,"&lt;");
-const num = (v,d=3) => { const n=Number(v); return isNaN(n)?"—":n.toFixed(d).replace(/0+$/,"").replace(/\.$/,"")||"0"; };
+const num = (v,d=3) => { const n=Number(v); return isNaN(n)?"—":n.toFixed(d); }; // sabit ondalık — Scoreboard ile aynı format (D:2, E:3, Toplam:3)
 
 let comps = {}, comp = "", cat = "";
 let boardData = {}, puanData = {}, sporcuData = {}, aletler = [];
@@ -226,7 +226,7 @@ function panelHTML(alet){
         <div class="flash-de">
           <div class="cell"><span class="k">D</span><span class="v">${num(d,2)}</span></div>
           <div class="cell"><span class="k">E</span><span class="v">${num(e,3)}</span></div>
-          <div class="cell pen"><span class="k">P</span><span class="v">${pen>0?"−"+num(pen,2):"0"}</span></div>
+          <div class="cell pen"><span class="k">P</span><span class="v">${pen>0.005?"−"+num(pen,2):"0.00"}</span></div>
         </div>
         <span class="flash-tag">PUAN İLAN EDİLDİ</span>
       </div>`;
