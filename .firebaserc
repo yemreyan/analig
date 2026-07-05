@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "analig"
-  }
+  },
+  "targets": {
+    "analig": {
+      "hosting": {
+        "analigscore": [
+          "analigscore"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

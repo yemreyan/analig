@@ -1,5 +1,25 @@
 {
   "database": {
     "rules": "database.rules.json"
-  }
+  },
+  "hosting": [
+    {
+      "target": "analigscore",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        ".env.local",
+        ".firebaserc",
+        "database.rules.json",
+        "vercel.json",
+        "FIREBASE_GUVENLIK.md",
+        "**/*.bak"
+      ],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ]
+    }
+  ]
 }
