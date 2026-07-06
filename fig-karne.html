@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIG Hakem Karnesi — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--ok:#22c55e;--warn:#ef4444;--gold:#fbbf24}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800}
+.brand .material-icons-round{color:var(--gold)}
+select{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;max-width:340px}
+.wrap{max-width:1100px;margin:0 auto;padding:1rem}
+.bar{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.btn{display:inline-flex;align-items:center;gap:.4rem;border:none;border-radius:10px;padding:.6rem 1rem;font:inherit;font-weight:800;font-size:.85rem;cursor:pointer;color:#fff;background:var(--accent)}
+.btn:hover{filter:brightness(1.1)}.btn:disabled{opacity:.5;cursor:default}
+.btn--all{background:var(--gold);color:#3a2c00}
+.count{color:var(--muted);font-weight:700;font-size:.85rem}
+table{width:100%;border-collapse:collapse}
+th,td{padding:.55rem .7rem;text-align:left;font-size:.84rem;border-bottom:1px solid rgba(40,52,79,.6)}
+th{color:var(--muted);font-weight:800;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;background:#0d1526;position:sticky;top:52px}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.num{text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+.pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-weight:800;font-size:.72rem}
+.g-cok-iyi{background:rgba(34,197,94,.16);color:#86efac}.g-iyi{background:rgba(132,204,22,.16);color:#bef264}
+.g-kabul{background:rgba(234,179,8,.16);color:#fde047}.g-sinirda{background:rgba(249,115,22,.16);color:#fdba74}.g-incelenmeli{background:rgba(239,68,68,.16);color:#fca5a5}
+.rowbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:.35rem .7rem;font:inherit;font-weight:800;font-size:.78rem;cursor:pointer}
+.rowbtn:hover{border-color:var(--accent)}
+.notice{text-align:center;color:var(--muted);padding:3rem 1rem;font-weight:600}
+.warn-il{color:#fca5a5;font-weight:800}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+.hint{color:var(--muted);font-size:.8rem;font-weight:600;margin-bottom:.6rem}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="material-icons-round">fact_check</span> FIG HAKEM KARNESİ</div>
+  <select id="compSel" style="margin-left:auto"><option value="">Yarışma yükleniyor…</option></select>
+  <select id="catSel"><option value="">Tüm kategoriler</option></select>
+  <select id="aletSel"><option value="">Tüm aletler</option></select>
+</div>
+<div class="wrap">
+  <div class="bar">
+    <button id="allBtn" class="btn btn--all" disabled><span class="material-icons-round" style="font-size:1.1rem">picture_as_pdf</span> Tüm Karneler (tek PDF)</button>
+    <span id="count" class="count"></span>
+  </div>
+  <div class="hint">Her satır = bir isimli hakem × alet. Kontrol skoru = panel (trimmed-mean E). Hakem notu = 10 − kendi kesintisi. Sapma = not − kontrol. Aynı-il adaleti işaretli sapmadan hesaplanır.</div>
+  <div id="list"></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig = { apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY", authDomain:"analig.firebaseapp.com", databaseURL:"https://analig-default-rtdb.firebaseio.com", projectId:"analig", storageBucket:"analig.firebasestorage.app", messagingSenderId:"724523220392", appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d" };
+const db = getDatabase(initializeApp(firebaseConfig));
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const ALET_TR = { yer:"Yer", atlama:"Atlama", asimetrik:"Asimetrik Paralel", denge:"Denge", halka:"Halka", kulplu:"Kulplu Beygir", paralel:"Paralel Bar", barfiks:"Barfiks", mantar:"Mantar", sirik:"Sırık" };
+const POS_LABEL = { e1:"E1", e2:"E2", e3:"E3", e4:"E4" };
+// TR → ASCII (jsPDF varsayılan font Türkçe desteklemez; mevcut karne gibi çevir)
+const tr = s => String(s==null?"":s).replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").replace(/Ş/g,"S").replace(/ğ/g,"g").replace(/Ğ/g,"G").replace(/ü/g,"u").replace(/Ü/g,"U").replace(/ö/g,"o").replace(/Ö/g,"O").replace(/ç/g,"c").replace(/Ç/g,"C");
+const esc = s => String(s==null?"":s).replace(/</g,"&lt;");
+function toast(m){ const t=$("toast"); t.textContent=m; t.className="toast show"; setTimeout(()=>t.className="toast",2200); }
+
+let comps={}, comp="", refsData={}, compData=null;
+
+// --- FIG metrik yardımcıları ---
+function trimmedMean(ds){ ds=ds.filter(d=>d!=null&&!isNaN(d)); if(ds.length>=4){ const s=[...ds].sort((a,b)=>a-b); return (s.slice(1,-1).reduce((a,b)=>a+b,0))/(s.length-2); } return ds.length?ds.reduce((a,b)=>a+b,0)/ds.length:0; }
+function isCounted(ds,myd){ ds=ds.filter(d=>d!=null); if(ds.length<4) return true; const s=[...ds].sort((a,b)=>a-b); return myd>s[0]&&myd<s[s.length-1] || (myd!==s[0]&&myd!==s[s.length-1]); }
+function discPts(d){ d=Math.abs(d); return d<=.1?1:d<=.2?.85:d<=.3?.7:d<=.5?.45:d<=.7?.2:0; }
+function discBand(d){ d=Math.abs(d); return d<=.1?["Yok","#22c55e"]:d<=.2?["Düşük","#84cc16"]:d<=.3?["Ortalama","#a3a300"]:d<=.5?["Orta","#d97706"]:d<=.7?["Yüksek","#dc2626"]:["Çok yüksek","#991b1b"]; }
+function grade(acc){ return acc>=.85?["Çok İyi","g-cok-iyi"]:acc>=.70?["İyi","g-iyi"]:acc>=.55?["Kabul Edilebilir","g-kabul"]:acc>=.40?["Sınırda","g-sinirda"]:["İncelenmeli","g-incelenmeli"]; }
+function fairnessVerdict(avgSigned,n){
+  if(n===0) return ["—","#8b97b3"];
+  const a=avgSigned;
+  if(Math.abs(a)<0.08) return ["Dengeli","#86efac"];
+  const dir = a>0 ? "yumuşak (lehte)" : "sert (aleyhte)";
+  const mag = Math.abs(a)<0.2 ? "Hafif" : Math.abs(a)<0.4 ? "Orta" : "Belirgin";
+  return [`${mag} ${dir}`, a>0?"#fbbf24":"#fca5a5"];
+}
+
+// bir isimli hakem × alet için tüm değerlendirmeleri hesapla
+function evalJudgeApparatus(cat, alet, pos, judge){
+  const jil = ((refsData[judge.id]?.il)||"").trim();
+  const aths = compData.puanlar?.[cat]?.[alet] || {};
+  const spCat = compData.sporcular?.[cat] || {};
+  const rows=[];
+  Object.entries(aths).forEach(([aid,r])=>{
+    if(!r||typeof r!=="object"||r.durum!=="tamamlandi") return;
+    const myd=r[pos]; if(myd==null||isNaN(myd)) return;
+    const ds=[r.e1,r.e2,r.e3,r.e4];
+    let ctrl = r.calc_E; if(ctrl==null) ctrl=10-trimmedMean(ds);
+    const mark=10-Number(myd), disc=mark-ctrl;
+    const a=spCat[aid]||{};
+    const name=a.adSoyad||((a.ad||"")+" "+(a.soyad||"")).trim()||aid;
+    const okul=a.okul||a.kulup||"";
+    const ail=(a.il||okul||"").trim();
+    rows.push({name,okul,il:ail,ctrl:+ctrl.toFixed(3),mark:+mark.toFixed(3),disc:+disc.toFixed(3),counted:isCounted(ds,Number(myd)),sameIl:jil&&ail&&ail.toLocaleLowerCase("tr")===jil.toLocaleLowerCase("tr")});
+  });
+  rows.sort((a,b)=>b.ctrl-a.ctrl);
+  const n=rows.length;
+  const acc = n? rows.reduce((s,r)=>s+discPts(r.disc),0)/n : 0;
+  const avgAbs = n? rows.reduce((s,r)=>s+Math.abs(r.disc),0)/n : 0;
+  const avgSigned = n? rows.reduce((s,r)=>s+r.disc,0)/n : 0;
+  const same = rows.filter(r=>r.sameIl);
+  const sameAvgSigned = same.length? same.reduce((s,r)=>s+r.disc,0)/same.length : 0;
+  return {cat,alet,pos,judge,jil,rows,n,acc,avgAbs,avgSigned,same,sameAvgSigned};
+}
+
+// yarışmadaki tüm hakem×alet birimlerini üret
+function buildUnits(){
+  const units=[];
+  const hak=compData.hakemler||{};
+  const catFilter=$("catSel").value, aletFilter=$("aletSel").value;
+  Object.entries(hak).forEach(([cat,alets])=>{
+    if(catFilter&&cat!==catFilter) return;
+    Object.entries(alets||{}).forEach(([alet,panel])=>{
+      if(aletFilter&&alet!==aletFilter) return;
+      ["e1","e2","e3","e4"].forEach(pos=>{
+        const j=panel?.[pos]; if(!j||!j.id) return;
+        const u=evalJudgeApparatus(cat,alet,pos,j);
+        if(u.n>0) units.push(u);
+      });
+    });
+  });
+  return units;
+}
+
+// --- PDF üretimi (bir birim = bir sayfa) ---
+function drawUnit(doc, u, first){
+  const catName = compData.kategoriler?.[u.cat]?.name || u.cat;
+  const aletName = ALET_TR[u.alet]||u.alet;
+  const gender = /k[iı]z|kad/i.test(u.cat) ? "Kadinlar Artistik Cimnastik" : "Erkekler Artistik Cimnastik";
+  if(!first) doc.addPage();
+  let y=16;
+  doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(20);
+  doc.text("BIREYSEL PANEL HAKEM KARNESI", 14, y); y+=6;
+  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(110);
+  doc.text(tr(gender), 14, y); y+=4.5;
+  doc.text(tr(compData.isim||comp), 14, y); y+=7;
+  doc.setDrawColor(210); doc.line(14,y-2,196,y-2);
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(20);
+  doc.text(`${tr(aletName)} - ${tr(catName)}`, 14, y+3);
+  doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(110);
+  doc.text("Uygulama (E) paneli - 4 hakem, trimmed-mean", 14, y+8); y+=15;
+  // hakem bloğu
+  doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(20);
+  doc.text(tr(u.judge.name), 14, y);
+  const _nameW=doc.getTextWidth(tr(u.judge.name));
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(u.jil?90:170);
+  doc.text(u.jil?`(${tr(u.jil)})`:"(il bilgisi yok)", 14+_nameW+3, y); y+=6;
+  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(90);
+  doc.text(`Pozisyon ${POS_LABEL[u.pos]}   |   ${u.n} egzersiz`, 14, y); y+=8;
+  // accuracy
+  const [gLabel]=grade(u.acc);
+  doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(20);
+  doc.text("Dogruluk (Accuracy) Skoru:", 14, y);
+  const accColor = u.acc>=.7?[22,150,60]:u.acc>=.55?[180,140,0]:[200,60,40];
+  doc.setTextColor(...accColor);
+  doc.text(`${u.acc.toFixed(2)}  -  ${tr(gLabel)}`, 14+doc.getTextWidth("Dogruluk (Accuracy) Skoru:")+3, y); y+=5;
+  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(120);
+  doc.text(`Ort. mutlak sapma: ${u.avgAbs.toFixed(3)}   |   Egilim (isaretli): ${u.avgSigned>=0?"+":""}${u.avgSigned.toFixed(3)} ${Math.abs(u.avgSigned)<0.05?"(dengeli)":u.avgSigned>0?"(yumusak)":"(sert)"}`, 14, y); y+=4;
+  // sporcu tablosu
+  doc.autoTable({
+    startY: y+2,
+    head: [["#","Sporcu","Kulup / Il","Kontrol","Hakem Notu","Sapma","Durum"]],
+    body: u.rows.map((r,i)=>[ i+1, tr(r.name), tr((r.okul||"")+(r.il?" / "+r.il:"")), r.ctrl.toFixed(2), r.mark.toFixed(2), (r.disc>=0?"+":"")+r.disc.toFixed(2), r.counted?"Sayildi":"Sayilmadi" ]),
+    styles:{ font:"helvetica", fontSize:7.2, cellPadding:1.3, textColor:30 },
+    headStyles:{ fillColor:[99,102,241], textColor:255, fontSize:7, fontStyle:"bold" },
+    columnStyles:{ 0:{cellWidth:8,halign:"center"}, 3:{halign:"center"},4:{halign:"center"},5:{halign:"center"},6:{halign:"center",cellWidth:18} },
+    alternateRowStyles:{ fillColor:[246,247,251] },
+    didParseCell:(d)=>{
+      if(d.section==="body" && d.column.index===5){
+        const val=parseFloat(u.rows[d.row.index].disc);
+        const [,col]=discBand(val);
+        const rgb=col.match(/\w\w/g).map(h=>parseInt(h,16));
+        d.cell.styles.textColor=rgb; d.cell.styles.fontStyle="bold";
+      }
+      if(d.section==="body" && u.rows[d.row.index].sameIl){ d.cell.styles.fillColor=[255,247,224]; }
+      if(d.section==="body" && d.column.index===6 && u.rows[d.row.index].counted===false){ d.cell.styles.textColor=[150,150,150]; }
+    },
+    margin:{left:14,right:14}
+  });
+  // aynı-il adaleti
+  let y2 = doc.lastAutoTable.finalY + 8;
+  if(y2 > doc.internal.pageSize.getHeight()-40){ doc.addPage(); y2=18; }
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(20);
+  doc.text(tr(`Ayni-Il Degerlendirmeleri  (Hakem ili: ${u.jil||"?"})`), 14, y2); y2+=5;
+  if(u.same.length===0){
+    doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(120);
+    doc.text(u.jil?"Bu alette hakemin kendi ilinden sporcu bulunmuyor.":"Hakem ili bilinmedigi icin hesaplanamadi.", 14, y2+4);
+  } else {
+    const [fv,fcol]=fairnessVerdict(u.sameAvgSigned,u.same.length);
+    const frgb=fcol.match(/\w\w/g).map(h=>parseInt(h,16));
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(90);
+    doc.text(`${u.same.length} sporcu   |   Ort. isaretli sapma: ${u.sameAvgSigned>=0?"+":""}${u.sameAvgSigned.toFixed(3)}   |   Adalet: `, 14, y2+4);
+    doc.setFont("helvetica","bold"); doc.setTextColor(...frgb);
+    doc.text(tr(fv), 14+doc.getTextWidth(`${u.same.length} sporcu   |   Ort. isaretli sapma: ${u.sameAvgSigned>=0?"+":""}${u.sameAvgSigned.toFixed(3)}   |   Adalet: `)+1, y2+4);
+    doc.autoTable({
+      startY: y2+8,
+      head:[["Sporcu","Kulup","Il","Kontrol","Hakem Notu","Sapma (isaretli)"]],
+      body:u.same.map(r=>[tr(r.name),tr(r.okul),tr(r.il),r.ctrl.toFixed(2),r.mark.toFixed(2),(r.disc>=0?"+":"")+r.disc.toFixed(2)]),
+      styles:{font:"helvetica",fontSize:7.5,cellPadding:1.4,textColor:30},
+      headStyles:{fillColor:[251,191,36],textColor:[60,44,0],fontSize:7,fontStyle:"bold"},
+      columnStyles:{3:{halign:"center"},4:{halign:"center"},5:{halign:"center"}},
+      alternateRowStyles:{fillColor:[255,250,240]},
+      margin:{left:14,right:14}
+    });
+  }
+  // footer
+  const ph=doc.internal.pageSize.getHeight();
+  doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(150);
+  doc.text("TCF Hakem Karnesi (FIG uyarlamasi)  |  Kontrol=panel trimmed-mean E, Not=10-kesinti, Sapma=Not-Kontrol.", 14, ph-8);
+}
+
+function makePDF(units, filename){
+  if(!units.length){ toast("Karne verisi yok"); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:"mm",format:"a4"});
+  units.forEach((u,i)=>drawUnit(doc,u,i===0));
+  doc.save(filename);
+}
+
+// --- UI ---
+onValue(ref(db,"competitions"), s=>{
+  comps=s.val()||{};
+  const es=Object.entries(comps).filter(([id,c])=>c&&c.hakemler).sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
+  const sel=$("compSel");
+  sel.innerHTML='<option value="">— Yarışma seçin —</option>'+es.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
+  const want=comp||params.get("comp")||"";
+  if(want&&comps[want]){ sel.value=want; if(want!==comp){ comp=want; loadComp(); } }
+});
+$("compSel").addEventListener("change",e=>{ comp=e.target.value; loadComp(); });
+$("catSel").addEventListener("change",render);
+$("aletSel").addEventListener("change",render);
+
+async function loadComp(){
+  $("list").innerHTML='<div class="notice">Yükleniyor…</div>'; $("allBtn").disabled=true;
+  if(!comp){ $("list").innerHTML='<div class="notice">Yarışma seçin</div>'; return; }
+  const [cSnap,rSnap]=await Promise.all([ get(ref(db,`competitions/${comp}`)), get(ref(db,"referees")) ]);
+  compData=cSnap.val()||{}; const rv=rSnap.val()||{};
+  refsData={}; Object.entries(rv).forEach(([k,v])=>{ if(v&&typeof v==="object") refsData[k]=v; });
+  // kategori/alet filtrelerini doldur
+  const hak=compData.hakemler||{};
+  const cats=Object.keys(hak);
+  $("catSel").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option value="${c}">${esc(compData.kategoriler?.[c]?.name||c)}</option>`).join("");
+  const alets=[...new Set(cats.flatMap(c=>Object.keys(hak[c]||{})))];
+  $("aletSel").innerHTML='<option value="">Tüm aletler</option>'+alets.map(a=>`<option value="${a}">${esc(ALET_TR[a]||a)}</option>`).join("");
+  render();
+}
+
+let currentUnits=[];
+function render(){
+  if(!compData){ return; }
+  currentUnits=buildUnits();
+  $("allBtn").disabled=currentUnits.length===0;
+  $("count").textContent=`${currentUnits.length} hakem × alet karnesi`;
+  if(!currentUnits.length){ $("list").innerHTML='<div class="notice">Bu yarışmada hakem ataması / panel notu bulunamadı.</div>'; return; }
+  $("list").innerHTML=`<table><thead><tr><th>Hakem</th><th>İl</th><th>Poz.</th><th>Alet</th><th>Kategori</th><th class="num">Egz.</th><th class="num">Ort. Sapma</th><th class="num">Accuracy</th><th>Aynı İl</th><th></th></tr></thead><tbody>${
+    currentUnits.map((u,i)=>{
+      const [gl,gc]=grade(u.acc);
+      const [fv,fcol]=fairnessVerdict(u.sameAvgSigned,u.same.length);
+      const ilWarn = u.same.length>0 && Math.abs(u.sameAvgSigned)>=0.2;
+      return `<tr>
+        <td style="font-weight:800">${esc(u.judge.name)}</td>
+        <td class="${u.jil?'':'warn-il'}">${esc(u.jil||"?")}</td>
+        <td class="num">${POS_LABEL[u.pos]}</td>
+        <td>${esc(ALET_TR[u.alet]||u.alet)}</td>
+        <td style="color:var(--muted)">${esc(compData.kategoriler?.[u.cat]?.name||u.cat)}</td>
+        <td class="num">${u.n}</td>
+        <td class="num">${u.avgAbs.toFixed(3)}</td>
+        <td class="num"><span class="pill ${gc}">${u.acc.toFixed(2)} · ${gl}</span></td>
+        <td>${u.same.length?`<span style="color:${fcol};font-weight:700">${esc(fv)}</span> <span style="color:var(--muted)">(${u.same.length})</span>${ilWarn?' <span class="warn-il">⚠</span>':''}`:'<span style="color:var(--muted)">—</span>'}</td>
+        <td><button class="rowbtn" data-i="${i}">PDF</button></td>
+      </tr>`;
+    }).join("")
+  }</tbody></table>`;
+  $("list").querySelectorAll(".rowbtn").forEach(b=>b.addEventListener("click",()=>{
+    const u=currentUnits[+b.dataset.i];
+    makePDF([u], `HakemKarnesi_${tr(u.judge.name).replace(/\s+/g,"_")}_${u.alet}_${POS_LABEL[u.pos]}.pdf`);
+  }));
+}
+
+$("allBtn").addEventListener("click",()=>{
+  if(!currentUnits.length) return;
+  makePDF(currentUnits, `FIG_Hakem_Karneleri_${tr(compData.isim||comp).replace(/[^a-zA-Z0-9]+/g,"_").slice(0,40)}.pdf`);
+});
+</script>
+</body>
+</html>
