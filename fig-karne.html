@@ -71,6 +71,10 @@ const tr = s => String(s==null?"":s).replace(/ı/g,"i").replace(/İ/g,"I").repla
 const esc = s => String(s==null?"":s).replace(/</g,"&lt;");
 function toast(m){ const t=$("toast"); t.textContent=m; t.className="toast show"; setTimeout(()=>t.className="toast",2200); }
 let comps={}, comp="", refsData={}, compData=null;
+let logoData=null;
+const reportDate=new Date().toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+(async()=>{ try{ const r=await fetch("/logo.png"); if(r.ok){ const bl=await r.blob(); logoData=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(bl);}); } }catch(e){} })();
+const NAVY=[28,37,64], TCFRED=[200,16,42];
 
 // --- metrikler ---
 function trimmedMean(ds){ ds=ds.filter(d=>d!=null&&!isNaN(d)); if(ds.length>=4){ const s=[...ds].sort((a,b)=>a-b); return s.slice(1,-1).reduce((a,b)=>a+b,0)/(s.length-2); } return ds.length?ds.reduce((a,b)=>a+b,0)/ds.length:0; }
@@ -127,44 +131,48 @@ function drawUnit(doc, u, first){
   const gender=/k[iı]z|kad/i.test(u.cat)?"Women Artistic Gymnastics":"Men Artistic Gymnastics";
   const locYear=((compData.il||"")+" "+(compData.baslangicTarihi||"").slice(0,4)).trim();
   const frame=()=>{ doc.setDrawColor(90); doc.setLineWidth(0.5); doc.roundedRect(MB,MB,PW-2*MB,PH-2*MB,2,2,"S"); doc.setLineWidth(0.2); };
-  const foot=()=>{ doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(150); doc.text("TCF - Hakem Karnesi (FIG uyarlamasi)  |  Kontrol = panel trimmed-mean E, Not = 10 - kesinti, Sapma = Not - Kontrol.", IN, PH-MB-4); };
+  const foot=()=>{ const fy=PH-MB-9.5; doc.setDrawColor(215); doc.setLineWidth(0.3); doc.line(IN,fy,PW-IN,fy); doc.setLineWidth(0.2);
+    doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(...NAVY); doc.text("TURKIYE CIMNASTIK FEDERASYONU", IN, fy+4);
+    doc.setFont("helvetica","normal"); doc.setFontSize(6.1); doc.setTextColor(140); doc.text("Hakem Dogruluk Karnesi (FIG uyarlamasi)  |  Kontrol = panel trimmed-mean E, Not = 10 - kesinti, Sapma = Not - Kontrol.", IN, fy+7.3);
+    doc.setFontSize(6.4); doc.setTextColor(140); doc.text("Rapor: "+reportDate, PW-IN, fy+4, {align:"right"}); };
   const hline=(yy)=>{ doc.setDrawColor(210); doc.setLineWidth(0.3); doc.line(IN,yy,PW-IN,yy); doc.setLineWidth(0.2); };
+  const secH=(txt,yy)=>{ doc.setFillColor(...TCFRED); doc.rect(IN, yy-3.3, 1.5, 3.9, "F"); doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...NAVY); doc.text(txt, IN+4, yy); };
   const newpage=()=>{ doc.addPage(); frame(); };
 
   if(!first) doc.addPage();
   frame();
-  let y=MB+8;
-  doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(30);
+  if(logoData){ try{ doc.addImage(logoData,"PNG", MB+4, MB+3, 13, 13); }catch(e){} }
+  let y=MB+9;
+  doc.setFont("helvetica","bold"); doc.setFontSize(13.5); doc.setTextColor(...NAVY);
   doc.text("INDIVIDUAL PANEL JUDGING REPORT", PW/2, y, {align:"center"}); y+=5;
-  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(90);
-  doc.text("Individual judge accuracy report", PW/2, y, {align:"center"}); y+=9;
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(30);
+  doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(110);
+  doc.text(tr("Turkiye Cimnastik Federasyonu - Hakem Dogruluk Karnesi"), PW/2, y, {align:"center"}); y+=4.5;
+  doc.setDrawColor(...TCFRED); doc.setLineWidth(0.9); doc.line(MB+4, y, PW-MB-4, y); doc.setLineWidth(0.2); y+=7;
+  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
   doc.text(tr(gender), IN, y); y+=5.5;
   doc.text(tr(compData.isim||comp), IN, y); y+=5.5;
   if(locYear){ doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(60); doc.text(tr(locYear), IN, y); y+=5; }
   y+=1; hline(y); y+=6;
-  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(30);
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...NAVY);
   doc.text(tr(`${aletEn} - ${catName}`), IN, y); y+=6;
   doc.setFontSize(9.5); doc.text("Execution panel", IN, y); y+=5;
   doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(90);
   doc.text(tr("Evaluation based on 4 panel judges (trimmed-mean E)"), IN, y); y+=6;
   hline(y); y+=6;
-  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(30);
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...NAVY);
   doc.text(tr(u.judge.name)+(u.jil?` (${tr(u.jil)})`:" (il yok)"), IN, y); y+=6;
   doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(80);
   doc.text(`Position ${POS_LABEL[u.pos]}`, IN, y); y+=5;
   doc.text(`${u.n} exercises`, IN, y); y+=6;
   hline(y); y+=6;
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(30);
-  doc.text("Exercise accuracy summary", IN, y); y+=6;
+  secH("Exercise accuracy summary", y); y+=6;
   const [gLabel]=grade(u.acc);
   const ac=u.acc>=.7?[34,150,60]:u.acc>=.55?[180,140,0]:[200,60,40];
   doc.setFontSize(9.5); doc.setFont("helvetica","bold"); doc.setTextColor(40);
   doc.text("Accuracy Score : ", IN, y); doc.setTextColor(...ac); doc.text(u.acc.toFixed(2), IN+doc.getTextWidth("Accuracy Score : "), y); y+=5;
   doc.setTextColor(40); doc.text("Accuracy Grade: ", IN, y); doc.setTextColor(...ac); doc.text(tr(gLabel), IN+doc.getTextWidth("Accuracy Grade: "), y); y+=7;
   hline(y-1); y+=5;
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(30);
-  doc.text("Accuracy per exercise", IN, y); y+=7;
+  secH("Accuracy per exercise", y); y+=7;
 
   // ---- nokta grafiği ----
   const plotL=IN+40, plotR=PW-IN-30, legendX=plotR+5;
@@ -211,8 +219,7 @@ function drawUnit(doc, u, first){
   // ---- Out of consensus ----
   let y2=segTop+3;
   if(y2>PH-MB-55){ newpage(); y2=MB+16; }
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(30);
-  doc.text("Out of consensus evaluations", IN, y2); y2+=6;
+  secH("Out of consensus evaluations", y2); y2+=6;
   const ooc=u.rows.filter(r=>Math.abs(r.disc)>0.7);
   if(ooc.length===0){ doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(90); doc.text("None", IN, y2); y2+=8; }
   else {
@@ -224,13 +231,12 @@ function drawUnit(doc, u, first){
   }
   // ---- Same-nationality (aynı il) ----
   if(y2>PH-MB-50){ newpage(); y2=MB+16; }
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(30);
-  doc.text(tr("Same-nationality evaluations (ayni il)"), IN, y2); y2+=6;
+  secH(tr("Same-nationality evaluations (ayni il)"), y2); y2+=6;
   if(u.same.length===0){ doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(90); doc.text(u.jil?"None":"Hakem ili bilinmiyor", IN, y2); y2+=6; }
   else {
     doc.autoTable({ startY:y2, head:[["Athlete","City","Control score","Judging mark","Discrepancy","Fairness"]],
       body:u.same.map(r=>[tr(r.name),tr(r.il),r.ctrl.toFixed(2),r.mark.toFixed(2),(r.disc>=0?"+":"")+r.disc.toFixed(2),fairnessLabel(r.disc)]),
-      styles:{font:"helvetica",fontSize:7.5,cellPadding:1.4,textColor:30}, headStyles:{fillColor:[70,70,70],textColor:255,fontSize:7,fontStyle:"bold"},
+      styles:{font:"helvetica",fontSize:7.5,cellPadding:1.4,textColor:30}, headStyles:{fillColor:NAVY,textColor:255,fontSize:7,fontStyle:"bold"},
       columnStyles:{2:{halign:"center"},3:{halign:"center"},4:{halign:"center"}}, margin:{left:IN,right:IN},
       didParseCell:(d)=>{ if(d.section==="body"&&d.column.index===4){ const dv=u.same[d.row.index].disc; d.cell.styles.textColor=Math.abs(dv)<0.08?[100,100,100]:dv>0?[180,130,0]:[190,50,40]; d.cell.styles.fontStyle="bold"; } } });
     y2=doc.lastAutoTable.finalY+4;
