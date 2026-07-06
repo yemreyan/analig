@@ -74,7 +74,8 @@ let comps={}, comp="", refsData={}, compData=null;
 let logoData=null;
 const reportDate=new Date().toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
 (async()=>{ try{ const r=await fetch("/logo.png"); if(r.ok){ const bl=await r.blob(); logoData=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(bl);}); } }catch(e){} })();
-const NAVY=[28,37,64], TCFRED=[200,16,42];
+const NAVY=[28,37,64], TCFRED=[200,16,42], ORANGE=[210,120,20];
+let changeMap={};
 
 // --- metrikler ---
 function trimmedMean(ds){ ds=ds.filter(d=>d!=null&&!isNaN(d)); if(ds.length>=4){ const s=[...ds].sort((a,b)=>a-b); return s.slice(1,-1).reduce((a,b)=>a+b,0)/(s.length-2); } return ds.length?ds.reduce((a,b)=>a+b,0)/ds.length:0; }
@@ -101,16 +102,18 @@ function evalJudgeApparatus(cat, alet, pos, judge){
     const name=a.adSoyad||((a.ad||"")+" "+(a.soyad||"")).trim()||aid;
     const okul=a.okul||a.kulup||"";
     const ail=(a.il||okul||"").trim();
-    rows.push({name,okul,il:ail,ctrl:+ctrl.toFixed(3),mark:+mark.toFixed(3),disc:+disc.toFixed(3),counted:isCounted(ds,Number(myd)),sameIl:jil&&ail&&ail.toLocaleLowerCase("tr")===jil.toLocaleLowerCase("tr")});
+    const chg=(changeMap?.[cat]?.[alet]?.[pos]?.[aid])||0;
+    rows.push({aid,name,okul,il:ail,ctrl:+ctrl.toFixed(3),mark:+mark.toFixed(3),disc:+disc.toFixed(3),chg,counted:isCounted(ds,Number(myd)),sameIl:jil&&ail&&ail.toLocaleLowerCase("tr")===jil.toLocaleLowerCase("tr")});
   });
   rows.sort((a,b)=>b.ctrl-a.ctrl);
   const n=rows.length;
+  const totalChanges=rows.reduce((s,r)=>s+r.chg,0), athChanged=rows.filter(r=>r.chg>0).length;
   const acc=n?rows.reduce((s,r)=>s+discPts(r.disc),0)/n:0;
   const avgAbs=n?rows.reduce((s,r)=>s+Math.abs(r.disc),0)/n:0;
   const avgSigned=n?rows.reduce((s,r)=>s+r.disc,0)/n:0;
   const same=rows.filter(r=>r.sameIl);
   const sameAvgSigned=same.length?same.reduce((s,r)=>s+r.disc,0)/same.length:0;
-  return {cat,alet,pos,judge,jil,rows,n,acc,avgAbs,avgSigned,same,sameAvgSigned};
+  return {cat,alet,pos,judge,jil,rows,n,acc,avgAbs,avgSigned,same,sameAvgSigned,totalChanges,athChanged};
 }
 function buildUnits(){
   const units=[]; const hak=compData.hakemler||{};
@@ -160,18 +163,24 @@ function drawUnit(doc, u, first){
   doc.text(tr("Evaluation based on 4 panel judges (trimmed-mean E)"), IN, y); y+=6;
   hline(y); y+=6;
   doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...NAVY);
-  doc.text(tr(u.judge.name)+(u.jil?` (${tr(u.jil)})`:" (il yok)"), IN, y); y+=6;
-  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(80);
-  doc.text(`Position ${POS_LABEL[u.pos]}`, IN, y); y+=5;
-  doc.text(`${u.n} exercises`, IN, y); y+=6;
-  hline(y); y+=6;
-  secH("Exercise accuracy summary", y); y+=6;
+  doc.text(tr(u.judge.name)+(u.jil?` (${tr(u.jil)})`:" (il yok)"), IN, y); y+=5;
+  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(110);
+  doc.text(`Position ${POS_LABEL[u.pos]}`, IN, y); y+=6.5;
+  // ---- KPI kart şeridi ----
   const [gLabel]=grade(u.acc);
   const ac=u.acc>=.7?[34,150,60]:u.acc>=.55?[180,140,0]:[200,60,40];
-  doc.setFontSize(9.5); doc.setFont("helvetica","bold"); doc.setTextColor(40);
-  doc.text("Accuracy Score : ", IN, y); doc.setTextColor(...ac); doc.text(u.acc.toFixed(2), IN+doc.getTextWidth("Accuracy Score : "), y); y+=5;
-  doc.setTextColor(40); doc.text("Accuracy Grade: ", IN, y); doc.setTextColor(...ac); doc.text(tr(gLabel), IN+doc.getTextWidth("Accuracy Grade: "), y); y+=7;
-  hline(y-1); y+=5;
+  const ky=y, usable=PW-2*IN, kgap=3.5, cw=(usable-3*kgap)/4;
+  const kpi=(ci,label,val,vcol,sub)=>{ const x=IN+ci*(cw+kgap);
+    doc.setDrawColor(223,227,234); doc.setFillColor(248,249,251); doc.setLineWidth(0.3); doc.roundedRect(x,ky,cw,16,1.8,1.8,"FD"); doc.setLineWidth(0.2);
+    doc.setFillColor(...vcol); doc.roundedRect(x,ky,1.6,16,0.8,0.8,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(6); doc.setTextColor(140); doc.text(label,x+4,ky+4.6);
+    const vs=String(val); const fs=vs.length>7?8.5:vs.length>4?10.5:14; doc.setFont("helvetica","bold"); doc.setFontSize(fs); doc.setTextColor(...vcol); doc.text(vs,x+4,ky+11);
+    if(sub){ doc.setFont("helvetica","normal"); doc.setFontSize(5.9); doc.setTextColor(150); doc.text(tr(sub),x+4,ky+14.2); } };
+  kpi(0,"EXERCISES",u.n,NAVY,"scored");
+  kpi(1,"ACCURACY SCORE",u.acc.toFixed(2),ac,gLabel);
+  kpi(2,"AVG DISCREPANCY",(u.avgSigned>=0?"+":"")+u.avgSigned.toFixed(2),u.avgAbs<0.15?[34,150,60]:u.avgAbs<0.3?[180,140,0]:[200,60,40],"signed mean");
+  kpi(3,"SCORE CHANGES",u.totalChanges,u.totalChanges>0?ORANGE:[34,150,60],u.totalChanges>0?`${u.athChanged} sporcu duzeltildi`:"duzeltme yok");
+  y=ky+16+7;
   secH("Accuracy per exercise", y); y+=7;
 
   // ---- nokta grafiği ----
@@ -186,7 +195,8 @@ function drawUnit(doc, u, first){
     doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(60);
     doc.setFillColor(37,99,235); doc.circle(legendX+1.5, ly, 1.3, "F"); doc.text("Control score", legendX+4, ly+1);
     let yy=ly+7; doc.setFont("helvetica","bold"); doc.setFontSize(6.5); doc.text("Judging mark", legendX, yy); doc.text("discrepancy", legendX, yy+3.2); doc.setFont("helvetica","normal"); yy+=7;
-    [["Very high",[183,28,28]],["High",[211,47,47]],["Moderate",[141,110,99]],["Average",[158,157,36]],["Low",[139,195,74]],["None",[34,197,94]]].forEach(([lab,col])=>{ doc.setFillColor(...col); doc.circle(legendX+1.5, yy, 1.3, "F"); doc.setTextColor(60); doc.setFontSize(6.5); doc.text(lab, legendX+4, yy+1); yy+=4.2; });
+    [["Very high",[183,28,28]],["High",[211,47,47]],["Moderate",[141,110,99]],["Average",[158,157,36]],["Low",[139,195,74]],["None",[34,197,94]]].forEach(([lab,col])=>{ doc.setFillColor(...col); doc.circle(legendX+1.5, yy, 1.3, "F"); doc.setTextColor(60); doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.text(lab, legendX+4, yy+1); yy+=4.2; });
+    yy+=3; doc.setFillColor(...ORANGE); doc.circle(legendX+1.5, yy, 1.4, "F"); doc.setFont("helvetica","bold"); doc.setFontSize(5); doc.setTextColor(255); doc.text("n",legendX+1.5,yy+0.75,{align:"center"}); doc.setFont("helvetica","normal"); doc.setFontSize(6.3); doc.setTextColor(60); doc.text("Score changed (n x)", legendX+4, yy+1);
   };
   const _range=sMax-sMin, _lblStep=_range>4?1:_range>2?0.5:0.2;
   const ticks=(topY,botY)=>{
@@ -207,8 +217,9 @@ function drawUnit(doc, u, first){
     if(!legDrawn){ legend(segTop+3); legDrawn=true; }
     for(let k=idx;k<end;k++){
       const r=u.rows[k], ry=segTop+(k-idx)*rowH+rowH/2;
-      doc.setFont("helvetica","normal"); doc.setFontSize(6); doc.setTextColor(50);
-      doc.text(tr(r.name).slice(0,27), plotL-2, ry+0.6, {align:"right"});
+      if(r.chg>0){ doc.setFillColor(...ORANGE); doc.circle(IN+1.6, ry, 1.35, "F"); doc.setFont("helvetica","bold"); doc.setFontSize(5.4); doc.setTextColor(255); doc.text(String(r.chg), IN+1.6, ry+0.85, {align:"center"}); }
+      doc.setFont("helvetica","normal"); doc.setFontSize(6); doc.setTextColor(r.chg>0?ORANGE[0]:50, r.chg>0?ORANGE[1]:50, r.chg>0?ORANGE[2]:50);
+      doc.text(tr(r.name).slice(0,24), plotL-2, ry+0.6, {align:"right"});
       doc.setFillColor(37,99,235); doc.circle(sx(r.ctrl), ry, 1.15, "F");
       doc.setFillColor(...discColor(r.disc)); doc.circle(sx(r.mark), ry, 1.15, "F");
     }
@@ -216,8 +227,23 @@ function drawUnit(doc, u, first){
     doc.text("Judging mark / control score", (plotL+plotR)/2, botY+3.5, {align:"center"});
     idx=end; segTop=botY+9;
   }
-  // ---- Out of consensus ----
+  // ---- Score corrections (not değiştirme) ----
   let y2=segTop+3;
+  if(y2>PH-MB-50){ newpage(); y2=MB+16; }
+  secH(tr("Score corrections (not degistirme)"), y2); y2+=6;
+  const chgRows=u.rows.filter(r=>r.chg>0).sort((a,b)=>b.chg-a.chg);
+  if(chgRows.length===0){ doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(90); doc.text(tr("Bu hakem notlarini hic degistirmemis (0 duzeltme)."), IN, y2); y2+=8; }
+  else {
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(90);
+    doc.text(tr(`Toplam ${u.totalChanges} not degistirme - ${u.athChanged} sporcuda.`), IN, y2); y2+=5;
+    doc.autoTable({ startY:y2, head:[["Athlete","Club / City","Changes","Final mark","Control","Discrepancy"]],
+      body:chgRows.map(r=>[tr(r.name),tr((r.okul||"")+(r.il?" / "+r.il:"")),r.chg+"x",r.mark.toFixed(2),r.ctrl.toFixed(2),(r.disc>=0?"+":"")+r.disc.toFixed(2)]),
+      styles:{font:"helvetica",fontSize:7.5,cellPadding:1.3,textColor:30}, headStyles:{fillColor:ORANGE,textColor:255,fontSize:7,fontStyle:"bold"},
+      columnStyles:{2:{halign:"center"},3:{halign:"center"},4:{halign:"center"},5:{halign:"center"}}, margin:{left:IN,right:IN},
+      didParseCell:(d)=>{ if(d.section==="body"&&d.column.index===2){ d.cell.styles.textColor=ORANGE; d.cell.styles.fontStyle="bold"; } } });
+    y2=doc.lastAutoTable.finalY+7;
+  }
+  // ---- Out of consensus ----
   if(y2>PH-MB-55){ newpage(); y2=MB+16; }
   secH("Out of consensus evaluations", y2); y2+=6;
   const ooc=u.rows.filter(r=>Math.abs(r.disc)>0.7);
@@ -271,9 +297,13 @@ $("aletSel").addEventListener("change",render);
 async function loadComp(){
   $("list").innerHTML='<div class="notice">Yükleniyor…</div>'; $("allBtn").disabled=true;
   if(!comp){ $("list").innerHTML='<div class="notice">Yarışma seçin</div>'; return; }
-  const [cSnap,rSnap]=await Promise.all([ get(ref(db,`competitions/${comp}`)), get(ref(db,"referees")) ]);
+  const [cSnap,rSnap,lSnap]=await Promise.all([ get(ref(db,`competitions/${comp}`)), get(ref(db,"referees")), get(ref(db,"logs")).catch(()=>({val:()=>({})})) ]);
   compData=cSnap.val()||{}; const rv=rSnap.val()||{};
   refsData={}; Object.entries(rv).forEach(([k,v])=>{ if(v&&typeof v==="object") refsData[k]=v; });
+  // not değiştirme (score corrections): aynı (cat,alet,pozisyon,sporcu) için birden fazla judge_score_submit = değişiklik
+  changeMap={}; const lv=lSnap.val()||{}; const _grp={};
+  Object.values(lv).forEach(v=>{ if(!v||typeof v!=="object"||v.competitionId!==comp||v.type!=="judge_score_submit") return; if(!v.category||!v.alet||!v.field||!v.athleteId) return; const key=v.category+"|"+v.alet+"|"+v.field+"|"+v.athleteId; _grp[key]=(_grp[key]||0)+1; });
+  Object.entries(_grp).forEach(([key,cnt])=>{ const chg=Math.max(0,cnt-1); if(chg<=0) return; const [cat,alet,field,aid]=key.split("|"); (changeMap[cat]=changeMap[cat]||{}); (changeMap[cat][alet]=changeMap[cat][alet]||{}); (changeMap[cat][alet][field]=changeMap[cat][alet][field]||{}); changeMap[cat][alet][field][aid]=chg; });
   const hak=compData.hakemler||{}; const cats=Object.keys(hak);
   $("catSel").innerHTML='<option value="">Tüm kategoriler</option>'+cats.map(c=>`<option value="${c}">${esc(compData.kategoriler?.[c]?.name||c)}</option>`).join("");
   const alets=[...new Set(cats.flatMap(c=>Object.keys(hak[c]||{})))];
@@ -287,9 +317,9 @@ function render(){
   $("allBtn").disabled=currentUnits.length===0;
   $("count").textContent=`${currentUnits.length} hakem × alet karnesi`;
   if(!currentUnits.length){ $("list").innerHTML='<div class="notice">Bu yarışmada hakem ataması / panel notu bulunamadı.</div>'; return; }
-  $("list").innerHTML=`<table><thead><tr><th>Hakem</th><th>İl</th><th>Poz.</th><th>Alet</th><th>Kategori</th><th class="num">Egz.</th><th class="num">Ort. Sapma</th><th class="num">Accuracy</th><th>Aynı İl</th><th></th></tr></thead><tbody>${
+  $("list").innerHTML=`<table><thead><tr><th>Hakem</th><th>İl</th><th>Poz.</th><th>Alet</th><th>Kategori</th><th class="num">Egz.</th><th class="num">Değ.</th><th class="num">Ort. Sapma</th><th class="num">Accuracy</th><th>Aynı İl</th><th></th></tr></thead><tbody>${
     currentUnits.map((u,i)=>{ const [gl,gc]=gradeShort(u.acc); const [fv,fcol]=fairnessVerdictTR(u.sameAvgSigned,u.same.length); const ilWarn=u.same.length>0&&Math.abs(u.sameAvgSigned)>=0.2;
-      return `<tr><td style="font-weight:800">${esc(u.judge.name)}</td><td class="${u.jil?'':'warn-il'}">${esc(u.jil||"?")}</td><td class="num">${POS_LABEL[u.pos]}</td><td>${esc(ALET_TR[u.alet]||u.alet)}</td><td style="color:var(--muted)">${esc(compData.kategoriler?.[u.cat]?.name||u.cat)}</td><td class="num">${u.n}</td><td class="num">${u.avgAbs.toFixed(3)}</td><td class="num"><span class="pill ${gc}">${u.acc.toFixed(2)} · ${gl}</span></td><td>${u.same.length?`<span style="color:${fcol};font-weight:700">${esc(fv)}</span> <span style="color:var(--muted)">(${u.same.length})</span>${ilWarn?' <span class="warn-il">⚠</span>':''}`:'<span style="color:var(--muted)">—</span>'}</td><td><button class="rowbtn" data-i="${i}">PDF</button></td></tr>`;
+      return `<tr><td style="font-weight:800">${esc(u.judge.name)}</td><td class="${u.jil?'':'warn-il'}">${esc(u.jil||"?")}</td><td class="num">${POS_LABEL[u.pos]}</td><td>${esc(ALET_TR[u.alet]||u.alet)}</td><td style="color:var(--muted)">${esc(compData.kategoriler?.[u.cat]?.name||u.cat)}</td><td class="num">${u.n}</td><td class="num">${u.totalChanges>0?`<span style="color:#d87814;font-weight:800">${u.totalChanges}</span>`:'<span style="color:var(--muted)">0</span>'}</td><td class="num">${u.avgAbs.toFixed(3)}</td><td class="num"><span class="pill ${gc}">${u.acc.toFixed(2)} · ${gl}</span></td><td>${u.same.length?`<span style="color:${fcol};font-weight:700">${esc(fv)}</span> <span style="color:var(--muted)">(${u.same.length})</span>${ilWarn?' <span class="warn-il">⚠</span>':''}`:'<span style="color:var(--muted)">—</span>'}</td><td><button class="rowbtn" data-i="${i}">PDF</button></td></tr>`;
     }).join("")
   }</tbody></table>`;
   $("list").querySelectorAll(".rowbtn").forEach(b=>b.addEventListener("click",()=>{ const u=currentUnits[+b.dataset.i]; makePDF([u], `HakemKarnesi_${tr(u.judge.name).replace(/\s+/g,"_")}_${u.alet}_${POS_LABEL[u.pos]}.pdf`); }));
