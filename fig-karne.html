@@ -99,7 +99,7 @@ function evalJudgeApparatus(cat, alet, pos, judge){
     let ctrl=r.calc_E; if(ctrl==null) ctrl=10-trimmedMean(ds);
     const mark=10-Number(myd), disc=mark-ctrl;
     const a=spCat[aid]||{};
-    const name=a.adSoyad||((a.ad||"")+" "+(a.soyad||"")).trim()||aid;
+    const name=((a.ad||"")+" "+(a.soyad||"")).trim()||a.adSoyad||aid;
     const okul=a.okul||a.kulup||"";
     const ail=(a.il||okul||"").trim();
     const chg=(changeMap?.[cat]?.[alet]?.[pos]?.[aid])||0;
