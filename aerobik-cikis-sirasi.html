@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aerobik Genel Çıkış Sırası — TCF</title>
+<title>Aerobik Çıkış Listesi Üretici — TCF</title>
 <link rel="icon" type="image/png" href="/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -14,70 +14,103 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);c
 .topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
 .brand .material-icons-round{color:var(--gold)}
-.wrap{max-width:900px;margin:0 auto;padding:1rem}
-.controls{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
-select,.btn{font:inherit;font-weight:700;border-radius:10px;border:1px solid var(--line)}
-select{background:var(--panel2);color:var(--txt);padding:.6rem .8rem;font-size:.9rem;min-width:220px}
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;border:none;cursor:pointer;color:#fff;background:var(--accent);font-weight:800;font-size:.88rem}
-.btn.save{background:var(--ok);color:#04220f}
-.btn:disabled{opacity:.5;cursor:default}
-.btn:hover:not(:disabled){filter:brightness(1.08)}
-.hint{color:var(--muted);font-size:.82rem;font-weight:600;margin-bottom:.8rem;line-height:1.5}
-.list{display:flex;flex-direction:column;gap:.4rem}
-.row{display:flex;align-items:center;gap:.7rem;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;cursor:grab}
-.row.dragging{opacity:.4}
-.row.over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
-.row.team{border-left:3px solid var(--team)}
-.ord{font-weight:800;font-size:1.05rem;color:var(--accent);min-width:34px;text-align:center}
-.grip{color:var(--muted);cursor:grab}
+.wrap{max-width:940px;margin:0 auto;padding:1rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.9rem;margin-bottom:1rem}
+.row1{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:.25rem}
+.fld label{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+select,input{font:inherit;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:.5rem .7rem;font-size:.88rem}
+select{min-width:200px}
+input[type=number]{width:90px}input[type=time]{width:110px}
+.chkwrap{display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:700;color:var(--txt);cursor:pointer;user-select:none}
+.chkwrap input{width:auto}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem .9rem;border:none;cursor:pointer;color:#fff;background:var(--accent);font-weight:800;font-size:.85rem;border-radius:9px}
+.btn.gen{background:var(--gold);color:#3a2c00}.btn.save{background:var(--ok);color:#04220f}.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.btn:disabled{opacity:.5;cursor:default}.btn:hover:not(:disabled){filter:brightness(1.08)}
+.actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+.hint{color:var(--muted);font-size:.8rem;font-weight:600;line-height:1.5;margin-top:.6rem}
+.warnbox{background:rgba(239,68,68,.12);border:1px solid var(--warn);color:#fca5a5;border-radius:9px;padding:.5rem .7rem;font-size:.8rem;font-weight:700;margin-top:.6rem;display:none}
+.list{display:flex;flex-direction:column;gap:.35rem}
+.grp{color:var(--muted);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:.5rem 0 .1rem;padding-left:.2rem}
+.rowc{display:flex;align-items:center;gap:.6rem;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.5rem .7rem;cursor:grab}
+.rowc.dragging{opacity:.4}.rowc.over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.rowc.team{border-left:3px solid var(--team)}
+.ord{font-weight:800;font-size:1rem;color:var(--accent);min-width:32px;text-align:center}
+.tm{font-weight:800;font-size:.85rem;color:var(--gold);min-width:48px}
+.grip{color:var(--muted)}
 .info{flex:1;min-width:0}
-.nm{font-weight:800;font-size:.95rem;line-height:1.2}
-.sub{color:var(--muted);font-size:.76rem;font-weight:600;margin-top:.12rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
-.chip{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:.05rem .4rem;font-weight:700}
+.nm{font-weight:800;font-size:.92rem;line-height:1.2}
+.sub{color:var(--muted);font-size:.74rem;font-weight:600;margin-top:.1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:.03rem .4rem;font-weight:700}
 .chip.teamchip{background:rgba(8,145,178,.18);border-color:var(--team);color:#67e8f9}
-.grpwrap{display:flex;align-items:center;gap:.3rem;font-size:.76rem;font-weight:700;color:var(--muted)}
-.grpwrap input{width:46px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:.2rem .3rem;font:inherit;font-weight:700;text-align:center}
+.grpwrap{display:flex;align-items:center;gap:.3rem;font-size:.74rem;font-weight:700;color:var(--muted)}
+.grpwrap input{width:44px;padding:.15rem .3rem;text-align:center}
 .mv{display:flex;flex-direction:column;gap:2px}
-.mv button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:6px;width:26px;height:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.mv button:hover{color:#fff;border-color:var(--accent)}
-.mv .material-icons-round{font-size:15px}
+.mv button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:5px;width:24px;height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.mv button:hover{color:#fff;border-color:var(--accent)}.mv .material-icons-round{font-size:14px}
+.breakrow{display:flex;align-items:center;justify-content:center;gap:.6rem;background:rgba(251,191,36,.1);border:1px dashed var(--gold);border-radius:11px;padding:.4rem .7rem;color:var(--gold);font-weight:800;font-size:.82rem}
+.breakrow .x{cursor:pointer;color:#fca5a5;display:flex}
 .empty,.notice{text-align:center;color:var(--muted);padding:2.5rem 1rem;font-weight:600}
 .toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
 .toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
-.grouphdr{color:var(--muted);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:.6rem 0 .2rem;padding-left:.2rem}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="brand"><span class="material-icons-round">low_priority</span> Aerobik Genel Çıkış Sırası</div>
+  <div class="brand"><span class="material-icons-round">event_note</span> Aerobik Çıkış Listesi Üretici</div>
   <span id="who" style="margin-left:auto;color:var(--muted);font-weight:700;font-size:.82rem"></span>
 </div>
 <div class="wrap">
-  <div class="controls">
-    <select id="compSel"><option value="">Yarışma seçin…</option></select>
-    <button class="btn save" id="saveBtn" disabled><span class="material-icons-round" style="font-size:18px">save</span> Sırayı Kaydet</button>
-    <span id="count" style="color:var(--muted);font-weight:700;font-size:.85rem"></span>
+  <div class="panel">
+    <div class="row1">
+      <div class="fld"><label>Yarışma</label><select id="compSel"><option value="">Yarışma seçin…</option></select></div>
+      <div class="fld"><label>Başlangıç saati</label><input type="time" id="baseTime" value="09:00"></div>
+      <div class="fld"><label>Çıkış aralığı (dk)</label><input type="number" id="interval" value="3" min="1" max="15"></div>
+      <div class="fld"><label>Kura tohumu</label><input type="number" id="seed" value="1"></div>
+      <div class="fld"><label>&nbsp;</label><button class="btn ghost" id="reseed" title="Yeni tohum"><span class="material-icons-round" style="font-size:17px">casino</span></button></div>
+      <div class="fld"><label>Mola sıklığı (çıkış)</label><input type="number" id="breakEvery" value="35" min="0"></div>
+    </div>
+    <div class="actions">
+      <label class="chkwrap"><input type="checkbox" id="distribute" checked> Çoklu kategorileri (çift/trio/grup) sona doğru dağıt</label>
+      <button class="btn gen" id="genBtn"><span class="material-icons-round" style="font-size:18px">casino</span> Kura ile Oluştur</button>
+      <button class="btn ghost" id="addBreakBtn" disabled><span class="material-icons-round" style="font-size:17px">free_breakfast</span> Mola Ekle</button>
+      <button class="btn ghost" id="printBtn" disabled><span class="material-icons-round" style="font-size:17px">print</span> PDF / Yazdır</button>
+      <button class="btn save" id="saveBtn" disabled><span class="material-icons-round" style="font-size:17px">save</span> Kaydet</button>
+      <span id="count" style="color:var(--muted);font-weight:700;font-size:.85rem;align-self:center"></span>
+    </div>
+    <div class="hint">Faz sırası: <b>Bireysel (Tek Kadın+Tek Erkek) → Çift → Trio → Grup → Aerobik Dans → Step</b>. Her fazda tohumlu kura. Çoklu kategoriler sona doğru dağıtılınca paylaşımlı sporcular (bireysel+çift) otomatik dinlenir. Kura sonrası satırları sürükleyerek/oklarla düzeltebilirsin.</div>
+    <div class="warnbox" id="warnbox"></div>
   </div>
-  <div class="hint">Sürükleyerek ya da ok tuşlarıyla <b>tüm kategorileri tek listede</b> istediğin karma çıkış sırasına diz (ör. 3 tek kadın → 1 çift → 1 trio). <b>Grup no</b>: aynı okulun aynı kategoride birden fazla takımı varsa üyeleri ayırmak için kullan. Kaydedince her yarışmacıya global çıkış sırası (ve grup no) yazılır; hakem panelindeki <b>“Tüm Kategoriler”</b> görünümü bu sırayı kullanır.</div>
-  <div id="list" class="list"><div class="notice">Yarışma seçin.</div></div>
+  <div id="list" class="list"><div class="notice">Yarışma seçip “Kura ile Oluştur”a bas.</div></div>
 </div>
 <div id="toast" class="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
 const db=getDatabase(initializeApp(firebaseConfig));
 const BASE="aerobik_yarismalar";
 const $=id=>document.getElementById(id);
-const esc=s=>String(s==null?"":s).replace(/[<&]/g,c=>c==="<"?"&lt;":"&amp;");
-function toast(m,t){const e=$("toast");e.textContent=m;e.className="toast show "+(t||"");setTimeout(()=>e.className="toast",2400);}
-// çok kişili kategori tespiti
-const isMulti=cat=>/(_cift|_trio|_grup|_dans)$/.test(cat)||/^step_/.test(cat);
-const catLabel=cat=>({yildiz:"Yıldız",genc:"Genç",buyuk:"Büyük",kucuk:"Küçük",minik:"Minik"}[cat.split("_")[0]]||cat.split("_")[0])+" "+
-  ({kiz:"Kız",erkek:"Erkek",cift:"Karışık İkili",trio:"Trio",grup:"Grup",dans:"Aerobik Dans"}[cat.split("_").slice(1).join("_")]||(/^step_/.test(cat)?"Step Takım":cat.split("_").slice(1).join(" ")));
+const esc=s=>String(s==null?"":s).replace(/[<&>]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+function toast(m,t){const e=$("toast");e.textContent=m;e.className="toast show "+(t||"");setTimeout(()=>e.className="toast",2600);}
 
-let comps={}, comp="", items=[];
+// ---- kategori yardımcıları ----
+const isMulti=cat=>/(_cift|_trio|_grup|_dans)$/.test(cat)||/^step_/.test(cat);
+const typeOf=cat=>{if(/_cift$/.test(cat))return"cift";if(/_trio$/.test(cat))return"trio";if(/_grup$/.test(cat))return"grup";if(/_dans$/.test(cat))return"dans";if(/^step_/.test(cat))return"step";return"bireysel";};
+const PHASES=["bireysel","cift","trio","grup","dans","step"];
+const phaseIdx=cat=>PHASES.indexOf(typeOf(cat));
+const KATLBL={kiz:"Tek Kadın",erkek:"Tek Erkek",cift:"Çift",trio:"Trio",grup:"Grup",dans:"Aerobik Dans"};
+function catKategori(cat){const parts=cat.split("_");if(/^step_/.test(cat))return"Step Takım";const suf=parts.slice(1).join("_");return KATLBL[suf]||suf;}
+
+// ---- tohumlu PRNG ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function shuffle(arr,rng){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+// aynı kişi kategoriler arası ayrı kayıtlarda -> tckn/lisans yoksa isimle eşle
+const pkey=m=>String(m.tckn||m.lisans||((m.ad||"")+(m.soyad||"")).toLocaleLowerCase("tr").replace(/\s+/g,"")).trim();
+const sharesPerson=(a,c)=>a.members.some(m=>c.members.some(n=>pkey(m)===pkey(n)));
+
+let comps={}, comp="", items=[], breaks=[], compName="", compMeta={};
 
 onValue(ref(db,BASE),s=>{
   comps=s.val()||{};
@@ -85,99 +118,180 @@ onValue(ref(db,BASE),s=>{
   $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
   if(comp&&comps[comp])$("compSel").value=comp;
 });
-$("compSel").addEventListener("change",e=>{comp=e.target.value;build();});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];render();});
+$("reseed").addEventListener("click",()=>{$("seed").value=Math.floor(Math.random()*99999)+1;});
+$("genBtn").addEventListener("click",generate);
 $("saveBtn").addEventListener("click",save);
+$("printBtn").addEventListener("click",printList);
+$("addBreakBtn").addEventListener("click",addBreak);
 
-function build(){
-  items=[];
-  if(!comp||!comps[comp]){$("list").innerHTML='<div class="notice">Yarışma seçin.</div>';$("saveBtn").disabled=true;$("count").textContent="";return;}
-  const sp=comps[comp].sporcular||{};
-  const list=[];
+function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(" - ");}
+function ilOf(it){return it.members[0]?.il||it.members[0]?.okul||"";}
+
+function buildCompetitors(){
+  const c=comps[comp]; if(!c)return[];
+  compName=c.isim||c.ad||comp; compMeta=c;
+  const sp=c.sporcular||{}; const list=[];
   Object.entries(sp).forEach(([cat,aths])=>{
     if(!aths||typeof aths!=="object")return;
     if(isMulti(cat)){
-      const groups=new Map();
-      Object.entries(aths).forEach(([id,a])=>{
-        if(!a||typeof a!=="object")return;
-        const okul=(a.okul||a.kulup||"").trim(),gn=a.grupNo||1,key=cat+"|"+okul+"|"+gn;
-        if(!groups.has(key))groups.set(key,{type:"team",cat,okul,grupNo:gn,members:[],cikis:null});
-        const g=groups.get(key);g.members.push({id,...a});
-        const cs=a.cikisSirasi;if(cs!=null&&cs!==999&&(g.cikis==null||cs<g.cikis))g.cikis=cs;
-      });
-      groups.forEach(g=>list.push(g));
+      const g=new Map();
+      Object.entries(aths).forEach(([id,a])=>{if(!a||typeof a!=="object")return;const okul=(a.okul||a.kulup||"").trim(),gn=a.grupNo||1,key=cat+"|"+okul+"|"+gn;if(!g.has(key))g.set(key,{cat,type:typeOf(cat),okul,grupNo:gn,members:[]});g.get(key).members.push({id,...a});});
+      g.forEach(v=>list.push(v));
     }else{
-      Object.entries(aths).forEach(([id,a])=>{
-        if(!a||typeof a!=="object")return;
-        list.push({type:"solo",cat,okul:(a.okul||a.kulup||"").trim(),members:[{id,...a}],cikis:(a.cikisSirasi!=null&&a.cikisSirasi!==999)?a.cikisSirasi:null});
-      });
+      Object.entries(aths).forEach(([id,a])=>{if(!a||typeof a!=="object")return;list.push({cat,type:"bireysel",okul:(a.okul||a.kulup||"").trim(),grupNo:null,members:[{id,...a}]});});
     }
   });
-  // mevcut çıkış sırasına göre sırala (yoksa kategori+isim)
-  list.sort((a,b)=>{
-    const ca=a.cikis==null?1e6:a.cikis, cb=b.cikis==null?1e6:b.cikis;
-    if(ca!==cb)return ca-cb;
-    return (a.cat+nameOf(a)).localeCompare(b.cat+nameOf(b),"tr");
-  });
-  items=list;
-  render();
+  return list;
 }
-function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(", ");}
+
+function generate(){
+  const all=buildCompetitors();
+  if(!all.length){toast("Bu yarışmada sporcu yok.","err");return;}
+  const rng=mulberry32(parseInt($("seed").value)||1);
+  // faza göre grupla + her fazda kura
+  const byPhase={}; all.forEach(c=>{const p=typeOf(c.cat);(byPhase[p]=byPhase[p]||[]).push(c);});
+  const individuals=shuffle(byPhase.bireysel||[],rng);
+  const multi=[]; PHASES.slice(1).forEach(p=>{if(byPhase[p])multi.push(...shuffle(byPhase[p],rng));});
+  let ordered;
+  if($("distribute").checked && multi.length){
+    const total=individuals.length+multi.length, minGap=5;
+    ordered=individuals.slice();
+    let at=Math.max(Math.floor(total*.55),0);
+    const gap=Math.max(1,Math.round((total-at)/multi.length));
+    multi.forEach(c=>{
+      let latest=-1;for(let i=0;i<ordered.length;i++)if(sharesPerson(ordered[i],c))latest=i;
+      const earliest=latest+minGap+1;
+      const pos=Math.min(ordered.length,Math.max(at,earliest));
+      ordered.splice(pos,0,c);at=pos+gap;
+    });
+  }else ordered=[...individuals,...multi];
+  items=ordered;
+  // otomatik mola önerisi
+  breaks=[];
+  const be=parseInt($("breakEvery").value)||0;
+  if(be>0){for(let p=be;p<items.length;p+=be)breaks.push({after:p,dur:10,label:"ARA"});}
+  render();
+  checkRest();
+  toast("Çıkış listesi oluşturuldu ✓","ok");
+}
+
+function toMin(hhmm){const [h,m]=(hhmm||"09:00").split(":").map(Number);return h*60+m;}
+function fmt(min){min=((min%1440)+1440)%1440;const h=Math.floor(min/60),m=min%60;return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");}
+
+// zaman + mola satırlarını hesapla -> render dizisi
+function computeRows(){
+  const interval=parseInt($("interval").value)||3, base=toMin($("baseTime").value);
+  const bk=[...breaks].sort((a,b)=>a.after-b.after); let bi=0, t=base; const rows=[];
+  items.forEach((it,i)=>{
+    while(bi<bk.length&&bk[bi].after===i){const s=t;t+=bk[bi].dur;rows.push({type:"break",label:bk[bi].label,start:s,end:t,idx:bi});bi++;}
+    it._order=i+1; it._time=fmt(t); rows.push({type:"item",it,order:i+1,time:fmt(t)});
+    t+=interval;
+  });
+  return rows;
+}
 
 function render(){
-  $("saveBtn").disabled=items.length===0;
-  $("count").textContent=items.length?`${items.length} yarışmacı`:"";
-  if(!items.length){$("list").innerHTML='<div class="empty">Bu yarışmada sporcu bulunamadı.</div>';return;}
-  $("list").innerHTML=items.map((it,i)=>{
-    const nm=nameOf(it);
-    const isTeam=it.type==="team";
-    const grpEditor=isMulti(it.cat)?`<span class="grpwrap">Grup <input type="number" min="1" value="${it.grupNo||1}" data-gi="${i}"></span>`:"";
-    const memberCount=isTeam?`<span class="chip teamchip">×${it.members.length}</span>`:"";
-    return `<div class="row${isTeam?" team":""}" draggable="true" data-i="${i}">
-      <span class="ord">${i+1}</span>
+  const has=items.length>0;
+  ["saveBtn","printBtn","addBreakBtn"].forEach(id=>$(id).disabled=!has);
+  $("count").textContent=has?`${items.length} yarışmacı`:"";
+  if(!comp){$("list").innerHTML='<div class="notice">Yarışma seçin.</div>';return;}
+  if(!has){$("list").innerHTML='<div class="notice">“Kura ile Oluştur”a bas.</div>';return;}
+  const rows=computeRows();
+  $("list").innerHTML=rows.map(r=>{
+    if(r.type==="break")return `<div class="breakrow"><span class="material-icons-round" style="font-size:16px">free_breakfast</span> ${fmt(r.start)} - ${fmt(r.end)} · ${esc(r.label)} (${r.end-r.start} dk) <span class="x" data-delbreak="${r.idx}"><span class="material-icons-round" style="font-size:16px">close</span></span></div>`;
+    const it=r.it, i=r.order-1, team=it.members.length>1;
+    const grpEd=isMulti(it.cat)?`<span class="grpwrap">Grup <input type="number" min="1" value="${it.grupNo||1}" data-gi="${i}"></span>`:"";
+    const cnt=team?`<span class="chip teamchip">×${it.members.length}</span>`:"";
+    return `<div class="rowc${team?" team":""}" draggable="true" data-i="${i}">
+      <span class="ord">${r.order}</span><span class="tm">${r.time}</span>
       <span class="material-icons-round grip">drag_indicator</span>
-      <div class="info"><div class="nm">${esc(nm)||"—"}</div>
-        <div class="sub"><span class="chip">${esc(catLabel(it.cat))}</span>${memberCount}<span>${esc(it.okul||"")}</span>${grpEditor}</div></div>
+      <div class="info"><div class="nm">${esc(nameOf(it))||"—"}</div>
+        <div class="sub"><span class="chip">${esc(catKategori(it.cat))}</span>${cnt}<span>${esc(ilOf(it))}</span>${grpEd}</div></div>
       <div class="mv"><button data-up="${i}"><span class="material-icons-round">keyboard_arrow_up</span></button><button data-dn="${i}"><span class="material-icons-round">keyboard_arrow_down</span></button></div>
     </div>`;
   }).join("");
   wire();
 }
-function move(from,to){if(to<0||to>=items.length)return;const [x]=items.splice(from,1);items.splice(to,0,x);render();}
+
+function move(f,t){if(t<0||t>=items.length)return;const[x]=items.splice(f,1);items.splice(t,0,x);render();}
 function wire(){
   const L=$("list");
   L.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>move(+b.dataset.up,+b.dataset.up-1));
   L.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>move(+b.dataset.dn,+b.dataset.dn+1));
-  L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{const i=+inp.dataset.gi;items[i].grupNo=Math.max(1,parseInt(inp.value)||1);});
+  L.querySelectorAll("[data-delbreak]").forEach(b=>b.onclick=()=>{breaks.splice(+b.dataset.delbreak,1);render();});
+  L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{items[+inp.dataset.gi].grupNo=Math.max(1,parseInt(inp.value)||1);});
   let dragI=null;
-  L.querySelectorAll(".row").forEach(row=>{
+  L.querySelectorAll(".rowc").forEach(row=>{
     row.addEventListener("dragstart",()=>{dragI=+row.dataset.i;row.classList.add("dragging");});
-    row.addEventListener("dragend",()=>{row.classList.remove("dragging");L.querySelectorAll(".row").forEach(r=>r.classList.remove("over"));});
+    row.addEventListener("dragend",()=>{row.classList.remove("dragging");L.querySelectorAll(".rowc").forEach(r=>r.classList.remove("over"));});
     row.addEventListener("dragover",e=>{e.preventDefault();row.classList.add("over");});
     row.addEventListener("dragleave",()=>row.classList.remove("over"));
     row.addEventListener("drop",e=>{e.preventDefault();const to=+row.dataset.i;if(dragI!=null&&dragI!==to)move(dragI,to);dragI=null;});
   });
 }
+["baseTime","interval"].forEach(id=>$(id).addEventListener("change",()=>{if(items.length)render();}));
+
+function addBreak(){
+  const pos=prompt("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-"+items.length+")");
+  if(pos==null)return; const after=parseInt(pos); if(isNaN(after)||after<1||after>=items.length){toast("Geçersiz konum.","err");return;}
+  const dur=parseInt(prompt("Mola süresi (dk):","10"))||10;
+  const label=prompt("Etiket:","ARA")||"ARA";
+  breaks.push({after,dur,label}); render();
+}
+
+// paylaşımlı sporcu dinlenme kontrolü (uyarı)
+function checkRest(){
+  const seen={}; let minGap=1e9, worst=null;
+  items.forEach((it,i)=>{it.members.forEach(m=>{const id=pkey(m);if(seen[id]!=null){const g=i-seen[id];if(g<minGap){minGap=g;worst=(m.adSoyad||m.ad)+" ("+g+" çıkış ara)";}}seen[id]=i;});});
+  const wb=$("warnbox");
+  if(worst&&minGap<5){wb.style.display="block";wb.textContent="⚠ Dikkat: "+worst+" — aynı sporcunun iki çıkışı çok yakın. Sürükleyerek arayı açabilirsin.";}
+  else wb.style.display="none";
+}
 
 async function save(){
-  if(!comp||!items.length)return;
-  $("saveBtn").disabled=true;
+  if(!comp||!items.length)return; $("saveBtn").disabled=true;
   try{
-    const up={};
-    items.forEach((it,idx)=>{
-      const order=idx+1;
-      it.members.forEach(m=>{
-        const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;
-        up[`${p}/cikisSirasi`]=order;
-        if(isMulti(it.cat))up[`${p}/grupNo`]=it.grupNo||1;
-      });
-    });
+    computeRows(); const up={};
+    items.forEach(it=>{it.members.forEach(m=>{const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;up[`${p}/cikisSirasi`]=it._order;up[`${p}/baslangicSaati`]=it._time;if(isMulti(it.cat))up[`${p}/grupNo`]=it.grupNo||1;});});
     await update(ref(db),up);
-    toast("Çıkış sırası kaydedildi ✓","ok");
-  }catch(err){toast("Hata: "+(err?.message||err),"err");$("saveBtn").disabled=false;}
+    toast("Çıkış sırası + saatler kaydedildi ✓","ok");
+  }catch(err){toast("Hata: "+(err?.message||err),"err");}
+  $("saveBtn").disabled=false;
+}
+
+function printList(){
+  const rows=computeRows();
+  const dt=compMeta.baslangicTarihi?new Date(compMeta.baslangicTarihi).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"}):"";
+  const body=rows.map(r=>{
+    if(r.type==="break")return `<tr class="brk"><td colspan="5">${fmt(r.start)} - ${fmt(r.end)} / ${esc(r.label)}</td></tr>`;
+    const it=r.it, team=it.members.length>1;
+    return `<tr class="${team?'t':(r.order%2?'a':'b')}"><td class="c">${r.order}</td><td class="n">${esc(nameOf(it))}</td><td>${esc(ilOf(it)).toLocaleUpperCase("tr")}</td><td>${esc(catKategori(it.cat)).toLocaleUpperCase("tr")}</td><td class="c">${r.time}</td></tr>`;
+  }).join("");
+  const html=`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Çıkış Listesi</title><style>
+  *{font-family:Arial,sans-serif;box-sizing:border-box}body{margin:0;padding:18px;color:#111}
+  .hd{text-align:center;margin-bottom:6px}.hd .fed{font-weight:800;font-size:15px}.hd .br{font-weight:700;font-size:13px}
+  .hd .cat{font-weight:700;font-size:12px}.hd .cup{font-weight:700;font-size:12px}.hd .dt{font-size:11px}
+  .sub{text-align:center;font-weight:700;font-size:11px;margin:8px 0}
+  table{width:100%;border-collapse:collapse;font-size:10.5px}
+  th{background:#fff;border:1px solid #333;padding:5px 6px;text-align:left;font-weight:800;font-size:9.5px}
+  td{border:1px solid #999;padding:4px 6px}td.c{text-align:center}td.n{padding-left:10px}
+  tr.a td{background:#fffde7}tr.b td{background:#e3ecf7}tr.t td{background:#fde9d9}
+  tr.brk td{background:#fdece0;text-align:center;font-weight:800;font-size:10px;border:1px solid #333}
+  @media print{body{padding:6px}}
+  </style></head><body>
+  <div class="hd"><div class="fed">TÜRKİYE CİMNASTİK FEDERASYONU</div><div class="br">AEROBİK CİMNASTİK</div>
+  <div class="cup">${esc(compName)}</div><div class="dt">${esc(compMeta.il||"")}</div></div>
+  <div class="sub">${esc(dt)}<br>SPORCU ÇIKIŞ LİSTESİ</div>
+  <table><thead><tr><th style="width:70px">ÇIKIŞ SIRASI</th><th>SPORCU</th><th style="width:110px">İL</th><th style="width:120px">KATEGORİ</th><th style="width:90px">BAŞLANGIÇ SAATİ</th></tr></thead><tbody>${body}</tbody></table>
+  </body></html>`;
+  const w=window.open("","_blank");
+  w.document.write(html); w.document.close();
+  setTimeout(()=>{w.focus();w.print();},400);
 }
 
 const qc=new URLSearchParams(location.search).get("comp");
-if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;build();}},600);}
+if(qc){comp=qc;setTimeout(()=>{if(comps[comp])$("compSel").value=comp;},600);}
 </script>
 </body>
 </html>
