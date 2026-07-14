@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aerobik Genel Çıkış Sırası — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--warn:#ef4444;--ok:#22c55e;--gold:#fbbf24;--team:#0891b2}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
+.brand .material-icons-round{color:var(--gold)}
+.wrap{max-width:900px;margin:0 auto;padding:1rem}
+.controls{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+select,.btn{font:inherit;font-weight:700;border-radius:10px;border:1px solid var(--line)}
+select{background:var(--panel2);color:var(--txt);padding:.6rem .8rem;font-size:.9rem;min-width:220px}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;border:none;cursor:pointer;color:#fff;background:var(--accent);font-weight:800;font-size:.88rem}
+.btn.save{background:var(--ok);color:#04220f}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.hint{color:var(--muted);font-size:.82rem;font-weight:600;margin-bottom:.8rem;line-height:1.5}
+.list{display:flex;flex-direction:column;gap:.4rem}
+.row{display:flex;align-items:center;gap:.7rem;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;cursor:grab}
+.row.dragging{opacity:.4}
+.row.over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.row.team{border-left:3px solid var(--team)}
+.ord{font-weight:800;font-size:1.05rem;color:var(--accent);min-width:34px;text-align:center}
+.grip{color:var(--muted);cursor:grab}
+.info{flex:1;min-width:0}
+.nm{font-weight:800;font-size:.95rem;line-height:1.2}
+.sub{color:var(--muted);font-size:.76rem;font-weight:600;margin-top:.12rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:.05rem .4rem;font-weight:700}
+.chip.teamchip{background:rgba(8,145,178,.18);border-color:var(--team);color:#67e8f9}
+.grpwrap{display:flex;align-items:center;gap:.3rem;font-size:.76rem;font-weight:700;color:var(--muted)}
+.grpwrap input{width:46px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:.2rem .3rem;font:inherit;font-weight:700;text-align:center}
+.mv{display:flex;flex-direction:column;gap:2px}
+.mv button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:6px;width:26px;height:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.mv button:hover{color:#fff;border-color:var(--accent)}
+.mv .material-icons-round{font-size:15px}
+.empty,.notice{text-align:center;color:var(--muted);padding:2.5rem 1rem;font-weight:600}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
+.grouphdr{color:var(--muted);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:.6rem 0 .2rem;padding-left:.2rem}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="material-icons-round">low_priority</span> Aerobik Genel Çıkış Sırası</div>
+  <span id="who" style="margin-left:auto;color:var(--muted);font-weight:700;font-size:.82rem"></span>
+</div>
+<div class="wrap">
+  <div class="controls">
+    <select id="compSel"><option value="">Yarışma seçin…</option></select>
+    <button class="btn save" id="saveBtn" disabled><span class="material-icons-round" style="font-size:18px">save</span> Sırayı Kaydet</button>
+    <span id="count" style="color:var(--muted);font-weight:700;font-size:.85rem"></span>
+  </div>
+  <div class="hint">Sürükleyerek ya da ok tuşlarıyla <b>tüm kategorileri tek listede</b> istediğin karma çıkış sırasına diz (ör. 3 tek kadın → 1 çift → 1 trio). <b>Grup no</b>: aynı okulun aynı kategoride birden fazla takımı varsa üyeleri ayırmak için kullan. Kaydedince her yarışmacıya global çıkış sırası (ve grup no) yazılır; hakem panelindeki <b>“Tüm Kategoriler”</b> görünümü bu sırayı kullanır.</div>
+  <div id="list" class="list"><div class="notice">Yarışma seçin.</div></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
+const db=getDatabase(initializeApp(firebaseConfig));
+const BASE="aerobik_yarismalar";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[<&]/g,c=>c==="<"?"&lt;":"&amp;");
+function toast(m,t){const e=$("toast");e.textContent=m;e.className="toast show "+(t||"");setTimeout(()=>e.className="toast",2400);}
+// çok kişili kategori tespiti
+const isMulti=cat=>/(_cift|_trio|_grup|_dans)$/.test(cat)||/^step_/.test(cat);
+const catLabel=cat=>({yildiz:"Yıldız",genc:"Genç",buyuk:"Büyük",kucuk:"Küçük",minik:"Minik"}[cat.split("_")[0]]||cat.split("_")[0])+" "+
+  ({kiz:"Kız",erkek:"Erkek",cift:"Karışık İkili",trio:"Trio",grup:"Grup",dans:"Aerobik Dans"}[cat.split("_").slice(1).join("_")]||(/^step_/.test(cat)?"Step Takım":cat.split("_").slice(1).join(" ")));
+
+let comps={}, comp="", items=[];
+
+onValue(ref(db,BASE),s=>{
+  comps=s.val()||{};
+  const opts=Object.entries(comps).filter(([id,c])=>c&&typeof c==="object").sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
+  $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
+  if(comp&&comps[comp])$("compSel").value=comp;
+});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;build();});
+$("saveBtn").addEventListener("click",save);
+
+function build(){
+  items=[];
+  if(!comp||!comps[comp]){$("list").innerHTML='<div class="notice">Yarışma seçin.</div>';$("saveBtn").disabled=true;$("count").textContent="";return;}
+  const sp=comps[comp].sporcular||{};
+  const list=[];
+  Object.entries(sp).forEach(([cat,aths])=>{
+    if(!aths||typeof aths!=="object")return;
+    if(isMulti(cat)){
+      const groups=new Map();
+      Object.entries(aths).forEach(([id,a])=>{
+        if(!a||typeof a!=="object")return;
+        const okul=(a.okul||a.kulup||"").trim(),gn=a.grupNo||1,key=cat+"|"+okul+"|"+gn;
+        if(!groups.has(key))groups.set(key,{type:"team",cat,okul,grupNo:gn,members:[],cikis:null});
+        const g=groups.get(key);g.members.push({id,...a});
+        const cs=a.cikisSirasi;if(cs!=null&&cs!==999&&(g.cikis==null||cs<g.cikis))g.cikis=cs;
+      });
+      groups.forEach(g=>list.push(g));
+    }else{
+      Object.entries(aths).forEach(([id,a])=>{
+        if(!a||typeof a!=="object")return;
+        list.push({type:"solo",cat,okul:(a.okul||a.kulup||"").trim(),members:[{id,...a}],cikis:(a.cikisSirasi!=null&&a.cikisSirasi!==999)?a.cikisSirasi:null});
+      });
+    }
+  });
+  // mevcut çıkış sırasına göre sırala (yoksa kategori+isim)
+  list.sort((a,b)=>{
+    const ca=a.cikis==null?1e6:a.cikis, cb=b.cikis==null?1e6:b.cikis;
+    if(ca!==cb)return ca-cb;
+    return (a.cat+nameOf(a)).localeCompare(b.cat+nameOf(b),"tr");
+  });
+  items=list;
+  render();
+}
+function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(", ");}
+
+function render(){
+  $("saveBtn").disabled=items.length===0;
+  $("count").textContent=items.length?`${items.length} yarışmacı`:"";
+  if(!items.length){$("list").innerHTML='<div class="empty">Bu yarışmada sporcu bulunamadı.</div>';return;}
+  $("list").innerHTML=items.map((it,i)=>{
+    const nm=nameOf(it);
+    const isTeam=it.type==="team";
+    const grpEditor=isMulti(it.cat)?`<span class="grpwrap">Grup <input type="number" min="1" value="${it.grupNo||1}" data-gi="${i}"></span>`:"";
+    const memberCount=isTeam?`<span class="chip teamchip">×${it.members.length}</span>`:"";
+    return `<div class="row${isTeam?" team":""}" draggable="true" data-i="${i}">
+      <span class="ord">${i+1}</span>
+      <span class="material-icons-round grip">drag_indicator</span>
+      <div class="info"><div class="nm">${esc(nm)||"—"}</div>
+        <div class="sub"><span class="chip">${esc(catLabel(it.cat))}</span>${memberCount}<span>${esc(it.okul||"")}</span>${grpEditor}</div></div>
+      <div class="mv"><button data-up="${i}"><span class="material-icons-round">keyboard_arrow_up</span></button><button data-dn="${i}"><span class="material-icons-round">keyboard_arrow_down</span></button></div>
+    </div>`;
+  }).join("");
+  wire();
+}
+function move(from,to){if(to<0||to>=items.length)return;const [x]=items.splice(from,1);items.splice(to,0,x);render();}
+function wire(){
+  const L=$("list");
+  L.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>move(+b.dataset.up,+b.dataset.up-1));
+  L.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>move(+b.dataset.dn,+b.dataset.dn+1));
+  L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{const i=+inp.dataset.gi;items[i].grupNo=Math.max(1,parseInt(inp.value)||1);});
+  let dragI=null;
+  L.querySelectorAll(".row").forEach(row=>{
+    row.addEventListener("dragstart",()=>{dragI=+row.dataset.i;row.classList.add("dragging");});
+    row.addEventListener("dragend",()=>{row.classList.remove("dragging");L.querySelectorAll(".row").forEach(r=>r.classList.remove("over"));});
+    row.addEventListener("dragover",e=>{e.preventDefault();row.classList.add("over");});
+    row.addEventListener("dragleave",()=>row.classList.remove("over"));
+    row.addEventListener("drop",e=>{e.preventDefault();const to=+row.dataset.i;if(dragI!=null&&dragI!==to)move(dragI,to);dragI=null;});
+  });
+}
+
+async function save(){
+  if(!comp||!items.length)return;
+  $("saveBtn").disabled=true;
+  try{
+    const up={};
+    items.forEach((it,idx)=>{
+      const order=idx+1;
+      it.members.forEach(m=>{
+        const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;
+        up[`${p}/cikisSirasi`]=order;
+        if(isMulti(it.cat))up[`${p}/grupNo`]=it.grupNo||1;
+      });
+    });
+    await update(ref(db),up);
+    toast("Çıkış sırası kaydedildi ✓","ok");
+  }catch(err){toast("Hata: "+(err?.message||err),"err");$("saveBtn").disabled=false;}
+}
+
+const qc=new URLSearchParams(location.search).get("comp");
+if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;build();}},600);}
+</script>
+</body>
+</html>
