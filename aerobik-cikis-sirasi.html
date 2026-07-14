@@ -73,6 +73,9 @@ input[type=number]{width:90px}input[type=time]{width:110px}
       <div class="fld"><label>Mola sıklığı (çıkış)</label><input type="number" id="breakEvery" value="35" min="0"></div>
     </div>
     <div class="actions">
+      <button class="btn ghost" id="tplBtn"><span class="material-icons-round" style="font-size:17px">description</span> Şablon İndir</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+      <button class="btn ghost" id="importBtn"><span class="material-icons-round" style="font-size:17px">upload_file</span> Excel Yükle (Sporcu)</button>
       <label class="chkwrap"><input type="checkbox" id="distribute" checked> Çoklu kategorileri (çift/trio/grup) sona doğru dağıt</label>
       <button class="btn gen" id="genBtn"><span class="material-icons-round" style="font-size:18px">casino</span> Kura ile Oluştur</button>
       <button class="btn ghost" id="addBreakBtn" disabled><span class="material-icons-round" style="font-size:17px">free_breakfast</span> Mola Ekle</button>
@@ -90,7 +93,7 @@ input[type=number]{width:90px}input[type=time]{width:110px}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
 const db=getDatabase(initializeApp(firebaseConfig));
 const BASE="aerobik_yarismalar";
@@ -131,6 +134,9 @@ $("genBtn").addEventListener("click",generate);
 $("saveBtn").addEventListener("click",save);
 $("printBtn").addEventListener("click",printList);
 $("excelBtn").addEventListener("click",excelExport);
+$("tplBtn").addEventListener("click",downloadTemplate);
+$("importBtn").addEventListener("click",()=>{if(!comp){toast("Önce yarışma seçin.","err");return;}$("fileInput").click();});
+$("fileInput").addEventListener("change",e=>{const f=e.target.files[0];if(f)importExcel(f);e.target.value="";});
 $("addBreakBtn").addEventListener("click",addBreak);
 
 function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(" - ");}
@@ -268,6 +274,74 @@ async function save(){
   $("saveBtn").disabled=false;
 }
 
+// Kategori metnini -> kategori ID eşleme (ID, etiket, yaş+tür, tür tek başına)
+function catLookup(){
+  const c=comps[comp]||{};
+  const cats=Object.keys(c.kategoriler||{}).length?Object.keys(c.kategoriler):Object.keys(c.sporcular||{});
+  const norm=s=>String(s||"").toLocaleLowerCase("tr").replace(/[^a-zçğıöşü0-9]+/g,"");
+  const AGW={minik:"minik",kucuk:"küçük",yildiz:"yıldız",genc:"genç",buyuk:"büyük"};
+  const map={};
+  cats.forEach(cat=>{const base=cat.replace(/^step_/,""),age=base.split("_")[0],suf=base.split("_").slice(1).join("_");
+    [cat,catKategori(cat),(AGW[age]||age)+" "+(KATLBL[suf]||suf),(AGW[age]||age)+"ler "+(KATLBL[suf]||suf),KATLBL[suf]||suf,suf].forEach(l=>{const n=norm(l);if(n&&!(n in map))map[n]=cat;});});
+  return {map,norm,cats};
+}
+function downloadTemplate(){
+  if(!comp){toast("Önce yarışma seçin.","err");return;}
+  if(!window.XLSX){toast("Excel bileşeni yüklenemedi.","err");return;}
+  const {cats}=catLookup(); const ex=cats[0]||"kucuk_kiz", exMulti=cats.find(isMulti)||"";
+  const tpl=[
+    {Ad:"Ayşe",Soyad:"Yılmaz",İl:"İZMİR",Kulüp:"Örnek S.K.",Kategori:catKategori(ex),TCKN:"",["Lisans No"]:"",["Grup No"]:""},
+    exMulti?{Ad:"Ali",Soyad:"Demir",İl:"ANKARA",Kulüp:"Örnek S.K.",Kategori:catKategori(exMulti),TCKN:"",["Lisans No"]:"",["Grup No"]:1}:null,
+    exMulti?{Ad:"Veli",Soyad:"Kaya",İl:"ANKARA",Kulüp:"Örnek S.K.",Kategori:catKategori(exMulti),TCKN:"",["Lisans No"]:"",["Grup No"]:1}:null
+  ].filter(Boolean);
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(tpl,{header:["Ad","Soyad","İl","Kulüp","Kategori","TCKN","Lisans No","Grup No"]});
+  ws["!cols"]=[{wch:16},{wch:16},{wch:12},{wch:22},{wch:22},{wch:14},{wch:12},{wch:8}];
+  XLSX.utils.book_append_sheet(wb,ws,"Sporcular");
+  const cl=cats.map(c=>({["Kategori (bunu yaz)"]:catKategori(c),["Kategori ID"]:c,Tür:isMulti(c)?"Takım — aynı takımın üyelerine aynı Grup No":"Bireysel"}));
+  const w2=XLSX.utils.json_to_sheet(cl,{header:["Kategori (bunu yaz)","Kategori ID","Tür"]});
+  w2["!cols"]=[{wch:24},{wch:16},{wch:44}];
+  XLSX.utils.book_append_sheet(wb,w2,"Kategoriler");
+  XLSX.writeFile(wb,"aerobik_sporcu_sablonu.xlsx");
+  toast("Şablon indirildi ✓ (Kategoriler sayfasındaki etiketleri kullan)","ok");
+}
+async function importExcel(file){
+  if(!comp){toast("Önce yarışma seçin.","err");return;}
+  if(!window.XLSX){toast("Excel bileşeni yüklenemedi.","err");return;}
+  try{
+    const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
+    if(!rows.length){toast("Excel boş.","err");return;}
+    const {map,norm}=catLookup();
+    const G=k=>{const r={};Object.keys(k).forEach(x=>r[norm(x)]=k[x]);return n=>r[norm(n)];};
+    const up={}; let ok=0,bad=0; const badCats=new Set();
+    rows.forEach(row=>{
+      const g=G(row);
+      const catText=g("Kategori")||g("KATEGORİ")||"";
+      const cat=map[norm(catText)];
+      if(!cat){bad++;if(String(catText).trim())badCats.add(catText);return;}
+      let ad=String(g("Ad")||"").trim(), soyad=String(g("Soyad")||"").trim();
+      const comb=String(g("Ad Soyad")||g("AdSoyad")||"").trim();
+      if(!ad&&!soyad&&comb){const p=comb.split(/\s+/);soyad=p.length>1?p.pop():"";ad=p.join(" ");}
+      if(!ad&&!soyad)return;
+      const okul=String(g("Kulüp")||g("Kulup")||g("Okul")||"").trim();
+      const rec={ad,soyad,adSoyad:(ad+" "+soyad).trim(),soyadAd:(soyad+" "+ad).trim(),
+        il:String(g("İl")||g("Il")||"").trim(),okul,kulup:okul,
+        tckn:String(g("TCKN")||"").trim(),lisans:String(g("Lisans No")||g("Lisans")||"").trim(),
+        yarismaTuru:isMulti(cat)?"takim":"ferdi",appId:"excel_import"};
+      if(isMulti(cat))rec.grupNo=Math.max(1,parseInt(g("Grup No")||g("GrupNo")||1)||1);
+      const key=push(ref(db,`${BASE}/${comp}/sporcular/${cat}`)).key;
+      up[`${BASE}/${comp}/sporcular/${cat}/${key}`]=rec;
+      up[`${BASE}/${comp}/kategoriler/${cat}`]=comps[comp]?.kategoriler?.[cat]||{name:catKategori(cat)};
+      ok++;
+    });
+    if(!ok){toast("Geçerli satır yok. 'Kategori' sütununu kontrol et"+(badCats.size?": "+[...badCats].slice(0,3).join(", "):""),"err");return;}
+    await update(ref(db),up);
+    let msg=ok+" sporcu içeri aktarıldı ✓";
+    if(bad)msg+=` — ${bad} satır kategori tanınmadı (${[...badCats].slice(0,3).join(", ")})`;
+    toast(msg,bad?"":"ok");
+  }catch(err){toast("İçe aktarma hatası: "+(err?.message||err),"err");}
+}
 function excelExport(){
   if(!items.length)return;
   if(!window.XLSX){toast("Excel bileşeni yüklenemedi (internet?).","err");return;}
