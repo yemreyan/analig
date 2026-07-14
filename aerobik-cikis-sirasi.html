@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--warn:#ef4444;--ok:#22c55e;--gold:#fbbf24;--team:#0891b2}
@@ -75,6 +76,7 @@ input[type=number]{width:90px}input[type=time]{width:110px}
       <button class="btn gen" id="genBtn"><span class="material-icons-round" style="font-size:18px">casino</span> Kura ile Oluştur</button>
       <button class="btn ghost" id="addBreakBtn" disabled><span class="material-icons-round" style="font-size:17px">free_breakfast</span> Mola Ekle</button>
       <button class="btn ghost" id="printBtn" disabled><span class="material-icons-round" style="font-size:17px">print</span> PDF / Yazdır</button>
+      <button class="btn ghost" id="excelBtn" disabled><span class="material-icons-round" style="font-size:17px">table_view</span> Excel İndir</button>
       <button class="btn save" id="saveBtn" disabled><span class="material-icons-round" style="font-size:17px">save</span> Kaydet</button>
       <span id="count" style="color:var(--muted);font-weight:700;font-size:.85rem;align-self:center"></span>
     </div>
@@ -123,6 +125,7 @@ $("reseed").addEventListener("click",()=>{$("seed").value=Math.floor(Math.random
 $("genBtn").addEventListener("click",generate);
 $("saveBtn").addEventListener("click",save);
 $("printBtn").addEventListener("click",printList);
+$("excelBtn").addEventListener("click",excelExport);
 $("addBreakBtn").addEventListener("click",addBreak);
 
 function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(" - ");}
@@ -193,7 +196,7 @@ function computeRows(){
 
 function render(){
   const has=items.length>0;
-  ["saveBtn","printBtn","addBreakBtn"].forEach(id=>$(id).disabled=!has);
+  ["saveBtn","printBtn","excelBtn","addBreakBtn"].forEach(id=>$(id).disabled=!has);
   $("count").textContent=has?`${items.length} yarışmacı`:"";
   if(!comp){$("list").innerHTML='<div class="notice">Yarışma seçin.</div>';return;}
   if(!has){$("list").innerHTML='<div class="notice">“Kura ile Oluştur”a bas.</div>';return;}
@@ -260,6 +263,48 @@ async function save(){
   $("saveBtn").disabled=false;
 }
 
+function excelExport(){
+  if(!items.length)return;
+  if(!window.XLSX){toast("Excel bileşeni yüklenemedi (internet?).","err");return;}
+  const rows=computeRows().filter(r=>r.type==="item");
+  // Sayfa 1: "Çıkış Listesi" — bir satır = bir yarışmacı (PDF'teki gibi), yüklenebilir düz veri
+  const s1=rows.map(r=>({
+    "Çıkış Sırası":r.order,
+    "Başlangıç Saati":r.time,
+    "Sporcu":nameOf(r.it),
+    "İl":(ilOf(r.it)||"").toLocaleUpperCase("tr"),
+    "Kategori":catKategori(r.it.cat).toLocaleUpperCase("tr"),
+    "Kulüp":r.it.members[0]?.okul||r.it.members[0]?.kulup||"",
+    "Grup No":isMulti(r.it.cat)?(r.it.grupNo||1):""
+  }));
+  // Sayfa 2: "Sporcular" — bir satır = bir kişi (takım üyeleri ayrı), sistem/federasyon yüklemesi için
+  const s2=[];
+  rows.forEach(r=>{r.it.members.forEach((m,mi)=>s2.push({
+    "Çıkış Sırası":r.order,
+    "Başlangıç Saati":r.time,
+    "Ad":m.ad||"",
+    "Soyad":m.soyad||"",
+    "Ad Soyad":m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim(),
+    "TCKN":m.tckn||"",
+    "Lisans No":m.lisans||m.lisansNo||"",
+    "İl":(m.il||"").toLocaleUpperCase("tr"),
+    "Kulüp":m.okul||m.kulup||"",
+    "Kategori":catKategori(r.it.cat).toLocaleUpperCase("tr"),
+    "Tür":r.it.members.length>1?"Takım üyesi":"Bireysel",
+    "Grup No":isMulti(r.it.cat)?(r.it.grupNo||1):"",
+    "Üye Sıra":r.it.members.length>1?mi+1:""
+  }));});
+  const wb=XLSX.utils.book_new();
+  const w1=XLSX.utils.json_to_sheet(s1,{header:["Çıkış Sırası","Başlangıç Saati","Sporcu","İl","Kategori","Kulüp","Grup No"]});
+  w1["!cols"]=[{wch:11},{wch:14},{wch:36},{wch:14},{wch:20},{wch:24},{wch:8}];
+  XLSX.utils.book_append_sheet(wb,w1,"Çıkış Listesi");
+  const w2=XLSX.utils.json_to_sheet(s2,{header:["Çıkış Sırası","Başlangıç Saati","Ad","Soyad","Ad Soyad","TCKN","Lisans No","İl","Kulüp","Kategori","Tür","Grup No","Üye Sıra"]});
+  w2["!cols"]=[{wch:11},{wch:13},{wch:14},{wch:14},{wch:26},{wch:14},{wch:12},{wch:12},{wch:24},{wch:18},{wch:12},{wch:8},{wch:8}];
+  XLSX.utils.book_append_sheet(wb,w2,"Sporcular");
+  const fn=(compName||"cikis-listesi").replace(/[^a-zA-Z0-9ğüşöçıİĞÜŞÖÇ ]+/g,"_").replace(/\s+/g,"_").slice(0,50)+"_cikis_listesi.xlsx";
+  XLSX.writeFile(wb,fn);
+  toast("Excel indirildi ✓","ok");
+}
 function printList(){
   const rows=computeRows();
   const dt=compMeta.baslangicTarihi?new Date(compMeta.baslangicTarihi).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"}):"";
