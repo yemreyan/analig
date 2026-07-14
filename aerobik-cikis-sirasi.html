@@ -65,6 +65,7 @@ input[type=number]{width:90px}input[type=time]{width:110px}
   <div class="panel">
     <div class="row1">
       <div class="fld"><label>Yarışma</label><select id="compSel"><option value="">Yarışma seçin…</option></select></div>
+      <div class="fld"><label>Liste tarihi (gün)</label><input type="date" id="listDate"></div>
       <div class="fld"><label>Başlangıç saati</label><input type="time" id="baseTime" value="09:00"></div>
       <div class="fld"><label>Çıkış aralığı (dk)</label><input type="number" id="interval" value="3" min="1" max="15"></div>
       <div class="fld"><label>Kura tohumu</label><input type="number" id="seed" value="1"></div>
@@ -104,6 +105,10 @@ const PHASES=["bireysel","cift","trio","grup","dans","step"];
 const phaseIdx=cat=>PHASES.indexOf(typeOf(cat));
 const KATLBL={kiz:"Tek Kadın",erkek:"Tek Erkek",cift:"Çift",trio:"Trio",grup:"Grup",dans:"Aerobik Dans"};
 function catKategori(cat){const parts=cat.split("_");if(/^step_/.test(cat))return"Step Takım";const suf=parts.slice(1).join("_");return KATLBL[suf]||suf;}
+const AGEPFX={minik:"MİNİKLER",kucuk:"KÜÇÜKLER",yildiz:"YILDIZLAR",genc:"GENÇLER",buyuk:"BÜYÜKLER"};
+function ageGroupLabel(){const cats=Object.keys(comps[comp]?.kategoriler||comps[comp]?.sporcular||{});return[...new Set(cats.map(c=>AGEPFX[c.replace(/^step_/,"").split("_")[0]]).filter(Boolean))].join(" - ");}
+function fmtD(iso,wd){if(!iso)return"";try{return new Date(iso).toLocaleDateString("tr-TR",Object.assign({day:"numeric",month:"long",year:"numeric"},wd?{weekday:"long"}:{}));}catch{return"";}}
+function dateRange(){const s=compMeta.baslangicTarihi,e=compMeta.bitisTarihi;if(s&&e&&s!==e){const ds=new Date(s),de=new Date(e);if(ds.getFullYear()===de.getFullYear()&&ds.getMonth()===de.getMonth())return `${ds.getDate()} - ${de.getDate()} ${ds.toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}`;return `${fmtD(s)} - ${fmtD(e)}`;}return fmtD(s);}
 
 // ---- tohumlu PRNG ----
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
@@ -120,7 +125,7 @@ onValue(ref(db,BASE),s=>{
   $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
   if(comp&&comps[comp])$("compSel").value=comp;
 });
-$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];render();});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];if(comps[comp]?.baslangicTarihi&&!$("listDate").value)$("listDate").value=comps[comp].baslangicTarihi;render();});
 $("reseed").addEventListener("click",()=>{$("seed").value=Math.floor(Math.random()*99999)+1;});
 $("genBtn").addEventListener("click",generate);
 $("saveBtn").addEventListener("click",save);
@@ -307,32 +312,45 @@ function excelExport(){
 }
 function printList(){
   const rows=computeRows();
-  const dt=compMeta.baslangicTarihi?new Date(compMeta.baslangicTarihi).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"}):"";
+  const perDay=fmtD($("listDate").value||compMeta.baslangicTarihi,true);
+  const logo=location.origin+"/logo.png";
   const body=rows.map(r=>{
     if(r.type==="break")return `<tr class="brk"><td colspan="5">${fmt(r.start)} - ${fmt(r.end)} / ${esc(r.label)}</td></tr>`;
-    const it=r.it, team=it.members.length>1;
-    return `<tr class="${team?'t':(r.order%2?'a':'b')}"><td class="c">${r.order}</td><td class="n">${esc(nameOf(it))}</td><td>${esc(ilOf(it)).toLocaleUpperCase("tr")}</td><td>${esc(catKategori(it.cat)).toLocaleUpperCase("tr")}</td><td class="c">${r.time}</td></tr>`;
+    const it=r.it, cat=it.cat, cls=isMulti(cat)?"t":(/_erkek$/.test(cat)?"e":"k");
+    return `<tr class="${cls}"><td class="c s">${r.order}</td><td class="n">${esc(nameOf(it)).toLocaleUpperCase("tr")}</td><td class="rd">${esc(ilOf(it)).toLocaleUpperCase("tr")}</td><td class="rd">${esc(catKategori(cat)).toLocaleUpperCase("tr")}</td><td class="c s">${r.time}</td></tr>`;
   }).join("");
   const html=`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Çıkış Listesi</title><style>
-  *{font-family:Arial,sans-serif;box-sizing:border-box}body{margin:0;padding:18px;color:#111}
-  .hd{text-align:center;margin-bottom:6px}.hd .fed{font-weight:800;font-size:15px}.hd .br{font-weight:700;font-size:13px}
-  .hd .cat{font-weight:700;font-size:12px}.hd .cup{font-weight:700;font-size:12px}.hd .dt{font-size:11px}
-  .sub{text-align:center;font-weight:700;font-size:11px;margin:8px 0}
-  table{width:100%;border-collapse:collapse;font-size:10.5px}
-  th{background:#fff;border:1px solid #333;padding:5px 6px;text-align:left;font-weight:800;font-size:9.5px}
-  td{border:1px solid #999;padding:4px 6px}td.c{text-align:center}td.n{padding-left:10px}
-  tr.a td{background:#fffde7}tr.b td{background:#e3ecf7}tr.t td{background:#fde9d9}
-  tr.brk td{background:#fdece0;text-align:center;font-weight:800;font-size:10px;border:1px solid #333}
-  @media print{body{padding:6px}}
+  *{font-family:Arial,Helvetica,sans-serif;box-sizing:border-box}body{margin:0;padding:16px;color:#111}
+  .hd{position:relative;text-align:center;min-height:74px;margin-bottom:2px}
+  .hd img{position:absolute;top:2px;left:6px;height:62px}
+  .hd .l1{font-weight:800;font-style:italic;font-size:16px}
+  .hd .l2{font-weight:800;font-style:italic;font-size:13px}
+  .hd .l3{font-weight:800;font-style:italic;font-size:12px}
+  .hd .l4{font-weight:800;font-style:italic;font-size:11px}
+  .hd .l5{font-style:italic;font-size:10px}
+  .sub{text-align:center;font-weight:800;font-size:10.5px;margin:10px 0 8px;line-height:1.55}
+  table{width:100%;border-collapse:collapse;font-size:10px}
+  th{background:#fff;border:1px solid #222;padding:6px;text-align:left;font-weight:800;font-size:9px}
+  td{border:1px solid #b7b7b7;padding:4px 7px}
+  td.c{text-align:center}td.s{color:#111;font-weight:600}td.n{padding-left:12px;color:#7d1220;font-weight:700}td.rd{color:#7d1220;font-weight:600}
+  tr.k td{background:#fefdec}tr.e td{background:#e9f1fb}tr.t td{background:#eaf7ee}
+  tr.brk td{background:#fbe7d6;text-align:center;font-weight:800;font-size:10px;border:1px solid #222;color:#333}
+  th:first-child,td:first-child{width:70px}th:nth-child(3),td:nth-child(3){width:100px}th:nth-child(4),td:nth-child(4){width:120px}th:last-child,td:last-child{width:95px}
+  @media print{body{padding:6px}@page{margin:10mm}}
   </style></head><body>
-  <div class="hd"><div class="fed">TÜRKİYE CİMNASTİK FEDERASYONU</div><div class="br">AEROBİK CİMNASTİK</div>
-  <div class="cup">${esc(compName)}</div><div class="dt">${esc(compMeta.il||"")}</div></div>
-  <div class="sub">${esc(dt)}<br>SPORCU ÇIKIŞ LİSTESİ</div>
-  <table><thead><tr><th style="width:70px">ÇIKIŞ SIRASI</th><th>SPORCU</th><th style="width:110px">İL</th><th style="width:120px">KATEGORİ</th><th style="width:90px">BAŞLANGIÇ SAATİ</th></tr></thead><tbody>${body}</tbody></table>
+  <div class="hd"><img src="${logo}" alt="TCF">
+    <div class="l1">TÜRKİYE CİMNASTİK FEDERASYONU</div>
+    <div class="l2">AEROBİK CİMNASTİK</div>
+    <div class="l3">${esc(ageGroupLabel())}</div>
+    <div class="l4">${esc((compName||"").toLocaleUpperCase("tr"))}</div>
+    <div class="l5">${esc(dateRange())}${compMeta.il?" / "+esc((compMeta.il||"").toLocaleUpperCase("tr")):""}</div>
+  </div>
+  <div class="sub">${esc(perDay)},<br>SPORCU ÇIKIŞ LİSTESİ</div>
+  <table><thead><tr><th>ÇIKIŞ SIRASI</th><th>SPORCU</th><th>İL</th><th>KATEGORİ</th><th>BAŞLANGIÇ SAATİ</th></tr></thead><tbody>${body}</tbody></table>
   </body></html>`;
   const w=window.open("","_blank");
   w.document.write(html); w.document.close();
-  setTimeout(()=>{w.focus();w.print();},400);
+  setTimeout(()=>{w.focus();w.print();},500);
 }
 
 const qc=new URLSearchParams(location.search).get("comp");
