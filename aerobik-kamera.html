@@ -120,6 +120,18 @@ function watchActive(){
   });
 }
 
+// zaman hakemi "DURDUR" -> kamerayı durdur (video biter)
+let lastStopTs=0;
+function watchStop(){
+  onValue(ref(db,`${BASE}/${comp}/kameraStop`),snap=>{
+    const v=snap.val(); if(!v||!v.ts) return;
+    if(v.ts>lastStopTs){
+      lastStopTs=v.ts;
+      if(recState==="recording" && (!v.athId || v.athId===curAth)) stopRec();
+    }
+  });
+}
+
 // ---- WebRTC broadcaster (sabit yol: broadcast/webrtc/aerobik/{cam}) ----
 const H=`${BASE}/${comp}/broadcast/webrtc/aerobik/${cam}`;
 let pc=null, unsubAns=null, unsubAnsCand=null, unsubEpoch=null, negTimer=null, alive=true, lastEpoch=null;
@@ -146,6 +158,7 @@ async function boot(){
   catch{ try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false}); }catch{ setConn("error","🔴 Kamera açılamadı"); return; } }
   stream=s; ZW.feed(s); $("vid").srcObject=ZW.outS();
   watchActive();
+  watchStop();
   // WebRTC
   unsubAns=onValue(ref(db,`${H}/answer`),async snap=>{ if(!alive)return; if(snap.exists()){ const t=pc; if(t&&t.signalingState==="have-local-offer"){try{await t.setRemoteDescription(new RTCSessionDescription(snap.val()))}catch(e){}} } });
   unsubEpoch=onValue(ref(db,`${H}/viewerEpoch`),snap=>{ if(!alive)return; const v=snap.val(); if(v!=null){ if(lastEpoch===null){lastEpoch=v;return;} if(v!==lastEpoch){lastEpoch=v;negotiate().catch(()=>{});} } });
