@@ -79,6 +79,7 @@ input[type=number]{width:90px}input[type=time]{width:110px}
     <div class="row1">
       <div class="fld"><label>Yarışma</label><select id="compSel"><option value="">Yarışma seçin…</option></select></div>
       <div class="fld"><label>Liste tarihi (gün)</label><input type="date" id="listDate"></div>
+      <div class="fld" id="dayWrap" style="display:none"><label>İçe aktarılan gün</label><select id="importDaySel"></select></div>
       <div class="fld"><label>Başlangıç saati</label><input type="time" id="baseTime" value="09:00"></div>
       <div class="fld"><label>Çıkış aralığı (dk)</label><input type="number" id="interval" value="3" min="1" max="15"></div>
       <div class="fld"><label>Kura tohumu</label><input type="number" id="seed" value="1"></div>
@@ -146,7 +147,7 @@ function shuffle(arr,rng){const a=arr.slice();for(let i=a.length-1;i>0;i--){cons
 const pkey=m=>String(m.tckn||m.lisans||((m.ad||"")+(m.soyad||"")).toLocaleLowerCase("tr").replace(/\s+/g,"")).trim();
 const sharesPerson=(a,c)=>a.members.some(m=>c.members.some(n=>pkey(m)===pkey(n)));
 
-let comps={}, comp="", items=[], breaks=[], compName="", compMeta={};
+let comps={}, comp="", items=[], breaks=[], compName="", compMeta={}, importedByDay={};
 
 onValue(ref(db,BASE),s=>{
   comps=s.val()||{};
@@ -154,7 +155,7 @@ onValue(ref(db,BASE),s=>{
   $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
   if(comp&&comps[comp])$("compSel").value=comp;
 });
-$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];if(comps[comp]?.baslangicTarihi&&!$("listDate").value)$("listDate").value=comps[comp].baslangicTarihi;render();});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];importedByDay={};$("dayWrap").style.display="none";if(comps[comp]?.baslangicTarihi&&!$("listDate").value)$("listDate").value=comps[comp].baslangicTarihi;render();});
 $("reseed").addEventListener("click",()=>{$("seed").value=Math.floor(Math.random()*99999)+1;});
 $("genBtn").addEventListener("click",generate);
 $("saveBtn").addEventListener("click",save);
@@ -163,6 +164,7 @@ $("excelBtn").addEventListener("click",excelExport);
 $("tplBtn").addEventListener("click",downloadTemplate);
 $("importBtn").addEventListener("click",()=>{if(!comp){toast("Önce yarışma seçin.","err");return;}$("fileInput").click();});
 $("fileInput").addEventListener("change",e=>{const f=e.target.files[0];if(f)importExcel(f);e.target.value="";});
+$("importDaySel").addEventListener("change",()=>{const days=Object.keys(importedByDay);loadImportedDay(days[+$("importDaySel").value]);});
 $("addBreakBtn").addEventListener("click",addBreak);
 
 function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(" - ");}
@@ -355,9 +357,13 @@ function catLookup(){
   const cats=Object.keys(c.kategoriler||{}).length?Object.keys(c.kategoriler):Object.keys(c.sporcular||{});
   const norm=s=>String(s||"").toLocaleLowerCase("tr").replace(/[^a-zçğıöşü0-9]+/g,"");
   const AGW={minik:"minik",kucuk:"küçük",yildiz:"yıldız",genc:"genç",buyuk:"büyük"};
-  const map={};
+  const map={}; const add=(l,cat)=>{const n=norm(l);if(n&&!(n in map))map[n]=cat;};
   cats.forEach(cat=>{const base=cat.replace(/^step_/,""),age=base.split("_")[0],suf=base.split("_").slice(1).join("_");
-    [cat,catKategori(cat),(AGW[age]||age)+" "+(KATLBL[suf]||suf),(AGW[age]||age)+"ler "+(KATLBL[suf]||suf),KATLBL[suf]||suf,suf].forEach(l=>{const n=norm(l);if(n&&!(n in map))map[n]=cat;});});
+    [cat,catKategori(cat),(AGW[age]||age)+" "+(KATLBL[suf]||suf),(AGW[age]||age)+"ler "+(KATLBL[suf]||suf),KATLBL[suf]||suf,suf].forEach(l=>add(l,cat));});
+  // yarışmanın yaş grup(lar)ı için tüm türleri üret (comp'ta olmasa da) — TRİO/GRUP/DANS eşlensin
+  const ages=[...new Set(cats.map(x=>x.replace(/^step_/,"").split("_")[0]).filter(a=>AGW[a]))];
+  const TYPES={kiz:["tek kadın","tek kadin","kız","kadın"],erkek:["tek erkek","erkek","bay"],cift:["çift","cift","karışık ikili","ikili"],trio:["trio","üçlü","uclu"],grup:["grup","group"],dans:["aerobik dans","aerodans","dans"]};
+  ages.forEach(age=>Object.entries(TYPES).forEach(([suf,labs])=>{const cat=age+"_"+suf;labs.concat([cat,KATLBL[suf]||""]).forEach(l=>add(l,cat));}));
   return {map,norm,cats};
 }
 function downloadTemplate(){
@@ -380,6 +386,8 @@ function downloadTemplate(){
   XLSX.writeFile(wb,"aerobik_sporcu_sablonu.xlsx");
   toast("Şablon indirildi ✓ (Kategoriler sayfasındaki etiketleri kullan)","ok");
 }
+const TRM={ocak:1,şubat:2,subat:2,mart:3,nisan:4,mayıs:5,mayis:5,haziran:6,temmuz:7,ağustos:8,agustos:8,eylül:9,eylul:9,ekim:10,kasım:11,kasim:11,aralık:12,aralik:12};
+function dayToISO(day){const m=String(day||"").match(/(\d{1,2})\s+(\S+)\s+(\d{4})/);if(!m)return"";const mo=TRM[m[2].toLocaleLowerCase("tr")];if(!mo)return"";return `${m[3]}-${String(mo).padStart(2,"0")}-${String(+m[1]).padStart(2,"0")}`;}
 async function importExcel(file){
   if(!comp){toast("Önce yarışma seçin.","err");return;}
   if(!window.XLSX){toast("Excel bileşeni yüklenemedi.","err");return;}
@@ -389,6 +397,9 @@ async function importExcel(file){
     if(!rows.length){toast("Excel boş.","err");return;}
     const {map,norm}=catLookup();
     const G=k=>{const r={};Object.keys(k).forEach(x=>r[norm(x)]=k[x]);return n=>r[norm(n)];};
+    // "Çıkış Sırası" dolu ise -> LİSTE modu (birleştir + sıraya göre yükle); değilse sporcu modu
+    const hasOrder=rows.some(r=>{const g=G(r);const v=g("Çıkış Sırası")||g("Cikis Sirasi")||g("Sıra");return v!==""&&v!=null&&!isNaN(parseInt(v));});
+    if(hasOrder){ importList(rows,G,map,norm); return; }
     const up={}; let ok=0,bad=0; const badCats=new Set();
     rows.forEach(row=>{
       const g=G(row);
@@ -416,6 +427,44 @@ async function importExcel(file){
     if(bad)msg+=` — ${bad} satır kategori tanınmadı (${[...badCats].slice(0,3).join(", ")})`;
     toast(msg,bad?"":"ok");
   }catch(err){toast("İçe aktarma hatası: "+(err?.message||err),"err");}
+}
+// Liste modu: (Gün, Çıkış Sırası) ile birleştir, sıraya göre yükle (kaydetmeden items'a)
+function importList(rows,G,map,norm){
+  const badCats=new Set(); let bad=0; const parsed=[];
+  rows.forEach(row=>{
+    const g=G(row);
+    const cat=map[norm(g("Kategori")||"")];
+    const sira=parseInt(g("Çıkış Sırası")||g("Cikis Sirasi")||g("Sıra"));
+    if(!cat||isNaN(sira)){ if(String(g("Kategori")||"").trim())badCats.add(g("Kategori")); bad++; return; }
+    let ad=String(g("Ad")||"").trim(), soyad=String(g("Soyad")||"").trim();
+    const comb=String(g("Ad Soyad")||"").trim();
+    if(!ad&&!soyad&&comb){const p=comb.split(/\s+/);soyad=p.length>1?p.pop():"";ad=p.join(" ");}
+    const okul=String(g("Kulüp")||g("Kulup")||g("Okul")||"").trim();
+    parsed.push({gun:String(g("Gün")||g("Gun")||"").trim()||"Tek Gün",sira,cat,
+      member:{ad,soyad,adSoyad:(ad+" "+soyad).trim(),soyadAd:(soyad+" "+ad).trim(),il:String(g("İl")||g("Il")||"").trim(),okul,kulup:okul,tckn:String(g("TCKN")||"").trim(),lisans:String(g("Lisans No")||g("Lisans")||"").trim()},
+      grupNo:parseInt(g("Grup No")||g("GrupNo"))||sira});
+  });
+  if(!parsed.length){toast("Geçerli satır yok. Kategori/Çıkış Sırası sütununu kontrol et"+(badCats.size?": "+[...badCats].slice(0,2).join(", "):""),"err");return;}
+  importedByDay={};
+  parsed.forEach(p=>{
+    const day=(importedByDay[p.gun]=importedByDay[p.gun]||{});
+    if(!day[p.sira]) day[p.sira]={cat:p.cat,type:typeOf(p.cat),okul:p.member.okul,grupNo:isMulti(p.cat)?p.grupNo:null,_sira:p.sira,members:[]};
+    const m={...p.member,yarismaTuru:isMulti(p.cat)?"takim":"ferdi"}; if(isMulti(p.cat))m.grupNo=day[p.sira].grupNo;
+    day[p.sira].members.push(m);
+  });
+  const days=Object.keys(importedByDay);
+  $("importDaySel").innerHTML=days.map((d,i)=>`<option value="${i}">${esc(d)} (${Object.keys(importedByDay[d]).length})</option>`).join("");
+  $("dayWrap").style.display=days.length>1?"":"none";
+  loadImportedDay(days[0]);
+  const tot=days.reduce((s,d)=>s+Object.keys(importedByDay[d]).length,0);
+  toast(`Liste yüklendi: ${tot} yarışmacı (${parsed.length} satır birleşti)${days.length>1?` — ${days.length} gün, "${days[0].split(",")[0]}" gösteriliyor`:""}${bad?` · ${bad} satır atlandı`:""}`,bad?"":"ok");
+}
+function loadImportedDay(day){
+  const d=importedByDay[day]; if(!d)return;
+  items=Object.values(d).sort((a,b)=>a._sira-b._sira);
+  breaks=[];
+  const iso=dayToISO(day); if(iso)$("listDate").value=iso;
+  render(); checkRest();
 }
 function excelExport(){
   if(!items.length)return;
