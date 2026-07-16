@@ -68,6 +68,9 @@ h3{font-size:.9rem;font-weight:800;margin:.2rem 0 .6rem;color:var(--muted);text-
       <button class="btn" id="genBtn"><span class="material-icons-round" style="font-size:18px">qr_code_2</span> Birleşik QR Üret</button>
       <button class="btn" id="printBtn" style="background:var(--panel2);border:1px solid var(--line)"><span class="material-icons-round" style="font-size:18px">print</span> Yazdır</button>
       <div class="hint">Seçili kategoriler tek QR'da birleşir; hakem hangi kategoride sporcu çağrılırsa onu görür ve doğru kategoriye puanlar. A paneli için A1–A4 ayrı QR üretilir.</div>
+      <h3 style="margin-top:1.2rem">📹 Kameralar (tüm yarışma için)</h3>
+      <div class="hint" style="margin-top:0">Kamera telefonuna okut. Sporcu çağrılınca otomatik kayda başlar, kaydedilince yükler. Kamera A → buluta yükler (skorlara eklenir); Kamera B → yedek (indirir).</div>
+      <div id="camGrid" class="qrgrid" style="margin-top:.7rem"></div>
     </div>
   </div>
   <div id="out" class="qrgrid"></div>
@@ -119,7 +122,17 @@ $("compSel").addEventListener("change",async e=>{
   $("cats").innerHTML=keys.map(k=>`<label class="catchip"><input type="checkbox" value="${k}"><span>${esc(catLabel(k,kats[k]))}</span></label>`).join("")||'<span class="hint">Bu yarışmada kategori yok.</span>';
   $("cats").querySelectorAll(".catchip").forEach(l=>{l.querySelector("input").onchange=()=>l.classList.toggle("on",l.querySelector("input").checked);});
   $("body").style.display="";
+  renderCameras();
 });
+function renderCameras(){
+  const cams=[{cam:"a",t:"📹 Kamera A",d:"Buluta yükler (skorlara eklenir)"},{cam:"b",t:"📹 Kamera B",d:"Yedek (indirir)"}];
+  $("camGrid").innerHTML=cams.map((c,i)=>{
+    const url=`${location.origin}/aerobik-kamera.html?compId=${encodeURIComponent(comp)}&cam=${c.cam}`;
+    return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}</div><div id="cam${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(url)}">Linki Kopyala</div></div>`;
+  }).join("");
+  cams.forEach((c,i)=>{const url=`${location.origin}/aerobik-kamera.html?compId=${encodeURIComponent(comp)}&cam=${c.cam}`;try{new QRCode($("cam"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
+  $("camGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Kamera linki kopyalandı ✓","ok");});
+}
 $("selAll").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=true;i.dispatchEvent(new Event("change"));});
 $("selNone").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=false;i.dispatchEvent(new Event("change"));});
 

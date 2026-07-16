@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Aerobik Kamera — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;overflow:hidden;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+.kam-root{position:fixed;inset:0;background:#000}
+.kam-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.btn-ctl{position:fixed;right:12px;z-index:9999;color:#fff;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.5);border-radius:10px;cursor:pointer}
+.btn-cam{top:12px;padding:10px 14px;font-size:14px;font-weight:700}
+.btn-zin{top:66px;width:48px;height:48px;font-size:22px;font-weight:700;line-height:1}
+.btn-zout{top:122px;width:48px;height:48px;font-size:22px;font-weight:700;line-height:1}
+.kam-ui{position:absolute;inset:0;pointer-events:none;padding:12px;display:flex;flex-direction:column}
+.kam-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.kam-tag{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:8px 12px;color:#fff}
+.kam-tag .t{font-size:12px;font-weight:800;opacity:.85}.kam-tag .s{font-size:15px;font-weight:800}
+.kam-conn{border-radius:10px;padding:8px 12px;font-size:13px;font-weight:800;color:#fff}
+.kam-conn--live{background:rgba(22,163,74,.85)}.kam-conn--waiting{background:rgba(234,179,8,.85);color:#111}
+.kam-conn--error{background:rgba(220,38,38,.85)}.kam-conn--requesting,.kam-conn--init{background:rgba(0,0,0,.6)}
+.kam-rec{align-self:center;margin-top:10px;background:rgba(220,38,38,.9);color:#fff;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.kam-rec--saving{background:rgba(37,99,235,.9)}.kam-rec--ok{background:rgba(22,163,74,.9)}.kam-rec--error{background:rgba(180,83,9,.95)}
+.kam-rec-dot{width:11px;height:11px;border-radius:50%;background:#fff;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.kam-ath{margin-top:auto;align-self:flex-start;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px 14px;color:#fff;max-width:80%}
+.kam-ath .badge{display:inline-block;font-size:11px;font-weight:800;background:#16a34a;border-radius:6px;padding:2px 8px;margin-bottom:5px}
+.kam-ath .name{font-size:18px;font-weight:800;line-height:1.15}
+.kam-ath .club{font-size:12px;font-weight:600;opacity:.8;margin-top:2px}
+.err-full{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;padding:2rem;font-weight:700}
+</style>
+</head>
+<body>
+<div class="kam-root">
+  <video id="vid" class="kam-video" autoplay muted playsinline></video>
+  <button class="btn-ctl btn-cam" id="btnCam">🔄 Kamera</button>
+  <button class="btn-ctl btn-zin" id="btnZin">➕</button>
+  <button class="btn-ctl btn-zout" id="btnZout">➖</button>
+  <div class="kam-ui">
+    <div class="kam-header">
+      <div class="kam-tag"><div class="t">AEROBİK</div><div class="s" id="camTag">KAM A · Performans</div></div>
+      <div class="kam-conn kam-conn--init" id="conn">—</div>
+    </div>
+    <div id="recBox"></div>
+    <div id="athBox"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
+const db=getDatabase(initializeApp(firebaseConfig));
+const P=new URLSearchParams(location.search);
+const comp=P.get("compId")||P.get("comp"), cam=(P.get("cam")||"a").toLowerCase(), BASE=P.get("path")||"aerobik_yarismalar";
+const $=id=>document.getElementById(id);
+const CLOUD="spythzo3", PRESET="analig_unsigned";
+const ICE=[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},{urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}];
+$("camTag").textContent=`KAM ${cam.toUpperCase()} · ${cam==="a"?"Performans (Yükler)":"Yedek (İndirir)"}`;
+if(!comp){document.body.innerHTML='<div class="err-full">Hatalı link — compId eksik.</div>';throw new Error("no comp");}
+
+// ---- canvas-zoom feed (KameraPage __ZW) ----
+const ZW={c:null,v:null,f:1,s:null,r:null,run:0,init(){if(this.c)return;this.c=document.createElement("canvas");this.c.width=1280;this.c.height=720;this.v=document.createElement("video");this.v.muted=!0;this.v.autoplay=!0;this.v.playsInline=!0;this.v.setAttribute("playsinline","");this.v.style.cssText="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1";try{document.body.appendChild(this.v)}catch(e){}this.s=this.c.captureStream(30);const self=this,ctx=this.c.getContext("2d");let last=0;(function draw(){const now=Date.now();if(now-last>=33){last=now;const vv=self.v,c=self.c;if(vv&&vv.videoWidth){if(c.width!==vv.videoWidth||c.height!==vv.videoHeight){c.width=vv.videoWidth;c.height=vv.videoHeight}const f=self.f,sw=c.width/f,sh=c.height/f,sx=(c.width-sw)/2,sy=(c.height-sh)/2;try{ctx.drawImage(vv,sx,sy,sw,sh,0,0,c.width,c.height)}catch(e){}}}self.run=requestAnimationFrame(draw)})()},feed(st){this.init();this.r=st;this.v.srcObject=st;const p=this.v.play();if(p&&p.catch)p.catch(()=>{})},outS(){this.init();return this.s},zoom(d){this.f=Math.min(5,Math.max(1,this.f+d))},stopRaw(){if(this.r)try{this.r.getTracks().forEach(t=>t.stop())}catch(e){}}};
+
+function setConn(cls,txt){const c=$("conn");c.className="kam-conn kam-conn--"+cls;c.textContent=txt;}
+let recState="idle";
+function setRec(s,extra){recState=s;const b=$("recBox");if(s==="idle"){b.innerHTML="";return;}
+  const m={recording:['','<span class="kam-rec-dot"></span>KAYIT'],saving:['kam-rec--saving','💾 Kaydediliyor...'],uploading:['kam-rec--saving','☁️ Buluta yükleniyor...'],uploaded:['kam-rec--ok','✅ Buluta yüklendi'],error:['kam-rec--error','⚠️ Yüklenemedi'+(extra?" · "+extra:"")],download:['kam-rec--ok','✅ İndirildi']}[s]||['',s];
+  b.innerHTML=`<div class="kam-rec ${m[0]}">${m[1]}</div>`;}
+function showAth(a){const b=$("athBox");if(!a){b.innerHTML="";return;}
+  b.innerHTML=`<div class="kam-ath"><span class="badge">● SERİDE</span><div class="name">${(a.ad||"")} ${(a.soyad||"")}</div>${a.okul?`<div class="club">${a.okul}</div>`:""}</div>`;}
+
+const tr=s=>(s||"").replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").replace(/Ş/g,"S").replace(/ğ/g,"g").replace(/Ğ/g,"G").replace(/ü/g,"u").replace(/Ü/g,"U").replace(/ö/g,"o").replace(/Ö/g,"O").replace(/ç/g,"c").replace(/Ç/g,"C").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+
+// ---- kayıt durum makinesi (aktifSporcu tetikli) ----
+let stream=null, recorder=null, chunks=[], curCat="", curAth="", curName="", mimeExt="webm";
+function startRec(cat,athId,name,ad,soyad,okul){
+  if(recState==="recording"||recState==="saving"||recState==="uploading")return;
+  if(!ZW.outS())return;
+  curCat=cat; curAth=athId||""; curName=(name||((ad||"")+" "+(soyad||""))).trim()||"Sporcu";
+  const mime=MediaRecorder.isTypeSupported("video/mp4")?"video/mp4":MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":MediaRecorder.isTypeSupported("video/webm;codecs=vp8")?"video/webm;codecs=vp8":"video/webm";
+  mimeExt=mime.startsWith("video/mp4")?"mp4":"webm";
+  const rec=new MediaRecorder(ZW.outS(),{mimeType:mime,videoBitsPerSecond:5e6});
+  chunks=[]; rec.ondataavailable=e=>{e.data.size>0&&chunks.push(e.data)};
+  rec.onstop=()=>onStop(mime);
+  rec.start(1000); recorder=rec; setRec("recording");
+}
+function stopRec(){ if(recState==="recording"&&recorder){try{recorder.stop()}catch(e){} setRec("saving"); } }
+function onStop(mime){
+  const blob=new Blob(chunks,{type:mime}); chunks=[];
+  const nm=curName||"Sporcu", CW=cam.toUpperCase(), dt=new Date().toISOString().slice(0,16).replace("T","_");
+  const fn=`${nm} - KAM ${CW} - ${dt}.${mimeExt}`.replace(/[/\\:*?"<>|]/g,"-");
+  if(blob.size>0){try{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),4000);}catch(e){}}
+  const z=curAth;
+  if(z&&comp&&curCat&&blob.size>0&&cam!=="b"){
+    setRec("uploading");
+    const c=new FormData(); c.append("file",blob); c.append("upload_preset",PRESET);
+    c.append("public_id",`${BASE}/${comp}/${curCat}/${tr(nm)}-kam${cam}-${z}`);
+    fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:"POST",body:c})
+      .then(r=>r.json().then(u=>r.ok?u:Promise.reject(new Error(u.error?.message||"Yükleme başarısız"))))
+      .then(u=>{const J=`${BASE}/${comp}/puanlar/${curCat}/${z}`;set(ref(db,`${J}/videoUrl${CW}`),u.secure_url);set(ref(db,`${J}/videoPath${CW}`),u.public_id||"");setRec("uploaded");setTimeout(()=>{if(recState==="uploaded")setRec("idle")},2500);})
+      .catch(e=>{setRec("error",e?.message||"");setTimeout(()=>{if(recState==="error")setRec("idle")},4000);});
+  } else { setRec(cam==="b"?"download":"idle"); if(cam==="b")setTimeout(()=>{if(recState==="download")setRec("idle")},2000); }
+}
+
+// aktifSporcu izle: tek aktif sporcu -> kayıt başlat/durdur
+function watchActive(){
+  onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
+    const all=snap.val()||{}; let cat="",a=null;
+    for(const k of Object.keys(all)){ if(all[k]){cat=k;a=all[k];break;} }
+    if(a&&typeof a==="object"){
+      showAth(a);
+      if(recState==="idle") startRec(cat,a.id,a.ad&&a.soyad?(a.ad+" "+a.soyad):a.ad,a.ad,a.soyad,a.okul);
+    } else {
+      showAth(null);
+      if(recState==="recording") stopRec();
+    }
+  });
+}
+
+// ---- WebRTC broadcaster (sabit yol: broadcast/webrtc/aerobik/{cam}) ----
+const H=`${BASE}/${comp}/broadcast/webrtc/aerobik/${cam}`;
+let pc=null, unsubAns=null, unsubAnsCand=null, unsubEpoch=null, negTimer=null, alive=true, lastEpoch=null;
+async function negotiate(){
+  if(!alive||!ZW.outS())return;
+  try{ if(pc){pc.close();pc=null;} unsubAnsCand&&unsubAnsCand();unsubAnsCand=null;
+    await remove(ref(db,`${H}/answer`)); await remove(ref(db,`${H}/answerCandidates`)); await remove(ref(db,`${H}/offerCandidates`));
+    const p=new RTCPeerConnection({iceServers:ICE}); pc=p;
+    ZW.outS().getTracks().forEach(t=>p.addTrack(t,ZW.outS()));
+    p.onicecandidate=e=>{ if(e.candidate) push(ref(db,`${H}/offerCandidates`),e.candidate.toJSON()); };
+    p.onconnectionstatechange=()=>{ if(!alive||pc!==p)return; const st=p.connectionState;
+      if(st==="connected")setConn("live","🟢 CANLI"); else if(st==="disconnected")setConn("waiting","⏳ Yeniden..."),scheduleNeg(5000); else if(st==="failed")setConn("error","🔴 Bağlanamadı"),scheduleNeg(1500); };
+    unsubAnsCand=onChildAdded(ref(db,`${H}/answerCandidates`),async s=>{try{await p.addIceCandidate(new RTCIceCandidate(s.val()))}catch(e){}});
+    const off=await p.createOffer(); await p.setLocalDescription(off);
+    await set(ref(db,`${H}/offer`),{sdp:off.sdp,type:off.type}); if(alive)setConn("waiting","⏳ İzleyici bekleniyor");
+  }catch(e){}
+}
+function scheduleNeg(ms=1500){ if(!alive)return; clearTimeout(negTimer); negTimer=setTimeout(()=>negotiate().catch(()=>{}),ms); }
+
+async function boot(){
+  setConn("requesting","Kamera izni...");
+  let s;
+  try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:24}},audio:false}); }
+  catch{ try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false}); }catch{ setConn("error","🔴 Kamera açılamadı"); return; } }
+  stream=s; ZW.feed(s); $("vid").srcObject=ZW.outS();
+  watchActive();
+  // WebRTC
+  unsubAns=onValue(ref(db,`${H}/answer`),async snap=>{ if(!alive)return; if(snap.exists()){ const t=pc; if(t&&t.signalingState==="have-local-offer"){try{await t.setRemoteDescription(new RTCSessionDescription(snap.val()))}catch(e){}} } });
+  unsubEpoch=onValue(ref(db,`${H}/viewerEpoch`),snap=>{ if(!alive)return; const v=snap.val(); if(v!=null){ if(lastEpoch===null){lastEpoch=v;return;} if(v!==lastEpoch){lastEpoch=v;negotiate().catch(()=>{});} } });
+  await negotiate();
+  // wake lock
+  try{ if("wakeLock"in navigator){ const wl=await navigator.wakeLock.request("screen"); document.addEventListener("visibilitychange",async()=>{ if(document.visibilityState==="visible"){try{await navigator.wakeLock.request("screen")}catch(e){}} }); } }catch(e){}
+}
+
+// UI kontrolleri
+$("btnZin").onclick=()=>ZW.zoom(.5);
+$("btnZout").onclick=()=>ZW.zoom(-.5);
+$("btnCam").onclick=async()=>{ try{
+  const devs=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==="videoinput"); const raw=ZW.r; let ns;
+  if(devs.length>1){ const ct=raw?.getVideoTracks?.()[0], cid=ct?.getSettings?.().deviceId, ci=devs.findIndex(x=>x.deviceId===cid), nx=devs[(ci+1)%devs.length]; ns=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:nx.deviceId}},audio:false}); }
+  else{ const vt=raw?.getVideoTracks?.()[0], cf=vt?.getSettings?.().facingMode, nf=cf==="environment"?"user":"environment"; try{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:nf}},audio:false});}catch{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:nf}},audio:false});} }
+  const old=ZW.r; ZW.feed(ns); if(old)try{old.getTracks().forEach(t=>t.stop())}catch(e){}
+}catch(e){} };
+window.addEventListener("beforeunload",()=>{alive=false;try{pc&&pc.close()}catch(e){};remove(ref(db,H)).catch(()=>{});});
+
+boot();
+</script>
+</body>
+</html>
