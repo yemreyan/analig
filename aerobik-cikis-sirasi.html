@@ -54,6 +54,19 @@ input[type=number]{width:90px}input[type=time]{width:110px}
 .empty,.notice{text-align:center;color:var(--muted);padding:2.5rem 1rem;font-weight:600}
 .toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
 .toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
+.rowc .del{background:var(--panel2);border:1px solid var(--line);color:#fca5a5;border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.rowc .del:hover{border-color:var(--warn);color:#fff;background:var(--warn)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem}
+.modal.hidden{display:none}
+.modal-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.3rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-card h3{font-size:1.08rem;font-weight:800;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+.modal-card h3 .material-icons-round{color:var(--team)}
+.mfld{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.7rem}
+.mfld label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.mfld input,.mfld select,.mfld textarea{font:inherit;font-weight:600;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:.55rem .7rem;font-size:.9rem;width:100%}
+.mfld textarea{resize:vertical;line-height:1.5}
+.mhint{font-size:.74rem;color:var(--muted);font-weight:600;margin:-.3rem 0 .5rem}
+.mrow{display:flex;gap:.6rem;justify-content:flex-end;margin-top:.5rem}
 </style>
 </head>
 <body>
@@ -78,6 +91,7 @@ input[type=number]{width:90px}input[type=time]{width:110px}
       <button class="btn ghost" id="importBtn"><span class="material-icons-round" style="font-size:17px">upload_file</span> Excel Yükle (Sporcu)</button>
       <label class="chkwrap"><input type="checkbox" id="distribute" checked> Çoklu kategorileri (çift/trio/grup) sona doğru dağıt</label>
       <button class="btn gen" id="genBtn"><span class="material-icons-round" style="font-size:18px">casino</span> Kura ile Oluştur</button>
+      <button class="btn" id="addBtn" style="background:var(--team)" disabled><span class="material-icons-round" style="font-size:18px">person_add</span> Yarışmacı Ekle</button>
       <button class="btn ghost" id="addBreakBtn" disabled><span class="material-icons-round" style="font-size:17px">free_breakfast</span> Mola Ekle</button>
       <button class="btn ghost" id="printBtn" disabled><span class="material-icons-round" style="font-size:17px">print</span> PDF / Yazdır</button>
       <button class="btn ghost" id="excelBtn" disabled><span class="material-icons-round" style="font-size:17px">table_view</span> Excel İndir</button>
@@ -88,6 +102,18 @@ input[type=number]{width:90px}input[type=time]{width:110px}
     <div class="warnbox" id="warnbox"></div>
   </div>
   <div id="list" class="list"><div class="notice">Yarışma seçip “Kura ile Oluştur”a bas.</div></div>
+</div>
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <h3><span class="material-icons-round">person_add</span> Listeye Yarışmacı Ekle</h3>
+    <div class="mfld"><label>Kategori</label><select id="mCat"></select></div>
+    <div class="mfld"><label id="mNamesLbl">İsim (Ad Soyad)</label><textarea id="mNames" rows="1" placeholder="Ad Soyad"></textarea></div>
+    <div class="mhint" id="mHint">Bireysel: tek isim. Çift/Trio/Grup: her satıra bir üye (Ad Soyad).</div>
+    <div class="mfld"><label>İl</label><input id="mIl" placeholder="Örn. İZMİR"></div>
+    <div class="mfld"><label>Kulüp (isteğe bağlı)</label><input id="mKulup" placeholder="Kulüp/okul adı"></div>
+    <div class="mfld" id="mGrupWrap" style="display:none"><label>Grup No (aynı takımın üyelerine aynı no)</label><input type="number" id="mGrup" value="1" min="1"></div>
+    <div class="mrow"><button class="btn ghost" id="mCancel">İptal</button><button class="btn save" id="mAdd"><span class="material-icons-round" style="font-size:17px">add</span> Listeye Ekle</button></div>
+  </div>
 </div>
 <div id="toast" class="toast"></div>
 
@@ -208,9 +234,10 @@ function computeRows(){
 function render(){
   const has=items.length>0;
   ["saveBtn","printBtn","excelBtn","addBreakBtn"].forEach(id=>$(id).disabled=!has);
+  $("addBtn").disabled=!comp;
   $("count").textContent=has?`${items.length} yarışmacı`:"";
   if(!comp){$("list").innerHTML='<div class="notice">Yarışma seçin.</div>';return;}
-  if(!has){$("list").innerHTML='<div class="notice">“Kura ile Oluştur”a bas.</div>';return;}
+  if(!has){$("list").innerHTML='<div class="notice">Bu yarışmada henüz liste yok.<br><b>🎲 Kura ile Oluştur</b> (sporcular yüklüyse) ya da <b>➕ Yarışmacı Ekle</b> ile tek tek başla.<br>Sporcu yoksa: <b>📄 Şablon İndir → 📥 Excel Yükle</b>.</div>';return;}
   const rows=computeRows();
   $("list").innerHTML=rows.map(r=>{
     if(r.type==="break")return `<div class="breakrow"><span class="material-icons-round" style="font-size:16px">free_breakfast</span> ${fmt(r.start)} - ${fmt(r.end)} · ${esc(r.label)} (${r.end-r.start} dk) <span class="x" data-delbreak="${r.idx}"><span class="material-icons-round" style="font-size:16px">close</span></span></div>`;
@@ -223,6 +250,7 @@ function render(){
       <div class="info"><div class="nm">${esc(nameOf(it))||"—"}</div>
         <div class="sub"><span class="chip">${esc(catKategori(it.cat))}</span>${cnt}<span>${esc(ilOf(it))}</span>${grpEd}</div></div>
       <div class="mv"><button data-up="${i}"><span class="material-icons-round">keyboard_arrow_up</span></button><button data-dn="${i}"><span class="material-icons-round">keyboard_arrow_down</span></button></div>
+      <button class="del" data-del="${i}" title="Listeden çıkar"><span class="material-icons-round" style="font-size:16px">delete</span></button>
     </div>`;
   }).join("");
   wire();
@@ -234,6 +262,7 @@ function wire(){
   L.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>move(+b.dataset.up,+b.dataset.up-1));
   L.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>move(+b.dataset.dn,+b.dataset.dn+1));
   L.querySelectorAll("[data-delbreak]").forEach(b=>b.onclick=()=>{breaks.splice(+b.dataset.delbreak,1);render();});
+  L.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const it=items[+b.dataset.del];if(confirm(`"${nameOf(it)||"Bu yarışmacı"}" listeden çıkarılsın mı?`)){items.splice(+b.dataset.del,1);render();}});
   L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{items[+inp.dataset.gi].grupNo=Math.max(1,parseInt(inp.value)||1);});
   let dragI=null;
   L.querySelectorAll(".rowc").forEach(row=>{
@@ -245,6 +274,44 @@ function wire(){
   });
 }
 ["baseTime","interval"].forEach(id=>$(id).addEventListener("change",()=>{if(items.length)render();}));
+
+// --- Manuel yarışmacı ekleme ---
+function nextGrupNo(cat){const g=items.filter(x=>x.cat===cat).map(x=>x.grupNo||0);return (g.length?Math.max(...g):0)+1;}
+function onCatChange(){const cat=$("mCat").value,multi=isMulti(cat),tp=typeOf(cat);
+  $("mGrupWrap").style.display=multi?"":"none";
+  $("mNamesLbl").textContent=multi?"Üyeler — her satıra bir Ad Soyad":"İsim (Ad Soyad)";
+  $("mNames").rows=multi?(tp==="cift"?2:tp==="trio"?3:tp==="dans"?8:5):1;
+  $("mNames").placeholder=multi?"Ad Soyad\nAd Soyad":"Ad Soyad";
+  $("mHint").style.display=multi?"":"none";
+  if(multi)$("mGrup").value=nextGrupNo(cat);
+}
+function openAddModal(){
+  if(!comp){toast("Önce yarışma seçin.","err");return;}
+  const {cats}=catLookup();
+  if(!cats.length){toast("Bu yarışmada kategori yok.","err");return;}
+  $("mCat").innerHTML=cats.map(c=>`<option value="${c}">${esc(catKategori(c))}${isMulti(c)?" (takım)":""}</option>`).join("");
+  $("mIl").value="";$("mKulup").value="";$("mNames").value="";
+  onCatChange();
+  $("modal").classList.remove("hidden");$("mNames").focus();
+}
+function closeModal(){$("modal").classList.add("hidden");}
+function doAddCompetitor(){
+  const cat=$("mCat").value;if(!cat){toast("Kategori seçin.","err");return;}
+  const il=$("mIl").value.trim(),okul=$("mKulup").value.trim()||il;
+  const lines=$("mNames").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){toast("En az bir isim girin.","err");return;}
+  const multi=isMulti(cat),grupNo=multi?Math.max(1,parseInt($("mGrup").value)||1):null;
+  const members=lines.map(nm=>{const p=nm.split(/\s+/);const soyad=p.length>1?p.pop():"";const ad=p.join(" ");
+    const m={ad,soyad,adSoyad:(ad+" "+soyad).trim(),il,okul,kulup:okul,yarismaTuru:multi?"takim":"ferdi"};if(multi)m.grupNo=grupNo;return m;});
+  items.push({cat,type:typeOf(cat),okul,grupNo,members});
+  closeModal();render();
+  toast(`"${lines.join(" - ")}" listeye eklendi ✓`,"ok");
+}
+$("addBtn").addEventListener("click",openAddModal);
+$("mCat").addEventListener("change",onCatChange);
+$("mCancel").addEventListener("click",closeModal);
+$("mAdd").addEventListener("click",doAddCompetitor);
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 
 function addBreak(){
   const pos=prompt("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-"+items.length+")");
@@ -266,8 +333,16 @@ function checkRest(){
 async function save(){
   if(!comp||!items.length)return; $("saveBtn").disabled=true;
   try{
-    computeRows(); const up={};
-    items.forEach(it=>{it.members.forEach(m=>{const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;up[`${p}/cikisSirasi`]=it._order;up[`${p}/baslangicSaati`]=it._time;if(isMulti(it.cat))up[`${p}/grupNo`]=it.grupNo||1;});});
+    computeRows(); const up={}; const multi0=it=>isMulti(it.cat);
+    items.forEach(it=>{it.members.forEach(m=>{
+      if(!m.id){ // manuel eklenen yeni sporcu -> tam kaydı TEK objede yaz (alt-yol yazma, çakışır)
+        m.id=push(ref(db,`${BASE}/${comp}/sporcular/${it.cat}`)).key;
+        up[`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`]={ad:m.ad||"",soyad:m.soyad||"",adSoyad:m.adSoyad||"",soyadAd:((m.soyad||"")+" "+(m.ad||"")).trim(),il:m.il||"",okul:m.okul||"",kulup:m.okul||"",yarismaTuru:multi0(it)?"takim":"ferdi",appId:"manuel",cikisSirasi:it._order,baslangicSaati:it._time,...(multi0(it)?{grupNo:it.grupNo||1}:{})};
+        up[`${BASE}/${comp}/kategoriler/${it.cat}`]=comps[comp]?.kategoriler?.[it.cat]||{name:catKategori(it.cat)};
+      }else{ // mevcut sporcu -> sadece alanları güncelle
+        const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;up[`${p}/cikisSirasi`]=it._order;up[`${p}/baslangicSaati`]=it._time;if(multi0(it))up[`${p}/grupNo`]=it.grupNo||1;
+      }
+    });});
     await update(ref(db),up);
     toast("Çıkış sırası + saatler kaydedildi ✓","ok");
   }catch(err){toast("Hata: "+(err?.message||err),"err");}
