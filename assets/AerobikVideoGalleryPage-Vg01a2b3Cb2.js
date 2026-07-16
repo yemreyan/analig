@@ -1,0 +1,45 @@
+import{u as useAuth,a as useDisc,d as db,j as e}from"./main-C2LpyYUGCb2.js";import{u as useNav,r as t}from"./vendor-react-Cxw6bqwhCb2.js";import{l as get,k as ref,v as set}from"./vendor-firebase-940mxgRVCb2.js";import{f as filterComps}from"./useFilteredCompetitions-B7FB6qIvCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+const CAM={A:"Performans",B:"Yedek"};
+function AerobikVideoGallery(){
+ const nav=useNav(),{currentUser:user}=useAuth(),{firebasePath:fb,routePrefix:rp}=useDisc();
+ const[comps,setComps]=t.useState({}),[comp,setComp]=t.useState(""),[loading,setLoading]=t.useState(!1),[vids,setVids]=t.useState([]);
+ const[play,setPlay]=t.useState(null),[del,setDel]=t.useState(null),[deleting,setDeleting]=t.useState(!1),[q,setQ]=t.useState(""),[catF,setCatF]=t.useState("");
+ t.useEffect(()=>{get(ref(db,fb)).then(s=>{const v=s.val();v&&setComps(filterComps(v,user))})},[fb,user]);
+ const load=t.useCallback(async a=>{
+  if(!a){setVids([]);return}setLoading(!0);
+  try{
+   const cats=comps[a]?.kategoriler||{},[ps,ss]=await Promise.all([get(ref(db,`${fb}/${a}/puanlar`)),get(ref(db,`${fb}/${a}/sporcular`))]);
+   const P=ps.val()||{},S=ss.val()||{},out=[];
+   Object.entries(P).forEach(([cat,aths])=>{const catName=cats[cat]?.name||cat;if(!aths||typeof aths!="object")return;Object.entries(aths).forEach(([ath,V])=>{if(!V||typeof V!="object")return;const meta=V.videoBilgi||{},spo=S[cat]?.[ath]||{};const name=[meta.ad||spo.ad,meta.soyad||spo.soyad].filter(Boolean).join(" ")||ath;const club=meta.il||spo.il||meta.okul||spo.okul||spo.kulup||"";["A","B"].forEach(cam=>{const url=V["videoUrl"+cam],path=V["videoPath"+cam];url&&out.push({id:`${cat}_${ath}_${cam}`,compId:a,catId:cat,catName,athId:ath,athName:name,athClub:club,cam,url,path,ts:meta.ts||V.timestamp||"",rtdbBase:`${fb}/${a}/puanlar/${cat}/${ath}`})})})});
+   out.sort((x,y)=>x.catName!==y.catName?x.catName.localeCompare(y.catName,"tr-TR"):(String(y.ts||"").localeCompare(String(x.ts||""))||x.cam.localeCompare(y.cam)));
+   setVids(out);
+  }finally{setLoading(!1)}
+ },[comps,fb]);
+ t.useEffect(()=>{load(comp),setCatF("")},[comp,load]);
+ const doDelete=t.useCallback(async()=>{if(!del)return;setDeleting(!0);try{const{rtdbBase:b,cam:c}=del;await set(ref(db,`${b}/videoUrl${c}`),null),await set(ref(db,`${b}/videoPath${c}`),null),setVids(v=>v.filter(x=>x.id!==del.id))}finally{setDeleting(!1),setDel(null)}},[del]);
+ const shown=vids.filter(a=>{if(catF&&a.catId!==catF)return!1;if(!q.trim())return!0;const s=q.toLocaleLowerCase("tr-TR");return a.athName.toLocaleLowerCase("tr-TR").includes(s)||a.athClub.toLocaleLowerCase("tr-TR").includes(s)||a.catName.toLocaleLowerCase("tr-TR").includes(s)});
+ const compList=Object.entries(comps),catOpts=[...new Map(vids.map(a=>[a.catId,a.catName])).entries()].sort((x,y)=>String(x[1]).localeCompare(String(y[1]),"tr-TR"));
+ const groups=[];shown.forEach(v=>{let gr=groups.find(g=>g.catId===v.catId);if(!gr){gr={catId:v.catId,catName:v.catName,items:[]};groups.push(gr)}gr.items.push(v)});
+ return e.jsxs("div",{className:"vg-page page-container",children:[
+  e.jsx("button",{type:"button",className:"back-btn",onClick:()=>nav(rp),children:e.jsx("i",{className:"material-icons-round",children:"arrow_back"})}),
+  e.jsxs("div",{className:"vg-header",children:[e.jsxs("div",{className:"vg-title-row",children:[e.jsx("div",{className:"vg-icon",children:e.jsx("i",{className:"material-icons-round",children:"video_library"})}),e.jsxs("div",{children:[e.jsx("h1",{className:"vg-title",children:"Video Arşivi — Aerobik"}),e.jsx("p",{className:"vg-subtitle",children:"Kaydedilen performans videolarını kategori bazında izleyin, indirin veya silin"})]})]}),
+   e.jsxs("div",{className:"vg-controls",children:[
+    e.jsxs("select",{className:"vg-select",value:comp,onChange:a=>setComp(a.target.value),children:[e.jsx("option",{value:"",children:"— Yarışma seçin —"}),compList.map(([a,i])=>e.jsx("option",{value:a,children:i.isim||i.ad||a},a))]}),
+    vids.length>0&&e.jsxs("select",{className:"vg-select",value:catF,onChange:a=>setCatF(a.target.value),children:[e.jsx("option",{value:"",children:"— Tüm kategoriler —"}),catOpts.map(([cv,cn])=>e.jsx("option",{value:cv,children:cn},cv))]}),
+    vids.length>0&&e.jsxs("div",{className:"vg-search",children:[e.jsx("i",{className:"material-icons-round",children:"search"}),e.jsx("input",{type:"text",placeholder:"Sporcu, kulüp, kategori ara...",value:q,onChange:a=>setQ(a.target.value)}),q&&e.jsx("button",{onClick:()=>setQ(""),children:e.jsx("i",{className:"material-icons-round",children:"close"})})]})
+   ]})]}),
+  loading&&e.jsxs("div",{className:"vg-loading",children:[e.jsx("div",{className:"vg-spinner"}),e.jsx("span",{children:"Videolar yükleniyor..."})]}),
+  !loading&&comp&&shown.length===0&&e.jsxs("div",{className:"vg-empty",children:[e.jsx("i",{className:"material-icons-round",children:"videocam_off"}),e.jsx("p",{children:q||catF?"Sonuç bulunamadı.":"Bu yarışmaya ait kayıtlı video yok."})]}),
+  !loading&&shown.length>0&&e.jsxs("div",{className:"vg-count",children:[shown.length," video · ",groups.length," kategori"]}),
+  !loading&&groups.map(gr=>e.jsxs("div",{style:{marginBottom:"1.6rem"},children:[
+    e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",margin:"1rem 0 .7rem",paddingBottom:".4rem",borderBottom:"2px solid rgba(14,165,233,.35)"},children:[e.jsx("i",{className:"material-icons-round",style:{color:"#0EA5E9"},children:"folder"}),e.jsx("span",{style:{fontWeight:800,fontSize:"1.1rem"},children:gr.catName}),e.jsxs("span",{style:{color:"#8b97b3",fontWeight:700,fontSize:".85rem"},children:["(",gr.items.length,")"]})]}),
+    e.jsx("div",{className:"vg-grid",children:gr.items.map(a=>e.jsxs("div",{className:"vg-card",children:[
+     e.jsxs("div",{className:"vg-card-thumb",onClick:()=>setPlay(a.url),children:[e.jsx("i",{className:"material-icons-round vg-play-icon",children:"play_circle"}),e.jsxs("div",{className:"vg-cam-badge",children:["KAM ",a.cam," · ",CAM[a.cam]]})]}),
+     e.jsxs("div",{className:"vg-card-body",children:[e.jsx("div",{className:"vg-card-ath",children:a.athName}),a.athClub&&e.jsx("div",{className:"vg-card-club",children:a.athClub}),e.jsx("div",{className:"vg-card-meta",children:e.jsx("span",{className:"vg-cat-tag",children:a.catName})})]}),
+     e.jsxs("div",{className:"vg-card-actions",children:[e.jsxs("button",{className:"vg-btn vg-btn--play",onClick:()=>setPlay(a.url),title:"İzle",children:[e.jsx("i",{className:"material-icons-round",children:"play_arrow"}),"İzle"]}),e.jsxs("a",{className:"vg-btn vg-btn--dl",href:a.url,download:!0,target:"_blank",rel:"noopener noreferrer",title:"İndir",children:[e.jsx("i",{className:"material-icons-round",children:"download"}),"İndir"]}),e.jsx("button",{className:"vg-btn vg-btn--del",onClick:()=>setDel(a),title:"Sil",children:e.jsx("i",{className:"material-icons-round",children:"delete"})})]})]},a.id))})
+  ]},gr.catId)),
+  play&&e.jsx("div",{className:"vg-modal-overlay",onClick:()=>setPlay(null),children:e.jsxs("div",{className:"vg-player-modal",onClick:a=>a.stopPropagation(),children:[e.jsx("button",{className:"vg-modal-close",onClick:()=>setPlay(null),children:e.jsx("i",{className:"material-icons-round",children:"close"})}),e.jsx("video",{className:"vg-video-player",src:play,controls:!0,autoPlay:!0,playsInline:!0})]})}),
+  del&&e.jsx("div",{className:"vg-modal-overlay",onClick:()=>!deleting&&setDel(null),children:e.jsxs("div",{className:"vg-confirm-modal",onClick:a=>a.stopPropagation(),children:[e.jsx("div",{className:"vg-confirm-icon",children:e.jsx("i",{className:"material-icons-round",children:"delete_forever"})}),e.jsx("h3",{children:"Videoyu sil?"}),e.jsxs("p",{children:[e.jsx("strong",{children:del.athName})," — ",del.catName," / KAM ",del.cam]}),e.jsx("p",{className:"vg-confirm-warn",children:"Kayıt listeden kaldırılır (buluttaki dosya kalabilir). Bu işlem geri alınamaz."}),e.jsxs("div",{className:"vg-confirm-btns",children:[e.jsx("button",{className:"vg-btn vg-btn--cancel",onClick:()=>setDel(null),disabled:deleting,children:"Vazgeç"}),e.jsx("button",{className:"vg-btn vg-btn--del",onClick:doDelete,disabled:deleting,children:deleting?"Siliniyor...":"Evet, Sil"})]})]})})
+ ]});
+}
+export{AerobikVideoGallery as default};

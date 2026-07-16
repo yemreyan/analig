@@ -75,11 +75,12 @@ function showAth(a){const b=$("athBox");if(!a){b.innerHTML="";return;}
 const tr=s=>(s||"").replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").replace(/Ş/g,"S").replace(/ğ/g,"g").replace(/Ğ/g,"G").replace(/ü/g,"u").replace(/Ü/g,"U").replace(/ö/g,"o").replace(/Ö/g,"O").replace(/ç/g,"c").replace(/Ç/g,"C").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-+|-+$/g,"");
 
 // ---- kayıt durum makinesi (aktifSporcu tetikli) ----
-let stream=null, recorder=null, chunks=[], curCat="", curAth="", curName="", mimeExt="webm";
-function startRec(cat,athId,name,ad,soyad,okul){
+let stream=null, recorder=null, chunks=[], curCat="", curAth="", curName="", curAd="", curSoyad="", curOkul="", curIl="", mimeExt="webm";
+function startRec(cat,athId,name,ad,soyad,okul,il){
   if(recState==="recording"||recState==="saving"||recState==="uploading")return;
   if(!ZW.outS())return;
   curCat=cat; curAth=athId||""; curName=(name||((ad||"")+" "+(soyad||""))).trim()||"Sporcu";
+  curAd=ad||""; curSoyad=soyad||""; curOkul=okul||""; curIl=il||"";
   const mime=MediaRecorder.isTypeSupported("video/mp4")?"video/mp4":MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":MediaRecorder.isTypeSupported("video/webm;codecs=vp8")?"video/webm;codecs=vp8":"video/webm";
   mimeExt=mime.startsWith("video/mp4")?"mp4":"webm";
   const rec=new MediaRecorder(ZW.outS(),{mimeType:mime,videoBitsPerSecond:5e6});
@@ -100,7 +101,7 @@ function onStop(mime){
     c.append("public_id",`${BASE}/${comp}/${curCat}/${tr(nm)}-kam${cam}-${z}`);
     fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:"POST",body:c})
       .then(r=>r.json().then(u=>r.ok?u:Promise.reject(new Error(u.error?.message||"Yükleme başarısız"))))
-      .then(u=>{const J=`${BASE}/${comp}/puanlar/${curCat}/${z}`;set(ref(db,`${J}/videoUrl${CW}`),u.secure_url);set(ref(db,`${J}/videoPath${CW}`),u.public_id||"");setRec("uploaded");setTimeout(()=>{if(recState==="uploaded")setRec("idle")},2500);})
+      .then(u=>{const J=`${BASE}/${comp}/puanlar/${curCat}/${z}`;set(ref(db,`${J}/videoUrl${CW}`),u.secure_url);set(ref(db,`${J}/videoPath${CW}`),u.public_id||"");set(ref(db,`${J}/videoBilgi`),{ad:curAd,soyad:curSoyad,okul:curOkul,il:curIl,name:nm,cam:CW,ts:Date.now()});setRec("uploaded");setTimeout(()=>{if(recState==="uploaded")setRec("idle")},2500);})
       .catch(e=>{setRec("error",e?.message||"");setTimeout(()=>{if(recState==="error")setRec("idle")},4000);});
   } else { setRec(cam==="b"?"download":"idle"); if(cam==="b")setTimeout(()=>{if(recState==="download")setRec("idle")},2000); }
 }
@@ -112,7 +113,7 @@ function watchActive(){
     for(const k of Object.keys(all)){ if(all[k]){cat=k;a=all[k];break;} }
     if(a&&typeof a==="object"){
       showAth(a);
-      if(recState==="idle") startRec(cat,a.id,a.ad&&a.soyad?(a.ad+" "+a.soyad):a.ad,a.ad,a.soyad,a.okul);
+      if(recState==="idle") startRec(cat,a.id,a.ad&&a.soyad?(a.ad+" "+a.soyad):a.ad,a.ad,a.soyad,a.okul,a.il);
     } else {
       showAth(null);
       if(recState==="recording") stopRec();
