@@ -71,6 +71,9 @@ h3{font-size:.9rem;font-weight:800;margin:.2rem 0 .6rem;color:var(--muted);text-
       <h3 style="margin-top:1.2rem">📹 Kameralar (tüm yarışma için)</h3>
       <div class="hint" style="margin-top:0">Kamera telefonuna okut. Sporcu çağrılınca otomatik kayda başlar, kaydedilince yükler. Kamera A → buluta yükler (skorlara eklenir); Kamera B → yedek (indirir).</div>
       <div id="camGrid" class="qrgrid" style="margin-top:.7rem"></div>
+      <h3 style="margin-top:1.2rem">🏛️ Yönetim Ekranları</h3>
+      <div class="hint" style="margin-top:0">Üst Jüri → başhakem onaya gönderince A/E/D notlarını görür, Onayla/Geri Gönder. Teknik Kurul → tüm puanları canlı izler.</div>
+      <div id="mgmtGrid" class="qrgrid" style="margin-top:.7rem"></div>
     </div>
   </div>
   <div id="out" class="qrgrid"></div>
@@ -123,7 +126,17 @@ $("compSel").addEventListener("change",async e=>{
   $("cats").querySelectorAll(".catchip").forEach(l=>{l.querySelector("input").onchange=()=>l.classList.toggle("on",l.querySelector("input").checked);});
   $("body").style.display="";
   renderCameras();
+  renderMgmt();
 });
+function renderMgmt(){
+  const mgs=[{f:"aerobik-ustjuri.html",t:"🏛️ Üst Jüri",d:"Onay ekranı (Onayla / Geri Gönder)"},{f:"aerobik-teknik-kurul.html",t:"👥 Teknik Kurul",d:"Canlı skor izleme"}];
+  $("mgmtGrid").innerHTML=mgs.map((c,i)=>{
+    const url=`${location.origin}/${c.f}?compId=${encodeURIComponent(comp)}`;
+    return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}</div><div id="mg${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(url)}">Linki Kopyala</div></div>`;
+  }).join("");
+  mgs.forEach((c,i)=>{const url=`${location.origin}/${c.f}?compId=${encodeURIComponent(comp)}`;try{new QRCode($("mg"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
+  $("mgmtGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Link kopyalandı ✓","ok");});
+}
 function renderCameras(){
   const cams=[{cam:"a",t:"📹 Kamera A",d:"Buluta yükler (skorlara eklenir)"},{cam:"b",t:"📹 Kamera B",d:"Yedek (indirir)"}];
   $("camGrid").innerHTML=cams.map((c,i)=>{

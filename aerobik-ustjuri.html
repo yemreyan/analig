@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teknik Kurul — Canlı Skor — TCF</title>
+<title>Üst Jüri — Onay — TCF</title>
 <link rel="icon" type="image/png" href="/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -33,6 +33,17 @@ select{font:inherit;font-weight:700;border-radius:9px;border:1px solid var(--lin
 .card .tap{position:absolute;top:.7rem;right:.7rem;color:var(--muted);font-size:16px}
 .bD .b{background:#8b5cf6}.bA .b{background:#f59e0b}.bE .b{background:#0891b2}.bP .b{background:#ef4444}.bL .b{background:#10b981}.bT .b{background:#3b82f6}
 .notice{text-align:center;color:var(--muted);padding:3rem 1rem;font-weight:600}
+.statusbar{display:flex;align-items:center;gap:.6rem;margin:1rem 0;padding:.8rem 1rem;border-radius:12px;font-weight:800;font-size:.95rem}
+.statusbar.pending{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:var(--gold)}
+.statusbar.notsent{background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.statusbar.done{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:var(--ok)}
+.actions{display:flex;gap:.9rem;margin:1.2rem 0 .5rem;flex-wrap:wrap}
+.actions button{flex:1;min-width:180px;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:1rem;border:none;border-radius:14px;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;transition:.15s}
+.actions button:disabled{opacity:.4;cursor:not-allowed}
+.btn-approve{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.btn-approve:not(:disabled):hover{filter:brightness(1.08)}
+.btn-reject{background:var(--panel2);border:1px solid var(--warn)!important;color:#fca5a5}
+.btn-reject:not(:disabled):hover{background:rgba(239,68,68,.15)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem}
 .modal.hidden{display:none}
 .mcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.3rem;width:100%;max-width:560px;max-height:88vh;overflow:auto}
@@ -47,22 +58,26 @@ select{font:inherit;font-weight:700;border-radius:9px;border:1px solid var(--lin
 .mclose{width:100%;margin-top:.6rem;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:.7rem;font:inherit;font-weight:800;cursor:pointer}
 .live{display:inline-flex;align-items:center;gap:.4rem;color:#86efac;font-weight:800;font-size:.8rem}
 .live .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;animation:bl 1.4s infinite}@keyframes bl{50%{opacity:.3}}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:.8rem 1.3rem;font-weight:800;z-index:80;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="brand"><span class="material-icons-round">groups</span> Teknik Kurul — Canlı Skor</div>
+  <div class="brand"><span class="material-icons-round">gavel</span> ÜST JÜRİ — Onay Ekranı</div>
   <select id="compSel"><option value="">Yarışma seçin…</option></select>
   <span class="live" id="live" style="display:none"><span class="dot"></span>CANLI</span>
 </div>
 <div class="wrap">
-  <div id="body"><div class="notice">Yarışma seçin. Başhakem sporcu çağırdığında skorlar burada canlı görünecek.</div></div>
+  <div id="body"><div class="notice">Yarışma seçin. Başhakem puanı onaya gönderdiğinde burada görünecek.</div></div>
 </div>
 <div id="modal" class="modal hidden"><div class="mcard" id="mcard"></div></div>
+<div id="toast" class="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
 const db=getDatabase(initializeApp(firebaseConfig));
 const BASE="aerobik_yarismalar";
@@ -70,11 +85,12 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[<&>]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
 const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2);
 const f3=v=>v==null||isNaN(v)?"—":Number(v).toFixed(3);
-let comps={}, comp="", curCat="", curAth="", curScore=null, unsubActive=null, unsubScore=null;
+let comps={}, comp="", curCat="", curAth="", curScore=null, curAthObj=null, busy=false, unsubActive=null, unsubScore=null;
 
-// kriter/kesinti okunabilir isimler
 const CRIT={artisticRoutine:"Artistik Rutin",content2:"İçerik 2",generalContent:"Genel İçerik",music:"Müzik",performance:"Performans"};
 const nice=k=>CRIT[k]||k.replace(/([A-Z])/g," $1").replace(/^./,c=>c.toUpperCase());
+
+function toast(msg,cls){const t=$("toast");t.textContent=msg;t.className="toast show "+(cls||"");setTimeout(()=>t.className="toast",2400);}
 
 onValue(ref(db,BASE),s=>{
   comps=s.val()||{};
@@ -92,25 +108,24 @@ function watch(){
     const all=snap.val()||{}; let cat="",a=null;
     for(const k of Object.keys(all)){ if(all[k]){cat=k;a=all[k];break;} }
     if(a&&typeof a==="object"){
-      const athId=a.id;
+      const athId=a.id;curAthObj=a;
       if(cat!==curCat||athId!==curAth){
         curCat=cat;curAth=athId;
         unsubScore&&unsubScore();
         unsubScore=onValue(ref(db,`${BASE}/${comp}/puanlar/${cat}/${athId}`),s=>{curScore=s.val()||{};render(a);});
       }
       render(a);
-    } else { curCat="";curAth="";curScore=null;unsubScore&&unsubScore();unsubScore=null;
-      $("body").innerHTML='<div class="notice">Sporcu bekleniyor… Başhakem çağırınca skorlar gelecek.</div>'; }
+    } else { curCat="";curAth="";curScore=null;curAthObj=null;unsubScore&&unsubScore();unsubScore=null;
+      $("body").innerHTML='<div class="notice">Sporcu bekleniyor… Başhakem puanı onaya gönderdiğinde burada görünecek.</div>'; }
   });
 }
 
-// skor hesap
 function comps6(sc){
   const d=sc.dScore!=null?sc.dScore:null;
   const a=sc.aScore!=null?sc.aScore:trimA(sc.aPanel);
   const e=sc.eScore!=null?sc.eScore:calcE(sc.ePanel);
-  const p=sc.penalty!=null?sc.penalty:(sc.neutralDeductions!=null?sc.neutralDeductions:(sc.tarafsiz!=null?sc.tarafsiz:0));
-  const l=sc.lPanel!=null?(typeof sc.lPanel==="object"?sc.lPanel.deduction:sc.lPanel):null;
+  const p=sc.penalty!=null?sc.penalty:(sc.totalPenalties!=null?sc.totalPenalties:(sc.neutralDeductions!=null?sc.neutralDeductions:0));
+  const l=sc.lPanel!=null?(typeof sc.lPanel==="object"?sc.lPanel.totalDeduction??sc.lPanel.deduction:sc.lPanel):null;
   const t=sc.tPanel!=null?(typeof sc.tPanel==="object"?sc.tPanel.deduction:sc.tPanel):null;
   const fin=sc.finalScore!=null?sc.finalScore:(sc.sonuc!=null?sc.sonuc:((d||0)+(a||0)+(e||0)-(p||0)));
   return {d,a,e,p,l,t,fin};
@@ -121,6 +136,9 @@ function calcE(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).f
 function render(a){
   const sc=curScore||{}; const C=comps6(sc);
   const kat=comps[comp]?.kategoriler?.[curCat]?.name||curCat;
+  const durum=sc.durum||"";
+  const pending=durum==="ustJuriBekliyor";
+  const done=durum==="tamamlandi"||sc.kilitli===true;
   const cards=[
     {k:"D",cls:"bD",v:f3(C.d),sub:"Zorluk",dt:"d"},
     {k:"A",cls:"bA",v:f3(C.a),sub:"Artistik",dt:"a"},
@@ -129,18 +147,56 @@ function render(a){
     {k:"L",cls:"bL",v:C.l!=null?("−"+f2(C.l)):"—",sub:"Çizgi",dt:"l"},
     {k:"T",cls:"bT",v:C.t!=null?("−"+f2(C.t)):"—",sub:"Süre",dt:"t"},
   ];
+  let statusHtml;
+  if(pending) statusHtml=`<div class="statusbar pending"><span class="material-icons-round">hourglass_top</span> Onay bekleniyor — Başhakem bu puanı Üst Jüri'ye gönderdi.</div>`;
+  else if(done) statusHtml=`<div class="statusbar done"><span class="material-icons-round">verified</span> Onaylandı ve yayınlandı.</div>`;
+  else statusHtml=`<div class="statusbar notsent"><span class="material-icons-round">edit</span> Başhakem henüz onaya göndermedi (puanlama sürüyor). Notları izleyebilirsiniz.</div>`;
   $("body").innerHTML=`
     <div class="ath">
       <div><div class="nm">${esc(a.ad||"")} ${esc(a.soyad||"")}</div><div class="meta">${esc(a.il||"")}${a.il&&(a.okul||a.kulup)?" · ":""}${esc(a.okul||a.kulup||"")}</div></div>
       <div class="kat">${esc(kat)}</div>
       <div class="final"><div class="l">Toplam</div><div class="v">${f3(C.fin)}</div></div>
     </div>
-    <div class="grid">${cards.map((c,i)=>`
+    ${statusHtml}
+    <div class="grid">${cards.map(c=>`
       <div class="card ${c.cls}" data-dt="${c.dt}"><span class="material-icons-round tap">touch_app</span>
         <div class="lbl"><span class="b">${c.k}</span>${c.sub}</div>
         <div class="val">${c.v}</div>
-      </div>`).join("")}</div>`;
+      </div>`).join("")}</div>
+    <div class="actions">
+      <button class="btn-reject" id="btnReject" ${pending?"":"disabled"}><span class="material-icons-round">undo</span> Geri Gönder</button>
+      <button class="btn-approve" id="btnApprove" ${pending?"":"disabled"}><span class="material-icons-round">check_circle</span> Onayla ve Yayınla</button>
+    </div>`;
   $("body").querySelectorAll(".card").forEach(el=>el.onclick=()=>detail(el.dataset.dt,sc,a));
+  const ba=$("btnApprove"), br=$("btnReject");
+  if(ba) ba.onclick=()=>approve(C.fin);
+  if(br) br.onclick=()=>reject();
+}
+
+async function approve(fin){
+  if(busy||curCat===""||!curAth) return;
+  if(!confirm("Puanı onaylayıp yayınlamak istediğinize emin misiniz? Sporcu tamamlanacak ve puan kilitlenecek.")) return;
+  busy=true;
+  const cat=curCat, ath=curAth;
+  try{
+    await update(ref(db,`${BASE}/${comp}/puanlar/${cat}/${ath}`),{durum:"tamamlandi",kilitli:true,ustJuriOnay:Date.now()});
+    await set(ref(db,`${BASE}/${comp}/aktifSporcu/${cat}`),null);
+    await set(ref(db,`${BASE}/${comp}/aktifSporcuBilgi/${cat}`),null);
+    toast("Onaylandı ve yayınlandı ✓","ok");
+  }catch(e){ toast("Hata: "+(e?.message||e),"err"); }
+  busy=false;
+}
+
+async function reject(){
+  if(busy||curCat===""||!curAth) return;
+  if(!confirm("Puanı Başhakeme geri göndermek istediğinize emin misiniz? Başhakem puanı yeniden düzenleyebilir.")) return;
+  busy=true;
+  const cat=curCat, ath=curAth;
+  try{
+    await update(ref(db,`${BASE}/${comp}/puanlar/${cat}/${ath}`),{durum:"scoring",kilitli:false,ustJuriGeri:Date.now()});
+    toast("Başhakeme geri gönderildi ↩","ok");
+  }catch(e){ toast("Hata: "+(e?.message||e),"err"); }
+  busy=false;
 }
 
 function detail(dt,sc,a){
@@ -163,16 +219,16 @@ function detail(dt,sc,a){
     html=`<div class="jrow"><div class="jh"><span>Element Slotları</span><span class="jv">ham ${f2(dp.rawTotal)}</span></div><div class="kv">${slots}</div>${dp.deduction?`<div class="kv" style="margin-top:.35rem"><span class="ded">D kesinti: −${dp.deduction}</span></div>`:""}</div><div class="jrow"><div class="jh"><span>Bölen (dDivisor)</span><span class="jv">${sc.dDivisor??"—"}</span></div></div>`;
     modal("D — Zorluk Detay",`D puanı: ${f3(comps6(sc).d)}`,html);
   } else if(dt==="p"){
-    const nd=sc.deductionDetail||sc.penaltyDetail||sc.tarafsizDetay||null;
+    const nd=sc.penalties||sc.deductionDetail||sc.penaltyDetail||null;
     if(nd&&typeof nd==="object") html=`<div class="jrow"><div class="kv">${Object.entries(nd).filter(([k,v])=>v).map(([k,v])=>`<span class="ded">${esc(nice(k))}: −${v}</span>`).join("")||"<span>—</span>"}</div></div>`;
     else html=`<div class="jrow"><div class="jh"><span>Toplam ceza/kesinti</span><span class="jv">−${f2(comps6(sc).p)}</span></div></div>`;
     modal("P — Ceza / Nötr Kesinti",`Toplam: −${f2(comps6(sc).p)}`,html);
   } else if(dt==="l"){
-    const lp=sc.lPanel; const v=typeof lp==="object"?lp.deduction:lp;
-    modal("L — Çizgi Detay",`Çizgi kesintisi`,`<div class="jrow"><div class="jh"><span>Çizgi Hakemi</span><span class="jv">−${v!=null?f2(v):"—"}</span></div></div>`);
+    const lp=sc.lPanel; const v=typeof lp==="object"?(lp.totalDeduction??lp.deduction):lp; const calls=typeof lp==="object"?lp.calls:null;
+    modal("L — Çizgi Detay",`Çizgi kesintisi`,`<div class="jrow"><div class="jh"><span>Çizgi Hakemi</span><span class="jv">−${v!=null?f2(v):"—"}</span></div>${calls!=null?`<div class="kv"><span>Çizgi ihlali: ${calls} call</span></div>`:""}</div>`);
   } else if(dt==="t"){
-    const tp=sc.tPanel; const v=typeof tp==="object"?tp.deduction:tp; const dur=typeof tp==="object"?tp.duration:null;
-    modal("T — Süre Detay",`Süre kesintisi`,`<div class="jrow"><div class="jh"><span>Zaman Hakemi</span><span class="jv">−${v!=null?f2(v):"—"}</span></div>${dur!=null?`<div class="kv"><span>Süre: ${dur}</span></div>`:""}</div>`);
+    const tp=sc.tPanel; const v=typeof tp==="object"?tp.deduction:tp; const dur=typeof tp==="object"?tp.routineDuration:null;
+    modal("T — Süre Detay",`Süre kesintisi`,`<div class="jrow"><div class="jh"><span>Zaman Hakemi</span><span class="jv">${tp&&tp.dq?"DQ":"−"+(v!=null?f2(v):"—")}</span></div>${dur!=null?`<div class="kv"><span>Rutin süresi: ${dur}s</span></div>`:""}</div>`);
   }
 }
 function modal(title,sub,html){
