@@ -107,7 +107,7 @@ function watch(){
   $("live").style.display="";
   unsubActive=onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
     const all=snap.val()||{}; let cat="",a=null;
-    for(const k of Object.keys(all)){ if(all[k]){cat=k;a=all[k];break;} }
+    let _bt=-1;for(const k of Object.keys(all)){ if(all[k]&&(all[k].ts||0)>=_bt){_bt=all[k].ts||0;cat=k;a=all[k];} }
     if(a&&typeof a==="object"){
       const athId=a.id;curAthObj=a;
       if(cat!==curCat||athId!==curAth){
