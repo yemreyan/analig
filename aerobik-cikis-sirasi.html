@@ -91,6 +91,7 @@ input[type=number]{width:90px}input[type=time]{width:110px}
       <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
       <button class="btn ghost" id="importBtn"><span class="material-icons-round" style="font-size:17px">upload_file</span> Excel Yükle (Sporcu)</button>
       <label class="chkwrap"><input type="checkbox" id="distribute" checked> Çoklu kategorileri (çift/trio/grup) sona doğru dağıt</label>
+      <label class="chkwrap"><input type="checkbox" id="keepTimes" checked> İçe aktarılan saatleri koru (gün/saat)</label>
       <button class="btn gen" id="genBtn"><span class="material-icons-round" style="font-size:18px">casino</span> Kura ile Oluştur</button>
       <button class="btn" id="addBtn" style="background:var(--team)" disabled><span class="material-icons-round" style="font-size:18px">person_add</span> Yarışmacı Ekle</button>
       <button class="btn ghost" id="addBreakBtn" disabled><span class="material-icons-round" style="font-size:17px">free_breakfast</span> Mola Ekle</button>
@@ -147,7 +148,7 @@ function shuffle(arr,rng){const a=arr.slice();for(let i=a.length-1;i>0;i--){cons
 const pkey=m=>String(m.tckn||m.lisans||((m.ad||"")+(m.soyad||"")).toLocaleLowerCase("tr").replace(/\s+/g,"")).trim();
 const sharesPerson=(a,c)=>a.members.some(m=>c.members.some(n=>pkey(m)===pkey(n)));
 
-let comps={}, comp="", items=[], breaks=[], compName="", compMeta={}, importedByDay={};
+let comps={}, comp="", items=[], breaks=[], compName="", compMeta={}, importedByDay={}, importMode=false;
 
 onValue(ref(db,BASE),s=>{
   comps=s.val()||{};
@@ -155,7 +156,7 @@ onValue(ref(db,BASE),s=>{
   $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
   if(comp&&comps[comp])$("compSel").value=comp;
 });
-$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];importedByDay={};$("dayWrap").style.display="none";if(comps[comp]?.baslangicTarihi&&!$("listDate").value)$("listDate").value=comps[comp].baslangicTarihi;render();});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;items=[];breaks=[];importedByDay={};importMode=false;$("dayWrap").style.display="none";if(comps[comp]?.baslangicTarihi&&!$("listDate").value)$("listDate").value=comps[comp].baslangicTarihi;render();});
 $("reseed").addEventListener("click",()=>{$("seed").value=Math.floor(Math.random()*99999)+1;});
 $("genBtn").addEventListener("click",generate);
 $("saveBtn").addEventListener("click",save);
@@ -165,6 +166,7 @@ $("tplBtn").addEventListener("click",downloadTemplate);
 $("importBtn").addEventListener("click",()=>{if(!comp){toast("Önce yarışma seçin.","err");return;}$("fileInput").click();});
 $("fileInput").addEventListener("change",e=>{const f=e.target.files[0];if(f)importExcel(f);e.target.value="";});
 $("importDaySel").addEventListener("change",()=>{const days=Object.keys(importedByDay);loadImportedDay(days[+$("importDaySel").value]);});
+$("keepTimes").addEventListener("change",()=>{const days=Object.keys(importedByDay);if(days.length)loadImportedDay(days[+($("importDaySel").value||0)]);});
 $("addBreakBtn").addEventListener("click",addBreak);
 
 function nameOf(it){return it.members.map(m=>m.adSoyad||((m.ad||"")+" "+(m.soyad||"")).trim()).join(" - ");}
@@ -209,6 +211,7 @@ function generate(){
     });
   }else ordered=[...individuals,...multi];
   items=ordered;
+  importMode=false; // kura -> saatler yeniden hesaplanır
   // otomatik mola önerisi
   breaks=[];
   const be=parseInt($("breakEvery").value)||0;
@@ -224,6 +227,15 @@ function fmt(min){min=((min%1440)+1440)%1440;const h=Math.floor(min/60),m=min%60
 // zaman + mola satırlarını hesapla -> render dizisi
 function computeRows(){
   const interval=parseInt($("interval").value)||3, base=toMin($("baseTime").value);
+  // SAAT KORUMA MODU: içe aktarılan başlangıç saatlerini aynen kullan (yeniden hesaplama)
+  if(importMode && items.length && items.every(it=>/^\d{1,2}:\d{2}$/.test(it._impTime||""))){
+    const bk=[...breaks].sort((a,b)=>a.after-b.after); let bi=0; const rows=[];
+    items.forEach((it,i)=>{
+      while(bi<bk.length&&bk[bi].after===i){const st=i>0?toMin(items[i-1]._impTime)+interval:base,en=toMin(items[i]._impTime);rows.push({type:"break",label:bk[bi].label,start:st,end:en,idx:bi});bi++;}
+      it._order=i+1; it._time=it._impTime; rows.push({type:"item",it,order:i+1,time:it._impTime});
+    });
+    return rows;
+  }
   const bk=[...breaks].sort((a,b)=>a.after-b.after); let bi=0, t=base; const rows=[];
   items.forEach((it,i)=>{
     while(bi<bk.length&&bk[bi].after===i){const s=t;t+=bk[bi].dur;rows.push({type:"break",label:bk[bi].label,start:s,end:t,idx:bi});bi++;}
@@ -275,7 +287,7 @@ function wire(){
     row.addEventListener("drop",e=>{e.preventDefault();const to=+row.dataset.i;if(dragI!=null&&dragI!==to)move(dragI,to);dragI=null;});
   });
 }
-["baseTime","interval"].forEach(id=>$(id).addEventListener("change",()=>{if(items.length)render();}));
+["baseTime","interval"].forEach(id=>$(id).addEventListener("change",()=>{if(importMode)rebuildBreaksFromTimes();if(items.length)render();}));
 
 // --- Manuel yarışmacı ekleme ---
 function nextGrupNo(cat){const g=items.filter(x=>x.cat===cat).map(x=>x.grupNo||0);return (g.length?Math.max(...g):0)+1;}
@@ -306,6 +318,7 @@ function doAddCompetitor(){
   const members=lines.map(nm=>{const p=nm.split(/\s+/);const soyad=p.length>1?p.pop():"";const ad=p.join(" ");
     const m={ad,soyad,adSoyad:(ad+" "+soyad).trim(),il,okul,kulup:okul,yarismaTuru:multi?"takim":"ferdi"};if(multi)m.grupNo=grupNo;return m;});
   items.push({cat,type:typeOf(cat),okul,grupNo,members});
+  importMode=false; // manuel ekleme -> saatler yeniden hesaplanır
   closeModal();render();
   toast(`"${lines.join(" - ")}" listeye eklendi ✓`,"ok");
 }
@@ -339,10 +352,10 @@ async function save(){
     items.forEach(it=>{it.members.forEach(m=>{
       if(!m.id){ // manuel eklenen yeni sporcu -> tam kaydı TEK objede yaz (alt-yol yazma, çakışır)
         m.id=push(ref(db,`${BASE}/${comp}/sporcular/${it.cat}`)).key;
-        up[`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`]={ad:m.ad||"",soyad:m.soyad||"",adSoyad:m.adSoyad||"",soyadAd:((m.soyad||"")+" "+(m.ad||"")).trim(),il:m.il||"",okul:m.okul||"",kulup:m.okul||"",yarismaTuru:multi0(it)?"takim":"ferdi",appId:"manuel",cikisSirasi:it._order,baslangicSaati:it._time,...(multi0(it)?{grupNo:it.grupNo||1}:{})};
+        up[`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`]={ad:m.ad||"",soyad:m.soyad||"",adSoyad:m.adSoyad||"",soyadAd:((m.soyad||"")+" "+(m.ad||"")).trim(),il:m.il||"",okul:m.okul||"",kulup:m.okul||"",yarismaTuru:multi0(it)?"takim":"ferdi",appId:"manuel",gun:it._gun||"",cikisSirasi:it._order,baslangicSaati:it._time,...(multi0(it)?{grupNo:it.grupNo||1}:{})};
         up[`${BASE}/${comp}/kategoriler/${it.cat}`]=comps[comp]?.kategoriler?.[it.cat]||{name:catKategori(it.cat)};
       }else{ // mevcut sporcu -> sadece alanları güncelle
-        const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;up[`${p}/cikisSirasi`]=it._order;up[`${p}/baslangicSaati`]=it._time;if(multi0(it))up[`${p}/grupNo`]=it.grupNo||1;
+        const p=`${BASE}/${comp}/sporcular/${it.cat}/${m.id}`;up[`${p}/cikisSirasi`]=it._order;up[`${p}/baslangicSaati`]=it._time;up[`${p}/gun`]=it._gun||"";if(multi0(it))up[`${p}/grupNo`]=it.grupNo||1;
       }
     });});
     await update(ref(db),up);
@@ -446,7 +459,8 @@ function importList(rows,G,map,norm){
     const comb=String(g("Ad Soyad")||"").trim();
     if(!ad&&!soyad&&comb){const p=comb.split(/\s+/);soyad=p.length>1?p.pop():"";ad=p.join(" ");}
     const okul=String(g("Kulüp")||g("Kulup")||g("Okul")||"").trim();
-    parsed.push({gun:String(g("Gün")||g("Gun")||"").trim()||"Tek Gün",sira,cat,
+    const time=String(g("Başlangıç Saati")||g("Baslangic Saati")||g("Saat")||"").trim();
+    parsed.push({gun:String(g("Gün")||g("Gun")||"").trim()||"Tek Gün",sira,cat,time,
       member:{ad,soyad,adSoyad:(ad+" "+soyad).trim(),soyadAd:(soyad+" "+ad).trim(),il:String(g("İl")||g("Il")||"").trim(),okul,kulup:okul,tckn:String(g("TCKN")||"").trim(),lisans:String(g("Lisans No")||g("Lisans")||"").trim()},
       grupNo:parseInt(g("Grup No")||g("GrupNo"))||sira});
   });
@@ -454,7 +468,7 @@ function importList(rows,G,map,norm){
   importedByDay={};
   parsed.forEach(p=>{
     const day=(importedByDay[p.gun]=importedByDay[p.gun]||{});
-    if(!day[p.sira]) day[p.sira]={cat:p.cat,type:typeOf(p.cat),okul:p.member.okul,grupNo:isMulti(p.cat)?p.grupNo:null,_sira:p.sira,members:[]};
+    if(!day[p.sira]) day[p.sira]={cat:p.cat,type:typeOf(p.cat),okul:p.member.okul,grupNo:isMulti(p.cat)?p.grupNo:null,_sira:p.sira,_impTime:p.time,_gun:p.gun,members:[]};
     const comp2=day[p.sira];
     const nkey=(p.member.adSoyad||"").toLocaleLowerCase("tr").replace(/\s+/g,"");
     if(nkey&&comp2.members.some(x=>(x.adSoyad||"").toLocaleLowerCase("tr").replace(/\s+/g,"")===nkey))return; // aynı üye tekrar (örtüşen sayfa)
@@ -472,8 +486,18 @@ function loadImportedDay(day){
   const d=importedByDay[day]; if(!d)return;
   items=Object.values(d).sort((a,b)=>a._sira-b._sira);
   breaks=[];
+  // saatleri koru: Excel'deki başlangıç saatleri geçerliyse mola boşluklarını yeniden kur
+  importMode=$("keepTimes")?.checked!==false && items.length>0 && items.every(it=>/^\d{1,2}:\d{2}$/.test(it._impTime||""));
+  if(importMode){ $("baseTime").value=items[0]._impTime; rebuildBreaksFromTimes(); }
   const iso=dayToISO(day); if(iso)$("listDate").value=iso;
   render(); checkRest();
+}
+function rebuildBreaksFromTimes(){
+  breaks=[]; const iv=parseInt($("interval").value)||3;
+  for(let i=1;i<items.length;i++){
+    const gap=toMin(items[i]._impTime)-toMin(items[i-1]._impTime);
+    if(gap>iv+1) breaks.push({after:i,dur:gap-iv,label:"ARA"});
+  }
 }
 function excelExport(){
   if(!items.length)return;
