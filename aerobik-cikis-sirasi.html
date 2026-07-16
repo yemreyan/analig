@@ -56,6 +56,8 @@ input[type=number]{width:90px}input[type=time]{width:110px}
 .toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
 .rowc .del{background:var(--panel2);border:1px solid var(--line);color:#fca5a5;border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .rowc .del:hover{border-color:var(--warn);color:#fff;background:var(--warn)}
+.rowc .brk-add{background:var(--panel2);border:1px solid var(--line);color:var(--gold);border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.rowc .brk-add:hover{border-color:var(--gold);color:#3a2c00;background:var(--gold)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem}
 .modal.hidden{display:none}
 .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.3rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -264,6 +266,7 @@ function render(){
       <div class="info"><div class="nm">${esc(nameOf(it))||"—"}</div>
         <div class="sub"><span class="chip">${esc(catKategori(it.cat))}</span>${cnt}<span>${esc(ilOf(it))}</span>${grpEd}</div></div>
       <div class="mv"><button data-up="${i}"><span class="material-icons-round">keyboard_arrow_up</span></button><button data-dn="${i}"><span class="material-icons-round">keyboard_arrow_down</span></button></div>
+      <button class="brk-add" data-brk="${i}" title="Buradan sonra mola ekle"><span class="material-icons-round" style="font-size:15px">free_breakfast</span></button>
       <button class="del" data-del="${i}" title="Listeden çıkar"><span class="material-icons-round" style="font-size:16px">delete</span></button>
     </div>`;
   }).join("");
@@ -277,6 +280,7 @@ function wire(){
   L.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>move(+b.dataset.dn,+b.dataset.dn+1));
   L.querySelectorAll("[data-delbreak]").forEach(b=>b.onclick=()=>{breaks.splice(+b.dataset.delbreak,1);render();});
   L.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const it=items[+b.dataset.del];if(confirm(`"${nameOf(it)||"Bu yarışmacı"}" listeden çıkarılsın mı?`)){items.splice(+b.dataset.del,1);render();}});
+  L.querySelectorAll("[data-brk]").forEach(b=>b.onclick=()=>insertBreakAfter(+b.dataset.brk+1));
   L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{items[+inp.dataset.gi].grupNo=Math.max(1,parseInt(inp.value)||1);});
   let dragI=null;
   L.querySelectorAll(".rowc").forEach(row=>{
@@ -287,7 +291,7 @@ function wire(){
     row.addEventListener("drop",e=>{e.preventDefault();const to=+row.dataset.i;if(dragI!=null&&dragI!==to)move(dragI,to);dragI=null;});
   });
 }
-["baseTime","interval"].forEach(id=>$(id).addEventListener("change",()=>{if(importMode)rebuildBreaksFromTimes();if(items.length)render();}));
+["baseTime","interval"].forEach(id=>$(id).addEventListener("change",()=>{if(items.length)render();}));
 
 // --- Manuel yarışmacı ekleme ---
 function nextGrupNo(cat){const g=items.filter(x=>x.cat===cat).map(x=>x.grupNo||0);return (g.length?Math.max(...g):0)+1;}
@@ -328,6 +332,12 @@ $("mCancel").addEventListener("click",closeModal);
 $("mAdd").addEventListener("click",doAddCompetitor);
 $("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 
+function insertBreakAfter(after){
+  const dur=parseInt(prompt(`${after}. çıkıştan sonra mola — süre (dakika):`,"10")); if(!dur||dur<1)return;
+  const label=prompt("Mola etiketi:","ARA")||"ARA";
+  breaks.push({after,dur,label}); render();
+  toast(`${after}. çıkıştan sonra ${dur} dk mola eklendi ✓`,"ok");
+}
 function addBreak(){
   const pos=prompt("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-"+items.length+")");
   if(pos==null)return; const after=parseInt(pos); if(isNaN(after)||after<1||after>=items.length){toast("Geçersiz konum.","err");return;}
@@ -485,19 +495,19 @@ function importList(rows,G,map,norm){
 function loadImportedDay(day){
   const d=importedByDay[day]; if(!d)return;
   items=Object.values(d).sort((a,b)=>a._sira-b._sira);
-  breaks=[];
-  // saatleri koru: Excel'deki başlangıç saatleri geçerliyse mola boşluklarını yeniden kur
-  importMode=$("keepTimes")?.checked!==false && items.length>0 && items.every(it=>/^\d{1,2}:\d{2}$/.test(it._impTime||""));
-  if(importMode){ $("baseTime").value=items[0]._impTime; rebuildBreaksFromTimes(); }
+  breaks=[]; importMode=false;
+  const haveTimes=items.length>0 && items.every(it=>/^\d{1,2}:\d{2}$/.test(it._impTime||""));
+  if($("keepTimes")?.checked!==false && haveTimes){
+    // Taban saat + aralık + molaları içe aktarılan saatlerden TÜRET -> hesaplanan mod birebir aynı saatleri üretir
+    // (böylece manuel mola ekleyince saatler doğru kayar)
+    $("baseTime").value=items[0]._impTime;
+    const gaps={}; for(let i=1;i<items.length;i++){const g=toMin(items[i]._impTime)-toMin(items[i-1]._impTime);if(g>0&&g<=20)gaps[g]=(gaps[g]||0)+1;}
+    const iv=Object.keys(gaps).sort((a,b)=>gaps[b]-gaps[a])[0]; if(iv)$("interval").value=iv;
+    const ivN=parseInt($("interval").value)||3;
+    for(let i=1;i<items.length;i++){const g=toMin(items[i]._impTime)-toMin(items[i-1]._impTime);if(g>ivN+1)breaks.push({after:i,dur:g-ivN,label:"ARA"});}
+  }
   const iso=dayToISO(day); if(iso)$("listDate").value=iso;
   render(); checkRest();
-}
-function rebuildBreaksFromTimes(){
-  breaks=[]; const iv=parseInt($("interval").value)||3;
-  for(let i=1;i<items.length;i++){
-    const gap=toMin(items[i]._impTime)-toMin(items[i-1]._impTime);
-    if(gap>iv+1) breaks.push({after:i,dur:gap-iv,label:"ARA"});
-  }
 }
 function excelExport(){
   if(!items.length)return;
