@@ -129,12 +129,12 @@ $("compSel").addEventListener("change",async e=>{
   renderMgmt();
 });
 function renderMgmt(){
-  const mgs=[{f:"aerobik-ustjuri.html",t:"🏛️ Üst Jüri",d:"Onay ekranı (Onayla / Geri Gönder)"},{f:"aerobik-teknik-kurul.html",t:"👥 Teknik Kurul",d:"Canlı skor izleme"}];
+  const mgs=[{f:"aerobik-ustjuri.html",t:"🏛️ Üst Jüri",d:"Onay ekranı (Onayla / Geri Gönder)"},{f:"aerobik-teknik-kurul.html",t:"👥 Teknik Kurul",d:"Canlı skor izleme"},{f:"aerobik-sj.html?role=sja",t:"⚖️ SJA (Süper Jüri)",d:"Artistik — fark>0.5 panele uyarı"},{f:"aerobik-sj.html?role=sje",t:"⚖️ SJE (Süper Jüri)",d:"İcra — fark>0.5 panele uyarı"},{f:"aerobik-sj.html?role=sjd",t:"⚖️ SJD (Süper Jüri)",d:"Zorluk — fark>0.5 panele uyarı"}];
   $("mgmtGrid").innerHTML=mgs.map((c,i)=>{
-    const url=`${location.origin}/${c.f}?compId=${encodeURIComponent(comp)}`;
+    const url=`${location.origin}/${c.f}${c.f.includes("?")?"&":"?"}compId=${encodeURIComponent(comp)}`;
     return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}</div><div id="mg${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(url)}">Linki Kopyala</div></div>`;
   }).join("");
-  mgs.forEach((c,i)=>{const url=`${location.origin}/${c.f}?compId=${encodeURIComponent(comp)}`;try{new QRCode($("mg"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
+  mgs.forEach((c,i)=>{const url=`${location.origin}/${c.f}${c.f.includes("?")?"&":"?"}compId=${encodeURIComponent(comp)}`;try{new QRCode($("mg"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
   $("mgmtGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Link kopyalandı ✓","ok");});
 }
 function renderCameras(){

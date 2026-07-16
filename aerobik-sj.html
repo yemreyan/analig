@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SJ Paneli (Süper Jüri) — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--ok:#22c55e;--gold:#fbbf24;--warn:#ef4444}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
+.brand .material-icons-round{color:var(--gold)}
+.wrap{max-width:640px;margin:0 auto;padding:1rem}
+select{font:inherit;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:.55rem .7rem;font-size:.9rem;min-width:200px}
+.roletabs{display:flex;gap:.5rem;margin:1rem 0}
+.roletabs button{flex:1;padding:.7rem;border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:12px;font:inherit;font-weight:800;font-size:1rem;cursor:pointer;transition:.15s}
+.roletabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ath{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.1rem 1.3rem;margin:1rem 0;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.ath .nm{font-size:1.4rem;font-weight:800;line-height:1.1}
+.ath .meta{color:var(--muted);font-weight:700;font-size:.85rem;margin-top:.2rem}
+.ath .kat{margin-left:auto;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;font-weight:800;font-size:.8rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.2rem;margin:1rem 0}
+.row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .l{color:var(--muted);font-weight:700}
+.row .v{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+.inp-label{font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:.4rem 0}
+.numwrap{display:flex;align-items:center;gap:.6rem}
+.numwrap button{width:56px;height:56px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);border-radius:12px;font-size:1.6rem;font-weight:800;cursor:pointer}
+.numwrap input{flex:1;text-align:center;font-size:2rem;font-weight:800;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:.6rem;font-variant-numeric:tabular-nums}
+.gap{margin:1rem 0;padding:1rem;border-radius:14px;text-align:center;font-weight:800;font-size:1.1rem}
+.gap.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#86efac}
+.gap.bad{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.5);color:#fca5a5}
+.send-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:1rem;border:none;border-radius:14px;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;margin-top:.5rem}
+.send-btn.warn{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.notice{text-align:center;color:var(--muted);padding:3rem 1rem;font-weight:600}
+.hint{color:var(--muted);font-size:.8rem;font-weight:600;margin-top:.4rem}
+.live{display:inline-flex;align-items:center;gap:.4rem;color:#86efac;font-weight:800;font-size:.8rem}
+.live .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;animation:bl 1.4s infinite}@keyframes bl{50%{opacity:.3}}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:.8rem 1.3rem;font-weight:800;z-index:80;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="material-icons-round">rule</span> SJ Paneli — Süper Jüri</div>
+  <select id="compSel"><option value="">Yarışma seçin…</option></select>
+  <span class="live" id="live" style="display:none"><span class="dot"></span>CANLI</span>
+</div>
+<div class="wrap">
+  <div class="roletabs" id="roletabs">
+    <button data-role="sja" class="on">SJA · Artistik</button>
+    <button data-role="sje">SJE · İcra</button>
+    <button data-role="sjd">SJD · Zorluk</button>
+  </div>
+  <div id="body"><div class="notice">Yarışma seçin. Başhakem sporcu çağırınca panel notu ve girişiniz burada görünecek.</div></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
+const db=getDatabase(initializeApp(firebaseConfig));
+const BASE="aerobik_yarismalar";
+const GAP_LIMIT=0.5;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[<&>]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2);
+let comps={}, comp="", role="sja", curCat="", curAth="", curScore=null, curAthObj=null, myVal={sja:0,sje:0,sjd:0}, busy=false, unsubActive=null, unsubScore=null;
+
+const ROLE={sja:{lbl:"Artistik Not (A)",panel:"A Panel Ort. (trimmed)",cmp:sc=>trimA(sc.aPanel)},
+            sje:{lbl:"İcra Kesintisi (E)",panel:"E Panel Kesinti (trimmed)",cmp:sc=>{const e=calcE(sc.ePanel);return e==null?null:10-e;}},
+            sjd:{lbl:"Zorluk Değeri (D)",panel:"D Panel Ham Toplam",cmp:sc=>sc.dPanel?.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null)}};
+
+function toast(msg,cls){const t=$("toast");t.textContent=msg;t.className="toast show "+(cls||"");setTimeout(()=>t.className="toast",2400);}
+function trimA(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return null;if(v.length<2)return v[0];if(v.length===4){v.sort((x,y)=>x-y);return (v[1]+v[2])/2;}return v.reduce((a,b)=>a+b,0)/v.length;}
+function calcE(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return null;let m;if(v.length===4){const s=[...v].sort((x,y)=>x-y);m=(s[1]+s[2])/2;}else m=v.reduce((a,b)=>a+b,0)/v.length;return 10-m;}
+
+onValue(ref(db,BASE),s=>{
+  comps=s.val()||{};
+  const opts=Object.entries(comps).filter(([id,c])=>c&&typeof c==="object").sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
+  $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
+  if(comp&&comps[comp])$("compSel").value=comp;
+});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;watch();});
+$("roletabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  role=b.dataset.role;$("roletabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));render();
+});
+
+function watch(){
+  unsubActive&&unsubActive();unsubScore&&unsubScore();unsubScore=null;
+  if(!comp){$("body").innerHTML='<div class="notice">Yarışma seçin.</div>';$("live").style.display="none";return;}
+  $("live").style.display="";
+  unsubActive=onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
+    const all=snap.val()||{}; let cat="",a=null;
+    for(const k of Object.keys(all)){ if(all[k]){cat=k;a=all[k];break;} }
+    if(a&&typeof a==="object"){
+      const athId=a.id;curAthObj=a;
+      if(cat!==curCat||athId!==curAth){
+        curCat=cat;curAth=athId;myVal={sja:0,sje:0,sjd:0};
+        unsubScore&&unsubScore();
+        unsubScore=onValue(ref(db,`${BASE}/${comp}/puanlar/${cat}/${athId}`),s=>{curScore=s.val()||{};render();});
+      }
+      render();
+    } else { curCat="";curAth="";curScore=null;curAthObj=null;unsubScore&&unsubScore();unsubScore=null;
+      $("body").innerHTML='<div class="notice">Sporcu bekleniyor… Başhakem çağırınca giriş açılacak.</div>'; }
+  });
+}
+
+function render(){
+  if(!curAthObj){return;}
+  const a=curAthObj, sc=curScore||{}; const R=ROLE[role];
+  const panelVal=R.cmp(sc);
+  const my=myVal[role]||0;
+  const gap=panelVal==null?null:Math.abs(my-panelVal);
+  const over=gap!=null&&gap>GAP_LIMIT;
+  const kat=comps[comp]?.kategoriler?.[curCat]?.name||curCat;
+  $("body").innerHTML=`
+    <div class="ath">
+      <div><div class="nm">${esc(a.ad||"")} ${esc(a.soyad||"")}</div><div class="meta">${esc(a.il||"")}${a.il&&(a.okul||a.kulup)?" · ":""}${esc(a.okul||a.kulup||"")}</div></div>
+      <div class="kat">${esc(kat)}</div>
+    </div>
+    <div class="card">
+      <div class="row"><span class="l">${esc(R.panel)}</span><span class="v">${f2(panelVal)}</span></div>
+      <div class="inp-label">${esc(R.lbl)} — Sizin Notunuz</div>
+      <div class="numwrap">
+        <button id="dec">−</button>
+        <input id="myval" type="number" step="0.1" min="0" value="${my}">
+        <button id="inc">+</button>
+      </div>
+      <div class="gap ${over?"bad":"ok"}">${gap==null?"Panel notu bekleniyor…":(over?`⚠️ FARK ${f2(gap)} > ${GAP_LIMIT.toFixed(1)} — Panel hakemleri uyarılmalı`:`Fark ${f2(gap)} ≤ ${GAP_LIMIT.toFixed(1)} — uyumlu`)}</div>
+      <button class="send-btn ${over?"warn":""}" id="send" ${panelVal==null?"disabled":""}>
+        <span class="material-icons-round">${over?"campaign":"save"}</span>${over?"Panel Hakemlerini Uyar & Kaydet":"SJ Notunu Kaydet"}
+      </button>
+      <div class="hint">Not: SJ notunuz final puanı etkilemez. Fark ${GAP_LIMIT.toFixed(1)}'i aşarsa panel ekranında "SJ PANELİNE GİDİNİZ" uyarısı belirir.</div>
+    </div>`;
+  const inp=$("myval");
+  const setv=x=>{myVal[role]=Math.max(0,Math.round(x*10)/10);render();};
+  $("dec").onclick=()=>setv((myVal[role]||0)-0.1);
+  $("inc").onclick=()=>setv((myVal[role]||0)+0.1);
+  inp.onchange=()=>setv(Number(inp.value)||0);
+  $("send").onclick=()=>submit(panelVal,gap,over);
+}
+
+async function submit(panelVal,gap,over){
+  if(busy||!curCat||!curAth||panelVal==null) return;
+  busy=true;
+  const cat=curCat, ath=curAth, my=myVal[role]||0, letter={sja:"a",sje:"e",sjd:"d"}[role];
+  try{
+    await update(ref(db,`${BASE}/${comp}/puanlar/${cat}/${ath}/sjPanel`),{[letter]:{value:my,panelValue:panelVal,gap:gap,ts:Date.now()}});
+    if(over){
+      await set(ref(db,`${BASE}/${comp}/refereeCalls/${cat}/${ath}/${role}`),{ts:Date.now(),gap:gap,sjValue:my,panelValue:panelVal});
+      toast("Panel hakemleri uyarıldı ⚠️ (SJ notu kaydedildi)","ok");
+    } else toast("SJ notu kaydedildi ✓","ok");
+  }catch(e){ toast("Hata: "+(e?.message||e),"err"); }
+  busy=false;
+}
+
+const p=new URLSearchParams(location.search);
+const qc=p.get("comp")||p.get("compId"), qr=p.get("role");
+if(qr&&ROLE[qr]){role=qr;$("roletabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.role===qr));}
+if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;watch();}},700);}
+</script>
+</body>
+</html>
