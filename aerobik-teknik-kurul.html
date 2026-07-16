@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teknik Kurul — Canlı Skor — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--ok:#22c55e;--gold:#fbbf24;--team:#0891b2;--warn:#ef4444}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
+.brand .material-icons-round{color:var(--gold)}
+.wrap{max-width:1100px;margin:0 auto;padding:1rem}
+select{font:inherit;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:.55rem .7rem;font-size:.9rem;min-width:240px}
+.ath{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.1rem 1.3rem;margin:1rem 0;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.ath .nm{font-size:1.6rem;font-weight:800;line-height:1.1}
+.ath .meta{color:var(--muted);font-weight:700;font-size:.9rem;margin-top:.2rem}
+.ath .kat{margin-left:auto;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.4rem 1rem;font-weight:800;font-size:.85rem}
+.ath .final{background:linear-gradient(135deg,#6366f1,#0891b2);border-radius:14px;padding:.6rem 1.2rem;text-align:center}
+.ath .final .l{font-size:.68rem;font-weight:800;opacity:.85;text-transform:uppercase}
+.ath .final .v{font-size:1.8rem;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem;cursor:pointer;transition:.15s;position:relative}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card .lbl{font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:.4rem}
+.card .lbl .b{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff}
+.card .val{font-size:2rem;font-weight:800;margin-top:.4rem}
+.card .sub{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:.15rem}
+.card .tap{position:absolute;top:.7rem;right:.7rem;color:var(--muted);font-size:16px}
+.bD .b{background:#8b5cf6}.bA .b{background:#f59e0b}.bE .b{background:#0891b2}.bP .b{background:#ef4444}.bL .b{background:#10b981}.bT .b{background:#3b82f6}
+.notice{text-align:center;color:var(--muted);padding:3rem 1rem;font-weight:600}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem}
+.modal.hidden{display:none}
+.mcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.3rem;width:100%;max-width:560px;max-height:88vh;overflow:auto}
+.mcard h3{font-size:1.15rem;font-weight:800;margin-bottom:.2rem;display:flex;align-items:center;gap:.5rem}
+.mcard .msub{color:var(--muted);font-size:.85rem;font-weight:700;margin-bottom:1rem}
+.jrow{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;margin-bottom:.6rem}
+.jrow .jh{display:flex;justify-content:space-between;font-weight:800;margin-bottom:.4rem}
+.jrow .jh .jv{color:var(--gold)}
+.kv{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem}
+.kv span{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.15rem .5rem;font-size:.75rem;font-weight:700}
+.kv span.ded{color:#fca5a5;border-color:#5b2b2b}
+.mclose{width:100%;margin-top:.6rem;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:.7rem;font:inherit;font-weight:800;cursor:pointer}
+.live{display:inline-flex;align-items:center;gap:.4rem;color:#86efac;font-weight:800;font-size:.8rem}
+.live .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;animation:bl 1.4s infinite}@keyframes bl{50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="material-icons-round">groups</span> Teknik Kurul — Canlı Skor</div>
+  <select id="compSel"><option value="">Yarışma seçin…</option></select>
+  <span class="live" id="live" style="display:none"><span class="dot"></span>CANLI</span>
+</div>
+<div class="wrap">
+  <div id="body"><div class="notice">Yarışma seçin. Başhakem sporcu çağırdığında skorlar burada canlı görünecek.</div></div>
+</div>
+<div id="modal" class="modal hidden"><div class="mcard" id="mcard"></div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
+const db=getDatabase(initializeApp(firebaseConfig));
+const BASE="aerobik_yarismalar";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[<&>]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2);
+const f3=v=>v==null||isNaN(v)?"—":Number(v).toFixed(3);
+let comps={}, comp="", curCat="", curAth="", curScore=null, unsubActive=null, unsubScore=null;
+
+// kriter/kesinti okunabilir isimler
+const CRIT={artisticRoutine:"Artistik Rutin",content2:"İçerik 2",generalContent:"Genel İçerik",music:"Müzik",performance:"Performans"};
+const nice=k=>CRIT[k]||k.replace(/([A-Z])/g," $1").replace(/^./,c=>c.toUpperCase());
+
+onValue(ref(db,BASE),s=>{
+  comps=s.val()||{};
+  const opts=Object.entries(comps).filter(([id,c])=>c&&typeof c==="object").sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
+  $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
+  if(comp&&comps[comp])$("compSel").value=comp;
+});
+$("compSel").addEventListener("change",e=>{comp=e.target.value;watch();});
+
+function watch(){
+  unsubActive&&unsubActive();unsubScore&&unsubScore();unsubScore=null;
+  if(!comp){$("body").innerHTML='<div class="notice">Yarışma seçin.</div>';$("live").style.display="none";return;}
+  $("live").style.display="";
+  unsubActive=onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
+    const all=snap.val()||{}; let cat="",a=null;
+    for(const k of Object.keys(all)){ if(all[k]){cat=k;a=all[k];break;} }
+    if(a&&typeof a==="object"){
+      const athId=a.id;
+      if(cat!==curCat||athId!==curAth){
+        curCat=cat;curAth=athId;
+        unsubScore&&unsubScore();
+        unsubScore=onValue(ref(db,`${BASE}/${comp}/puanlar/${cat}/${athId}`),s=>{curScore=s.val()||{};render(a);});
+      }
+      render(a);
+    } else { curCat="";curAth="";curScore=null;unsubScore&&unsubScore();unsubScore=null;
+      $("body").innerHTML='<div class="notice">Sporcu bekleniyor… Başhakem çağırınca skorlar gelecek.</div>'; }
+  });
+}
+
+// skor hesap
+function comps6(sc){
+  const d=sc.dScore!=null?sc.dScore:null;
+  const a=sc.aScore!=null?sc.aScore:trimA(sc.aPanel);
+  const e=sc.eScore!=null?sc.eScore:calcE(sc.ePanel);
+  const p=sc.penalty!=null?sc.penalty:(sc.neutralDeductions!=null?sc.neutralDeductions:(sc.tarafsiz!=null?sc.tarafsiz:0));
+  const l=sc.lPanel!=null?(typeof sc.lPanel==="object"?sc.lPanel.deduction:sc.lPanel):null;
+  const t=sc.tPanel!=null?(typeof sc.tPanel==="object"?sc.tPanel.deduction:sc.tPanel):null;
+  const fin=sc.finalScore!=null?sc.finalScore:(sc.sonuc!=null?sc.sonuc:((d||0)+(a||0)+(e||0)-(p||0)));
+  return {d,a,e,p,l,t,fin};
+}
+function trimA(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(v.length<2)return v[0]??null;if(v.length===4){v.sort((x,y)=>x-y);return (v[1]+v[2])/2;}return v.reduce((a,b)=>a+b,0)/v.length;}
+function calcE(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return null;let m;if(v.length===4){const s=[...v].sort((x,y)=>x-y);m=(s[1]+s[2])/2;}else m=v.reduce((a,b)=>a+b,0)/v.length;return 10-m;}
+
+function render(a){
+  const sc=curScore||{}; const C=comps6(sc);
+  const kat=comps[comp]?.kategoriler?.[curCat]?.name||curCat;
+  const cards=[
+    {k:"D",cls:"bD",v:f3(C.d),sub:"Zorluk",dt:"d"},
+    {k:"A",cls:"bA",v:f3(C.a),sub:"Artistik",dt:"a"},
+    {k:"E",cls:"bE",v:f3(C.e),sub:"İcra",dt:"e"},
+    {k:"P",cls:"bP",v:C.p?("−"+f2(C.p)):"0.00",sub:"Ceza/Kesinti",dt:"p"},
+    {k:"L",cls:"bL",v:C.l!=null?("−"+f2(C.l)):"—",sub:"Çizgi",dt:"l"},
+    {k:"T",cls:"bT",v:C.t!=null?("−"+f2(C.t)):"—",sub:"Süre",dt:"t"},
+  ];
+  $("body").innerHTML=`
+    <div class="ath">
+      <div><div class="nm">${esc(a.ad||"")} ${esc(a.soyad||"")}</div><div class="meta">${esc(a.il||"")}${a.il&&(a.okul||a.kulup)?" · ":""}${esc(a.okul||a.kulup||"")}</div></div>
+      <div class="kat">${esc(kat)}</div>
+      <div class="final"><div class="l">Toplam</div><div class="v">${f3(C.fin)}</div></div>
+    </div>
+    <div class="grid">${cards.map((c,i)=>`
+      <div class="card ${c.cls}" data-dt="${c.dt}"><span class="material-icons-round tap">touch_app</span>
+        <div class="lbl"><span class="b">${c.k}</span>${c.sub}</div>
+        <div class="val">${c.v}</div>
+      </div>`).join("")}</div>`;
+  $("body").querySelectorAll(".card").forEach(el=>el.onclick=()=>detail(el.dataset.dt,sc,a));
+}
+
+function detail(dt,sc,a){
+  let html="";
+  if(dt==="a"){
+    const bd=sc.aPanelBreakdown||{}, ap=sc.aPanel||{};
+    html=["j1","j2","j3","j4"].map(j=>{const b=bd[j]||{},note=ap[j]??b.finalAScore;
+      const crit=b.criteriaValues?Object.entries(b.criteriaValues).map(([k,v])=>`<span>${esc(nice(k))}: ${f2(v)}</span>`).join(""):"";
+      const ded=b.deductionValues?Object.entries(b.deductionValues).map(([k,v])=>`<span class="ded">${esc(nice(k))}: −${v}</span>`).join(""):"";
+      return `<div class="jrow"><div class="jh"><span>A${j.replace("j","")} Hakemi</span><span class="jv">${note!=null?f2(note):"—"}</span></div>${crit?`<div class="kv">${crit}</div>`:""}${ded?`<div class="kv" style="margin-top:.35rem">${ded}</div>`:""}</div>`;
+    }).join("");
+    modal("A — Artistik Detay",`Ortalama (trimmed): ${f3(comps6(sc).a)}`,html);
+  } else if(dt==="e"){
+    const ep=sc.ePanel||{};
+    html=["j1","j2","j3","j4"].map(j=>`<div class="jrow"><div class="jh"><span>E${j.replace("j","")} Hakemi</span><span class="jv">kesinti −${ep[j]!=null?f2(ep[j]):"—"}</span></div></div>`).join("");
+    modal("E — İcra Detay",`İcra puanı (10 − trimmed kesinti): ${f3(comps6(sc).e)}`,html);
+  } else if(dt==="d"){
+    const dp=sc.dPanel||{}, sl=dp.slots||{};
+    const slots=Object.entries(sl).map(([k,v])=>`<span>${k.toUpperCase()}: ${f2(v)}</span>`).join("")||"<span>—</span>";
+    html=`<div class="jrow"><div class="jh"><span>Element Slotları</span><span class="jv">ham ${f2(dp.rawTotal)}</span></div><div class="kv">${slots}</div>${dp.deduction?`<div class="kv" style="margin-top:.35rem"><span class="ded">D kesinti: −${dp.deduction}</span></div>`:""}</div><div class="jrow"><div class="jh"><span>Bölen (dDivisor)</span><span class="jv">${sc.dDivisor??"—"}</span></div></div>`;
+    modal("D — Zorluk Detay",`D puanı: ${f3(comps6(sc).d)}`,html);
+  } else if(dt==="p"){
+    const nd=sc.deductionDetail||sc.penaltyDetail||sc.tarafsizDetay||null;
+    if(nd&&typeof nd==="object") html=`<div class="jrow"><div class="kv">${Object.entries(nd).filter(([k,v])=>v).map(([k,v])=>`<span class="ded">${esc(nice(k))}: −${v}</span>`).join("")||"<span>—</span>"}</div></div>`;
+    else html=`<div class="jrow"><div class="jh"><span>Toplam ceza/kesinti</span><span class="jv">−${f2(comps6(sc).p)}</span></div></div>`;
+    modal("P — Ceza / Nötr Kesinti",`Toplam: −${f2(comps6(sc).p)}`,html);
+  } else if(dt==="l"){
+    const lp=sc.lPanel; const v=typeof lp==="object"?lp.deduction:lp;
+    modal("L — Çizgi Detay",`Çizgi kesintisi`,`<div class="jrow"><div class="jh"><span>Çizgi Hakemi</span><span class="jv">−${v!=null?f2(v):"—"}</span></div></div>`);
+  } else if(dt==="t"){
+    const tp=sc.tPanel; const v=typeof tp==="object"?tp.deduction:tp; const dur=typeof tp==="object"?tp.duration:null;
+    modal("T — Süre Detay",`Süre kesintisi`,`<div class="jrow"><div class="jh"><span>Zaman Hakemi</span><span class="jv">−${v!=null?f2(v):"—"}</span></div>${dur!=null?`<div class="kv"><span>Süre: ${dur}</span></div>`:""}</div>`);
+  }
+}
+function modal(title,sub,html){
+  $("mcard").innerHTML=`<h3>${esc(title)}</h3><div class="msub">${esc(sub)}</div>${html}<button class="mclose" id="mclose">Kapat</button>`;
+  $("modal").classList.remove("hidden");
+  $("mclose").onclick=()=>$("modal").classList.add("hidden");
+}
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")$("modal").classList.add("hidden");});
+
+const qc=new URLSearchParams(location.search).get("comp");
+if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;watch();}},700);}
+</script>
+</body>
+</html>
