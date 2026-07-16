@@ -393,8 +393,14 @@ async function importExcel(file){
   if(!window.XLSX){toast("Excel bileşeni yüklenemedi.","err");return;}
   try{
     const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
+    // TÜM sayfaları oku: kişi-bazlı (Ad/Soyad/Ad Soyad içeren) sayfaları birleştir; özet/mola sayfalarını atla
+    let rows=[]; const usedSheets=[];
+    wb.SheetNames.forEach(sn=>{const rr=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:""});if(!rr.length)return;
+      const h=Object.keys(rr[0]).map(x=>String(x).toLocaleLowerCase("tr").replace(/\s+/g,""));
+      if(h.some(x=>x==="ad"||x==="soyad"||x==="adsoyad")){rows=rows.concat(rr);usedSheets.push(sn);}});
+    if(!rows.length){rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});usedSheets.push(wb.SheetNames[0]);}
     if(!rows.length){toast("Excel boş.","err");return;}
+    if(usedSheets.length>1)toast(`${usedSheets.length} sayfa okundu: ${usedSheets.join(", ")}`,"ok");
     const {map,norm}=catLookup();
     const G=k=>{const r={};Object.keys(k).forEach(x=>r[norm(x)]=k[x]);return n=>r[norm(n)];};
     // "Çıkış Sırası" dolu ise -> LİSTE modu (birleştir + sıraya göre yükle); değilse sporcu modu
@@ -449,8 +455,11 @@ function importList(rows,G,map,norm){
   parsed.forEach(p=>{
     const day=(importedByDay[p.gun]=importedByDay[p.gun]||{});
     if(!day[p.sira]) day[p.sira]={cat:p.cat,type:typeOf(p.cat),okul:p.member.okul,grupNo:isMulti(p.cat)?p.grupNo:null,_sira:p.sira,members:[]};
-    const m={...p.member,yarismaTuru:isMulti(p.cat)?"takim":"ferdi"}; if(isMulti(p.cat))m.grupNo=day[p.sira].grupNo;
-    day[p.sira].members.push(m);
+    const comp2=day[p.sira];
+    const nkey=(p.member.adSoyad||"").toLocaleLowerCase("tr").replace(/\s+/g,"");
+    if(nkey&&comp2.members.some(x=>(x.adSoyad||"").toLocaleLowerCase("tr").replace(/\s+/g,"")===nkey))return; // aynı üye tekrar (örtüşen sayfa)
+    const m={...p.member,yarismaTuru:isMulti(p.cat)?"takim":"ferdi"}; if(isMulti(p.cat))m.grupNo=comp2.grupNo;
+    comp2.members.push(m);
   });
   const days=Object.keys(importedByDay);
   $("importDaySel").innerHTML=days.map((d,i)=>`<option value="${i}">${esc(d)} (${Object.keys(importedByDay[d]).length})</option>`).join("");
