@@ -81,6 +81,7 @@ onValue(ref(db,BASE),s=>{
   const opts=Object.entries(comps).filter(([id,c])=>c&&typeof c==="object").sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
   $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
   if(comp&&comps[comp])$("compSel").value=comp;
+  else if(!comp&&opts.length===1){comp=opts[0][0];$("compSel").value=comp;watch();}
 });
 $("compSel").addEventListener("change",e=>{comp=e.target.value;watch();});
 
@@ -183,7 +184,7 @@ function modal(title,sub,html){
 $("modal").addEventListener("click",e=>{if(e.target.id==="modal")$("modal").classList.add("hidden");});
 
 const qc=new URLSearchParams(location.search).get("comp")||new URLSearchParams(location.search).get("compId");
-if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;watch();}},700);}
+if(qc){comp=qc;watch();}
 </script>
 </body>
 </html>

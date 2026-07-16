@@ -87,6 +87,7 @@ onValue(ref(db,BASE),s=>{
   const opts=Object.entries(comps).filter(([id,c])=>c&&typeof c==="object").sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
   $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
   if(comp&&comps[comp])$("compSel").value=comp;
+  else if(!comp&&opts.length===1){comp=opts[0][0];$("compSel").value=comp;watch();}
 });
 $("compSel").addEventListener("change",e=>{comp=e.target.value;watch();});
 $("roletabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
@@ -165,7 +166,7 @@ async function submit(panelVal,gap,over){
 const p=new URLSearchParams(location.search);
 const qc=p.get("comp")||p.get("compId"), qr=p.get("role");
 if(qr&&ROLE[qr]){role=qr;$("roletabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.role===qr));}
-if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;watch();}},700);}
+if(qc){comp=qc;watch();}
 </script>
 </body>
 </html>
