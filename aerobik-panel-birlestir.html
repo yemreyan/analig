@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aerobik Panel Birleştirici — TCF</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--ok:#22c55e;--gold:#fbbf24;--team:#0891b2}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
+.brand .material-icons-round{color:var(--team)}
+.wrap{max-width:1000px;margin:0 auto;padding:1rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:1rem}
+.row1{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:.25rem}
+.fld label{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase}
+select,input{font:inherit;font-weight:700;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:.55rem .7rem;font-size:.9rem}
+select{min-width:240px}
+h3{font-size:.9rem;font-weight:800;margin:.2rem 0 .6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.cats{display:flex;flex-wrap:wrap;gap:.5rem}
+.catchip{display:flex;align-items:center;gap:.45rem;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem;cursor:pointer;font-weight:700;font-size:.88rem;user-select:none}
+.catchip input{width:16px;height:16px;accent-color:var(--team)}
+.catchip.on{border-color:var(--team);background:rgba(8,145,178,.15)}
+.panels-sel{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.pchip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.4rem .9rem;font-weight:800;font-size:.82rem;cursor:pointer;user-select:none}
+.pchip.on{background:var(--team);border-color:var(--team);color:#fff}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;border:none;cursor:pointer;color:#fff;background:var(--team);font-weight:800;font-size:.9rem;border-radius:10px;margin-top:.8rem}
+.btn:disabled{opacity:.5;cursor:default}.btn:hover:not(:disabled){filter:brightness(1.08)}
+.hint{color:var(--muted);font-size:.8rem;font-weight:600;line-height:1.5;margin-top:.6rem}
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem}
+.qrcard{background:#fff;border-radius:12px;padding:1rem;text-align:center;color:#111}
+.qrcard h4{font-size:1rem;font-weight:800;margin-bottom:.2rem}
+.qrcard .sub{font-size:.72rem;color:#555;font-weight:700;margin-bottom:.6rem;word-break:break-word}
+.qrcard canvas{margin:0 auto;display:block}
+.qrcard .lnk{font-size:.62rem;color:#777;word-break:break-all;margin-top:.5rem;font-weight:600}
+.qrcard .copy{margin-top:.5rem;font-size:.75rem;font-weight:800;color:var(--team);cursor:pointer;background:none;border:1px solid #ddd;border-radius:8px;padding:.3rem .6rem}
+.notice{text-align:center;color:var(--muted);padding:2.5rem 1rem;font-weight:600}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:#ef4444;color:#fca5a5}
+@media print{.topbar,.panel{display:none}.qrcard{border:1px solid #ccc;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="material-icons-round">merge</span> Aerobik Panel Birleştirici</div>
+  <span style="margin-left:auto;color:var(--muted);font-weight:700;font-size:.82rem">Seçili kategorileri tek panelde birleştir</span>
+</div>
+<div class="wrap">
+  <div class="panel">
+    <div class="row1">
+      <div class="fld"><label>Yarışma</label><select id="compSel"><option value="">Yarışma seçin…</option></select></div>
+    </div>
+    <div id="body" style="display:none">
+      <h3 style="margin-top:1rem">Birleştirilecek Kategoriler</h3>
+      <div class="cats" id="cats"></div>
+      <div style="display:flex;gap:.5rem;margin-top:.5rem">
+        <button class="pchip" id="selAll">Tümünü seç</button>
+        <button class="pchip" id="selNone">Temizle</button>
+      </div>
+      <h3 style="margin-top:1rem">Panel Türleri</h3>
+      <div class="panels-sel" id="panels"></div>
+      <button class="btn" id="genBtn"><span class="material-icons-round" style="font-size:18px">qr_code_2</span> Birleşik QR Üret</button>
+      <button class="btn" id="printBtn" style="background:var(--panel2);border:1px solid var(--line)"><span class="material-icons-round" style="font-size:18px">print</span> Yazdır</button>
+      <div class="hint">Seçili kategoriler tek QR'da birleşir; hakem hangi kategoride sporcu çağrılırsa onu görür ve doğru kategoriye puanlar. A paneli için A1–A4 ayrı QR üretilir.</div>
+    </div>
+  </div>
+  <div id="out" class="qrgrid"></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
+const db=getDatabase(initializeApp(firebaseConfig));
+const BASE="aerobik_yarismalar";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[<&>]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+function toast(m,t){const e=$("toast");e.textContent=m;e.className="toast show "+(t||"");setTimeout(()=>e.className="toast",2600);}
+const KATLBL={kiz:"Kız",erkek:"Erkek",cift:"Karışık İkili",trio:"Trio",grup:"Grup",dans:"Aerobik Dans"};
+const AGE={minik:"Minik",kucuk:"Küçük",yildiz:"Yıldız",genc:"Genç",buyuk:"Büyük"};
+function catLabel(cat,def){if(def&&def.name)return def.name;if(/^step_/.test(cat))return "Step "+(AGE[cat.split("_")[1]]||"");const p=cat.split("_");return (AGE[p[0]]||p[0])+" "+(KATLBL[p.slice(1).join("_")]||p.slice(1).join("_"));}
+// panel türleri
+const PANELS=[
+  {key:"a",label:"A (Artistik A1–A4)",route:"apanel",multi:["a1","a2","a3","a4"]},
+  {key:"d",label:"D (Zorluk)",route:"dpanel"},
+  {key:"l",label:"L (Çizgi)",route:"lpanel"},
+  {key:"t",label:"T (Süre)",route:"tpanel"},
+];
+let comps={}, comp="", token="", selPanels=new Set(["a","d","l","t"]);
+
+onValue(ref(db,BASE),s=>{
+  comps=s.val()||{};
+  const opts=Object.entries(comps).filter(([id,c])=>c&&typeof c==="object").sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
+  $("compSel").innerHTML='<option value="">Yarışma seçin…</option>'+opts.map(([id,c])=>`<option value="${id}">${esc(c.isim||c.ad||id)}</option>`).join("");
+  if(comp&&comps[comp])$("compSel").value=comp;
+});
+
+// panel chip'leri
+$("panels").innerHTML=PANELS.map(p=>`<span class="pchip on" data-p="${p.key}">${esc(p.label)}</span>`).join("");
+$("panels").querySelectorAll("[data-p]").forEach(el=>el.onclick=()=>{const k=el.dataset.p;if(selPanels.has(k)){selPanels.delete(k);el.classList.remove("on");}else{selPanels.add(k);el.classList.add("on");}});
+
+$("compSel").addEventListener("change",async e=>{
+  comp=e.target.value; $("out").innerHTML="";
+  if(!comp){$("body").style.display="none";return;}
+  // token al / yoksa üret
+  const tSnap=await get(ref(db,`${BASE}/${comp}/epanelToken`));
+  token=tSnap.val();
+  if(!token){token=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,"0")).join("");await set(ref(db,`${BASE}/${comp}/epanelToken`),token);}
+  // kategoriler
+  const kats=comps[comp].kategoriler||{};
+  const keys=Object.keys(kats);
+  $("cats").innerHTML=keys.map(k=>`<label class="catchip"><input type="checkbox" value="${k}"><span>${esc(catLabel(k,kats[k]))}</span></label>`).join("")||'<span class="hint">Bu yarışmada kategori yok.</span>';
+  $("cats").querySelectorAll(".catchip").forEach(l=>{l.querySelector("input").onchange=()=>l.classList.toggle("on",l.querySelector("input").checked);});
+  $("body").style.display="";
+});
+$("selAll").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=true;i.dispatchEvent(new Event("change"));});
+$("selNone").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=false;i.dispatchEvent(new Event("change"));});
+
+function selectedCats(){return [...$("cats").querySelectorAll("input:checked")].map(i=>i.value);}
+function buildUrl(route,catId,panelId){
+  let u=`${location.origin}/aerobik/${route}?competitionId=${encodeURIComponent(comp)}&catId=${encodeURIComponent(catId)}`;
+  if(panelId)u+=`&panelId=${panelId}`;
+  u+=`&token=${token}`; return u;
+}
+$("genBtn").addEventListener("click",()=>{
+  const cats=selectedCats();
+  if(cats.length<1){toast("En az bir kategori seç.","err");return;}
+  if(selPanels.size<1){toast("En az bir panel türü seç.","err");return;}
+  const catId=cats.join(",");
+  const catNames=cats.map(c=>catLabel(c,comps[comp].kategoriler?.[c])).join(" + ");
+  const cards=[];
+  PANELS.filter(p=>selPanels.has(p.key)).forEach(p=>{
+    const ids=p.multi||[null];
+    ids.forEach(pid=>{
+      const url=buildUrl(p.route,catId,pid);
+      const title=pid?`${p.key.toUpperCase()} — ${pid.toUpperCase()}`:p.label;
+      cards.push({title,sub:catNames,url});
+    });
+  });
+  $("out").innerHTML=cards.map((c,i)=>`<div class="qrcard"><h4>${esc(c.title)}</h4><div class="sub">Birleşik: ${esc(c.sub)}</div><div id="qc${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(c.url)}">Linki Kopyala</div></div>`).join("");
+  cards.forEach((c,i)=>{try{new QRCode($("qc"+i),{text:c.url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
+  $("out").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Link kopyalandı ✓","ok");});
+  toast(`${cards.length} birleşik QR üretildi ✓`,"ok");
+});
+$("printBtn").addEventListener("click",()=>window.print());
+
+const qc=new URLSearchParams(location.search).get("comp");
+if(qc){comp=qc;setTimeout(()=>{if(comps[comp]){$("compSel").value=comp;$("compSel").dispatchEvent(new Event("change"));}},700);}
+</script>
+</body>
+</html>
