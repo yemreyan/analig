@@ -61,10 +61,11 @@ const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomai
 const db=getDatabase(initializeApp(firebaseConfig));
 const P=new URLSearchParams(location.search);
 const comp=P.get("compId")||P.get("comp"), cam=(P.get("cam")||"a").toLowerCase(), BASE=P.get("path")||"aerobik_yarismalar";
+const catRaw=(P.get("catId")||P.get("cat")||"").trim(), catAll=catRaw===""||catRaw==="__ALL__", catList=catRaw.split(",").map(s=>s.trim()).filter(Boolean);
 const $=id=>document.getElementById(id);
 const CLOUD="spythzo3", PRESET="analig_unsigned";
 const ICE=[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},{urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}];
-$("camTag").textContent=`KAM ${cam.toUpperCase()} · ${cam==="a"?"Performans (Yükler)":"Yedek (İndirir)"}`;
+$("camTag").textContent=`KAM ${cam.toUpperCase()} · ${cam==="a"?"Performans (Yükler)":"Yedek (İndirir)"}${catAll?"":" · "+catRaw}`;
 if(!comp){document.body.innerHTML='<div class="err-full">Hatalı link — compId eksik.</div>';throw new Error("no comp");}
 
 // ---- canvas-zoom feed (KameraPage __ZW) ----
@@ -149,7 +150,7 @@ function reconcile(){
 function watchActive(){
   onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
     const all=snap.val()||{}; let cat="",a=null;
-    let _bt=-1;for(const k of Object.keys(all)){ if(all[k]&&(all[k].ts||0)>=_bt){_bt=all[k].ts||0;cat=k;a=all[k];} }
+    let _bt=-1;for(const k of Object.keys(all)){ if((catAll||catList.includes(k))&&all[k]&&(all[k].ts||0)>=_bt){_bt=all[k].ts||0;cat=k;a=all[k];} }
     wantCat=cat; wantData=(a&&typeof a==="object")?a:null;
     showAth(wantData);
     reconcile();
@@ -160,7 +161,10 @@ function watchActive(){
 let lastStopTs=0;
 function watchStop(){
   onValue(ref(db,`${BASE}/${comp}/kameraStop`),snap=>{
-    const v=snap.val(); if(!v||!v.ts) return;
+    const all=snap.val(); if(!all) return;
+    // kategori-bazlı: kameraStop/{cat}={athId,ts} ; eski global format: kameraStop={athId,ts}
+    const v=(curCat&&all[curCat]&&typeof all[curCat]==="object")?all[curCat]:(all.ts?all:null);
+    if(!v||!v.ts) return;
     if(v.ts>lastStopTs){
       lastStopTs=v.ts;
       if(recState==="recording" && (!v.athId || v.athId===curAth)) stopRec();
