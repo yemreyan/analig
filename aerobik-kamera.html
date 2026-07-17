@@ -78,14 +78,19 @@ const tr=s=>(s||"").replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").rep
 let stream=null, recorder=null, chunks=[], curCat="", curAth="", curName="", curAd="", curSoyad="", curOkul="", curIl="", mimeExt="webm";
 function startRec(cat,athId,name,ad,soyad,okul,il){
   if(recState==="recording"||recState==="saving"||recState==="uploading")return;
-  if(!ZW.outS())return;
+  // Kayıt HAM kamera akışından yapılır (canvas akışı iOS Safari'de MediaRecorder ile boş kayıt üretir).
+  const src=ZW.r||stream;
+  if(!src||!src.getVideoTracks||!src.getVideoTracks().length){setRec("error","kamera akışı yok");setTimeout(()=>{recState==="error"&&setRec("idle")},3000);return;}
   curCat=cat; curAth=athId||""; curName=(name||((ad||"")+" "+(soyad||""))).trim()||"Sporcu";
   curAd=ad||""; curSoyad=soyad||""; curOkul=okul||""; curIl=il||"";
   const mime=MediaRecorder.isTypeSupported("video/mp4")?"video/mp4":MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":MediaRecorder.isTypeSupported("video/webm;codecs=vp8")?"video/webm;codecs=vp8":"video/webm";
   mimeExt=mime.startsWith("video/mp4")?"mp4":"webm";
-  const rec=new MediaRecorder(ZW.outS(),{mimeType:mime,videoBitsPerSecond:5e6});
-  chunks=[]; rec.ondataavailable=e=>{e.data.size>0&&chunks.push(e.data)};
+  let rec;
+  try{rec=new MediaRecorder(src,{mimeType:mime,videoBitsPerSecond:5e6});}
+  catch(e){try{rec=new MediaRecorder(src);}catch(e2){setRec("error","kayıt açılamadı");setTimeout(()=>{recState==="error"&&setRec("idle")},3000);return;}}
+  chunks=[]; rec.ondataavailable=e=>{e.data&&e.data.size>0&&chunks.push(e.data)};
   rec.onstop=()=>onStop(mime);
+  rec.onerror=()=>{try{rec.state!=="inactive"&&rec.stop()}catch(e){}};
   rec.start(1000); recorder=rec; setRec("recording");
 }
 function stopRec(){ if(recState==="recording"&&recorder){try{recorder.stop()}catch(e){} setRec("saving"); } }
@@ -103,7 +108,8 @@ function onStop(mime){
       .then(r=>r.json().then(u=>r.ok?u:Promise.reject(new Error(u.error?.message||"Yükleme başarısız"))))
       .then(u=>{const J=`${BASE}/${comp}/puanlar/${curCat}/${z}`;set(ref(db,`${J}/videoUrl${CW}`),u.secure_url);set(ref(db,`${J}/videoPath${CW}`),u.public_id||"");set(ref(db,`${J}/videoBilgi`),{ad:curAd,soyad:curSoyad,okul:curOkul,il:curIl,name:nm,cam:CW,ts:Date.now()});setRec("uploaded");setTimeout(()=>{if(recState==="uploaded")setRec("idle")},2500);})
       .catch(e=>{setRec("error",e?.message||"");setTimeout(()=>{if(recState==="error")setRec("idle")},4000);});
-  } else { setRec(cam==="b"?"download":"idle"); if(cam==="b")setTimeout(()=>{if(recState==="download")setRec("idle")},2000); }
+  } else if(blob.size===0){ setRec("error","boş kayıt — akış alınamadı"); setTimeout(()=>{if(recState==="error")setRec("idle")},4000); }
+  else { setRec(cam==="b"?"download":"idle"); if(cam==="b")setTimeout(()=>{if(recState==="download")setRec("idle")},2000); }
 }
 
 // aktifSporcu izle: tek aktif sporcu -> kayıt başlat/durdur
