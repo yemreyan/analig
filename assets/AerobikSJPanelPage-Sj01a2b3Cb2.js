@@ -19,7 +19,7 @@ function SJPanel(){
  const allCat=catId==="__ALL__",catList=(catId||"").split(",");
  const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0);
  const[pun,setPun]=R.useState({}),[spor,setSpor]=R.useState({}),[cats,setCats]=R.useState({}),[compName,setCompName]=R.useState("Yarışma"),[active,setActive]=R.useState({});
- const[sel,setSel]=R.useState(""),[note,setNote]=R.useState(""),[warned,setWarned]=R.useState({}),[lastKey,setLastKey]=R.useState("");
+ const[notes,setNotes]=R.useState({}),[warned,setWarned]=R.useState({}),[order,setOrder]=R.useState({});
 
  R.useEffect(()=>{if(!comp||!token){setLoading(!1),setAuthed(!1);return}get(ref(db,`${BASE}/${comp}/epanelToken`)).then(s=>{const v=s.val();setAuthed(v?verifyToken(token,v):!1)}).catch(()=>setAuthed(!1)).finally(()=>setLoading(!1))},[comp,token]);
  R.useEffect(()=>{if(!comp||!authed)return;const u1=onValue(ref(db,`${BASE}/${comp}/puanlar`),s=>setPun(s.val()||{}));const u2=onValue(ref(db,`${BASE}/${comp}/sporcular`),s=>setSpor(s.val()||{}));const u3=onValue(ref(db,`${BASE}/${comp}/kategoriler`),s=>setCats(s.val()||{}));const u4=onValue(ref(db,`${BASE}/${comp}/isim`),s=>setCompName(s.val()||"Yarışma"));const u5=onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),s=>setActive(s.val()||{}));return()=>{u1(),u2(),u3(),u4(),u5()}},[comp,authed]);
@@ -34,20 +34,21 @@ function SJPanel(){
  const queue=[];const seen={};
  Object.entries(pun).forEach(([cat,aths])=>{if(!allowed(cat)||!aths||typeof aths!="object")return;Object.entries(aths).forEach(([ath,sc])=>{if(!sc||typeof sc!="object"||finalized(sc))return;const key=cat+"/"+ath;if(cfg.has(sc)||key===activeKey){seen[key]=1;const m=nmeta(cat,ath);queue.push({key,cat,ath,sc,name:m.name,club:m.club,isActive:key===activeKey})}})});
  if(activeKey&&!seen[activeKey]){const[c,a]=activeKey.split("/");if(allowed(c)){const m=nmeta(c,a);queue.push({key:activeKey,cat:c,ath:a,sc:(pun[c]&&pun[c][a])||{},name:m.name,club:m.club,isActive:!0})}}
- queue.sort((x,y)=>x.isActive!==y.isActive?(x.isActive?-1:1):String(x.name).localeCompare(String(y.name),"tr-TR"));
- const cur=queue.find(q=>q.key===sel)||queue.find(q=>q.key===activeKey)||queue[0]||null;
+ // geliş sırasına göre (yeni gelen en alta), henüz sıralanmamışlar en sonda
+ queue.sort((x,y)=>{const ox=order[x.key]??1e9,oy=order[y.key]??1e9;return ox!==oy?ox-oy:String(x.name).localeCompare(String(y.name),"tr-TR")});
 
- // seçili sporcu değişince kaydedilmiş SJ notunu yükle
- R.useEffect(()=>{if(cur&&cur.key!==lastKey){setLastKey(cur.key);const sj=cur.sc.sjPanel&&cur.sc.sjPanel[cfg.letter];setNote(sj&&sj.value!=null?String(sj.value):"");setWarned({})}},[cur?cur.key:""]);
+ // yeni sporcu kuyruğa girince: geliş sırasını sabitle + kaydedilmiş SJ notunu bir kez yükle (yazılanı ezmeden)
+ const qKeys=queue.map(q=>q.key).join(",");
+ R.useEffect(()=>{
+  setOrder(prev=>{const n={...prev};let mx=Object.values(prev).reduce((a,b)=>Math.max(a,b),0);queue.forEach(q=>{if(!(q.key in n)){mx+=1;n[q.key]=mx}});return n});
+  setNotes(prev=>{const n={...prev};queue.forEach(q=>{if(!(q.key in n)){const sj=q.sc.sjPanel&&q.sc.sjPanel[cfg.letter];n[q.key]=sj&&sj.value!=null?String(sj.value):""}});return n});
+ },[qKeys]);
 
- const avg=cur?cfg.avg(cur.sc):null,judges=cur?cfg.judges(cur.sc):[];
- const myNote=note===""?null:parseFloat(note);
- const gap=avg==null||myNote==null?null:Math.abs(myNote-avg);
-
- const save=async()=>{if(!cur||note===""){toast("Önce referans notunuzu girin.","error");return}const val=parseFloat(note);if(isNaN(val)){toast("Geçersiz not.","error");return}try{await update(ref(db,`${BASE}/${comp}/puanlar/${cur.cat}/${cur.ath}/sjPanel`),{[cfg.letter]:{value:val,panelValue:avg,gap:gap,ts:Date.now()}});toast(cur.name+" — SJ notu kaydedildi ✓","success")}catch{toast("Hata oluştu.","error")}};
- const warn=async(target,lbl)=>{if(!cur)return;try{await fset(ref(db,`${BASE}/${comp}/refereeCalls/${cur.cat}/${cur.ath}/${target}`),{ts:Date.now(),fromRole:pt});setWarned(w=>({...w,[target]:Date.now()}));setTimeout(()=>setWarned(w=>{const n={...w};delete n[target];return n}),3e3);toast(lbl+" uyarıldı ⚠️","success")}catch{toast("Uyarı gönderilemedi.","error")}};
- const pin=()=>{if(cur&&sel!==cur.key)setSel(cur.key)};
- const bump=d=>{pin();const n=Math.max(0,Math.round(((parseFloat(note)||0)+d)*100)/100);setNote(String(n))};
+ const noteOf=k=>notes[k]??"";
+ const setNoteFor=(k,v)=>setNotes(p=>({...p,[k]:v}));
+ const bump=(k,d)=>setNotes(p=>{const c=parseFloat(p[k])||0;return{...p,[k]:String(Math.max(0,Math.round((c+d)*100)/100))}});
+ const save=async q=>{const raw=noteOf(q.key);if(raw===""){toast("Önce referans notunuzu girin.","error");return}const val=parseFloat(raw);if(isNaN(val)){toast("Geçersiz not.","error");return}const av=cfg.avg(q.sc),gp=av==null?null:Math.abs(val-av);try{await update(ref(db,`${BASE}/${comp}/puanlar/${q.cat}/${q.ath}/sjPanel`),{[cfg.letter]:{value:val,panelValue:av,gap:gp,ts:Date.now()}});toast(q.name+" — SJ notu kaydedildi ✓","success")}catch{toast("Hata oluştu.","error")}};
+ const warn=async(q,target,lbl)=>{const wk=q.key+"|"+target;try{await fset(ref(db,`${BASE}/${comp}/refereeCalls/${q.cat}/${q.ath}/${target}`),{ts:Date.now(),fromRole:pt});setWarned(w=>({...w,[wk]:Date.now()}));setTimeout(()=>setWarned(w=>{const n={...w};delete n[wk];return n}),3e3);toast(lbl+" uyarıldı ⚠️","success")}catch{toast("Uyarı gönderilemedi.","error")}};
 
  const S={wrap:{minHeight:"100vh",background:"#0a0e1a",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"2rem"},
   top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.94)",backdropFilter:"blur(10px)",borderBottom:"1px solid #2a3550",padding:".7rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:".6rem"},
@@ -74,23 +75,21 @@ function SJPanel(){
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".78rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsxs("div",{style:{fontWeight:800,fontSize:"1.02rem"},children:["SÜPER JÜRİ — ",cfg.title]})]}),e.jsx("div",{style:S.badge,children:cfg.badge})]}),
   e.jsxs("div",{style:S.in,children:[
-   e.jsxs("div",{style:S.qlbl,children:["İnceleme Kuyruğu (",queue.length,")"]}),
+   e.jsxs("div",{style:S.qlbl,children:["İnceleme Kuyruğu (",queue.length,") — hepsi aynı anda"]}),
    queue.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:"İncelenecek sporcu yok."}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:"Panel puan girdikçe sporcular burada listelenir."})]}):
-   queue.map(q=>{const on=cur&&q.key===cur.key,pv=cfg.avg(q.sc),sj=q.sc.sjPanel&&q.sc.sjPanel[cfg.letter];return e.jsxs("div",{style:S.qrow(on),onClick:()=>setSel(q.key),children:[
-     e.jsxs("div",{style:S.qn,children:[e.jsxs("div",{style:{fontWeight:800,display:"flex",alignItems:"center",gap:".4rem",flexWrap:"wrap"},children:[q.name,q.isActive?e.jsx("span",{style:{fontSize:".58rem",fontWeight:800,padding:".1rem .4rem",borderRadius:5,background:"rgba(34,197,94,.18)",color:"#86efac"},children:"AKTİF"}):null,sj?e.jsx("span",{style:{fontSize:".58rem",fontWeight:800,padding:".1rem .4rem",borderRadius:5,background:"rgba(99,102,241,.18)",color:"#a5b4fc"},children:"NOTLANDI"}):null]}),e.jsx("div",{style:{color:"#8b97b3",fontSize:".72rem",fontWeight:700},children:catName(q.cat)})]}),
-     e.jsxs("div",{style:{textAlign:"right",fontWeight:800,fontSize:".95rem",color:"#8b97b3"},children:[e.jsx("div",{style:{fontSize:".6rem"},children:cfg.avgLabel}),f2(pv)]})
-   ]},q.key)}),
-   cur?e.jsxs("div",{style:S.card,children:[
-    e.jsxs("div",{style:S.ath,children:[e.jsxs("div",{style:S.nm,children:[cur.name,cur.isActive?e.jsx("span",{style:{marginLeft:".5rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(34,197,94,.18)",color:"#86efac"},children:"AKTİF"}):null]}),e.jsx("div",{style:S.meta,children:catName(cur.cat)+(cur.club?" · "+cur.club:"")})]}),
-    e.jsx("div",{style:S.inlbl,children:cfg.label}),
-    e.jsxs("div",{style:S.numw,children:[e.jsx("button",{style:S.nbtn,onClick:()=>bump(-.1),children:"−"}),e.jsx("input",{style:S.ninp,type:"number",step:"0.1",min:"0",value:note,placeholder:"0.0",onChange:ev=>{pin();setNote(ev.target.value)}}),e.jsx("button",{style:S.nbtn,onClick:()=>bump(.1),children:"+"})]}),
-    e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:".7rem 0 .2rem",fontSize:".85rem",color:"#8b97b3",fontWeight:700},children:[e.jsxs("span",{children:[cfg.avgLabel,": ",e.jsx("strong",{style:{color:"#e8edf7"},children:f2(avg)})]}),gap!=null&&e.jsxs("span",{style:{color:gap>GAP_LIMIT?"#fca5a5":"#86efac",fontWeight:800},children:["fark ",f2(gap)]})]}),
-    e.jsx("button",{style:S.save,onClick:save,children:"💾 SJ Notunu Kaydet"}),
-    e.jsx("div",{style:{...S.inlbl,marginTop:"1rem"},children:"Hakem Notları — uyarı için nota dokunun"}),
-    e.jsx("div",{style:S.jgrid,children:judges.map(([lbl,target,jn])=>{const diff=myNote==null||jn==null?null:Math.abs(myNote-jn),hi=diff!=null&&diff>GAP_LIMIT,wd=warned[target];return e.jsxs("button",{onClick:()=>warn(target,lbl),style:{textAlign:"left",padding:".65rem .8rem",borderRadius:12,cursor:"pointer",border:"1px solid "+(wd?"#f59e0b":hi?"#ef4444":"#2a3550"),background:wd?"rgba(245,158,11,.18)":hi?"rgba(239,68,68,.12)":"#1b2438",color:"#e8edf7"},children:[e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"},children:[e.jsx("span",{style:{fontWeight:800},children:lbl}),e.jsx("span",{style:{fontSize:"1.25rem",fontWeight:800},children:f2(jn)})]}),e.jsx("div",{style:{fontSize:".7rem",fontWeight:700,marginTop:".2rem",color:wd?"#fbbf24":hi?"#fca5a5":"#8b97b3"},children:wd?"⚠️ uyarıldı":diff==null?"dokun → uyar":hi?"fark "+f2(diff)+" — dokun/uyar":"fark "+f2(diff)})]},target)})}),
-    e.jsx("button",{style:{...S.save,background:"linear-gradient(135deg,#f59e0b,#ef4444)",marginTop:".7rem"},onClick:()=>warn(pt,"Tüm panel"),children:"📢 Tüm Panel Hakemlerini Uyar"}),
-    e.jsx("div",{style:{marginTop:".7rem",fontSize:".75rem",color:"#8b97b3",textAlign:"center"},children:"SJ notunuz final puanı etkilemez. Yeni sporcu çağrılınca bu liste korunur — kuyruktan istediğinizi seçin."})
-   ]}):null
+   queue.map((q,qi)=>{
+    const av=cfg.avg(q.sc),judges=cfg.judges(q.sc),nv=noteOf(q.key),myNote=nv===""?null:parseFloat(nv),gap=av==null||myNote==null?null:Math.abs(myNote-av),saved=q.sc.sjPanel&&q.sc.sjPanel[cfg.letter];
+    return e.jsxs("div",{style:S.card,children:[
+     e.jsxs("div",{style:S.ath,children:[e.jsxs("div",{style:S.nm,children:[e.jsxs("span",{style:{color:"#6b7896",marginRight:".4rem"},children:["#",qi+1]}),q.name,q.isActive?e.jsx("span",{style:{marginLeft:".5rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(34,197,94,.18)",color:"#86efac"},children:"AKTİF"}):null,saved?e.jsx("span",{style:{marginLeft:".4rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(99,102,241,.18)",color:"#a5b4fc"},children:"NOTLANDI"}):null]}),e.jsx("div",{style:S.meta,children:catName(q.cat)+(q.club?" · "+q.club:"")})]}),
+     e.jsx("div",{style:S.inlbl,children:cfg.label}),
+     e.jsxs("div",{style:S.numw,children:[e.jsx("button",{style:S.nbtn,onClick:()=>bump(q.key,-.1),children:"−"}),e.jsx("input",{style:S.ninp,type:"number",step:"0.1",min:"0",value:nv,placeholder:"0.0",onChange:ev=>setNoteFor(q.key,ev.target.value)}),e.jsx("button",{style:S.nbtn,onClick:()=>bump(q.key,.1),children:"+"})]}),
+     e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:".7rem 0 .2rem",fontSize:".85rem",color:"#8b97b3",fontWeight:700},children:[e.jsxs("span",{children:[cfg.avgLabel,": ",e.jsx("strong",{style:{color:"#e8edf7"},children:f2(av)})]}),gap!=null&&e.jsxs("span",{style:{color:gap>GAP_LIMIT?"#fca5a5":"#86efac",fontWeight:800},children:["fark ",f2(gap)]})]}),
+     e.jsx("button",{style:S.save,onClick:()=>save(q),children:"💾 SJ Notunu Kaydet"}),
+     e.jsx("div",{style:{...S.inlbl,marginTop:"1rem"},children:"Hakem Notları — uyarı için nota dokunun"}),
+     e.jsx("div",{style:S.jgrid,children:judges.map(([lbl,target,jn])=>{const diff=myNote==null||jn==null?null:Math.abs(myNote-jn),hi=diff!=null&&diff>GAP_LIMIT,wd=warned[q.key+"|"+target];return e.jsxs("button",{onClick:()=>warn(q,target,lbl),style:{textAlign:"left",padding:".65rem .8rem",borderRadius:12,cursor:"pointer",border:"1px solid "+(wd?"#f59e0b":hi?"#ef4444":"#2a3550"),background:wd?"rgba(245,158,11,.18)":hi?"rgba(239,68,68,.12)":"#1b2438",color:"#e8edf7"},children:[e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"},children:[e.jsx("span",{style:{fontWeight:800},children:lbl}),e.jsx("span",{style:{fontSize:"1.25rem",fontWeight:800},children:f2(jn)})]}),e.jsx("div",{style:{fontSize:".7rem",fontWeight:700,marginTop:".2rem",color:wd?"#fbbf24":hi?"#fca5a5":"#8b97b3"},children:wd?"⚠️ uyarıldı":diff==null?"dokun → uyar":hi?"fark "+f2(diff)+" — dokun/uyar":"fark "+f2(diff)})]},target)})}),
+     e.jsx("button",{style:{...S.save,background:"linear-gradient(135deg,#f59e0b,#ef4444)",marginTop:".7rem"},onClick:()=>warn(q,pt,"Tüm panel"),children:"📢 Tüm Panel Hakemlerini Uyar"})
+    ]},q.key)}),
+   queue.length>0?e.jsx("div",{style:{maxWidth:560,margin:".8rem auto 0",fontSize:".75rem",color:"#8b97b3",textAlign:"center"},children:"SJ notunuz final puanı etkilemez. Çağrılan her sporcu geldiği sırada alt alta eklenir — hepsini aynı anda notlayabilirsiniz."}):null
   ]})
  ]});
 }
