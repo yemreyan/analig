@@ -62,7 +62,7 @@ $("camTag").textContent=`KAM ${cam.toUpperCase()} · ${cam==="a"?"Performans (Y�
 if(!comp){document.body.innerHTML='<div class="err-full">Hatalı link — compId eksik.</div>';throw new Error("no comp");}
 
 // ---- canvas-zoom feed (KameraPage __ZW) ----
-const ZW={c:null,v:null,f:1,s:null,r:null,run:0,init(){if(this.c)return;this.c=document.createElement("canvas");this.c.width=1280;this.c.height=720;this.v=document.createElement("video");this.v.muted=!0;this.v.autoplay=!0;this.v.playsInline=!0;this.v.setAttribute("playsinline","");this.v.style.cssText="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1";try{document.body.appendChild(this.v)}catch(e){}this.s=this.c.captureStream(30);const self=this,ctx=this.c.getContext("2d");let last=0;(function draw(){const now=Date.now();if(now-last>=33){last=now;const vv=self.v,c=self.c;if(vv&&vv.videoWidth){if(c.width!==vv.videoWidth||c.height!==vv.videoHeight){c.width=vv.videoWidth;c.height=vv.videoHeight}const f=self.f,sw=c.width/f,sh=c.height/f,sx=(c.width-sw)/2,sy=(c.height-sh)/2;try{ctx.drawImage(vv,sx,sy,sw,sh,0,0,c.width,c.height)}catch(e){}}}self.run=requestAnimationFrame(draw)})()},feed(st){this.init();this.r=st;this.v.srcObject=st;const p=this.v.play();if(p&&p.catch)p.catch(()=>{})},outS(){this.init();return this.s},zoom(d){this.f=Math.min(5,Math.max(1,this.f+d))},stopRaw(){if(this.r)try{this.r.getTracks().forEach(t=>t.stop())}catch(e){}}};
+const ZW={c:null,v:null,f:1,s:null,r:null,run:0,init(){if(this.c)return;this.v=$("vid");this.c=document.createElement("canvas");this.c.width=1280;this.c.height=720;this.s=this.c.captureStream(30);const self=this,ctx=this.c.getContext("2d");let last=0;(function draw(){const now=Date.now();if(now-last>=33){last=now;const vv=self.v,c=self.c;if(vv&&vv.videoWidth){if(c.width!==vv.videoWidth||c.height!==vv.videoHeight){c.width=vv.videoWidth;c.height=vv.videoHeight}const f=self.f,sw=c.width/f,sh=c.height/f,sx=(c.width-sw)/2,sy=(c.height-sh)/2;try{ctx.drawImage(vv,sx,sy,sw,sh,0,0,c.width,c.height)}catch(e){}}}self.run=requestAnimationFrame(draw)})()},feed(st){this.init();this.r=st;this.v.srcObject=st;const p=this.v.play();if(p&&p.catch)p.catch(()=>{})},outS(){this.init();return this.s},zoom(d){this.f=Math.min(5,Math.max(1,this.f+d));if(this.v){this.v.style.transformOrigin="center center";this.v.style.transform="scale("+this.f+")"}},stopRaw(){if(this.r)try{this.r.getTracks().forEach(t=>t.stop())}catch(e){}}};
 
 function setConn(cls,txt){const c=$("conn");c.className="kam-conn kam-conn--"+cls;c.textContent=txt;}
 let recState="idle";
@@ -157,7 +157,7 @@ async function boot(){
   let s;
   try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:24}},audio:false}); }
   catch{ try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false}); }catch{ setConn("error","🔴 Kamera açılamadı"); return; } }
-  stream=s; ZW.feed(s); $("vid").srcObject=ZW.outS();
+  stream=s; ZW.feed(s);
   watchActive();
   watchStop();
   // WebRTC
