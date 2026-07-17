@@ -24,6 +24,9 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:system-ui,-app
 .kam-rec{align-self:center;margin-top:10px;background:rgba(220,38,38,.9);color:#fff;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
 .kam-rec--saving{background:rgba(37,99,235,.9)}.kam-rec--ok{background:rgba(22,163,74,.9)}.kam-rec--error{background:rgba(180,83,9,.95)}
 .kam-fail{margin:8px auto 0;align-self:center;background:rgba(180,83,9,.96);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:800;pointer-events:auto;cursor:pointer;text-align:center;max-width:92%}
+.kam-dl{position:fixed;left:12px;bottom:12px;z-index:9998;max-width:52%;max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:5px;pointer-events:auto}
+.kam-dl .h{font-size:11px;font-weight:800;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:3px 8px;opacity:.85}
+.kam-dl a{display:block;background:rgba(20,83,45,.85);border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:6px 10px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kam-rec-dot{width:11px;height:11px;border-radius:50%;background:#fff;animation:blink 1s infinite}
 @keyframes blink{50%{opacity:.25}}
 .kam-ath{margin-top:auto;align-self:flex-start;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px 14px;color:#fff;max-width:80%}
@@ -48,6 +51,7 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:system-ui,-app
     <div id="failBox"></div>
     <div id="athBox"></div>
   </div>
+  <div id="dlBox" class="kam-dl"></div>
 </div>
 
 <script type="module">
@@ -111,12 +115,17 @@ function uploadRec(blob,pid,J,CW,meta,attempt){
     .catch(e=>{ if(attempt<3){ setTimeout(()=>uploadRec(blob,pid,J,CW,meta,attempt+1),1500*attempt); }
       else { failedUploads.push({blob,pid,J,CW,meta}); renderFailed(); setRec("error",(e?.message||"ağ hatası")+" · kuyrukta"); setTimeout(()=>{if(recState==="error")setRec("idle");reconcile();},3500); } });
 }
+// yerel indirme garantisi: her kayıt son 6 kayıt listesinde kalıcı indirme linki olur
+// (tarayıcı ardışık otomatik indirmeleri engellese bile operatör elle indirebilir)
+let recBlobs=[];
+function addRec(label,fn,url){ recBlobs.unshift({label,fn,url}); while(recBlobs.length>6){const o=recBlobs.pop();try{URL.revokeObjectURL(o.url)}catch(e){}} renderDl(); }
+function renderDl(){ const b=$("dlBox"); if(!b)return; if(!recBlobs.length){b.innerHTML="";return;} const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); b.innerHTML='<div class="h">⬇ Son kayıtlar — indirmek için dokun</div>'+recBlobs.map(r=>`<a href="${r.url}" download="${esc(r.fn)}">⬇ ${esc(r.label)}</a>`).join(""); }
 function onStop(mime){
   doneKey=curKey; // bu kaydın sporcusu tamamlandı (aynı çağrı tekrar başlatılmasın)
   const blob=new Blob(chunks,{type:mime}); chunks=[];
   const nm=curName||"Sporcu", CW=cam.toUpperCase(), dt=new Date().toISOString().slice(0,16).replace("T","_");
   const fn=`${nm} - KAM ${CW} - ${dt}.${mimeExt}`.replace(/[/\\:*?"<>|]/g,"-");
-  if(blob.size>0){try{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),4000);}catch(e){}}
+  if(blob.size>0){const url=URL.createObjectURL(blob);addRec(`${nm} · KAM ${CW}`,fn,url);try{const a=document.createElement("a");a.href=url;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);}catch(e){}}
   const z=curAth;
   if(z&&comp&&curCat&&blob.size>0&&cam!=="b"){
     const pid=`${BASE}/${comp}/${curCat}/${tr(nm)}-kam${cam}-${z}`, J=`${BASE}/${comp}/puanlar/${curCat}/${z}`, meta={ad:curAd,soyad:curSoyad,okul:curOkul,il:curIl,name:nm,cam:CW,ts:Date.now()};
