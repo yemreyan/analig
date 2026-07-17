@@ -46,7 +46,8 @@ function SJPanel(){
 
  const save=async()=>{if(!cur||note===""){toast("Önce referans notunuzu girin.","error");return}const val=parseFloat(note);if(isNaN(val)){toast("Geçersiz not.","error");return}try{await update(ref(db,`${BASE}/${comp}/puanlar/${cur.cat}/${cur.ath}/sjPanel`),{[cfg.letter]:{value:val,panelValue:avg,gap:gap,ts:Date.now()}});toast(cur.name+" — SJ notu kaydedildi ✓","success")}catch{toast("Hata oluştu.","error")}};
  const warn=async(target,lbl)=>{if(!cur)return;try{await fset(ref(db,`${BASE}/${comp}/refereeCalls/${cur.cat}/${cur.ath}/${target}`),{ts:Date.now(),fromRole:pt});setWarned(w=>({...w,[target]:Date.now()}));setTimeout(()=>setWarned(w=>{const n={...w};delete n[target];return n}),3e3);toast(lbl+" uyarıldı ⚠️","success")}catch{toast("Uyarı gönderilemedi.","error")}};
- const bump=d=>{const n=Math.max(0,Math.round(((parseFloat(note)||0)+d)*100)/100);setNote(String(n))};
+ const pin=()=>{if(cur&&sel!==cur.key)setSel(cur.key)};
+ const bump=d=>{pin();const n=Math.max(0,Math.round(((parseFloat(note)||0)+d)*100)/100);setNote(String(n))};
 
  const S={wrap:{minHeight:"100vh",background:"#0a0e1a",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"2rem"},
   top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.94)",backdropFilter:"blur(10px)",borderBottom:"1px solid #2a3550",padding:".7rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:".6rem"},
@@ -82,7 +83,7 @@ function SJPanel(){
    cur?e.jsxs("div",{style:S.card,children:[
     e.jsxs("div",{style:S.ath,children:[e.jsxs("div",{style:S.nm,children:[cur.name,cur.isActive?e.jsx("span",{style:{marginLeft:".5rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(34,197,94,.18)",color:"#86efac"},children:"AKTİF"}):null]}),e.jsx("div",{style:S.meta,children:catName(cur.cat)+(cur.club?" · "+cur.club:"")})]}),
     e.jsx("div",{style:S.inlbl,children:cfg.label}),
-    e.jsxs("div",{style:S.numw,children:[e.jsx("button",{style:S.nbtn,onClick:()=>bump(-.1),children:"−"}),e.jsx("input",{style:S.ninp,type:"number",step:"0.1",min:"0",value:note,placeholder:"0.0",onChange:ev=>setNote(ev.target.value)}),e.jsx("button",{style:S.nbtn,onClick:()=>bump(.1),children:"+"})]}),
+    e.jsxs("div",{style:S.numw,children:[e.jsx("button",{style:S.nbtn,onClick:()=>bump(-.1),children:"−"}),e.jsx("input",{style:S.ninp,type:"number",step:"0.1",min:"0",value:note,placeholder:"0.0",onChange:ev=>{pin();setNote(ev.target.value)}}),e.jsx("button",{style:S.nbtn,onClick:()=>bump(.1),children:"+"})]}),
     e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:".7rem 0 .2rem",fontSize:".85rem",color:"#8b97b3",fontWeight:700},children:[e.jsxs("span",{children:[cfg.avgLabel,": ",e.jsx("strong",{style:{color:"#e8edf7"},children:f2(avg)})]}),gap!=null&&e.jsxs("span",{style:{color:gap>GAP_LIMIT?"#fca5a5":"#86efac",fontWeight:800},children:["fark ",f2(gap)]})]}),
     e.jsx("button",{style:S.save,onClick:save,children:"💾 SJ Notunu Kaydet"}),
     e.jsx("div",{style:{...S.inlbl,marginTop:"1rem"},children:"Hakem Notları — uyarı için nota dokunun"}),
