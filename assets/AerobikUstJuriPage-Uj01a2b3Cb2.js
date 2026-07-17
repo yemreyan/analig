@@ -26,7 +26,7 @@ function UstJuri(){
  const pending=[];
  Object.entries(pun).forEach(([cat,aths])=>{if(!aths||typeof aths!="object")return;Object.entries(aths).forEach(([ath,sc])=>{if(sc&&typeof sc=="object"&&sc.durum==="ustJuriBekliyor"){const m=nmeta(cat,ath);pending.push({cat,ath,sc,C:comps6(sc),name:m.name,club:m.club,ad:m.ad,soyad:m.soyad,okul:m.okul,il:m.il,ts:sc.timestamp||0})}})});
  pending.sort((a,b)=>String(a.ts).localeCompare(String(b.ts)));
- const itlist=Object.entries(itr).filter(([,v])=>v&&typeof v=="object"&&v.status!=="resolved").map(([k,v])=>({k,...v})).sort((a,b)=>(b.ts||0)-(a.ts||0));
+ const itlist=Object.entries(itr).filter(([,v])=>v&&typeof v=="object"&&["accepted","rejected","resolved"].indexOf(v.status)<0).map(([k,v])=>({k,...v})).sort((a,b)=>(b.ts||0)-(a.ts||0));
  const itColor=t=>t==="D"?"#8b5cf6":t==="A"?"#ec4899":"#10b981";
  const resolveItr=async(it,verdict)=>{try{await update(ref(db,`${BASE}/${comp}/itirazlar/${it.k}`),{status:verdict,resolvedAt:Date.now()});await fset(ref(db,`${BASE}/${comp}/flashTrigger`),{isAerobik:!0,itiraz:verdict,adSoyad:it.athName,kulup:"",aletAd:it.catName||catName(it.catId||""),scoreType:it.scoreType||"D",timestamp:Date.now()});toast(it.athName+(verdict==="accepted"?" — itiraz KABUL edildi":" — itiraz reddedildi"),"success")}catch{toast("Hata oluştu.","error")}};
 
