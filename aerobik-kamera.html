@@ -76,6 +76,8 @@ const tr=s=>(s||"").replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").rep
 
 // ---- kayıt durum makinesi (aktifSporcu tetikli) ----
 let stream=null, recorder=null, chunks=[], curCat="", curAth="", curName="", curAd="", curSoyad="", curOkul="", curIl="", mimeExt="webm";
+let wantCat="", wantData=null, curKey="", doneKey="";
+const keyOf=(c,a)=>a?(c+"/"+(a.id||"")+"@"+(a.ts||0)):"";
 function startRec(cat,athId,name,ad,soyad,okul,il){
   if(recState==="recording"||recState==="saving"||recState==="uploading")return;
   // Kayıt HAM kamera akışından yapılır (canvas akışı iOS Safari'de MediaRecorder ile boş kayıt üretir).
@@ -95,6 +97,7 @@ function startRec(cat,athId,name,ad,soyad,okul,il){
 }
 function stopRec(){ if(recState==="recording"&&recorder){try{recorder.stop()}catch(e){} setRec("saving"); } }
 function onStop(mime){
+  doneKey=curKey; // bu kaydın sporcusu tamamlandı (aynı çağrı tekrar başlatılmasın)
   const blob=new Blob(chunks,{type:mime}); chunks=[];
   const nm=curName||"Sporcu", CW=cam.toUpperCase(), dt=new Date().toISOString().slice(0,16).replace("T","_");
   const fn=`${nm} - KAM ${CW} - ${dt}.${mimeExt}`.replace(/[/\\:*?"<>|]/g,"-");
@@ -106,24 +109,31 @@ function onStop(mime){
     c.append("public_id",`${BASE}/${comp}/${curCat}/${tr(nm)}-kam${cam}-${z}`);
     fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:"POST",body:c})
       .then(r=>r.json().then(u=>r.ok?u:Promise.reject(new Error(u.error?.message||"Yükleme başarısız"))))
-      .then(u=>{const J=`${BASE}/${comp}/puanlar/${curCat}/${z}`;set(ref(db,`${J}/videoUrl${CW}`),u.secure_url);set(ref(db,`${J}/videoPath${CW}`),u.public_id||"");set(ref(db,`${J}/videoBilgi`),{ad:curAd,soyad:curSoyad,okul:curOkul,il:curIl,name:nm,cam:CW,ts:Date.now()});setRec("uploaded");setTimeout(()=>{if(recState==="uploaded")setRec("idle")},2500);})
-      .catch(e=>{setRec("error",e?.message||"");setTimeout(()=>{if(recState==="error")setRec("idle")},4000);});
-  } else if(blob.size===0){ setRec("error","boş kayıt — akış alınamadı"); setTimeout(()=>{if(recState==="error")setRec("idle")},4000); }
-  else { setRec(cam==="b"?"download":"idle"); if(cam==="b")setTimeout(()=>{if(recState==="download")setRec("idle")},2000); }
+      .then(u=>{const J=`${BASE}/${comp}/puanlar/${curCat}/${z}`;set(ref(db,`${J}/videoUrl${CW}`),u.secure_url);set(ref(db,`${J}/videoPath${CW}`),u.public_id||"");set(ref(db,`${J}/videoBilgi`),{ad:curAd,soyad:curSoyad,okul:curOkul,il:curIl,name:nm,cam:CW,ts:Date.now()});setRec("uploaded");setTimeout(()=>{if(recState==="uploaded")setRec("idle");reconcile();},1200);})
+      .catch(e=>{setRec("error",e?.message||"");setTimeout(()=>{if(recState==="error")setRec("idle");reconcile();},4000);});
+  } else if(blob.size===0){ setRec("error","boş kayıt — akış alınamadı"); setTimeout(()=>{if(recState==="error")setRec("idle");reconcile();},4000); }
+  else { setRec(cam==="b"?"download":"idle"); if(cam==="b")setTimeout(()=>{if(recState==="download")setRec("idle");reconcile();},2000); else reconcile(); }
+}
+// istenen (en yeni çağrılan) sporcuyu mevcut kayıt durumuyla uzlaştır:
+// zaman hakemi durdurmasa da yeni sporcu çağrılınca eskisi durur+kaydedilir, yenisi başlar.
+function reconcile(){
+  if(recState==="saving"||recState==="uploading")return;
+  const wk=keyOf(wantCat,wantData);
+  if(recState==="recording"){ if(!wantData||wk!==curKey)stopRec(); return; }
+  if(recState==="idle"&&wantData&&wk!==doneKey){
+    curKey=wk;
+    startRec(wantCat,wantData.id,wantData.ad&&wantData.soyad?(wantData.ad+" "+wantData.soyad):wantData.ad,wantData.ad,wantData.soyad,wantData.okul,wantData.il);
+  }
 }
 
-// aktifSporcu izle: tek aktif sporcu -> kayıt başlat/durdur
+// aktifSporcu izle: en yeni çağrılan sporcu -> reconcile ile kayıt başlat/durdur/geçiş
 function watchActive(){
   onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
     const all=snap.val()||{}; let cat="",a=null;
     let _bt=-1;for(const k of Object.keys(all)){ if(all[k]&&(all[k].ts||0)>=_bt){_bt=all[k].ts||0;cat=k;a=all[k];} }
-    if(a&&typeof a==="object"){
-      showAth(a);
-      if(recState==="idle") startRec(cat,a.id,a.ad&&a.soyad?(a.ad+" "+a.soyad):a.ad,a.ad,a.soyad,a.okul,a.il);
-    } else {
-      showAth(null);
-      if(recState==="recording") stopRec();
-    }
+    wantCat=cat; wantData=(a&&typeof a==="object")?a:null;
+    showAth(wantData);
+    reconcile();
   });
 }
 
