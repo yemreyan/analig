@@ -26,7 +26,7 @@ function SJPanel(){
 
  const catName=c=>cats[c]?.name||c;
  const nmeta=(cat,ath)=>{const cm=spor[cat]||{},i=cm[ath];if(i)return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||i.adSoyad||ath,club:i.il||i.okul||i.kulup||""};const parts=String(ath).split("::"),gn=parts[parts.length-1],ok=parts.length>=3?parts.slice(1,-1).join("::"):"";const mem=Object.values(cm).filter(m=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok));const nm=mem.map(m=>[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad).filter(Boolean).join(", ");return{name:nm||ath,club:mem[0]?.il||mem[0]?.okul||mem[0]?.kulup||""}};
- const allowed=c=>allCat||catList.includes(c);
+ const allowed=c=>allCat||catList.includes(c)||catList.includes(c.replace(/^final_/,""));
  const finalized=sc=>sc.kilitli===!0||sc.durum==="tamamlandi";
  // aktif sporcu (max-ts, izinli)
  let activeKey="";{let bt=-1;Object.entries(active).forEach(([c,v])=>{if(allowed(c)&&v&&(v.ts||0)>=bt&&v.id){bt=v.ts||0;activeKey=c+"/"+v.id}})}

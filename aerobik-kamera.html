@@ -150,7 +150,7 @@ function reconcile(){
 function watchActive(){
   onValue(ref(db,`${BASE}/${comp}/aktifSporcu`),snap=>{
     const all=snap.val()||{}; let cat="",a=null;
-    let _bt=-1;for(const k of Object.keys(all)){ if((catAll||catList.includes(k))&&all[k]&&(all[k].ts||0)>=_bt){_bt=all[k].ts||0;cat=k;a=all[k];} }
+    let _bt=-1;for(const k of Object.keys(all)){ if((catAll||catList.includes(k)||catList.includes(k.replace(/^final_/,"")))&&all[k]&&(all[k].ts||0)>=_bt){_bt=all[k].ts||0;cat=k;a=all[k];} }
     wantCat=cat; wantData=(a&&typeof a==="object")?a:null;
     showAth(wantData);
     reconcile();
