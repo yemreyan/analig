@@ -52,6 +52,14 @@ function UstJuri(){
  if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:"Yetkisiz Erişim"}),e.jsx("p",{children:"Geçersiz/süresi dolmuş bağlantı."})]})});
 
  const dcards=it=>{const C=it.C;return[["D",f2(C.d)],["A",f2(C.a)],["E",f3(C.e)],["P",C.p?"−"+f2(C.p):"0.00"],["L",C.l!=null?"−"+f2(C.l):"—"],["T",C.t!=null?"−"+f2(C.t):"—"]]};
+ const brk=it=>e.jsxs("div",{style:{marginTop:".3rem"},children:[
+   e.jsx("div",{style:S.jrow,children:e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontWeight:800},children:[e.jsx("span",{children:"A Hakemleri (artistik)"}),e.jsxs("span",{style:{color:"#fbbf24"},children:["ort ",f2(it.C.a)]})]})}),
+   e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".4rem",marginBottom:".6rem"},children:["j1","j2","j3","j4"].map(j=>e.jsxs("span",{style:{background:"#1b2438",border:"1px solid #2a3550",borderRadius:6,padding:".2rem .5rem",fontSize:".8rem",fontWeight:700},children:["A",j.replace("j","")," ",f2(it.sc.aPanel?.[j])]},j))}),
+   e.jsx("div",{style:S.jrow,children:e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontWeight:800},children:[e.jsx("span",{children:"E Hakemleri (kesinti)"}),e.jsxs("span",{style:{color:"#fbbf24"},children:["icra ",f3(it.C.e)]})]})}),
+   e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".4rem",marginBottom:".6rem"},children:["j1","j2","j3","j4"].map(j=>e.jsxs("span",{style:{background:"#1b2438",border:"1px solid #2a3550",borderRadius:6,padding:".2rem .5rem",fontSize:".8rem",fontWeight:700},children:["E",j.replace("j","")," −",f2(it.sc.ePanel?.[j])]},j))}),
+   e.jsx("div",{style:S.jrow,children:e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontWeight:800},children:[e.jsx("span",{children:"D — Zorluk"}),e.jsxs("span",{style:{color:"#fbbf24"},children:["ham ",f2(it.sc.dPanel?.rawTotal)," · D ",f3(it.C.d)]})]})}),
+   e.jsxs("div",{style:{...S.jrow,display:"flex",gap:"1.2rem",flexWrap:"wrap",fontWeight:700},children:[e.jsxs("span",{children:["Ceza/Nötr: ",e.jsx("b",{children:it.C.p?"−"+f2(it.C.p):"0.00"})]}),e.jsxs("span",{children:["Çizgi: ",e.jsx("b",{children:it.C.l!=null?"−"+f2(it.C.l):"—"})]}),e.jsxs("span",{children:["Süre: ",e.jsx("b",{children:it.C.t!=null?"−"+f2(it.C.t):"—"})]})]})
+ ]});
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#fbbf24"},children:"gavel"}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:"ÜST JÜRİ — Onay"})]}),e.jsxs("div",{style:{marginLeft:"auto",background:pending.length?"rgba(251,191,36,.15)":"rgba(34,197,94,.12)",color:pending.length?"#fbbf24":"#86efac",fontWeight:800,padding:".4rem .9rem",borderRadius:999},children:[pending.length," onay bekliyor"]})]}),
@@ -60,8 +68,8 @@ function UstJuri(){
    pending.map(it=>e.jsxs("div",{style:S.card,children:[
      e.jsxs("div",{style:S.chead,children:[e.jsxs("div",{children:[e.jsx("div",{style:S.nm,children:it.name}),e.jsx("div",{style:S.meta,children:it.club||"—"})]}),e.jsx("div",{style:S.kat,children:catName(it.cat)}),e.jsxs("div",{style:S.fin,children:[e.jsx("div",{style:{fontSize:".6rem",fontWeight:800,opacity:.85},children:"TOPLAM"}),e.jsx("div",{style:{fontSize:"1.5rem",fontWeight:800},children:f3(it.C.fin)})]})]}),
      e.jsx("div",{style:S.mini,children:dcards(it).map(([k,v])=>e.jsxs("span",{children:[k," ",e.jsx("b",{style:{color:"#e8edf7"},children:v})]},k))}),
+     brk(it),
      e.jsxs("div",{style:S.acts,children:[
-       e.jsx("button",{style:{...S.btn,...S.detailB},onClick:()=>setDetail(it),children:"Detay"}),
        e.jsx("button",{style:{...S.btn,...S.reject},onClick:()=>{setReject(it);setNote("")},children:"↩ Geri Gönder"}),
        e.jsx("button",{style:{...S.btn,...S.approve},disabled:busy,onClick:()=>approve(it),children:"✓ Onayla ve Yayınla"})
      ]})
