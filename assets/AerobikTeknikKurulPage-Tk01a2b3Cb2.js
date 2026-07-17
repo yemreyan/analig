@@ -22,7 +22,7 @@ function TeknikKurul(){
  R.useEffect(()=>{if(!comp||!authed)return;const u1=onValue(ref(db,`${BASE}/${comp}/puanlar`),s=>setPun(s.val()||{}));const u2=onValue(ref(db,`${BASE}/${comp}/sporcular`),s=>setSpor(s.val()||{}));const u3=onValue(ref(db,`${BASE}/${comp}/kategoriler`),s=>setCats(s.val()||{}));const u4=onValue(ref(db,`${BASE}/${comp}/isim`),s=>setCompName(s.val()||"Yarışma"));return()=>{u1(),u2(),u3(),u4()}},[comp,authed]);
 
  const catName=c=>cats[c]?.name||c;
- const nmeta=(cat,ath)=>{const i=(spor[cat]&&spor[cat][ath])||{};return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||i.adSoyad||ath,club:i.il||i.okul||i.kulup||""}};
+ const nmeta=(cat,ath)=>{const cm=spor[cat]||{},i=cm[ath];if(i)return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||i.adSoyad||ath,club:i.il||i.okul||i.kulup||""};const parts=String(ath).split("::"),gn=parts[parts.length-1],ok=parts.length>=3?parts.slice(1,-1).join("::"):"";const mem=Object.values(cm).filter(m=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok));const nm=mem.map(m=>[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad).filter(Boolean).join(", ");return{name:nm||ath,club:mem[0]?.il||mem[0]?.okul||mem[0]?.kulup||""}};
  const items=[];
  Object.entries(pun).forEach(([cat,aths])=>{if(!aths||typeof aths!="object")return;Object.entries(aths).forEach(([ath,sc])=>{if(!isFinished(sc))return;const m=nmeta(cat,ath),C=comps6(sc);items.push({cat,ath,sc,C,name:m.name,club:m.club,fin:C.fin,done:sc.kilitli===!0||sc.durum==="tamamlandi"})})});
  const catOpts=[...new Map(items.map(i=>[i.cat,catName(i.cat)])).entries()].sort((a,b)=>String(a[1]).localeCompare(String(b[1]),"tr-TR"));

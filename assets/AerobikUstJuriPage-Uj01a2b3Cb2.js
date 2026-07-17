@@ -22,7 +22,12 @@ function UstJuri(){
  R.useEffect(()=>{if(!comp||!authed)return;const u1=onValue(ref(db,`${BASE}/${comp}/puanlar`),s=>setPun(s.val()||{}));const u2=onValue(ref(db,`${BASE}/${comp}/sporcular`),s=>setSpor(s.val()||{}));const u3=onValue(ref(db,`${BASE}/${comp}/kategoriler`),s=>setCats(s.val()||{}));const u4=onValue(ref(db,`${BASE}/${comp}/isim`),s=>setCompName(s.val()||"Yarışma"));const u5=onValue(ref(db,`${BASE}/${comp}/itirazlar`),s=>setItr(s.val()||{}));return()=>{u1(),u2(),u3(),u4(),u5()}},[comp,authed]);
 
  const catName=c=>cats[c]?.name||c;
- const nmeta=(cat,ath)=>{const i=(spor[cat]&&spor[cat][ath])||{};return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||ath,club:i.il||i.okul||i.kulup||"",ad:i.ad||"",soyad:i.soyad||"",okul:i.okul||i.kulup||"",il:i.il||""}};
+ const nmeta=(cat,ath)=>{const cm=spor[cat]||{},i=cm[ath];
+  if(i)return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||ath,club:i.il||i.okul||i.kulup||"",ad:i.ad||"",soyad:i.soyad||"",okul:i.okul||i.kulup||"",il:i.il||""};
+  const parts=String(ath).split("::"),gn=parts[parts.length-1],ok=parts.length>=3?parts.slice(1,-1).join("::"):"";
+  const mem=Object.values(cm).filter(m=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok));
+  const nm=mem.map(m=>[m.ad,m.soyad].filter(Boolean).join(" ")).filter(Boolean).join(", ");const g0=mem[0]||{};
+  return{name:nm||ath,club:g0.il||g0.okul||g0.kulup||"",ad:g0.ad||"",soyad:g0.soyad||"",okul:g0.okul||g0.kulup||"",il:g0.il||""}};
  const pending=[];
  Object.entries(pun).forEach(([cat,aths])=>{if(!aths||typeof aths!="object")return;Object.entries(aths).forEach(([ath,sc])=>{if(sc&&typeof sc=="object"&&sc.durum==="ustJuriBekliyor"){const m=nmeta(cat,ath);pending.push({cat,ath,sc,C:comps6(sc),name:m.name,club:m.club,ad:m.ad,soyad:m.soyad,okul:m.okul,il:m.il,ts:sc.timestamp||0})}})});
  pending.sort((a,b)=>String(a.ts).localeCompare(String(b.ts)));
