@@ -1,4 +1,4 @@
-import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import{b as usToast,a as usInit,u as usAuth,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 const BASE="aerobik_yarismalar";
 const PANEL_LABEL={a:"A — Artistik",e:"E — İcra"};
@@ -19,14 +19,17 @@ async function loadAssets(){if(!_fReg||!_fBold){try{[_fReg,_fBold]=await Promise
 function Karne(){
  const{toast}=usToast();usInit();
  const[sp]=usParams();
- const comp=sp.get("competitionId"),token=sp.get("token");
+ const urlComp=sp.get("competitionId")||sp.get("compId")||sp.get("comp"),token=sp.get("token");
+ const{currentUser}=usAuth?usAuth():{currentUser:null};
+ const[comp,setComp]=R.useState(urlComp||""),[comps,setComps]=R.useState({});
  const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0);
  const[pun,setPun]=R.useState({}),[spor,setSpor]=R.useState({}),[cats,setCats]=R.useState({}),[compName,setCompName]=R.useState("Yarışma"),[compIl,setCompIl]=R.useState("");
- const[catF,setCatF]=R.useState(""),[panelF,setPanelF]=R.useState(""),[busy,setBusy]=R.useState(!1);
+ const[catF,setCatF]=R.useState(""),[panelF,setPanelF]=R.useState(""),[busy,setBusy]=R.useState(!1),[hakemler,setHak]=R.useState({});
 
  R.useEffect(()=>{loadAssets()},[]);
- R.useEffect(()=>{if(!comp||!token){setLoading(!1),setAuthed(!1);return}get(ref(db,`${BASE}/${comp}/epanelToken`)).then(s=>{const v=s.val();setAuthed(v?verifyToken(token,v):!1)}).catch(()=>setAuthed(!1)).finally(()=>setLoading(!1))},[comp,token]);
- R.useEffect(()=>{if(!comp||!authed)return;const u1=onValue(ref(db,`${BASE}/${comp}/puanlar`),s=>setPun(s.val()||{}));const u2=onValue(ref(db,`${BASE}/${comp}/sporcular`),s=>setSpor(s.val()||{}));const u3=onValue(ref(db,`${BASE}/${comp}/kategoriler`),s=>setCats(s.val()||{}));const u4=onValue(ref(db,`${BASE}/${comp}/isim`),s=>setCompName(s.val()||"Yarışma"));const u5=onValue(ref(db,`${BASE}/${comp}/il`),s=>setCompIl(s.val()||""));return()=>{u1(),u2(),u3(),u4(),u5()}},[comp,authed]);
+ R.useEffect(()=>{if(token&&urlComp){get(ref(db,`${BASE}/${urlComp}/epanelToken`)).then(s=>{const v=s.val();setAuthed(v?verifyToken(token,v):!!currentUser)}).catch(()=>setAuthed(!!currentUser)).finally(()=>setLoading(!1))}else{setAuthed(!!currentUser);setLoading(!1)}},[urlComp,token,currentUser]);
+ R.useEffect(()=>{if(!currentUser||urlComp)return;get(ref(db,BASE)).then(s=>setComps(s.val()||{})).catch(()=>{})},[currentUser,urlComp]);
+ R.useEffect(()=>{if(!comp||!authed)return;const u1=onValue(ref(db,`${BASE}/${comp}/puanlar`),s=>setPun(s.val()||{}));const u2=onValue(ref(db,`${BASE}/${comp}/sporcular`),s=>setSpor(s.val()||{}));const u3=onValue(ref(db,`${BASE}/${comp}/kategoriler`),s=>setCats(s.val()||{}));const u4=onValue(ref(db,`${BASE}/${comp}/isim`),s=>setCompName(s.val()||"Yarışma"));const u5=onValue(ref(db,`${BASE}/${comp}/il`),s=>setCompIl(s.val()||""));const u6=onValue(ref(db,`${BASE}/${comp}/hakemler`),s=>setHak(s.val()||{}));return()=>{u1(),u2(),u3(),u4(),u5(),u6()}},[comp,authed]);
 
  const catName=c=>cats[c]?.name||c;
  const resolveName=(cat,aid)=>{const cm=spor[cat]||{},i=cm[aid];if(i)return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||i.adSoyad||aid,okul:i.okul||i.kulup||"",il:i.il||""};const parts=String(aid).split("::"),gn=parts[parts.length-1],ok=parts.length>=3?parts.slice(1,-1).join("::"):"";const mem=Object.values(cm).filter(m=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok));return{name:mem.map(m=>[m.ad,m.soyad].filter(Boolean).join(" ")).filter(Boolean).join(", ")||aid,okul:mem[0]?.okul||mem[0]?.kulup||"",il:mem[0]?.il||""}};
@@ -37,7 +40,8 @@ function Karne(){
     else{const ep=r.ePanel||{},dd=ep[jkey];if(dd==null||isNaN(dd))return;mark=10-Number(dd);const sj=r.sjPanel?.e?.value;if(sj!=null&&!isNaN(sj)){ctrl=10-Number(sj);refSrc="SJE";sjCount++}else{ctrl=(r.eScore!=null&&!isNaN(r.eScore))?Number(r.eScore):10-trimmedMean([ep.j1,ep.j2,ep.j3,ep.j4]);refSrc="E ort.";avgCount++}}
     const disc=mark-ctrl,nm=resolveName(cat,aid);rows.push({aid,name:nm.name,okul:nm.okul,il:nm.il,ctrl:+ctrl.toFixed(3),mark:+mark.toFixed(3),disc:+disc.toFixed(3),refSrc})});
   rows.sort((a,b)=>b.ctrl-a.ctrl);const n=rows.length;
-  return{cat,panel,pos,label:panel.toUpperCase()+pos,rows,n,acc:n?rows.reduce((s,r)=>s+discPts(r.disc),0)/n:0,avgAbs:n?rows.reduce((s,r)=>s+Math.abs(r.disc),0)/n:0,avgSigned:n?rows.reduce((s,r)=>s+r.disc,0)/n:0,sjCount,avgCount}};
+  const judge=hakemler[cat]?.[panel+pos]?.name||"";
+  return{cat,panel,pos,label:panel.toUpperCase()+pos,judge,rows,n,acc:n?rows.reduce((s,r)=>s+discPts(r.disc),0)/n:0,avgAbs:n?rows.reduce((s,r)=>s+Math.abs(r.disc),0)/n:0,avgSigned:n?rows.reduce((s,r)=>s+r.disc,0)/n:0,sjCount,avgCount}};
 
  const units=[];const allCats=Object.keys(pun);(catF?[catF]:allCats).forEach(cat=>{["a","e"].forEach(panel=>{if(panelF&&panel!==panelF)return;[1,2,3,4].forEach(pos=>{const u=evalPosition(cat,panel,pos);if(u.n>0)units.push(u)})})});
  const catOpts=[...new Set(allCats)].map(c=>[c,catName(c)]);
@@ -64,7 +68,7 @@ function Karne(){
   doc.setFont(FONT,"normal");doc.setFontSize(8.5);doc.setTextColor(90);
   doc.text(T(u.sjCount>0?`Referans: Süper Jüri (${u.panel==="a"?"SJA":"SJE"}) — ${u.sjCount} sporcuda; panel ort. — ${u.avgCount}`:"Referans: panel ortalaması (Süper Jüri notu yok)"),IN,y);y+=6;
   hline(y);y+=6;
-  doc.setFont(FONT,"bold");doc.setFontSize(12);doc.setTextColor(...NAVY);doc.text(T(`Panel pozisyonu: ${u.label}`),IN,y);y+=7;
+  doc.setFont(FONT,"bold");doc.setFontSize(12);doc.setTextColor(...NAVY);doc.text(T(u.judge?`${u.judge}`:`Pozisyon ${u.label}`),IN,y);y+=5;doc.setFont(FONT,"normal");doc.setFontSize(9);doc.setTextColor(110);doc.text(T(`Panel pozisyonu: ${u.label}${u.judge?"":"  ·  (hakem atanmamış)"}`),IN,y);y+=7;
   // KPI
   const ky=y,usable=PW-2*IN,kgap=3.5,cw=(usable-2*kgap)/3;
   const ac=u.acc>=.7?[34,150,60]:u.acc>=.55?[180,140,0]:[200,60,40];
@@ -102,13 +106,14 @@ function Karne(){
   pdfb:{background:"#1b2438",border:"1px solid #2a3550",color:"#e8edf7",borderRadius:8,padding:".35rem .7rem",fontWeight:800,fontSize:".78rem",cursor:"pointer"},
   center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#8b97b3",fontWeight:700,padding:"2rem 1rem"}};
 
- if(!comp)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:"Hatalı link."})});
  if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:"Doğrulanıyor…"})});
  if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:"Yetkisiz Erişim"}),e.jsx("p",{children:"Geçersiz/süresi dolmuş bağlantı."})]})});
+ if(!comp)return e.jsxs("div",{style:S.wrap,children:[e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#fbbf24"},children:"fact_check"}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.02rem"},children:"AEROBİK FIG HAKEM KARNESİ"})]}),e.jsxs("div",{style:{maxWidth:560,margin:"2rem auto 0",padding:"1rem"},children:[e.jsx("div",{style:{fontSize:".9rem",color:"#8b97b3",fontWeight:700,marginBottom:".8rem"},children:"Karnesini görmek istediğiniz yarışmayı seçin:"}),e.jsxs("select",{style:{...S.sel,width:"100%",padding:".7rem .8rem"},value:comp,onChange:x=>setComp(x.target.value),children:[e.jsx("option",{value:"",children:"— Yarışma seçin —"}),Object.entries(comps).map(([id,c])=>e.jsx("option",{value:id,children:c.isim||c.ad||id},id))]})]})]});
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#fbbf24"},children:"fact_check"}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".78rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.02rem"},children:"AEROBİK FIG HAKEM KARNESİ"})]}),
    e.jsxs("div",{style:{marginLeft:"auto",display:"flex",gap:".5rem",flexWrap:"wrap",alignItems:"center"},children:[
+    urlComp?null:e.jsxs("select",{style:S.sel,value:comp,onChange:x=>setComp(x.target.value),children:[e.jsx("option",{value:"",children:"— Yarışma —"}),Object.entries(comps).map(([id,c])=>e.jsx("option",{value:id,children:c.isim||c.ad||id},id))]}),
     e.jsxs("select",{style:S.sel,value:catF,onChange:x=>setCatF(x.target.value),children:[e.jsx("option",{value:"",children:"Tüm kategoriler"}),catOpts.map(([c,n])=>e.jsx("option",{value:c,children:n},c))]}),
     e.jsxs("select",{style:S.sel,value:panelF,onChange:x=>setPanelF(x.target.value),children:[e.jsx("option",{value:"",children:"A + E panel"}),e.jsx("option",{value:"a",children:"Sadece A"}),e.jsx("option",{value:"e",children:"Sadece E"})]}),
     e.jsx("button",{style:{...S.btn,opacity:units.length&&!busy?1:.5},disabled:!units.length||busy,onClick:()=>genPDF(units,`Aerobik_Karneler_${tr(compName).replace(/[^a-zA-Z0-9]+/g,"_").slice(0,40)}.pdf`),children:busy?"Hazırlanıyor…":"⬇ Tüm Karneler (PDF)"})
@@ -118,9 +123,9 @@ function Karne(){
    e.jsxs("div",{style:{color:"#8b97b3",fontWeight:700,fontSize:".85rem",marginBottom:".5rem"},children:[units.length," pozisyon karnesi"]}),
    units.length===0?e.jsx("div",{style:S.center,children:"Panel notu bulunamadı."}):
    e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[
-    e.jsx("thead",{children:e.jsxs("tr",{children:[e.jsx("th",{style:S.th,children:"Panel/Poz."}),e.jsx("th",{style:S.th,children:"Kategori"}),e.jsx("th",{style:{...S.th,textAlign:"center"},children:"Egz."}),e.jsx("th",{style:{...S.th,textAlign:"center"},children:"Ort. Sapma"}),e.jsx("th",{style:{...S.th,textAlign:"center"},children:"Accuracy"}),e.jsx("th",{style:S.th,children:"Referans"}),e.jsx("th",{style:S.th})]})}),
+    e.jsx("thead",{children:e.jsxs("tr",{children:[e.jsx("th",{style:S.th,children:"Poz. · Hakem"}),e.jsx("th",{style:S.th,children:"Kategori"}),e.jsx("th",{style:{...S.th,textAlign:"center"},children:"Egz."}),e.jsx("th",{style:{...S.th,textAlign:"center"},children:"Ort. Sapma"}),e.jsx("th",{style:{...S.th,textAlign:"center"},children:"Accuracy"}),e.jsx("th",{style:S.th,children:"Referans"}),e.jsx("th",{style:S.th})]})}),
     e.jsx("tbody",{children:units.map((u,i)=>{const g=gradeShort(u.acc);return e.jsxs("tr",{children:[
-      e.jsx("td",{style:S.td,children:e.jsx("span",{style:S.tag(u.panel==="a"?"rgba(236,72,153,.16)":"rgba(16,185,129,.16)",u.panel==="a"?"#f9a8d4":"#6ee7b7"),children:u.label})}),
+      e.jsxs("td",{style:S.td,children:[e.jsx("span",{style:S.tag(u.panel==="a"?"rgba(236,72,153,.16)":"rgba(16,185,129,.16)",u.panel==="a"?"#f9a8d4":"#6ee7b7"),children:u.label}),u.judge?e.jsx("span",{style:{fontWeight:800,marginLeft:".45rem"},children:u.judge}):e.jsx("span",{style:{marginLeft:".45rem",color:"#8b97b3",fontWeight:600,fontSize:".78rem"},children:"(atanmamış)"})]}),
       e.jsx("td",{style:{...S.td,color:"#8b97b3"},children:catName(u.cat)}),
       e.jsx("td",{style:{...S.td,textAlign:"center",fontWeight:700},children:u.n}),
       e.jsxs("td",{style:{...S.td,textAlign:"center",fontWeight:700},children:[u.avgSigned>=0?"+":"",u.avgSigned.toFixed(3)]}),
