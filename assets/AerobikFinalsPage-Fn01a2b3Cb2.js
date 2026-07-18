@@ -47,8 +47,9 @@ function Finals(){
   setBusy(!1);
  };
 
- const S={wrap:{minHeight:"100vh",background:"#0a0e1a",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"3rem"},
-  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.92)",backdropFilter:"blur(10px)",borderBottom:"1px solid #2a3550",padding:".9rem 1.1rem",display:"flex",alignItems:"center",gap:".8rem"},
+ const S={wrap:{minHeight:"100vh",background:"radial-gradient(1200px 600px at 50% -10%,#111a30 0%,#0a0e1a 60%)",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"3rem"},
+  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.9)",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a3550",padding:".8rem 1.1rem",display:"flex",alignItems:"center",gap:".8rem"},
+  ico:{width:38,height:38,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#f59e0b,#ef4444)",boxShadow:"0 6px 18px rgba(245,158,11,.35)"},
   in:{maxWidth:820,margin:"0 auto",padding:"1rem"},
   sel:{width:"100%",padding:".65rem .8rem",borderRadius:10,border:"1px solid #2a3550",background:"#131a2b",color:"#e8edf7",fontWeight:700,fontSize:".95rem",marginBottom:"1rem"},
   card:{background:"#131a2b",border:"1px solid #2a3550",borderRadius:14,padding:".8rem 1rem",marginBottom:".6rem",display:"flex",alignItems:"center",gap:".7rem",flexWrap:"wrap"},
@@ -57,7 +58,7 @@ function Finals(){
   center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#8b97b3",fontWeight:700,padding:"2rem 1rem"}};
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#fbbf24"},children:"emoji_events"}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:"Aerobik — Final Oluştur"})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff",fontSize:"22px"},children:"emoji_events"})}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:"Aerobik"}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem",lineHeight:1.1},children:"Final Oluştur"})]})]}),
   e.jsxs("div",{style:S.in,children:[
    e.jsx("div",{style:{fontSize:".85rem",color:"#8b97b3",fontWeight:700,margin:"0 0 .8rem"},children:"Her kategoride (bireysel + grup/çift) puana göre ilk 8 sporcuyu alıp, aynı yarışma altında \"🏆 Final — …\" kategorileri oluşturur. Bu kategoriler puanlama ekranında normal kategoriler gibi çağrılıp puanlanır."}),
    loading?e.jsx("div",{style:S.center,children:"Yükleniyor…"}):e.jsxs(e.Fragment,{children:[
