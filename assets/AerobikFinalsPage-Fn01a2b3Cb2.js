@@ -57,7 +57,7 @@ function Finals(){
   center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#8b97b3",fontWeight:700,padding:"2rem 1rem"}};
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#fbbf24"},children:"emoji_events"}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:"Aerobik — Finaller"})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#fbbf24"},children:"emoji_events"}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:"Aerobik — Final Oluştur"})]}),
   e.jsxs("div",{style:S.in,children:[
    e.jsx("div",{style:{fontSize:".85rem",color:"#8b97b3",fontWeight:700,margin:"0 0 .8rem"},children:"Her kategoride (bireysel + grup/çift) puana göre ilk 8 sporcuyu alıp, aynı yarışma altında \"🏆 Final — …\" kategorileri oluşturur. Bu kategoriler puanlama ekranında normal kategoriler gibi çağrılıp puanlanır."}),
    loading?e.jsx("div",{style:S.center,children:"Yükleniyor…"}):e.jsxs(e.Fragment,{children:[
