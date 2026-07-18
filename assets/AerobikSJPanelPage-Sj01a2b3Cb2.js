@@ -50,9 +50,10 @@ function SJPanel(){
  const save=async q=>{const raw=noteOf(q.key);if(raw===""){toast("Önce referans notunuzu girin.","error");return}const val=parseFloat(raw);if(isNaN(val)){toast("Geçersiz not.","error");return}const av=cfg.avg(q.sc),gp=av==null?null:Math.abs(val-av);try{await update(ref(db,`${BASE}/${comp}/puanlar/${q.cat}/${q.ath}/sjPanel`),{[cfg.letter]:{value:val,panelValue:av,gap:gp,ts:Date.now()}});toast(q.name+" — SJ notu kaydedildi ✓","success")}catch{toast("Hata oluştu.","error")}};
  const warn=async(q,target,lbl)=>{const wk=q.key+"|"+target;try{await fset(ref(db,`${BASE}/${comp}/refereeCalls/${q.cat}/${q.ath}/${target}`),{ts:Date.now(),fromRole:pt});setWarned(w=>({...w,[wk]:Date.now()}));setTimeout(()=>setWarned(w=>{const n={...w};delete n[wk];return n}),3e3);toast(lbl+" uyarıldı ⚠️","success")}catch{toast("Uyarı gönderilemedi.","error")}};
 
- const S={wrap:{minHeight:"100vh",background:"#0a0e1a",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"2rem"},
-  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.94)",backdropFilter:"blur(10px)",borderBottom:"1px solid #2a3550",padding:".7rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:".6rem"},
-  badge:{background:cfg.color,color:"#fff",fontWeight:800,fontSize:"1rem",padding:".4rem .8rem",borderRadius:10},
+ const S={wrap:{minHeight:"100vh",background:"radial-gradient(1200px 600px at 50% -10%,#111a30 0%,#0a0e1a 60%)",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"2rem"},
+  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.9)",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a3550",padding:".8rem 1.1rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:".6rem"},
+  ico:{width:38,height:38,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,"+cfg.color+",#0891b2)",boxShadow:"0 6px 18px rgba(99,102,241,.3)"},
+  badge:{background:cfg.color,color:"#fff",fontWeight:800,fontSize:"1rem",padding:".4rem .85rem",borderRadius:999,boxShadow:"0 4px 14px "+cfg.color+"55"},
   in:{maxWidth:560,margin:"0 auto",padding:"1rem"},
   qlbl:{fontSize:".75rem",fontWeight:800,color:"#8b97b3",textTransform:"uppercase",letterSpacing:".04em",margin:".2rem 0 .5rem"},
   qrow:on=>({display:"flex",alignItems:"center",gap:".7rem",padding:".6rem .8rem",borderRadius:11,marginBottom:".4rem",cursor:"pointer",border:"1px solid "+(on?cfg.color:"#2a3550"),background:on?"rgba(99,102,241,.10)":"#131a2b"}),
@@ -73,7 +74,7 @@ function SJPanel(){
  if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:"Yetkisiz Erişim"}),e.jsx("p",{children:"Geçersiz/süresi dolmuş bağlantı."})]})});
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".78rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsxs("div",{style:{fontWeight:800,fontSize:"1.02rem"},children:["SÜPER JÜRİ — ",cfg.title]})]}),e.jsx("div",{style:S.badge,children:cfg.badge})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".7rem",minWidth:0},children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff",fontSize:"22px"},children:"verified_user"})}),e.jsxs("div",{style:{minWidth:0},children:[e.jsx("div",{style:{fontSize:".78rem",color:"#8b97b3",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:compName}),e.jsxs("div",{style:{fontWeight:800,fontSize:"1.02rem"},children:["SÜPER JÜRİ — ",cfg.title]})]})]}),e.jsx("div",{style:S.badge,children:cfg.badge})]}),
   e.jsxs("div",{style:S.in,children:[
    e.jsxs("div",{style:S.qlbl,children:["İnceleme Kuyruğu (",queue.length,") — hepsi aynı anda"]}),
    queue.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:"İncelenecek sporcu yok."}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:"Panel puan girdikçe sporcular burada listelenir."})]}):
