@@ -95,11 +95,12 @@ function catLabel(cat,def){if(def&&def.name)return def.name;if(/^step_/.test(cat
 // panel türleri
 const PANELS=[
   {key:"a",label:"A (Artistik A1–A4)",route:"apanel",multi:["a1","a2","a3","a4"]},
+  {key:"e",label:"E (İcra E1–E4)",route:"epanel",multi:["e1","e2","e3","e4"]},
   {key:"d",label:"D (Zorluk)",route:"dpanel"},
   {key:"l",label:"L (Çizgi)",route:"lpanel"},
   {key:"t",label:"T (Süre)",route:"tpanel"},
 ];
-let comps={}, comp="", token="", selPanels=new Set(["a","d","l","t"]);
+let comps={}, comp="", token="", selPanels=new Set(PANELS.map(p=>p.key));
 
 onValue(ref(db,BASE),s=>{
   comps=s.val()||{};

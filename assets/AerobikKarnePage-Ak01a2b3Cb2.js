@@ -40,7 +40,7 @@ function Karne(){
     else{const ep=r.ePanel||{},dd=ep[jkey];if(dd==null||isNaN(dd))return;mark=10-Number(dd);const sj=r.sjPanel?.e?.value;if(sj!=null&&!isNaN(sj)){ctrl=10-Number(sj);refSrc="SJE";sjCount++}else{ctrl=(r.eScore!=null&&!isNaN(r.eScore))?Number(r.eScore):10-trimmedMean([ep.j1,ep.j2,ep.j3,ep.j4]);refSrc="E ort.";avgCount++}}
     const disc=mark-ctrl,nm=resolveName(cat,aid);rows.push({aid,name:nm.name,okul:nm.okul,il:nm.il,ctrl:+ctrl.toFixed(3),mark:+mark.toFixed(3),disc:+disc.toFixed(3),refSrc})});
   rows.sort((a,b)=>b.ctrl-a.ctrl);const n=rows.length;
-  const judge=hakemler[cat]?.[panel+pos]?.name||"";
+  const judge=(hakemler[cat]||hakemler[String(cat).replace(/^final_/,"")])?.[panel+pos]?.name||"";
   return{cat,panel,pos,label:panel.toUpperCase()+pos,judge,rows,n,acc:n?rows.reduce((s,r)=>s+discPts(r.disc),0)/n:0,avgAbs:n?rows.reduce((s,r)=>s+Math.abs(r.disc),0)/n:0,avgSigned:n?rows.reduce((s,r)=>s+r.disc,0)/n:0,sjCount,avgCount}};
 
  const units=[];const allCats=Object.keys(pun);(catF?[catF]:allCats).forEach(cat=>{["a","e"].forEach(panel=>{if(panelF&&panel!==panelF)return;[1,2,3,4].forEach(pos=>{const u=evalPosition(cat,panel,pos);if(u.n>0)units.push(u)})})});
