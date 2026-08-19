@@ -145,6 +145,13 @@ function buildPanels(){
   const cat = comps[curComp].kategoriler[curCat];
   let aletler = cat?.aletler || [];
   if(!Array.isArray(aletler)) aletler = Object.keys(aletler||{});
+  // ATLAMA, ASİMETRİK'ten önce gelsin (FIG yarışma sırası: VT → UB → BB → FX).
+  // DB'de aletler alfabetik kayıtlı olduğu için burada yerleri değiştiriliyor.
+  aletler = [...aletler];
+  const _iAt = aletler.indexOf("atlama"), _iAs = aletler.indexOf("asimetrik");
+  if(_iAt > -1 && _iAs > -1 && _iAs < _iAt){
+    aletler[_iAt] = "asimetrik"; aletler[_iAs] = "atlama";
+  }
   const grid = $("grid");
   grid.className = "grid cols-" + (aletler.length>=4 ? "4" : aletler.length);
   aletler.forEach(alet => grid.appendChild(makePanel(alet)));
