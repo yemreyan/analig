@@ -95,7 +95,7 @@ function startRec(cat,athId,name,ad,soyad,okul,il){
   const mime=MediaRecorder.isTypeSupported("video/mp4")?"video/mp4":MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":MediaRecorder.isTypeSupported("video/webm;codecs=vp8")?"video/webm;codecs=vp8":"video/webm";
   mimeExt=mime.startsWith("video/mp4")?"mp4":"webm";
   let rec;
-  try{rec=new MediaRecorder(src,{mimeType:mime,videoBitsPerSecond:5e6});}
+  try{rec=new MediaRecorder(src,{mimeType:mime,videoBitsPerSecond:2e6});}
   catch(e){try{rec=new MediaRecorder(src);}catch(e2){setRec("error","kayıt açılamadı");setTimeout(()=>{recState==="error"&&setRec("idle")},3000);return;}}
   chunks=[]; rec.ondataavailable=e=>{e.data&&e.data.size>0&&chunks.push(e.data)};
   rec.onstop=()=>onStop(mime);
