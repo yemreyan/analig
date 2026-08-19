@@ -28,7 +28,7 @@ function Karne(){
 
  R.useEffect(()=>{loadAssets()},[]);
  R.useEffect(()=>{if(token&&urlComp){get(ref(db,`${BASE}/${urlComp}/epanelToken`)).then(s=>{const v=s.val();setAuthed(v?verifyToken(token,v):!!currentUser)}).catch(()=>setAuthed(!!currentUser)).finally(()=>setLoading(!1))}else{setAuthed(!!currentUser);setLoading(!1)}},[urlComp,token,currentUser]);
- R.useEffect(()=>{if(!currentUser||urlComp)return;get(ref(db,BASE)).then(s=>setComps(s.val()||{})).catch(()=>{})},[currentUser,urlComp]);
+ R.useEffect(()=>{if(!currentUser||urlComp)return;get(ref(db,BASE)).then(s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]=c)});setComps(o)}).catch(()=>{})},[currentUser,urlComp]);
  R.useEffect(()=>{if(!comp||!authed)return;const u1=onValue(ref(db,`${BASE}/${comp}/puanlar`),s=>setPun(s.val()||{}));const u2=onValue(ref(db,`${BASE}/${comp}/sporcular`),s=>setSpor(s.val()||{}));const u3=onValue(ref(db,`${BASE}/${comp}/kategoriler`),s=>setCats(s.val()||{}));const u4=onValue(ref(db,`${BASE}/${comp}/isim`),s=>setCompName(s.val()||"Yarışma"));const u5=onValue(ref(db,`${BASE}/${comp}/il`),s=>setCompIl(s.val()||""));const u6=onValue(ref(db,`${BASE}/${comp}/hakemler`),s=>setHak(s.val()||{}));return()=>{u1(),u2(),u3(),u4(),u5(),u6()}},[comp,authed]);
 
  const catName=c=>cats[c]?.name||c;

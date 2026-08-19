@@ -12,7 +12,7 @@ function Finals(){
  const{toast}=usToast();usInit();
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[busy,setBusy]=R.useState(!1),[log,setLog]=R.useState(null),[loading,setLoading]=R.useState(!0),[tmpl,setTmpl]=R.useState({}),[texp,setTexp]=R.useState(!0),[expanded,setExpanded]=R.useState({});
 
- const reload=()=>get(ref(db,BASE)).then(s=>setComps(s.val()||{})).finally(()=>setLoading(!1));
+ const reload=()=>get(ref(db,BASE)).then(s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]=c)});setComps(o)}).finally(()=>setLoading(!1));
  R.useEffect(()=>{reload()},[]);
 
  const C=comps[comp]||{},cats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{};
