@@ -24,13 +24,24 @@ function RitmikFinals(){
  const catLabel=c=>cats[c]?.name||cfg(c).label||c;
  const aletsOf=c=>{const a=cats[c]?.aletler;if(Array.isArray(a)&&a.length)return a.map(x=>typeof x=="object"?x.id||x.value:x);if(a&&typeof a=="object")return Object.keys(a);return cfg(c).aletler||[]};
  const clubOf=m=>String(m?.okul||m?.kulup||m?.il||"").trim();
- const nameOf=(cat,id)=>{const m=spor[cat]?.[id]||{};return[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad||id};
+ const isGrp=c=>{const d=cfg(c);return d.grupMu===!0||d.tip==="takim"||d.athleteCount>1};
+ const keyOf=z=>String(z||"").trim().replace(/[.#$[\]/]/g,"-").slice(0,60);
+ // Grup kategorilerinde katilimci = kulup grubu; bireysel kategorilerde = sporcu
+ const partOf=cat=>{const sp=spor[cat]||{};if(!isGrp(cat))return sp;
+   const Tm=new Map;Object.entries(sp).forEach(([id,m])=>{if(!m)return;
+     const ok=String(m.okul||m.kulup||"").trim(),gn=m.grupNo||1,ky=ok+"|"+gn;
+     Tm.has(ky)||Tm.set(ky,{id:keyOf(cat+"::"+ok+"::"+gn),okul:ok,kulup:m.kulup||ok,il:m.il||"",members:[]});
+     const G=Tm.get(ky);G.members.push({...m,id}),G.il||(G.il=m.il||"")});
+   const out={};return Tm.forEach(G=>{out[G.id]={ad:G.members.map(z=>[z.ad,z.soyad].filter(Boolean).join(" ")).filter(Boolean).join(", "),
+     soyad:"",okul:G.okul,kulup:G.kulup,il:G.il,isTeam:!0,uyeSayisi:G.members.length,uyeler:G.members}}),out};
+ const nameOf=(cat,id)=>{const m=partOf(cat)[id]||{};return[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad||id};
 
  // Bir alet (ya da cok-mucadele) icin siralama + kulup kotasi
  const rank=(cat,alet)=>{
+  const P=partOf(cat);
   const rows=Object.entries(pun[cat]||{}).map(([id,sc])=>{
     const s=alet===AA?num(sc?.sonuc):num(sc?.[alet]?.sonuc);
-    return{id,score:s,club:clubOf(spor[cat]?.[id])}}).filter(r=>r.score!=null)
+    return{id,score:s,club:clubOf(P[id])}}).filter(r=>r.score!=null)
    .sort((a,b)=>b.score-a.score);
   const cap=Math.max(0,parseInt(limit)||0),used={},pick=[],over=[];
   rows.forEach(r=>{const k=r.club||"—";
@@ -58,12 +69,14 @@ function RitmikFinals(){
   selectedUnits.forEach(([cat,alet])=>{
    const{list}=rank(cat,alet);if(!list.length)return;
    const fcat=alet===AA?"final_"+cat:"final_"+cat+"__"+alet,newSpor={},names=[];
-   list.forEach((row,ix)=>{const rk=ix+1,reserve=rk>TOP,cs=csOf(rk),md=spor[cat]?.[row.id]||{};
-     newSpor[row.id]={...md,cikisSirasi:cs,_finalRank:rk,...(reserve?{_yedek:"R"+(rk-TOP)}:{})};
+   const P=partOf(cat);
+   list.forEach((row,ix)=>{const rk=ix+1,reserve=rk>TOP,cs=csOf(rk),md=P[row.id]||{},ek={cikisSirasi:cs,_finalRank:rk,...(reserve?{_yedek:"R"+(rk-TOP)}:{})};
+     if(md.isTeam)(md.uyeler||[]).forEach((mm,mi)=>{const{id:_mid,...rest}=mm;newSpor[_mid||row.id+"_"+(mi+1)]={...rest,...ek}});
+     else newSpor[row.id]={...md,...ek};
      names.push({rank:rk,cs,reserve,yed:reserve?"R"+(rk-TOP):null,name:nameOf(cat,row.id),club:row.club,score:row.score,quotaFill:!!row.quotaFill})});
    upd["kategoriler/"+fcat]={name:"🏆 "+catLabel(cat)+" — "+(alet===AA?"Çok Mücadele Finali":aletLabel(alet)+" Finali"),
      final:!0,baseCat:cat,alet:alet===AA?null:alet,aletler:alet===AA?aletsOf(cat):[alet],
-     tip:cfg(cat).tip||"ferdi",kulupKotasi:Math.max(0,parseInt(limit)||0)||null,olusturma:Date.now()};
+     tip:cfg(cat).tip||"ferdi",grupMu:isGrp(cat)||null,athleteCount:cfg(cat).athleteCount||null,kulupKotasi:Math.max(0,parseInt(limit)||0)||null,olusturma:Date.now()};
    upd["sporcular/"+fcat]=newSpor;upd["puanlar/"+fcat]=null;
    summary.push({fcat,cat,alet,label:catLabel(cat),aletAd:alet===AA?"Çok Mücadele":aletLabel(alet),names})});
   if(!Object.keys(upd).length){toast("Seçili finallerde puanı girilmiş sporcu bulunamadı.","warning");setBusy(!1);return}
