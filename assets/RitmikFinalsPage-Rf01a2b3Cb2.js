@@ -30,9 +30,9 @@ function RitmikFinals(){
  const partOf=cat=>{const sp=spor[cat]||{};if(!isGrp(cat))return sp;
    const Tm=new Map;Object.entries(sp).forEach(([id,m])=>{if(!m)return;
      const ok=String(m.okul||m.kulup||"").trim(),gn=m.grupNo||1,ky=ok+"|"+gn;
-     Tm.has(ky)||Tm.set(ky,{id:keyOf(cat+"::"+ok+"::"+gn),okul:ok,kulup:m.kulup||ok,il:m.il||"",members:[]});
+     Tm.has(ky)||Tm.set(ky,{id:keyOf(cat+"::"+ok+"::"+gn),okul:ok,kulup:m.kulup||ok,il:m.il||"",gn,members:[]});
      const G=Tm.get(ky);G.members.push({...m,id}),G.il||(G.il=m.il||"")});
-   const out={};return Tm.forEach(G=>{out[G.id]={ad:G.members.map(z=>[z.ad,z.soyad].filter(Boolean).join(" ")).filter(Boolean).join(", "),
+   const out={};return Tm.forEach(G=>{out[G.id]={ad:G.members.map(z=>[z.ad,z.soyad].filter(Boolean).join(" ")).filter(Boolean).join(", ")+(G.gn>1?` (${G.gn}. Grup)`:""),
      soyad:"",okul:G.okul,kulup:G.kulup,il:G.il,isTeam:!0,uyeSayisi:G.members.length,uyeler:G.members}}),out};
  const nameOf=(cat,id)=>{const m=partOf(cat)[id]||{};return[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad||id};
 
