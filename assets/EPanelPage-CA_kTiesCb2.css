@@ -37,3 +37,18 @@
 .scoring-view .athlete-card .athlete-name{font-size:clamp(1.05rem,5.5vh,1.9rem)}
 .scoring-view .athlete-card .athlete-club{font-size:.74rem}
 }
+/* dikey telefon: tek sutun kalsin ama ekrana sigsin */
+@media (max-width:599px){
+.epanel-main{padding:.6rem;justify-content:flex-start}
+.athlete-card{padding:.85rem .9rem;margin-bottom:.7rem;border-radius:16px}
+.athlete-card .athlete-name{font-size:clamp(1.3rem,5.5vw,1.8rem);margin-bottom:.1rem}
+.athlete-card .athlete-club{font-size:.82rem}
+.scoring-card{padding:.85rem;gap:.5rem;border-radius:16px}
+.scoring-card .input-label{font-size:.68rem}
+.score-input{font-size:clamp(2.2rem,9vh,3.2rem);padding:.45rem;border-radius:12px}
+.quick-buttons{gap:.35rem}
+.quick-buttons button{padding:.5rem 0;font-size:.95rem;border-radius:10px}
+.epanel-numpad{margin:.25rem 0;gap:.35rem}
+.numpad-btn{padding:.55rem 0;font-size:1.15rem;border-radius:10px}
+.send-btn{padding:.6rem 0}
+}
