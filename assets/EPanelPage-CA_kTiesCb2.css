@@ -22,15 +22,15 @@
 .epanel-header .header-sub{font-size:.66rem}
 .epanel-header .header-alet{font-size:.7rem}
 .epanel-header .panel-badge{padding:.2rem .5rem;font-size:.8rem}
-.epanel-main{padding:.4rem;justify-content:flex-start}
+.epanel-main{padding:.25rem;justify-content:flex-start}
 .epanel-main .view-section.scoring-view.active{gap:.55rem}
-.scoring-view .scoring-card{padding:.5rem;gap:.28rem;border-radius:14px}
+.scoring-view .scoring-card{padding:.45rem;gap:.2rem;border-radius:14px}
 .scoring-view .input-label{font-size:.6rem;letter-spacing:.04em}
 .scoring-view .score-input{font-size:clamp(1.5rem,10.5vh,2.6rem);padding:.22rem;border-radius:10px}
 .scoring-view .quick-buttons{gap:.28rem}
 .scoring-view .quick-buttons button{padding:.28rem 0;font-size:.8rem;border-radius:8px}
 .scoring-view .epanel-numpad{margin:.12rem 0;gap:.24rem}
-.scoring-view .numpad-btn{padding:.26rem 0;font-size:.95rem;border-radius:8px}
+.scoring-view .numpad-btn{padding:.22rem 0;font-size:.92rem;border-radius:8px}
 .scoring-view .numpad-btn--del .material-icons-round{font-size:16px!important}
 .scoring-view .send-btn{padding:.34rem 0;font-size:.88rem}
 .scoring-view .athlete-card{padding:.7rem}
