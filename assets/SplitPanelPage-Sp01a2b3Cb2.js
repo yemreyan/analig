@@ -33,11 +33,13 @@ function SplitPanel(){
    const v=s.val()||{},aktif=[];
    Object.keys(v).forEach(k=>{const m=v[k]||{};Object.keys(m).forEach(al=>{
     if(m[al])aktif.push({anahtar:k+"|"+al,ts:Number(m[al].ts)||0})})});
-   aktif.sort((a,b)=>a.ts-b.ts);
-   const canli=new Set(aktif.map(z=>z.anahtar)),cur=atRef.current.slice(0,adet);
+   // En yeni cagrilar oncelikli: bolme sayisi kadar en guncel cagri gosterilir,
+   // fazlasi (bitmis/eski cagrilar) bolmeden dusurulur.
+   aktif.sort((a,b)=>b.ts-a.ts);
+   const gost=aktif.slice(0,adet),canli=new Set(gost.map(z=>z.anahtar)),cur=atRef.current.slice(0,adet);
    for(let i=0;i<adet;i++)if(cur[i]&&!canli.has(cur[i]))cur[i]=null;
    const var_=new Set(cur.filter(Boolean));
-   aktif.forEach(z=>{if(var_.has(z.anahtar))return;
+   gost.slice().reverse().forEach(z=>{if(var_.has(z.anahtar))return;
     const bos=cur.findIndex(x=>!x);if(bos>=0){cur[bos]=z.anahtar;var_.add(z.anahtar)}});
    atRef.current=cur;setOto(cur.slice(0,adet));
   });
