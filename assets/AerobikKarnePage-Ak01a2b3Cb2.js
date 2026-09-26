@@ -14,7 +14,7 @@ const gradeEN=acc=>acc>=.85?"Very Good":acc>=.70?"Good":acc>=.55?"Acceptable":ac
 let _fReg=null,_fBold=null,_logo=null;
 async function _f(u){const r=await fetch(u);const by=new Uint8Array(await r.arrayBuffer());let s="";for(let i=0;i<by.length;i+=8192)s+=String.fromCharCode.apply(null,by.subarray(i,i+8192));return btoa(s)}
 const _RURL="https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmT.ttf",_BURL="https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf";
-async function loadAssets(){if(!_fReg||!_fBold){try{[_fReg,_fBold]=await Promise.all([_f(_RURL),_f(_BURL)])}catch(e){}}if(_logo===null){try{const r=await fetch("/logo.png");if(r.ok){const bl=await r.blob();_logo=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(bl)})}else _logo=0}catch(e){_logo=0}}}
+async function loadAssets(){if(!_fReg||!_fBold){try{[_fReg,_fBold]=await Promise.all([_f(_RURL),_f(_BURL)])}catch(e){}}const _kucultLogo=_du=>new Promise(_rs=>{try{const _im=new Image();_im.onload=()=>{try{const _S=256,_cv=document.createElement("canvas");_cv.width=_S;_cv.height=_S;const _cx=_cv.getContext("2d");_cx.clearRect(0,0,_S,_S);_cx.drawImage(_im,0,0,_S,_S);_rs(_cv.toDataURL("image/png"))}catch{_rs(_du)}};_im.onerror=()=>_rs(_du);_im.src=_du}catch{_rs(_du)}});if(_logo===null){try{const r=await fetch("/logo.png");if(r.ok){const bl=await r.blob();const _ham=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(bl)});_logo=await _kucultLogo(_ham)}else _logo=0}catch(e){_logo=0}}}
 
 function Karne(){
  const{toast}=usToast();usInit();
@@ -56,7 +56,7 @@ function Karne(){
   const secH=(t,yy)=>{doc.setFillColor(...TCFRED);doc.rect(IN,yy-3.3,1.5,3.9,"F");doc.setFont(FONT,"bold");doc.setFontSize(10.5);doc.setTextColor(...NAVY);doc.text(t,IN+4,yy)};
   const newpage=()=>{doc.addPage();frame()};
   if(!first)doc.addPage();frame();
-  if(_logo){try{doc.addImage(_logo,"PNG",MB+4,MB+3,13,13)}catch(e){}}
+  if(_logo){try{doc.addImage(_logo,"PNG",MB+4,MB+3,13,13,"tcflogo","FAST")}catch(e){}}
   let y=MB+9;
   doc.setFont(FONT,"bold");doc.setFontSize(13.5);doc.setTextColor(...NAVY);doc.text(T("AEROBİK PANEL HAKEM KARNESİ"),PW/2,y,{align:"center"});y+=5;
   doc.setFont(FONT,"normal");doc.setFontSize(8.5);doc.setTextColor(110);doc.text(T("Türkiye Cimnastik Federasyonu — Hakem Doğruluk Karnesi"),PW/2,y,{align:"center"});y+=4.5;
