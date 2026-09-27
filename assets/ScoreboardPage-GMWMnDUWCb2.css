@@ -30,3 +30,9 @@
  .sb-th{font-size:clamp(.65rem,1.5vh,1.1rem)}
  .sb-th-app .sb-app-abbr{font-size:clamp(.65rem,1.6vh,1.15rem)}
 }
+
+/* Flashcard: ritmik kartinin basligi/kulubu/aleti ve sira rozeti ekran boyutuna gore */
+.sb-flash-card:has(.sf-scores--ritmik) .sf-athlete{font-size:clamp(1.3rem,min(4.4vw,7.2vh),4.6rem)}
+.sb-flash-card:has(.sf-scores--ritmik) .sf-club{font-size:clamp(.75rem,min(1.7vw,2.7vh),2rem)}
+.sb-flash-card:has(.sf-scores--ritmik) .sf-apparatus{font-size:clamp(.8rem,min(1.6vw,2.6vh),1.9rem)}
+.sf-sira-badge{font-size:clamp(.95rem,min(2.1vw,3.4vh),2.6rem)!important;padding:clamp(.25rem,.9vh,.7rem) clamp(.8rem,2.4vw,2.4rem)!important;margin:clamp(.3rem,1vh,.9rem) auto clamp(.15rem,.5vh,.4rem)!important;white-space:nowrap}
