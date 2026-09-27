@@ -36,3 +36,16 @@
 .sb-flash-card:has(.sf-scores--ritmik) .sf-club{font-size:clamp(.75rem,min(1.7vw,2.7vh),2rem)}
 .sb-flash-card:has(.sf-scores--ritmik) .sf-apparatus{font-size:clamp(.8rem,min(1.6vw,2.6vh),1.9rem)}
 .sf-sira-badge{font-size:clamp(.95rem,min(2.1vw,3.4vh),2.6rem)!important;padding:clamp(.25rem,.9vh,.7rem) clamp(.8rem,2.4vw,2.4rem)!important;margin:clamp(.3rem,1vh,.9rem) auto clamp(.15rem,.5vh,.4rem)!important;white-space:nowrap}
+
+/* Flashcard (ritmik): DA/DB/A/E/Kesinti kutulari tek renk, uzaktan okunur */
+.sf-scores--ritmik .sf-d,.sf-scores--ritmik .sf-db,.sf-scores--ritmik .sf-e,
+.sf-scores--ritmik .sf-e2,.sf-scores--ritmik .sf-pen{
+ background:rgba(148,163,184,.14);border-color:rgba(226,232,240,.32)}
+.sf-scores--ritmik .sf-d .sf-score-label,.sf-scores--ritmik .sf-db .sf-score-label,
+.sf-scores--ritmik .sf-e .sf-score-label,.sf-scores--ritmik .sf-e2 .sf-score-label,
+.sf-scores--ritmik .sf-pen .sf-score-label{color:#cbd5e1}
+.sf-scores--ritmik .sf-d .sf-score-value,.sf-scores--ritmik .sf-db .sf-score-value,
+.sf-scores--ritmik .sf-e .sf-score-value,.sf-scores--ritmik .sf-e2 .sf-score-value,
+.sf-scores--ritmik .sf-pen .sf-score-value{color:#f8fafc}
+.sf-scores--ritmik .sf-score-item.sf-reveal{
+ box-shadow:0 0 24px rgba(226,232,240,.2),inset 0 1px rgba(255,255,255,.14)}
