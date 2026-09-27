@@ -49,3 +49,16 @@
 .sf-scores--ritmik .sf-pen .sf-score-value{color:#f8fafc}
 .sf-scores--ritmik .sf-score-item.sf-reveal{
  box-shadow:0 0 24px rgba(226,232,240,.2),inset 0 1px rgba(255,255,255,.14)}
+
+/* Ust bant: alet finali basligi ve kategori adi sonuk kaliyordu */
+.sb-view-sub{color:#334155;font-weight:900}
+.sb-cat-label{color:#475569;font-weight:800}
+.sb-view-title{color:var(--view-color,#0ea5e9);color:color-mix(in srgb,var(--view-color,#0ea5e9) 70%,#0f172a)}
+@media (min-width:900px){
+ .sb-view-banner{padding:.9rem 1.8rem .2rem}
+ .sb-view-title{font-size:clamp(1.3rem,min(2.5vw,4vh),3rem);letter-spacing:.05em}
+ .sb-view-sub{font-size:clamp(.85rem,min(1.5vw,2.3vh),1.7rem);letter-spacing:.1em}
+ .sb-comp-name{font-size:clamp(1.05rem,min(1.7vw,2.7vh),2.1rem)}
+ .sb-cat-label{font-size:clamp(.75rem,min(1.15vw,1.85vh),1.35rem);letter-spacing:.12em}
+ .sb-page-indicator{font-size:clamp(.72rem,min(1.1vw,1.7vh),1.2rem)}
+}
