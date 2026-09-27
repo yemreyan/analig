@@ -9,7 +9,7 @@ const norm=k=>String(k||"").replace(/^final_/,"");
 
 // Hakem linkinin kapsadigi kategorileri cozer ve o an cagri yapilmis olani dondurur.
 // Tek kategorili klasik link (catId=xyz) hicbir ek aboneligi tetiklemez; davranis aynen korunur.
-function useAktifKategori(base,comp,catParam,linkId){
+function useAktifKategori(base,comp,catParam,linkId,alet){
  const raw=String(catParam||"").trim();
  const tek=!linkId&&!!raw&&raw!=="__ALL__"&&raw.indexOf(",")===-1;
  const [kume,setKume]=R.useState(tek?[raw]:[]);
@@ -35,9 +35,28 @@ function useAktifKategori(base,comp,catParam,linkId){
 
  const anahtar=kume.join("|");
  const [aktif,setAktif]=R.useState(tek?raw:"");
+ const _al=String(alet||"").trim();
  R.useEffect(()=>{
   if(tek){setAktif(raw);return}
   if(!comp)return;
+  // Alet sabitse (alet bazli link/QR) aktif kategori O ALETE gore secilir;
+  // aksi halde baska bir alette yapilan daha yeni cagri paneli yanlis
+  // kategoriye kaydiriyordu.
+  if(_al){
+   return onValue(ref(db,`${base}/${comp}/aktifSporcuAlet`),s=>{
+    const v=s.val()||{},izin=k=>tumu||kume.indexOf(k)>=0||kume.indexOf(norm(k))>=0;
+    let en=null,zaman=-1;
+    Object.keys(v).forEach(k=>{
+     if(!izin(k))return;
+     const c=v[k]&&v[k][_al];
+     if(!c)return;
+     const t=Number(c.ts)||1;
+     if(t>=zaman){zaman=t;en=k}
+    });
+    if(en)setAktif(en);
+    else setAktif(o=>o||kume[0]||"");
+   });
+  }
   return onValue(ref(db,`${base}/${comp}/aktifSporcu`),s=>{
    const v=s.val()||{},izin=k=>tumu||kume.indexOf(k)>=0||kume.indexOf(norm(k))>=0;
    let en=null,zaman=-1;
@@ -48,7 +67,7 @@ function useAktifKategori(base,comp,catParam,linkId){
    });
    setAktif(en||kume[0]||"");
   });
- },[base,comp,tek,raw,tumu,anahtar]);
+ },[base,comp,tek,raw,tumu,anahtar,_al]);
 
  return{aktif,kume,tumu,grupAd,yok,coklu:!tek};
 }
