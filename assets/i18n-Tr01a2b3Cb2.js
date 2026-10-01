@@ -34,6 +34,10 @@ globalThis.__T=T;
 globalThis.__LANG=cur;
 globalThis.__SETLANG=set;
 
+// Sayfa dili: CSS text-transform:uppercase yerele gore calisir.
+// lang="tr" kalirsa "Active" -> "ACTİVE" (noktali I) olur.
+try{if(typeof document!=="undefined"&&document.documentElement)document.documentElement.lang=cur()}catch{}
+
 // --- yuzen TR | EN dugmesi ------------------------------------------------
 function gizliMi(){
  const p=location.pathname;
