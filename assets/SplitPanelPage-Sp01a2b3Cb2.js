@@ -1,4 +1,4 @@
-import{a as usDisc,j as e,d as db}from"./main-C2LpyYUGCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{a as usDisc,j as e,d as db}from"./main-C2LpyYUGCb2.js";
 import{f as usSP,r as R}from"./vendor-react-Cxw6bqwhCb2.js";
 import{k as ref,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";
 import{a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";
@@ -65,15 +65,15 @@ function SplitPanel(){
  if(!comp||bolmeler.length===0)
   return e.jsxs("div",{style:{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,background:"#0d1117",color:"#e6edf3",padding:24,textAlign:"center"},children:[
    e.jsx("i",{className:"material-icons-round",style:{fontSize:48,color:"#f85149"},children:"error_outline"}),
-   e.jsx("h2",{style:{margin:0},children:"Bölünmüş ekran açılamadı"}),
-   e.jsx("p",{style:{opacity:.75,maxWidth:420},children:"Bağlantıda yarışma bilgisi ve en az bir bölme bulunmalı. QR & Linkler sayfasından yeniden oluşturun."})]});
+   e.jsx("h2",{style:{margin:0},children:__T("Bölünmüş ekran açılamadı")}),
+   e.jsx("p",{style:{opacity:.75,maxWidth:420},children:__T("Bağlantıda yarışma bilgisi ve en az bir bölme bulunmalı. QR & Linkler sayfasından yeniden oluşturun.")})]});
 
  return e.jsxs("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#0d1117",overflow:"hidden"},children:[
   e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:10,padding:".4rem .7rem",background:"#161b22",borderBottom:"1px solid #30363d",color:"#e6edf3",flexShrink:0},children:[
    e.jsx("i",{className:"material-icons-round",style:{fontSize:18,color:"#7c3aed"},children:"vertical_split"}),
-   e.jsx("span",{style:{fontWeight:800,fontSize:".82rem",letterSpacing:".04em"},children:"BÖLÜNMÜŞ EKRAN"}),
+   e.jsx("span",{style:{fontWeight:800,fontSize:".82rem",letterSpacing:".04em"},children:__T("BÖLÜNMÜŞ EKRAN")}),
    rozet?e.jsx("span",{style:{background:"#7c3aed",color:"#fff",borderRadius:"999px",padding:"2px 10px",fontWeight:800,fontSize:".74rem"},children:rozet}):null,
-   elle?null:e.jsx("span",{style:{background:"#1f6feb33",color:"#79c0ff",border:"1px solid #1f6feb66",borderRadius:"999px",padding:"1px 9px",fontWeight:700,fontSize:".7rem"},children:"OTOMATİK"}),
+   elle?null:e.jsx("span",{style:{background:"#1f6feb33",color:"#79c0ff",border:"1px solid #1f6feb66",borderRadius:"999px",padding:"1px 9px",fontWeight:700,fontSize:".7rem"},children:__T("OTOMATİK")}),
    e.jsx("span",{style:{marginLeft:"auto",opacity:.7,fontSize:".76rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"55%"},children:bolmeler.map(bslk).join("  |  ")})]}),
   e.jsx("div",{style:{flex:1,minHeight:0,display:"grid",gridTemplateColumns:`repeat(auto-fit,minmax(min(100%,300px),1fr))`,gap:"2px",background:"#30363d"},
    children:bolmeler.map((b,ix)=>e.jsxs("div",{style:{display:"flex",flexDirection:"column",minWidth:0,minHeight:0,background:"#0d1117"},children:[
@@ -81,7 +81,7 @@ function SplitPanel(){
     b?e.jsx("iframe",{src:url(b),title:bslk(b),style:{flex:1,width:"100%",border:0,display:"block",minHeight:0}})
      :e.jsxs("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,color:"#6e7681",padding:16,textAlign:"center"},children:[
       e.jsx("i",{className:"material-icons-round",style:{fontSize:34},children:"hourglass_empty"}),
-      e.jsx("div",{style:{fontWeight:700,fontSize:".85rem"},children:"Bölme boş"}),
-      e.jsx("div",{style:{fontSize:".76rem",opacity:.8},children:"Sıradaki çağrı bu bölmeye gelecek"})]})]},"bolme"+ix))})]});
+      e.jsx("div",{style:{fontWeight:700,fontSize:".85rem"},children:__T("Bölme boş")}),
+      e.jsx("div",{style:{fontSize:".76rem",opacity:.8},children:__T("Sıradaki çağrı bu bölmeye gelecek")})]})]},"bolme"+ix))})]});
 }
 export{SplitPanel as default};

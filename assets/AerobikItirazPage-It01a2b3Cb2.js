@@ -1,4 +1,4 @@
-import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue,v as fset}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue,v as fset}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 const BASE="aerobik_yarismalar",WINDOW=6e5;// 10 dakika
 const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2);
@@ -50,18 +50,18 @@ function Itiraz(){
   tyrow:{display:"flex",gap:".6rem",flexWrap:"wrap",marginTop:".6rem"},
   center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#8b97b3",fontWeight:700,padding:"2rem 1rem"}};
 
- if(!comp)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:"Hatalı link."})});
- if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:"Doğrulanıyor…"})});
- if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:"Yetkisiz Erişim"}),e.jsx("p",{children:"Geçersiz/süresi dolmuş bağlantı."})]})});
+ if(!comp)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Hatalı link.")})});
+ if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Doğrulanıyor…")})});
+ if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:__T("Yetkisiz Erişim")}),e.jsx("p",{children:__T("Geçersiz/süresi dolmuş bağlantı.")})]})});
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#f43f5e"},children:"gavel"}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:"İTİRAZ EKRANI"})]}),e.jsxs("div",{style:{marginLeft:"auto",background:"rgba(244,63,94,.12)",color:"#fca5a5",fontWeight:800,padding:".4rem .9rem",borderRadius:999},children:[list.length," aktif sporcu"]})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#f43f5e"},children:"gavel"}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:__T("İTİRAZ EKRANI")})]}),e.jsxs("div",{style:{marginLeft:"auto",background:"rgba(244,63,94,.12)",color:"#fca5a5",fontWeight:800,padding:".4rem .9rem",borderRadius:999},children:[list.length," aktif sporcu"]})]}),
   e.jsxs("div",{style:S.wrapIn,children:[
-   e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700,margin:"0 0 .8rem"},children:"Yarışması biten sporcular 10 dakika boyunca burada görünür. İtiraz D puanına yapılır — sporcunun yanındaki İtiraz Et butonuna basın."}),
-   list.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2.4rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:"İtiraz penceresinde sporcu yok."}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:"Sporcu yarışıp puanı onaylandıktan sonra 10 dk boyunca burada listelenir."})]}):
+   e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700,margin:"0 0 .8rem"},children:__T("Yarışması biten sporcular 10 dakika boyunca burada görünür. İtiraz D puanına yapılır — sporcunun yanındaki İtiraz Et butonuna basın.")}),
+   list.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2.4rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:__T("İtiraz penceresinde sporcu yok.")}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:__T("Sporcu yarışıp puanı onaylandıktan sonra 10 dk boyunca burada listelenir.")})]}):
    list.map(it=>{const o=objOf(it.cat,it.ath);const st=o&&(o.status==="accepted"?["İTİRAZ KABUL EDİLDİ","#86efac","rgba(34,197,94,.15)"]:o.status==="rejected"?["İTİRAZ REDDEDİLDİ","#fca5a5","rgba(244,63,94,.15)"]:o.status==="resolved"?["İTİRAZ DEĞERLENDİRİLDİ","#86efac","rgba(34,197,94,.15)"]:["İTİRAZ VAR · değerlendiriliyor","#fbbf24","rgba(234,179,8,.15)"]);return e.jsxs("div",{style:S.card,children:[
      e.jsxs("div",{style:S.chead,children:[e.jsxs("div",{children:[e.jsx("div",{style:S.nm,children:it.name}),e.jsx("div",{style:S.meta,children:it.club||"—"})]}),e.jsx("div",{style:S.kat,children:catName(it.cat)}),e.jsxs("div",{style:S.clk,children:["⏱ ",fmt(it.left)]})]}),
-     o?e.jsxs("div",{style:{width:"100%",marginTop:".7rem",padding:".7rem",borderRadius:12,fontWeight:800,textAlign:"center",color:st[1],background:st[2],border:"1px solid "+st[1]},children:["⚖️ ",st[0]]}):e.jsx("button",{style:S.itbtn,disabled:busy,onClick:()=>send(it),children:"⚖️ İtiraz Et"})
+     o?e.jsxs("div",{style:{width:"100%",marginTop:".7rem",padding:".7rem",borderRadius:12,fontWeight:800,textAlign:"center",color:st[1],background:st[2],border:"1px solid "+st[1]},children:["⚖️ ",st[0]]}):e.jsx("button",{style:S.itbtn,disabled:busy,onClick:()=>send(it),children:__T("⚖️ İtiraz Et")})
    ]},it.cat+"/"+it.ath)})
   ]})
  ]});

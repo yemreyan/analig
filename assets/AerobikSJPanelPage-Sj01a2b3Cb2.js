@@ -1,4 +1,4 @@
-import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue,m as update,v as fset}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue,m as update,v as fset}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 const BASE="aerobik_yarismalar",GAP_LIMIT=.5;
 function trimA(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return null;if(v.length<2)return v[0];if(v.length===4){v.sort((x,y)=>x-y);return(v[1]+v[2])/2}return v.reduce((a,b)=>a+b,0)/v.length}
@@ -6,9 +6,9 @@ function calcE(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).f
 function trimDed(o){const e=calcE(o);return e==null?null:Math.round((10-e)*100)/100}
 const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2);
 const CFG={
- sja:{badge:"SJA",title:"Artistik",color:"#ec4899",letter:"a",label:"SJA Referans Notu (Artistik)",avg:sc=>trimA(sc.aPanel),avgLabel:"A Panel Ort.",has:sc=>sc.aPanel&&Object.keys(sc.aPanel).length>0,judges:sc=>{const o=sc.aPanel||{};return[["A1","a1",o.j1],["A2","a2",o.j2],["A3","a3",o.j3],["A4","a4",o.j4]]}},
- sje:{badge:"SJE",title:"İcra",color:"#10b981",letter:"e",label:"SJE Referans Kesintisi (İcra)",avg:sc=>trimDed(sc.ePanel),avgLabel:"E Panel Kesinti",has:sc=>sc.ePanel&&Object.keys(sc.ePanel).length>0,judges:sc=>{const o=sc.ePanel||{};return[["E1","e1",o.j1],["E2","e2",o.j2],["E3","e3",o.j3],["E4","e4",o.j4]]}},
- sjd:{badge:"SJD",title:"Zorluk",color:"#8b5cf6",letter:"d",label:"SJD Referans (D Değeri)",avg:sc=>sc.dPanel&&sc.dPanel.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null),avgLabel:"D Panel Ham",has:sc=>(sc.dPanel&&sc.dPanel.rawTotal!=null)||sc.dScore!=null,judges:sc=>[["D Hakemi","d",sc.dPanel&&sc.dPanel.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null)]]}
+ sja:{badge:"SJA",title:__T("Artistik"),color:"#ec4899",letter:"a",label:__T("SJA Referans Notu (Artistik)"),avg:sc=>trimA(sc.aPanel),avgLabel:"A Panel Ort.",has:sc=>sc.aPanel&&Object.keys(sc.aPanel).length>0,judges:sc=>{const o=sc.aPanel||{};return[["A1","a1",o.j1],["A2","a2",o.j2],["A3","a3",o.j3],["A4","a4",o.j4]]}},
+ sje:{badge:"SJE",title:__T("İcra"),color:"#10b981",letter:"e",label:__T("SJE Referans Kesintisi (İcra)"),avg:sc=>trimDed(sc.ePanel),avgLabel:"E Panel Kesinti",has:sc=>sc.ePanel&&Object.keys(sc.ePanel).length>0,judges:sc=>{const o=sc.ePanel||{};return[["E1","e1",o.j1],["E2","e2",o.j2],["E3","e3",o.j3],["E4","e4",o.j4]]}},
+ sjd:{badge:"SJD",title:__T("Zorluk"),color:"#8b5cf6",letter:"d",label:__T("SJD Referans (D Değeri)"),avg:sc=>sc.dPanel&&sc.dPanel.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null),avgLabel:"D Panel Ham",has:sc=>(sc.dPanel&&sc.dPanel.rawTotal!=null)||sc.dScore!=null,judges:sc=>[["D Hakemi","d",sc.dPanel&&sc.dPanel.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null)]]}
 };
 
 function SJPanel(){
@@ -69,28 +69,28 @@ function SJPanel(){
   jgrid:{display:"grid",gridTemplateColumns:pt==="sjd"?"1fr":"repeat(2,1fr)",gap:".55rem",marginTop:".3rem"},
   center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#8b97b3",fontWeight:700,padding:"2rem 1rem"}};
 
- if(!comp||!catId)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:"Hatalı link."})});
- if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:"Doğrulanıyor…"})});
- if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:"Yetkisiz Erişim"}),e.jsx("p",{children:"Geçersiz/süresi dolmuş bağlantı."})]})});
+ if(!comp||!catId)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Hatalı link.")})});
+ if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Doğrulanıyor…")})});
+ if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:__T("Yetkisiz Erişim")}),e.jsx("p",{children:__T("Geçersiz/süresi dolmuş bağlantı.")})]})});
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".7rem",minWidth:0},children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff",fontSize:"22px"},children:"verified_user"})}),e.jsxs("div",{style:{minWidth:0},children:[e.jsx("div",{style:{fontSize:".78rem",color:"#8b97b3",fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:compName}),e.jsxs("div",{style:{fontWeight:800,fontSize:"1.02rem"},children:["SÜPER JÜRİ — ",cfg.title]})]})]}),e.jsx("div",{style:S.badge,children:cfg.badge})]}),
   e.jsxs("div",{style:S.in,children:[
    e.jsxs("div",{style:S.qlbl,children:["İnceleme Kuyruğu (",queue.length,") — hepsi aynı anda"]}),
-   queue.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:"İncelenecek sporcu yok."}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:"Panel puan girdikçe sporcular burada listelenir."})]}):
+   queue.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:__T("İncelenecek sporcu yok.")}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:__T("Panel puan girdikçe sporcular burada listelenir.")})]}):
    queue.map((q,qi)=>{
     const av=cfg.avg(q.sc),judges=cfg.judges(q.sc),nv=noteOf(q.key),myNote=nv===""?null:parseFloat(nv),gap=av==null||myNote==null?null:Math.abs(myNote-av),saved=q.sc.sjPanel&&q.sc.sjPanel[cfg.letter];
     return e.jsxs("div",{style:S.card,children:[
-     e.jsxs("div",{style:S.ath,children:[e.jsxs("div",{style:S.nm,children:[e.jsxs("span",{style:{color:"#6b7896",marginRight:".4rem"},children:["#",qi+1]}),q.name,q.isActive?e.jsx("span",{style:{marginLeft:".5rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(34,197,94,.18)",color:"#86efac"},children:"AKTİF"}):null,saved?e.jsx("span",{style:{marginLeft:".4rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(99,102,241,.18)",color:"#a5b4fc"},children:"NOTLANDI"}):null]}),e.jsx("div",{style:S.meta,children:catName(q.cat)+(q.club?" · "+q.club:"")})]}),
+     e.jsxs("div",{style:S.ath,children:[e.jsxs("div",{style:S.nm,children:[e.jsxs("span",{style:{color:"#6b7896",marginRight:".4rem"},children:["#",qi+1]}),q.name,q.isActive?e.jsx("span",{style:{marginLeft:".5rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(34,197,94,.18)",color:"#86efac"},children:__T("AKTİF")}):null,saved?e.jsx("span",{style:{marginLeft:".4rem",fontSize:".6rem",fontWeight:800,padding:".15rem .45rem",borderRadius:5,background:"rgba(99,102,241,.18)",color:"#a5b4fc"},children:__T("NOTLANDI")}):null]}),e.jsx("div",{style:S.meta,children:catName(q.cat)+(q.club?" · "+q.club:"")})]}),
      e.jsx("div",{style:S.inlbl,children:cfg.label}),
      e.jsxs("div",{style:S.numw,children:[e.jsx("button",{style:S.nbtn,onClick:()=>bump(q.key,-.1),children:"−"}),e.jsx("input",{style:S.ninp,type:"number",step:"0.1",min:"0",value:nv,placeholder:"0.0",onChange:ev=>setNoteFor(q.key,ev.target.value)}),e.jsx("button",{style:S.nbtn,onClick:()=>bump(q.key,.1),children:"+"})]}),
      e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:".7rem 0 .2rem",fontSize:".85rem",color:"#8b97b3",fontWeight:700},children:[e.jsxs("span",{children:[cfg.avgLabel,": ",e.jsx("strong",{style:{color:"#e8edf7"},children:f2(av)})]}),gap!=null&&e.jsxs("span",{style:{color:gap>GAP_LIMIT?"#fca5a5":"#86efac",fontWeight:800},children:["fark ",f2(gap)]})]}),
-     e.jsx("button",{style:S.save,onClick:()=>save(q),children:"💾 SJ Notunu Kaydet"}),
-     e.jsx("div",{style:{...S.inlbl,marginTop:"1rem"},children:"Hakem Notları — uyarı için nota dokunun"}),
+     e.jsx("button",{style:S.save,onClick:()=>save(q),children:__T("💾 SJ Notunu Kaydet")}),
+     e.jsx("div",{style:{...S.inlbl,marginTop:"1rem"},children:__T("Hakem Notları — uyarı için nota dokunun")}),
      e.jsx("div",{style:S.jgrid,children:judges.map(([lbl,target,jn])=>{const diff=myNote==null||jn==null?null:Math.abs(myNote-jn),hi=diff!=null&&diff>GAP_LIMIT,wd=warned[q.key+"|"+target];return e.jsxs("button",{onClick:()=>warn(q,target,lbl),style:{textAlign:"left",padding:".65rem .8rem",borderRadius:12,cursor:"pointer",border:"1px solid "+(wd?"#f59e0b":hi?"#ef4444":"#2a3550"),background:wd?"rgba(245,158,11,.18)":hi?"rgba(239,68,68,.12)":"#1b2438",color:"#e8edf7"},children:[e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"},children:[e.jsx("span",{style:{fontWeight:800},children:lbl}),e.jsx("span",{style:{fontSize:"1.25rem",fontWeight:800},children:f2(jn)})]}),e.jsx("div",{style:{fontSize:".7rem",fontWeight:700,marginTop:".2rem",color:wd?"#fbbf24":hi?"#fca5a5":"#8b97b3"},children:wd?"⚠️ uyarıldı":diff==null?"dokun → uyar":hi?"fark "+f2(diff)+" — dokun/uyar":"fark "+f2(diff)})]},target)})}),
-     e.jsx("button",{style:{...S.save,background:"linear-gradient(135deg,#f59e0b,#ef4444)",marginTop:".7rem"},onClick:()=>warn(q,pt,"Tüm panel"),children:"📢 Tüm Panel Hakemlerini Uyar"})
+     e.jsx("button",{style:{...S.save,background:"linear-gradient(135deg,#f59e0b,#ef4444)",marginTop:".7rem"},onClick:()=>warn(q,pt,"Tüm panel"),children:__T("📢 Tüm Panel Hakemlerini Uyar")})
     ]},q.key)}),
-   queue.length>0?e.jsx("div",{style:{maxWidth:560,margin:".8rem auto 0",fontSize:".75rem",color:"#8b97b3",textAlign:"center"},children:"SJ notunuz final puanı etkilemez. Çağrılan her sporcu geldiği sırada alt alta eklenir — hepsini aynı anda notlayabilirsiniz."}):null
+   queue.length>0?e.jsx("div",{style:{maxWidth:560,margin:".8rem auto 0",fontSize:".75rem",color:"#8b97b3",textAlign:"center"},children:__T("SJ notunuz final puanı etkilemez. Çağrılan her sporcu geldiği sırada alt alta eklenir — hepsini aynı anda notlayabilirsiniz.")}):null
   ]})
  ]});
 }
