@@ -12,9 +12,7 @@ const gradeEN=acc=>acc>=.85?"Very Good":acc>=.70?"Good":acc>=.55?"Acceptable":ac
 
 // ---- PDF font (DejaVu Sans, Türkçe) ----
 let _fReg=null,_fBold=null,_logo=null;
-async function _f(u){const r=await fetch(u);const by=new Uint8Array(await r.arrayBuffer());let s="";for(let i=0;i<by.length;i+=8192)s+=String.fromCharCode.apply(null,by.subarray(i,i+8192));return btoa(s)}
-const _RURL="https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmT.ttf",_BURL="https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf";
-async function loadAssets(){if(!_fReg||!_fBold){try{[_fReg,_fBold]=await Promise.all([_f(_RURL),_f(_BURL)])}catch(e){}}const _kucultLogo=_du=>new Promise(_rs=>{try{const _im=new Image();_im.onload=()=>{try{const _S=256,_cv=document.createElement("canvas");_cv.width=_S;_cv.height=_S;const _cx=_cv.getContext("2d");_cx.clearRect(0,0,_S,_S);_cx.drawImage(_im,0,0,_S,_S);_rs(_cv.toDataURL("image/png"))}catch{_rs(_du)}};_im.onerror=()=>_rs(_du);_im.src=_du}catch{_rs(_du)}});if(_logo===null){try{const r=await fetch("/logo.png");if(r.ok){const bl=await r.blob();const _ham=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(bl)});_logo=await _kucultLogo(_ham)}else _logo=0}catch(e){_logo=0}}}
+async function loadAssets(){if(!_fReg||!_fBold){try{const{R:_r,B:_b}=await import("./fontTR-Fn01a2b3Cb2.js");_fReg=_r,_fBold=_b}catch(e){}}const _kucultLogo=_du=>new Promise(_rs=>{try{const _im=new Image();_im.onload=()=>{try{const _S=256,_cv=document.createElement("canvas");_cv.width=_S;_cv.height=_S;const _cx=_cv.getContext("2d");_cx.clearRect(0,0,_S,_S);_cx.drawImage(_im,0,0,_S,_S);_rs(_cv.toDataURL("image/png"))}catch{_rs(_du)}};_im.onerror=()=>_rs(_du);_im.src=_du}catch{_rs(_du)}});if(_logo===null){try{const r=await fetch("/logo.png");if(r.ok){const bl=await r.blob();const _ham=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(bl)});_logo=await _kucultLogo(_ham)}else _logo=0}catch(e){_logo=0}}}
 
 function Karne(){
  const{toast}=usToast();usInit();
