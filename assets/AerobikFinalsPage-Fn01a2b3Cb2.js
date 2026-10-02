@@ -75,7 +75,12 @@ function Finals(){
       else{const md=spor[cat]?.[row.id]||{};newSpor[row.id]={...md,cikisSirasi:cs,_finalRank:rank,...ex}}
       names.push({rank,cs,reserve,yed,name:nameOfEntry(cat,row.id),score:row.score});});
     upd[`kategoriler/${fcat}`]={name:"🏆 Final — "+catLabel(cat),final:!0,baseCat:cat,tip:cfg(cat).tip||"ferdi",olusturma:Date.now()};
-    upd[`sporcular/${fcat}`]=newSpor;upd[`puanlar/${fcat}`]=null;
+    // Final cikis sirasi (sablon) hem sporcu kaydina hem siralama'ya yazilir; boylece
+    // cikis sirasi sayfasi ve puanlama ekrani sablondaki sirayi gosterir
+    // (elemeden kopyalanan eski sirasi/rotasyonGrubu degerleri ezilir).
+    const _ord=Object.entries(newSpor).sort((p,q)=>(p[1].cikisSirasi-q[1].cikisSirasi)||((p[1]._yedek?1:0)-(q[1]._yedek?1:0))||String(p[1].ad||"").localeCompare(String(q[1].ad||""),"tr"));
+    const _rot={};_ord.forEach(([mid,md],ix)=>{md.sirasi=ix+1;md.rotasyonGrubu=0;_rot[mid]={sirasi:ix+1,ad:md.ad||"",soyad:md.soyad||"",tckn:md.tckn||"",okul:md.okul||"",yarismaTuru:md.yarismaTuru||"ferdi",...(md.grupNo!=null?{grupNo:md.grupNo}:{})}});
+    upd[`sporcular/${fcat}`]=newSpor;upd[`puanlar/${fcat}`]=null;upd[`siralama/${fcat}`]=_ord.length?{rotation_0:_rot}:null;
     summary.push({cat,fcat,label:catLabel(cat),team,names});});
   if(!summary.length){toast("Sıralanacak (puanı girilmiş) sporcu bulunamadı.","warning");setBusy(!1);return}
   try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();setLog(summary);toast((summary.length===1?"🏆 "+summary[0].label+" — ":summary.length+" kategori — ")+__T("final oluşturuldu ✓")+" (ilk "+TOP+" + "+RES+" yedek"+(kotaN?", "+__T("kulüp başına en fazla")+" "+kotaN:"")+")","success")}catch{toast("Hata oluştu.","error")}
@@ -86,7 +91,7 @@ function Finals(){
   const np=Object.keys(pun[fc]||{}).length;
   if(!window.confirm(catLabel(cat)+" — "+__T("finali silinsin mi?")+(np?"\n\n"+np+" "+__T("final puanı da silinecek."):"")))return;
   setBusy(!0);setLog(null);
-  try{await update(ref(db,`${BASE}/${comp}`),{[`kategoriler/${fc}`]:null,[`sporcular/${fc}`]:null,[`puanlar/${fc}`]:null});await reload();toast(catLabel(cat)+" — "+__T("finali silindi."),"success")}catch{toast("Hata oluştu.","error")}
+  try{await update(ref(db,`${BASE}/${comp}`),{[`kategoriler/${fc}`]:null,[`sporcular/${fc}`]:null,[`puanlar/${fc}`]:null,[`siralama/${fc}`]:null});await reload();toast(catLabel(cat)+" — "+__T("finali silindi."),"success")}catch{toast("Hata oluştu.","error")}
   setBusy(!1);
  };
  const clearFinals=async()=>{
@@ -95,7 +100,7 @@ function Finals(){
   if(!keys.size){toast("Silinecek final kategorisi yok.","warning");return}
   if(!window.confirm(keys.size+" "+__T("final kategorisi ve bu finallerde girilmiş TÜM puanlar silinecek. Emin misiniz?")))return;
   setBusy(!0);setLog(null);
-  keys.forEach(fc=>{upd[`kategoriler/${fc}`]=null;upd[`sporcular/${fc}`]=null;upd[`puanlar/${fc}`]=null});
+  keys.forEach(fc=>{upd[`kategoriler/${fc}`]=null;upd[`sporcular/${fc}`]=null;upd[`puanlar/${fc}`]=null;upd[`siralama/${fc}`]=null});
   try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();toast(keys.size+" final kategorisi silindi.","success")}catch{toast("Hata oluştu.","error")}
   setBusy(!1);
  };
