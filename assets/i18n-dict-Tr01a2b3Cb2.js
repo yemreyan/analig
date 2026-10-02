@@ -423,6 +423,7 @@ const DICT={
  "Bu kategoride sporcu bulunamadı.":"No gymnast found in this category.",
  "Bu kategoride sporcu yok.":"No gymnasts in this category.",
  "Bu Kategorideki Kesintiler":"Deductions in this category",
+ "bu kulüplerin grup numarası değiştirilmedi: puanı girilmiş grup var. Önce puanı silin.":"group numbers were not changed for these clubs: a group already has a score. Delete the score first.",
  "Bu listeyi kaydedin! Şifreler tekrar gösterilmez.":"Save this list. The passwords will not be shown again.",
  "Bu okul ve kategori için kontenjan dolmuştur (":"The quota for this school and category is full (",
  "Bu okul zaten listede var.":"This school is already in the list.",
