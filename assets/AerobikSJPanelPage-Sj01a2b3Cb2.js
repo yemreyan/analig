@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue,m as update,v as fset}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import{useAktifKategori as _uAK}from"./judgeLinkGroup-Jl01a2b3Cb2.js";import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue,m as update,v as fset}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 const BASE="aerobik_yarismalar",GAP_LIMIT=.5;
 function trimA(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return null;if(v.length<2)return v[0];if(v.length===4){v.sort((x,y)=>x-y);return(v[1]+v[2])/2}return v.reduce((a,b)=>a+b,0)/v.length}
@@ -16,7 +16,7 @@ function SJPanel(){
  const[sp]=usParams();
  const comp=sp.get("competitionId"),catId=sp.get("catId"),token=sp.get("token");
  const pt=sp.get("panelType")||"sja",cfg=CFG[pt]||CFG.sja;
- const allCat=catId==="__ALL__",catList=(catId||"").split(",");
+ const _lid=sp.get("linkId"),_g=_uAK(BASE,comp,catId,_lid),allCat=_g.tumu,catList=_g.kume;
  const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0);
  const[pun,setPun]=R.useState({}),[spor,setSpor]=R.useState({}),[cats,setCats]=R.useState({}),[compName,setCompName]=R.useState("Yarışma"),[active,setActive]=R.useState({});
  const[notes,setNotes]=R.useState({}),[warned,setWarned]=R.useState({}),[order,setOrder]=R.useState({});
