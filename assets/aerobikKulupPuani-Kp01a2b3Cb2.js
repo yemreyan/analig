@@ -1,6 +1,11 @@
-// Aerobik "kulüplerarası" kulüp puanı: kural şeması + hesaplama.
-// Yalnızca yarışmada kuluplerarasi===true ve kulupPuani.aktif===true ise kullanılır;
-// aksi halde mevcut takım hesabı hiç etkilenmez.
+// Aerobik "kulüplerarası" kulüp takım puanı.
+// Kural: Takım puanı = Tekler + Çiftler + Trio.
+//  - Tekler : kulübün tüm ferdi (erkek + kız, her yaş) kategorilerindeki EN YÜKSEK tek puanı
+//  - Çiftler: kulübün tüm çift kategorilerindeki EN YÜKSEK puan
+//  - Trio   : kulübün tüm trio kategorilerindeki EN YÜKSEK puan
+// Takım puanı için en az 2 bileşende puan gerekir (Tekler+Çiftler, Tekler+Trio veya Çiftler+Trio);
+// aksi halde kulüp takım sıralamasına alınmaz.
+// Yalnızca yarışmada kuluplerarasi===true ise kullanılır; mevcut takım hesabına dokunmaz.
 import{A as V}from"./aerobikCriteriaDefaults-ld4mBtrICb2.js";
 
 const isFinal=c=>/^final_/.test(c);
@@ -9,50 +14,27 @@ const isTeam=c=>{const d=cfg(c);return d.tip==="takim"||d.tip==="karma"||d.athle
 const scoreOf=sc=>{const v=sc&&(sc.finalScore!=null?sc.finalScore:(sc.sonuc!=null?sc.sonuc:null));return v==null||isNaN(v)?null:Number(v)};
 const We=s=>(s||"").trim().replace(/[.#$[\]/]/g,"-").slice(0,60);
 const UP=s=>String(s||"").trim().toLocaleUpperCase("tr-TR");
+// kulüp kimliği: "G.S.K" ile "G.S.K." aynı kulüp sayılır
+const KK=s=>UP(s).replace(/[^A-Z0-9ÇĞİÖŞÜ]/g,"");
 
-// Blok başına toplama yöntemleri
-const YON=[["enIyi","En iyi N puanın toplamı"],["kategoriEnIyi","Her kategoriden en iyi N'in toplamı"],["toplam","Tüm puanların toplamı"],["ortalama","Tüm puanların ortalaması"],["enIyiOrt","En iyi N puanın ortalaması"]];
-const yonAd=y=>(YON.find(x=>x[0]===y)||YON[0])[1];
-const needsN=y=>y==="enIyi"||y==="enIyiOrt"||y==="kategoriEnIyi";
+const BILESEN=[["tekler","Tekler"],["ciftler","Çiftler"],["trio","Trio"]];
+const MIN_BILESEN=2;
+// kategori hangi bileşene girer (final kategorileri hariç)
+const turOf=c=>{if(isFinal(c))return null;const d=cfg(c);
+ if(d.tip==="ferdi")return"tekler";
+ if(/_cift$/.test(c)||(d.tip==="karma"&&d.athleteCount===2))return"ciftler";
+ if(/_trio$/.test(c)||d.athleteCount===3)return"trio";
+ return null};
+const varsayilan=cats=>{const o={tekler:[],ciftler:[],trio:[]};Object.keys(cats||{}).sort().forEach(c=>{const t=turOf(c);t&&o[t].push(c)});return o};
+// kayıtlı seçim (surum 2) varsa onu, yoksa varsayılanı kullan
+const etkinKurallar=comp=>{const cats=comp?.kategoriler||{},v=varsayilan(cats),k=comp?.kulupPuani;
+ if(k&&k.surum===2)BILESEN.forEach(([id])=>{const a=Array.isArray(k[id])?k[id]:Object.values(k[id]||{});if(k[id]!=null)v[id]=a.filter(c=>cats[c]&&turOf(c)===id)});
+ return v};
 
-// gs: puana göre azalan sıralanmış girişler -> {deger, sayilan}
-const hesapla=(gs,y,n)=>{
- if(!gs.length)return{deger:0,sayilan:[]};
- const k=Math.max(1,parseInt(n)||1),sum=a=>a.reduce((x,g)=>x+g.score,0);
- if(y==="toplam")return{deger:sum(gs),sayilan:gs};
- if(y==="ortalama")return{deger:sum(gs)/gs.length,sayilan:gs};
- if(y==="kategoriEnIyi"){const per={};gs.forEach(g=>{(per[g.cat]||(per[g.cat]=[])).push(g)});
-  const t=[];Object.keys(per).forEach(c=>t.push(...per[c].slice(0,k)));
-  t.sort((a,b)=>b.score-a.score);return{deger:sum(t),sayilan:t}}
- const t=gs.slice(0,k);
- return y==="enIyiOrt"?{deger:t.length?sum(t)/t.length:0,sayilan:t}:{deger:sum(t),sayilan:t};
-};
-
-const yeniId=()=>"b"+Math.random().toString(36).slice(2,8);
-const BOS=()=>({id:yeniId(),ad:"",kategoriler:[],yontem:"enIyi",adet:1,katsayi:1,zorunlu:!1});
-const normBlok=b=>({id:b.id||yeniId(),ad:b.ad||"",kategoriler:Array.isArray(b.kategoriler)?b.kategoriler:Object.values(b.kategoriler||{}),yontem:b.yontem||"enIyi",adet:b.adet==null?1:Number(b.adet),katsayi:b.katsayi==null?1:Number(b.katsayi),zorunlu:b.zorunlu===!0});
-const normCfg=k=>({aktif:k?.aktif===!0,cezaDus:k?.cezaDus===!0,bloklar:(Array.isArray(k?.bloklar)?k.bloklar:Object.values(k?.bloklar||{})).filter(Boolean).map(normBlok)});
-
-// Hazır kurulum taslağı: yarışmadaki kategorilere göre blok önerisi
-const hazirBloklar=cats=>{
- const real=Object.keys(cats||{}).filter(c=>!isFinal(c)),pick=fn=>real.filter(fn),tek=pick(c=>cfg(c).tip==="ferdi");
- return[
-  {ad:"Tek Erkek",k:tek.filter(c=>cfg(c).cinsiyet==="Erkek")},
-  {ad:"Tek Kadın",k:tek.filter(c=>cfg(c).cinsiyet==="Kız"||cfg(c).cinsiyet==="Kadın")},
-  {ad:"Tekler (diğer)",k:tek.filter(c=>!["Erkek","Kız","Kadın"].includes(cfg(c).cinsiyet))},
-  {ad:"Çiftler",k:pick(c=>cfg(c).tip==="karma"||/_cift$/.test(c))},
-  {ad:"Trio",k:pick(c=>/_trio$/.test(c))},
-  {ad:"Grup",k:pick(c=>/_grup$/.test(c))},
-  {ad:"Dans",k:pick(c=>/_dans$/.test(c))},
-  {ad:"Step",k:pick(c=>cfg(c).group==="Step Aerobik")}
- ].filter(t=>t.k.length).map(t=>({...BOS(),ad:t.ad,kategoriler:t.k,yontem:"enIyi",adet:1}));
-};
-
-// Bir kategorideki puanlı girişler (ferdi sporcu / çift-trio-grup takımı)
+// Bir kategorideki puanlı girişler (ferdi sporcu / çift-trio takımı)
 const girisler=(comp,cat)=>{
- const spor=comp?.sporcular||{},pun=comp?.puanlar||{};
- const sc=pun[cat]||{},sp=spor[cat]||{},team=isTeam(cat),out=[];
- const uyeler=key=>{const parts=String(key).split("::"),gn=parts[parts.length-1],ok=parts.length>=3?parts.slice(1,-1).join("::"):"";
+ const sp=comp?.sporcular?.[cat]||{},sc=comp?.puanlar?.[cat]||{},team=isTeam(cat),out=[];
+ const uyeler=key=>{const p=String(key).split("::"),gn=p[p.length-1],ok=p.length>=3?p.slice(1,-1).join("::"):"";
   return Object.entries(sp).filter(([,m])=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok||We(m.okul||m.kulup)===ok))};
  Object.entries(sc).forEach(([id,s])=>{
   const v=scoreOf(s);if(v==null)return;
@@ -63,42 +45,36 @@ const girisler=(comp,cat)=>{
    else{const p=String(id).split("::");ok=p.length>=3?p.slice(1,-1).join("::"):""}}
   else{const m=sp[id]||{};ok=m.okul||m.kulup||"";il=m.il||"";ad=[m.ad,m.soyad].filter(Boolean).join(" ")}
   ok=String(ok).trim();il=String(il).trim();
-  // kulup/okul bos ise (il bazli yarisma) il adi kullanilir
-  const ilDen=!ok&&!!il;if(ilDen)ok=il;
+  const ilDen=!ok&&!!il;if(ilDen)ok=il; // kulüp boşsa il adı
   if(!ok)return;
   out.push({cat,id,score:v,okul:ok,il,ilDen,ad:ad||id})});
  return out;
 };
 
-// Kulüp sıralaması. comp: yarışma düğümü, kurallar: normCfg çıktısı
-const hesaplaTablo=(comp,kurallar,hariç)=>{
- const k=normCfg(kurallar),bl=k.bloklar.filter(b=>b.kategoriler.length);
- if(!bl.length)return{satirlar:[],bloklar:[],cezaDus:k.cezaDus};
- const cezalar=comp?.teamDeductions||{},dis=hariç instanceof Set?hariç:new Set(hariç||[]);
- const kulup={},secilen=new Set();
- bl.forEach(b=>b.kategoriler.forEach(c=>secilen.add(c)));
- const cache={};[...secilen].forEach(c=>cache[c]=girisler(comp,c));
- bl.forEach(b=>b.kategoriler.forEach(c=>(cache[c]||[]).forEach(g=>{
-  if(dis.has(g.okul))return;
-  const kk=UP(g.okul);kulup[kk]||(kulup[kk]={ad:g.okul,il:g.il,bloklar:{}});
-  if(!kulup[kk].il&&g.il)kulup[kk].il=g.il;
-  (kulup[kk].bloklar[b.id]||(kulup[kk].bloklar[b.id]=[])).push(g)})));
- let satirlar=Object.entries(kulup).map(([kk,o])=>{
-  const det={};let toplam=0,eksik=!1;
-  bl.forEach(b=>{
-   const gs=(o.bloklar[b.id]||[]).slice().sort((x,z)=>z.score-x.score);
-   const r=hesapla(gs,b.yontem,b.adet),deger=r.deger*(b.katsayi==null?1:Number(b.katsayi)||0);
-   det[b.id]={deger,kac:r.sayilan.length,girisler:gs,sayilan:r.sayilan};
-   toplam+=deger;if(b.zorunlu&&!gs.length)eksik=!0});
-  const ceza=k.cezaDus?Object.values(cezalar).filter(d=>UP(d.teamName)===kk&&(!d.categoryId||secilen.has(d.categoryId))).reduce((s,d)=>s+(parseFloat(d.amount)||0),0):0;
-  return{key:kk,ad:o.ad,il:o.il,det,toplam,ceza,net:toplam-ceza,eksik}});
- satirlar=satirlar.filter(r=>r.toplam>0||!r.eksik);
- satirlar.sort((a,b)=>a.eksik!==b.eksik?(a.eksik?1:-1):Math.round(b.net*1e3)-Math.round(a.net*1e3));
- let pr=null,rk=0;satirlar.forEach((r,i)=>{if(r.eksik){r.sira=null;return}const v=Math.round(r.net*1e3);if(pr===null||v!==pr)rk=i+1;pr=v;r.sira=rk});
- return{satirlar,bloklar:bl,cezaDus:k.cezaDus};
+// Kulüp sıralaması
+const hesaplaTablo=comp=>{
+ const kur=etkinKurallar(comp),cats=comp?.kategoriler||{};
+ const bloklar=BILESEN.map(([id,ad])=>({id,ad,kategoriler:kur[id]}));
+ const kulup={};
+ bloklar.forEach(b=>b.kategoriler.forEach(c=>girisler(comp,c).forEach(g=>{
+  const k=KK(g.okul);if(!k)return;
+  kulup[k]||(kulup[k]={ad:g.okul,il:g.il,ilDen:g.ilDen,en:{}});
+  if(!kulup[k].il&&g.il)kulup[k].il=g.il;
+  const cur=kulup[k].en[b.id];if(!cur||g.score>cur.score)kulup[k].en[b.id]={...g,catAd:cats[c]?.name||cfg(c).label||c}})));
+ let satirlar=Object.entries(kulup).map(([k,o])=>{
+  const det={};let toplam=0,kac=0;
+  bloklar.forEach(b=>{const g=o.en[b.id];det[b.id]=g?{deger:g.score,kac:1,sayilan:[g],en:g}:{deger:0,kac:0,sayilan:[],en:null};if(g){toplam+=g.score;kac++}});
+  return{key:k,ad:o.ad,il:o.il,ilDen:o.ilDen,det,toplam,ceza:0,net:toplam,bilesenSayisi:kac}});
+ // en az 2 bileşende puanı olmayan kulüp sıralamaya girmez
+ const disarida=satirlar.filter(r=>r.bilesenSayisi<MIN_BILESEN).sort((a,b)=>b.net-a.net);
+ satirlar=satirlar.filter(r=>r.bilesenSayisi>=MIN_BILESEN);
+ // toplam puan; eşitlikte daha çok bileşende puanı olan, sonra Tekler, Çiftler, Trio
+ const r3=v=>Math.round((v||0)*1e3);
+ satirlar.sort((a,b)=>r3(b.net)-r3(a.net)||b.bilesenSayisi-a.bilesenSayisi||r3(b.det.tekler.deger)-r3(a.det.tekler.deger)||r3(b.det.ciftler.deger)-r3(a.det.ciftler.deger)||r3(b.det.trio.deger)-r3(a.det.trio.deger)||a.ad.localeCompare(b.ad,"tr"));
+ let pr=null,rk=0;satirlar.forEach((r,i)=>{const k=[r3(r.net),r.bilesenSayisi,r3(r.det.tekler.deger),r3(r.det.ciftler.deger),r3(r.det.trio.deger)].join("|");if(k!==pr)rk=i+1;pr=k;r.sira=rk});
+ return{satirlar,bloklar,disarida,cezaDus:!1};
 };
 
-// Yarışmada kulüp puanı kullanılacak mı?
-const kullanilirMi=comp=>comp?.kuluplerarasi===!0&&comp?.kulupPuani?.aktif===!0&&(Array.isArray(comp.kulupPuani.bloklar)?comp.kulupPuani.bloklar:Object.values(comp.kulupPuani.bloklar||{})).some(b=>b&&(Array.isArray(b.kategoriler)?b.kategoriler.length:Object.keys(b.kategoriler||{}).length));
+const kullanilirMi=comp=>comp?.kuluplerarasi===!0;
 
-export{isFinal,cfg,isTeam,scoreOf,We,UP,YON,yonAd,needsN,hesapla,BOS,normBlok,normCfg,hazirBloklar,girisler,hesaplaTablo,kullanilirMi};
+export{isFinal,cfg,isTeam,scoreOf,We,UP,KK,BILESEN,MIN_BILESEN,turOf,varsayilan,etkinKurallar,girisler,hesaplaTablo,kullanilirMi};
