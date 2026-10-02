@@ -1738,6 +1738,8 @@ const DICT={
  "Takım puanı oluşan kulüp yok (en az 2 bölümde puan gerekir).":"No club has a team score yet (scores in at least 2 sections are required).",
  "Takım Seçin":"Select team",
  "TAKIM SIRALAMASI":"TEAM RANKING",
+ "Takım Sonuçları":"Team Results",
+ "TAKIM SONUÇLARI":"TEAM RESULTS",
  "Takım Taşı":"Move team",
  "Takım verisi bulunamadı.":"No team data found.",
  "Takim":"Team",
