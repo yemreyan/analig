@@ -105,3 +105,9 @@
 .sbc-mini .sbc-name{display:inline;font-size:1.25em!important;animation:none;opacity:1}
 .sbc-mini .sbc-name+.sbc-name::before{content:", "}
 .sbc-mini .sbc-club{margin:0;font-size:.95em;white-space:nowrap;flex-shrink:0;animation:none;opacity:1}
+
+/* ===== Canli skor: sayfa ayarlari (kisi/sayfa, takim/sayfa, sure) ===== */
+.sb-pc-sayfa{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.45rem;padding-top:.45rem;border-top:1px solid rgba(255,255,255,.14);width:100%}
+.sb-pc-say{display:flex;align-items:center;gap:.3rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:.2rem .45rem;color:#e2e8f0;font-size:.74rem;font-weight:700;cursor:default}
+.sb-pc-say .material-icons-round{font-size:1rem;opacity:.8}
+.sb-pc-say input{width:3.2rem;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font:inherit;font-weight:800;text-align:center;padding:.15rem .2rem}
