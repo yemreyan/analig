@@ -9,6 +9,10 @@ const scoreOf=sc=>{const v=sc&&(sc.finalScore!=null?sc.finalScore:(sc.sonuc!=nul
 const We=s=>(s||"").trim().replace(/[.#$[\]/]/g,"-").slice(0,60);
 // kulup kotasi icin kulup kimligi: buyuk harf, harf/rakam disi karakterler atilir ("G.S.K" = "G.S.K.")
 const KK=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/[^A-Z0-9ÇĞİÖŞÜ]/g,"");
+// Esit puanda: once E, sonra A, sonra D yuksek olan one gecer
+const r3=v=>Math.round((parseFloat(v)||0)*1e3);
+const tbAnah=r=>[r3(r.score),r3(r.sc?.eScore),r3(r.sc?.aScore),r3(r.sc?.dScore)];
+const tbKarsilastir=(a,b)=>{const x=tbAnah(a),y=tbAnah(b);for(let i=0;i<4;i++)if(x[i]!==y[i])return y[i]-x[i];return 0};
 
 // Final cikis sirasi PDF'i — Final Sonuclari PDF'iyle ayni tasarim (TCF logolu baslik bandi).
 // Sira: varsa siralama/final_<kat> (puanlama ekraninin kullandigi), yoksa cikisSirasi.
@@ -84,7 +88,7 @@ function Finals(){
  // girisin kulubu (kota icin)
  const clubOf=(cat,id)=>{if(isTeam(cat)){const mem=teamMembers(cat,id);if(mem.length){const m=mem[0][1];return KK(m.okul||m.kulup||m.il)}const p=String(id).split("::");return KK(p.length>=3?p.slice(1,-1).join("::"):"")}const m=spor[cat]?.[id]||{};return KK(m.okul||m.kulup||m.il)};
  // eleme siralamasi; kulupler arasi ise kulup basina en fazla kotaN giris
- const rankFull=cat=>{const aths=pun[cat]||{},all=Object.entries(aths).map(([id,sc])=>({id,sc,score:scoreOf(sc)})).filter(r=>r.score!=null).sort((a,b)=>b.score-a.score);
+ const rankFull=cat=>{const aths=pun[cat]||{},all=Object.entries(aths).map(([id,sc])=>({id,sc,score:scoreOf(sc)})).filter(r=>r.score!=null).sort(tbKarsilastir);
   if(!kotaN)return{top:all.slice(0,TAKE),atlanan:[]};
   const say={},top=[],atlanan=[];
   for(const r of all){if(top.length>=TAKE)break;const k=clubOf(cat,r.id)||("#"+r.id);say[k]=say[k]||0;if(say[k]>=kotaN){atlanan.push(r);continue}say[k]++;top.push(r)}
