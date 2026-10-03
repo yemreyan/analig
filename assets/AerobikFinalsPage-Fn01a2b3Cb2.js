@@ -91,7 +91,8 @@ function Finals(){
  const rankFull=cat=>{const aths=pun[cat]||{},all=Object.entries(aths).map(([id,sc])=>({id,sc,score:scoreOf(sc)})).filter(r=>r.score!=null).sort(tbKarsilastir);
   if(!kotaN)return{top:all.slice(0,TAKE),atlanan:[]};
   const say={},top=[],atlanan=[];
-  for(const r of all){if(top.length>=TAKE)break;const k=clubOf(cat,r.id)||("#"+r.id);say[k]=say[k]||0;if(say[k]>=kotaN){atlanan.push(r);continue}say[k]++;top.push(r)}
+  for(const r of all){if(top.length>=TAKE)break;const k=clubOf(cat,r.id)||("#"+r.id);say[k]=say[k]||0;if(say[k]>=kotaN){// istisna: ayni kulupten finale alinan bir sporcuyla toplam, E, A ve D puanlari birebir ayniysa disarida kalmaz
+const es=top.find(t=>(clubOf(cat,t.id)||("#"+t.id))===k&&tbKarsilastir(t,r)===0);if(!es){atlanan.push(r);continue}r._istisna=!0}say[k]++;top.push(r)}
   return{top,atlanan}};
  const rankCat=cat=>rankFull(cat).top;
  // kategori tamamlandi mi: puanlanacak her girisin puani (veya durum kaydi) var mi.
@@ -225,7 +226,7 @@ function Finals(){
        kotaN?e.jsx("button",{style:{...S.btn,padding:".45rem .7rem",fontSize:".78rem",background:"#1b2438",border:"1px solid #2a3550",color:"#cbd5e1"},onClick:()=>setKota(""),children:__T("Sınırsız")}):null]}):null,
      realCats.map(cat=>{const _rf=rankFull(cat),_dr=durumCat(cat),top=_rf.top,fc="final_"+cat,has=!!cats[fc],op=!!expanded[cat]&&top.length>0,nc=Math.min(top.length,TOP),nr=Math.max(0,top.length-TOP);return e.jsxs("div",{style:{...S.card,display:"block"},children:[
        e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".7rem",cursor:top.length?"pointer":"default"},onClick:()=>top.length&&setExpanded(x=>({...x,[cat]:!x[cat]})),children:[
-        e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsxs("div",{style:{fontWeight:800},children:[catLabel(cat),isTeam(cat)?e.jsx("span",{style:{...S.badge,marginLeft:".4rem",background:"rgba(8,145,178,.2)",color:"#67e8f9"},children:__T("GRUP/ÇİFT")}):null]}),e.jsxs("div",{style:{color:"#8b97b3",fontSize:".8rem",fontWeight:700},children:[top.length>0?nc+(isTeam(cat)?" takım":" sporcu")+(nr?" + "+nr+" yedek":"")+" · çıkış sırasını görmek için dokunun":"puanı girilmiş sporcu yok",_rf.atlanan.length?e.jsxs("span",{style:{color:"#7dd3fc"},children:[" · ",_rf.atlanan.length," ",__T("giriş kulüp kotası nedeniyle atlandı")]}):null]})]}),
+        e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsxs("div",{style:{fontWeight:800},children:[catLabel(cat),isTeam(cat)?e.jsx("span",{style:{...S.badge,marginLeft:".4rem",background:"rgba(8,145,178,.2)",color:"#67e8f9"},children:__T("GRUP/ÇİFT")}):null]}),e.jsxs("div",{style:{color:"#8b97b3",fontSize:".8rem",fontWeight:700},children:[top.length>0?nc+(isTeam(cat)?" takım":" sporcu")+(nr?" + "+nr+" yedek":"")+" · çıkış sırasını görmek için dokunun":"puanı girilmiş sporcu yok",_rf.atlanan.length?e.jsxs("span",{style:{color:"#7dd3fc"},children:[" · ",_rf.atlanan.length," ",__T("giriş kulüp kotası nedeniyle atlandı")]}):null,_rf.top.some(r=>r._istisna)?e.jsxs("span",{style:{color:"#7dd3fc"},children:[" · ",_rf.top.filter(r=>r._istisna).length," ",__T("eşitlik istisnası")]}):null]})]}),
         _dr.toplam?(_dr.tamam?e.jsx("span",{style:{...S.badge,background:"rgba(34,197,94,.12)",color:"#4ade80",border:"1px solid rgba(34,197,94,.35)"},children:__T("✓ TAMAMLANDI")}):e.jsxs("span",{style:{...S.badge,background:"rgba(245,158,11,.12)",color:"#fbbf24",border:"1px solid rgba(245,158,11,.35)"},children:[_dr.bitti,"/",_dr.toplam," ",__T("puanlandı")]})):null,
         has?e.jsx("span",{style:{...S.badge,background:"rgba(34,197,94,.18)",color:"#86efac"},children:__T("✓ FİNAL VAR")}):null,
         top.length?e.jsx("span",{style:{color:"#8b97b3",fontWeight:800},children:op?"▲":"▼"}):null
@@ -239,7 +240,7 @@ function Finals(){
         top.map((row,ix)=>({row,rank:ix+1,cs:csOf(ix+1),reserve:ix+1>TOP})).sort((a,b)=>a.cs-b.cs).map(it=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",padding:".3rem 0",borderBottom:"1px solid rgba(40,52,79,.4)"},children:[
           it.reserve?e.jsx("span",{style:S.yed,children:__T("R")+(it.rank-TOP)}):e.jsx("span",{style:S.csb,children:it.cs}),
           e.jsx("span",{style:{flex:1,minWidth:0,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:nameOfEntry(cat,it.row.id)}),
-          e.jsxs("span",{style:{color:"#8b97b3",fontSize:".78rem",whiteSpace:"nowrap"},children:["eleme ",it.rank,". · ",f3(it.row.score)]})
+          it.row._istisna?e.jsx("span",{title:__T("Kulüp kotası aşıldı ama aynı kulüpten finale kalan sporcuyla puanları (toplam, E, A, D) birebir aynı olduğu için istisna olarak alındı."),style:{fontSize:".66rem",fontWeight:900,padding:".15rem .4rem",borderRadius:6,background:"rgba(14,165,233,.18)",color:"#7dd3fc",border:"1px solid rgba(14,165,233,.45)",whiteSpace:"nowrap"},children:__T("EŞİTLİK İSTİSNASI")}):null,e.jsxs("span",{style:{color:"#8b97b3",fontSize:".78rem",whiteSpace:"nowrap"},children:["eleme ",it.rank,". · ",f3(it.row.score)]})
         ]},it.row.id)),
         _rf.atlanan.length?e.jsxs("div",{style:{marginTop:".5rem"},children:[
          e.jsx("div",{style:{fontSize:".72rem",color:"#7dd3fc",fontWeight:800,textTransform:"uppercase",letterSpacing:".03em",margin:".3rem 0"},children:__T("Kulüp kotası nedeniyle atlananlar")}),
