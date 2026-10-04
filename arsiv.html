@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arşiv — TCF</title>
-<link rel="icon" type="image/png" href="/logo.png">
+<link rel="icon" type="image/svg+xml" href="/brand/gymnaxis-favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -89,12 +90,13 @@ button{font:inherit}
  .search{flex:1 1 100%}
 }
 </style>
+  <script src="/brand/cobrand.js" defer></script>
 </head>
 <body>
 <header class="hdr"><div class="hdr-in">
   <a id="back" class="back" href="/" title="Geri"><span class="material-icons-round">arrow_back</span></a>
   <div class="logo" id="logo"><span class="material-icons-round">inventory_2</span></div>
-  <div class="ttl"><h1>Arşiv</h1><p id="sub">TCF Puanlama Sistemi</p></div>
+  <div class="ttl"><h1>Arşiv</h1><p id="sub">Gymnaxis · Yarışma Yönetim Sistemi</p></div>
   <div class="who"><span id="who" class="badge hidden">Super Admin</span></div>
 </div></header>
 
@@ -163,7 +165,7 @@ function temaUygula(){
   document.documentElement.style.setProperty("--p", b.renk);
   document.documentElement.style.setProperty("--p-rgb", hex2rgb(b.renk));
   $("logo").innerHTML = `<span class="material-icons-round">${b.ikon}</span>`;
-  $("sub").textContent = `${b.ad} · TCF Puanlama Sistemi`;
+  $("sub").textContent = `${b.ad} · Gymnaxis · Yarışma Yönetim Sistemi`;
   $("back").href = "/" + brans;
   document.title = `Arşiv — ${b.ad}`;
   $("chips").innerHTML = Object.entries(BRANS).map(([k,v]) =>

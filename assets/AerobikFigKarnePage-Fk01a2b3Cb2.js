@@ -114,7 +114,7 @@ function pdfBaslik(doc,FT,o,W,t1,t2,comp,etiket){
   doc.setFont(FT,"bold");doc.setFontSize(7.5);doc.setTextColor(48,56,104);const t=o("AEROBİK CİMNASTİK");doc.text(t,cx,30.5,{align:"center"});const tw=doc.getTextWidth(t);doc.setDrawColor(...CC);doc.setLineWidth(.5);doc.line(cx-tw/2,32.6,cx+tw/2,32.6)}
  doc.setTextColor(0,0,0)}
 function sayfaNo(doc,FT,o,W,H){const g=doc.internal.getNumberOfPages();for(let i=1;i<=g;i++){doc.setPage(i);doc.setFont(FT,"normal");doc.setFontSize(6.8);doc.setTextColor(140);
- doc.text(o("FIG Aerobic Gymnastics Code of Points 2025–2028 · §8.1.1 · §8.1.2 · §8.1.6 · §2.1 · §3.2"),10,H-6);doc.text(`${i} / ${g}`,W-10,H-6,{align:"right"})}}
+ doc.text(o("FIG AER CoP 2025–2028 · §8.1.1–8.1.6 · §2.1 · §3.2"),10,H-6);doc.text(`${i} / ${g}`,W-10,H-6,{align:"right"})}}
 const HS={fillColor:[30,27,75],textColor:255,fontStyle:"bold",halign:"center",valign:"middle",fontSize:7.2,cellPadding:1.8},BS={fontSize:7.3,cellPadding:1.5,valign:"middle",lineColor:[226,232,240],lineWidth:.1,textColor:[30,27,75]};
 // PDF: sapma grafiği (her rutin bir nokta, tolerans bandı)
 function pdfSapmaGrafik(doc,FT,o,x,y,w,h,satir,panelRgb){

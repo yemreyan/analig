@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yayın Overlay — TCF</title>
-<link rel="icon" type="image/png" href="/logo.png">
+<title>Yayın Overlay — Gymnaxis · TCF</title>
+<link rel="icon" type="image/svg+xml" href="/brand/gymnaxis-favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
@@ -31,8 +32,9 @@ body.ov{background:transparent!important;overflow:hidden}
 .pos-alt-orta .lt.on{transform:translate(-50%,0)}
 .pos-ust-sol .lt{left:calc(90*var(--s));top:calc(70*var(--s));transform:translateY(calc(-40*var(--s)))}
 .pos-ust-sol .lt.on{transform:none}
-.logo{width:calc(150*var(--s));background:#fff;display:flex;align-items:center;justify-content:center;border-radius:calc(14*var(--s)) 0 0 calc(14*var(--s))}
-.logo img{width:78%;height:auto}
+.logo{width:calc(160*var(--s));background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(8*var(--s));padding:calc(10*var(--s)) 0;border-radius:calc(14*var(--s)) 0 0 calc(14*var(--s))}
+.logo img{width:62%;height:auto}
+.logo img.gx{width:86%}
 .body{background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--txt);padding:calc(16*var(--s)) calc(34*var(--s)) calc(18*var(--s)) calc(30*var(--s));
  border-left:calc(8*var(--s)) solid var(--red);min-width:calc(720*var(--s));max-width:calc(1180*var(--s));display:flex;flex-direction:column;justify-content:center}
 .cat{font-size:calc(22*var(--s));font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:calc(4*var(--s));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -126,6 +128,7 @@ select:focus,input:focus{outline:2px solid var(--p);outline-offset:1px}
 .note{font-size:.78rem;color:var(--muted);font-weight:600;line-height:1.55;margin-top:.7rem}
 .ok{color:#16A34A;font-weight:800;font-size:.8rem}
 </style>
+  <script src="/brand/cobrand.js" defer></script>
 </head>
 <body>
 <div id="app"></div>
@@ -160,7 +163,7 @@ function overlay(){
  const olcek=Math.min(200,Math.max(40,parseInt(Q.get("olcek"))||100))/100;
 
  document.getElementById("app").innerHTML=`<div class="stage pos-${pos}" style="--s:calc(100vw/1920*${olcek})"><div class="lt" id="lt">
-  <div class="logo"><img src="/logo.png" alt=""></div>
+  <div class="logo"><img src="/logo.png" alt=""><img class="gx" src="/brand/gymnaxis-logo.svg" alt="Gymnaxis"></div>
   <div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
   <div class="score"><div class="slbl">${L.puan}</div><div class="stot" id="tot"></div><div class="rank" id="rk"></div></div></div></div>`;
  const $=id=>document.getElementById(id),lt=$("lt");
