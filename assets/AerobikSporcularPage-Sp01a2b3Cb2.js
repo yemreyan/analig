@@ -12,7 +12,7 @@ const isFinal=c=>/^final_/.test(String(c||""));
 const isMulti=c=>{const b=baseCat(c);return/(_cift|_trio|_grup|_dans)$/.test(b)||/^step_/.test(b)};
 const typeOf=c=>{const b=baseCat(c);if(/^step_/.test(b))return"step";if(/_kiz$/.test(b))return"kiz";if(/_erkek$/.test(b))return"erkek";if(/_cift$/.test(b))return"cift";if(/_trio$/.test(b))return"trio";if(/_grup$/.test(b))return"grup";if(/_dans$/.test(b))return"dans";return"diger"};
 const TIP_SIRA=["kiz","erkek","cift","trio","grup","dans","step","diger"];
-const TIP_AD={kiz:"Tek Kadın",erkek:"Tek Erkek",cift:"Çift",trio:"Trio",grup:"Grup",dans:"Aerodans",step:"Step",diger:"Diğer"};
+const TIP_AD={kiz:__T("Tek Kadın"),erkek:__T("Tek Erkek"),cift:__T("Çift"),trio:__T("Trio"),grup:__T("Grup"),dans:__T("Aerodans"),step:__T("Step"),diger:__T("Diğer")};
 const TIP_RENK={kiz:"#DB2777",erkek:"#2563EB",cift:"#7C3AED",trio:"#0891B2",grup:"#059669",dans:"#D97706",step:"#DC2626",diger:"#64748B"};
 const YAS_SIRA=["minik","kucuk","yildiz","genc","buyuk"];
 const yasOf=c=>{const b=baseCat(c);const m=/^step_([a-z]+)/.exec(b);return m?m[1]:b.split("_")[0]};
@@ -80,12 +80,12 @@ function YeniSayfa({onEski}){
  const sonrakiGrup=(cat,okul)=>{const g=entries.filter(x=>x.cat===cat&&UP(x.okul)===UP(okul)).map(x=>Number(x.grupNo)||0);return(g.length?Math.max(...g):0)+1};
 
  // ---- kaydet / sil ----
- const kaydet=async f=>{const cat=f.cat;if(!comp||!cat){toast("Kategori seçin.","error");return}
-  const lines=f.isimler.split("\n").map(s=>s.trim()).filter(Boolean);if(!lines.length){toast("En az bir isim girin.","error");return}
+ const kaydet=async f=>{const cat=f.cat;if(!comp||!cat){toast(__T("Kategori seçin."),"error");return}
+  const lines=f.isimler.split("\n").map(s=>s.trim()).filter(Boolean);if(!lines.length){toast(__T("En az bir isim girin."),"error");return}
   const multi=isMulti(cat),il=f.il.trim(),okul=f.kulup.trim()||il,gn=multi?Math.max(1,parseInt(f.grupNo)||1):null,up={},P=`${BASE}/${comp}/sporcular/${cat}`;
-  if(!multi&&lines.length>1){toast("Bireysel kategoride tek isim girilir.","error");return}
+  if(!multi&&lines.length>1){toast(__T("Bireysel kategoride tek isim girilir."),"error");return}
   const ent=f.ent;
-  if(ent&&ent.puanli&&multi&&(UP(okul)!==UP(ent.okul)||Number(gn)!==Number(ent.grupNo))){toast("Puanı olan takımın kulübü / grup numarası değiştirilemez (puan bağlantısı kopar).","error");return}
+  if(ent&&ent.puanli&&multi&&(UP(okul)!==UP(ent.okul)||Number(gn)!==Number(ent.grupNo))){toast(__T("Puanı olan takımın kulübü / grup numarası değiştirilemez (puan bağlantısı kopar)."),"error");return}
   if(multi&&(!ent||UP(okul)!==UP(ent.okul)||Number(gn)!==Number(ent.grupNo))&&entries.some(x=>x!==ent&&x.cat===cat&&UP(x.okul)===UP(okul)&&Number(x.grupNo)===gn)){toast(`Bu kulübün ${gn} numaralı takımı zaten var.`,"error");return}
   const ortak={il,okul,kulup:okul,yarismaTuru:multi?"takim":"ferdi",...(multi?{grupNo:gn}:{})};
   const eski=ent?ent.members:[];
@@ -95,11 +95,11 @@ function YeniSayfa({onEski}){
    else{const id=yeniId(),ek={};if(eski[0]){["cikisSirasi","baslangicSaati","gun"].forEach(k=>{if(eski[0][k]!=null)ek[k]=eski[0][k]})}up[`${P}/${id}`]={...kayit,...ek,appId:"manuel",kayitTs:Date.now()}}});
   eski.slice(lines.length).forEach(m=>{up[`${P}/${m.id}`]=null});
   if(!kats[cat])up[`${BASE}/${comp}/kategoriler/${cat}`]={name:katAd(cat)};
-  setBusy(!0);try{await update(ref(db),up);toast(ent?"Yarışmacı güncellendi ✓":"Yarışmacı eklendi ✓","success");setModal(null)}catch(er){toast("Kaydedilemedi: "+(er?.message||er),"error")}setBusy(!1)};
- const sil=async ent=>{const uy=ent.puanli?"\n\n⚠ Bu yarışmacının PUANI VAR. Kayıt silinirse puan tablolarda sahipsiz kalır.":"";
-  if(!window.confirm(`"${ent.ad}" (${katAd(ent.cat)}) silinsin mi?${uy}`))return;
+  setBusy(!0);try{await update(ref(db),up);toast(ent?__T("Yarışmacı güncellendi ✓"):__T("Yarışmacı eklendi ✓"),"success");setModal(null)}catch(er){toast(__T("Kaydedilemedi: ")+(er?.message||er),"error")}setBusy(!1)};
+ const sil=async ent=>{const uy=ent.puanli?"\n\n"+__T("⚠ Bu yarışmacının PUANI VAR. Kayıt silinirse puan tablolarda sahipsiz kalır."):"";
+  if(!window.confirm(`"${ent.ad}" (${katAd(ent.cat)}) ${__T("silinsin mi?")}${uy}`))return;
   const up={};ent.members.forEach(m=>{up[`${BASE}/${comp}/sporcular/${ent.cat}/${m.id}`]=null});
-  setBusy(!0);try{await update(ref(db),up);toast("Silindi.","success")}catch(er){toast("Silinemedi: "+(er?.message||er),"error")}setBusy(!1)};
+  setBusy(!0);try{await update(ref(db),up);toast(__T("Silindi."),"success")}catch(er){toast(__T("Silinemedi: ")+(er?.message||er),"error")}setBusy(!1)};
 
  // ---- Excel ----
  const katEsle=()=>{const norm=s=>String(s||"").toLocaleLowerCase("tr").replace(/[^a-zçğıöşü0-9]+/g,"");const map={};const add=(l,c)=>{const n=norm(l);if(n&&!(n in map))map[n]=c};katlar.filter(c=>!isFinal(c)).forEach(c=>{[c,katAd(c),kats[c]?.name,V[c]?.label].forEach(l=>add(l,c))});return{map,norm}};
@@ -108,18 +108,18 @@ function YeniSayfa({onEski}){
   if(exM){rows.push({Ad:"Ali",Soyad:"Demir",İl:"ANKARA",Kulüp:"Örnek S.K.",Kategori:katAd(exM),TCKN:"",["Lisans No"]:"",["Grup No"]:1});rows.push({Ad:"Veli",Soyad:"Kaya",İl:"ANKARA",Kulüp:"Örnek S.K.",Kategori:katAd(exM),TCKN:"",["Lisans No"]:"",["Grup No"]:1})}
   const wb=XU.book_new(),ws=XU.json_to_sheet(rows,{header:["Ad","Soyad","İl","Kulüp","Kategori","TCKN","Lisans No","Grup No"]});ws["!cols"]=[{wch:16},{wch:16},{wch:12},{wch:24},{wch:24},{wch:14},{wch:12},{wch:8}];XU.book_append_sheet(wb,ws,"Sporcular");
   const w2=XU.json_to_sheet(ks.map(c=>({["Kategori (bunu yaz)"]:katAd(c),["Kategori ID"]:c,Tür:isMulti(c)?"Takım — aynı takımın üyelerine aynı Grup No":"Bireysel"})));w2["!cols"]=[{wch:26},{wch:16},{wch:44}];XU.book_append_sheet(wb,w2,"Kategoriler");
-  XW(wb,"aerobik_sporcu_sablonu.xlsx");toast("Şablon indirildi.","success")};
+  XW(wb,"aerobik_sporcu_sablonu.xlsx");toast(__T("Şablon indirildi."),"success")};
  const yukle=async file=>{try{const wb=XR(await file.arrayBuffer(),{type:"array"});let rows=[];wb.SheetNames.forEach(sn=>{const rr=XU.sheet_to_json(wb.Sheets[sn],{defval:""});if(rr.length&&Object.keys(rr[0]).some(h=>/^(ad|soyad|adsoyad|ad soyad)$/i.test(String(h).trim())))rows=rows.concat(rr)});
-   if(!rows.length){toast("Excel'de sporcu satırı bulunamadı.","error");return}
+   if(!rows.length){toast(__T("Excel'de sporcu satırı bulunamadı."),"error");return}
    const{map,norm}=katEsle(),G=r=>{const o={};Object.keys(r).forEach(k=>o[norm(k)]=r[k]);return n=>o[norm(n)]};const up={},bad=new Set();let ok=0,atla=0;
    rows.forEach(r=>{const g=G(r),kt=String(g("Kategori")||"").trim(),cat=map[norm(kt)];if(!cat){if(kt)bad.add(kt);atla++;return}
     let ad=String(g("Ad")||"").trim(),soyad=String(g("Soyad")||"").trim();const cb=String(g("Ad Soyad")||"").trim();if(!ad&&!soyad&&cb){const b=adBol(cb);ad=b.ad;soyad=b.soyad}if(!ad&&!soyad){atla++;return}
     const okul=String(g("Kulüp")||g("Kulup")||g("Okul")||"").trim(),rec={ad,soyad,adSoyad:(ad+" "+soyad).trim(),soyadAd:(soyad+" "+ad).trim(),il:String(g("İl")||g("Il")||"").trim(),okul,kulup:okul,tckn:String(g("TCKN")||"").trim(),lisans:String(g("Lisans No")||g("Lisans")||"").trim(),yarismaTuru:isMulti(cat)?"takim":"ferdi",appId:"excel_import",kayitTs:Date.now()};
     if(isMulti(cat))rec.grupNo=Math.max(1,parseInt(g("Grup No")||g("GrupNo")||1)||1);
     up[`${BASE}/${comp}/sporcular/${cat}/${yeniId()}`]=rec;if(!kats[cat])up[`${BASE}/${comp}/kategoriler/${cat}`]={name:katAd(cat)};ok++});
-   if(!ok){toast("Geçerli satır yok."+(bad.size?" Tanınmayan kategori: "+[...bad].slice(0,3).join(", "):""),"error");return}
-   if(!window.confirm(`${ok} sporcu "${Cp.isim||comp}" yarışmasına eklenecek.${atla?`\n${atla} satır atlanacak${bad.size?" (tanınmayan kategori: "+[...bad].slice(0,3).join(", ")+")":""}.`:""}\n\nDevam edilsin mi?`))return;
-   setBusy(!0);await update(ref(db),up);setBusy(!1);toast(ok+" sporcu eklendi ✓","success")}catch(er){setBusy(!1);toast("İçe aktarma hatası: "+(er?.message||er),"error")}};
+   if(!ok){toast(__T("Geçerli satır yok.")+(bad.size?" "+__T("Tanınmayan kategori:")+" "+[...bad].slice(0,3).join(", "):""),"error");return}
+   if(!window.confirm(`${ok} ${__T("sporcu")} → "${Cp.isim||comp}": ${__T("yarışmasına eklenecek.")}${atla?`\n${atla} ${__T("satır atlanacak")}${bad.size?" ("+__T("tanınmayan kategori:")+" "+[...bad].slice(0,3).join(", ")+")":""}.`:""}\n\n${__T("Devam edilsin mi?")}`))return;
+   setBusy(!0);await update(ref(db),up);setBusy(!1);toast(ok+" "+__T("sporcu eklendi ✓"),"success")}catch(er){setBusy(!1);toast(__T("İçe aktarma hatası: ")+(er?.message||er),"error")}};
  const disari=()=>{const s1=[],s2=[];katlar.forEach(c=>entries.filter(x=>x.cat===c).sort((a,b)=>a.sira-b.sira||a.ad.localeCompare(b.ad,"tr")).forEach(x=>{s1.push({Kategori:katAd(c),Tür:TIP_AD[typeOf(c)],Yarışmacı:x.ad,Kulüp:x.okul,İl:x.il,["Grup No"]:x.grupNo??"",["Çıkış Sırası"]:x.sira<1e9?x.sira:"",Saat:x.saat,Puan:x.puan?.sonuc??""});x.members.forEach((m,i)=>s2.push({Kategori:katAd(c),Ad:m.ad||"",Soyad:m.soyad||"",["Ad Soyad"]:kisiAd(m),İl:m.il||"",Kulüp:m.okul||m.kulup||"",TCKN:m.tckn||"",["Lisans No"]:m.lisans||"",["Grup No"]:x.grupNo??"",["Üye Sıra"]:x.members.length>1?i+1:""}))}));
   const wb=XU.book_new(),w1=XU.json_to_sheet(s1);w1["!cols"]=[{wch:26},{wch:12},{wch:40},{wch:26},{wch:12},{wch:8},{wch:11},{wch:8},{wch:8}];XU.book_append_sheet(wb,w1,"Yarışmacılar");const w2=XU.json_to_sheet(s2);XU.book_append_sheet(wb,w2,"Sporcular");
   XW(wb,String(Cp.isim||"sporcular").replace(/[^a-zA-Z0-9ğüşöçıİĞÜŞÖÇ ]+/g,"_").replace(/\s+/g,"_").slice(0,40)+"_sporcular.xlsx")};
@@ -130,57 +130,57 @@ function YeniSayfa({onEski}){
  const stat=(ic,c,v,l)=>e.jsxs("div",{style:S.stat,children:[e.jsx("div",{style:S.statI(c),children:MI(ic)}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:"1.35rem",fontWeight:900,lineHeight:1},children:v}),e.jsx("div",{style:{fontSize:".76rem",fontWeight:700,color:C.muted},children:l})]})]});
  const modalEl=modal&&(()=>{const f=modal,multi=isMulti(f.cat),set=(k,v)=>setModal(o=>({...o,[k]:v})),kilit=f.ent&&f.ent.puanli&&multi;
   return e.jsx("div",{style:S.ov,onClick:ev=>{if(ev.target===ev.currentTarget&&!busy)setModal(null)},children:e.jsxs("div",{style:S.modal,children:[
-   e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",fontSize:"1.1rem",fontWeight:900},children:[MI(f.ent?"edit":"person_add",{color:"#16A34A"}),f.ent?"Yarışmacıyı Düzenle":"Yarışmacı Ekle"]}),
-   e.jsx("label",{style:S.lbl,children:"Kategori"}),
-   f.ent?e.jsx("div",{style:{...S.inp,background:"#fff"},children:katAd(f.cat)}):e.jsx("select",{style:{...S.sel,width:"100%"},value:f.cat,onChange:ev=>{const c=ev.target.value;setModal(o=>({...o,cat:c,grupNo:isMulti(c)?sonrakiGrup(c,o.kulup||o.il):""}))},children:katlar.filter(c=>!isFinal(c)).map(c=>e.jsx("option",{value:c,children:katAd(c)+(isMulti(c)?" (takım)":"")},c))}),
-   e.jsx("label",{style:S.lbl,children:multi?`Üyeler — her satıra bir Ad Soyad (${kisiSayisi(f.cat)} kişi önerilir)`:"Ad Soyad"}),
+   e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",fontSize:"1.1rem",fontWeight:900},children:[MI(f.ent?"edit":"person_add",{color:"#16A34A"}),f.ent?__T("Yarışmacıyı Düzenle"):__T("Yarışmacı Ekle")]}),
+   e.jsx("label",{style:S.lbl,children:__T("Kategori")}),
+   f.ent?e.jsx("div",{style:{...S.inp,background:"#fff"},children:katAd(f.cat)}):e.jsx("select",{style:{...S.sel,width:"100%"},value:f.cat,onChange:ev=>{const c=ev.target.value;setModal(o=>({...o,cat:c,grupNo:isMulti(c)?sonrakiGrup(c,o.kulup||o.il):""}))},children:katlar.filter(c=>!isFinal(c)).map(c=>e.jsx("option",{value:c,children:katAd(c)+(isMulti(c)?" ("+__T("takım")+")":"")},c))}),
+   e.jsx("label",{style:S.lbl,children:multi?`${__T("Üyeler — her satıra bir Ad Soyad")} (${kisiSayisi(f.cat)} ${__T("kişi önerilir")})`:__T("Ad Soyad")}),
    e.jsx("textarea",{rows:multi?Math.min(9,Math.max(3,kisiSayisi(f.cat))):1,value:f.isimler,onChange:ev=>set("isimler",ev.target.value),placeholder:multi?"Ad Soyad\nAd Soyad":"Ad Soyad",style:{...S.inp,resize:"vertical",lineHeight:1.5}}),
-   e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".6rem"},children:[e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:"İl"}),e.jsx("input",{style:S.inp,value:f.il,onChange:ev=>set("il",ev.target.value),placeholder:"Örn. İZMİR"})]}),e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:"Kulüp"}),e.jsx("input",{style:{...S.inp,...(kilit?{opacity:.6}:{})},disabled:kilit,value:f.kulup,onChange:ev=>set("kulup",ev.target.value),placeholder:"Kulüp adı"})]})]}),
-   multi?e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:"Grup No (aynı kulübün takımlarını ayırır)"}),e.jsx("input",{type:"number",min:1,style:{...S.inp,maxWidth:140,...(kilit?{opacity:.6}:{})},disabled:kilit,value:f.grupNo,onChange:ev=>set("grupNo",ev.target.value)})]}):e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".6rem"},children:[e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:"TCKN (isteğe bağlı)"}),e.jsx("input",{style:S.inp,value:f.tckn,onChange:ev=>set("tckn",ev.target.value),inputMode:"numeric"})]}),e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:"Lisans No (isteğe bağlı)"}),e.jsx("input",{style:S.inp,value:f.lisans,onChange:ev=>set("lisans",ev.target.value)})]})]}),
-   kilit?e.jsx("div",{style:{marginTop:".6rem",fontSize:".78rem",fontWeight:700,color:"#B45309"},children:"⚠ Bu takımın puanı var: kulüp ve grup no kilitli (puan bağlantısı korunur). Üye isimleri düzeltilebilir."}):null,
-   e.jsxs("div",{style:{display:"flex",gap:".6rem",marginTop:"1rem"},children:[e.jsx("button",{type:"button",style:{...S.ghost,flex:1,justifyContent:"center"},disabled:busy,onClick:()=>setModal(null),children:"Vazgeç"}),e.jsxs("button",{type:"button",style:{...S.btn("#16A34A"),flex:2,justifyContent:"center",opacity:busy?.6:1},disabled:busy,onClick:()=>kaydet(f),children:[MI("save"),busy?"Kaydediliyor…":"Kaydet"]})]})
+   e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".6rem"},children:[e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:__T("İl")}),e.jsx("input",{style:S.inp,value:f.il,onChange:ev=>set("il",ev.target.value),placeholder:__T("Örn. İZMİR")})]}),e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:__T("Kulüp")}),e.jsx("input",{style:{...S.inp,...(kilit?{opacity:.6}:{})},disabled:kilit,value:f.kulup,onChange:ev=>set("kulup",ev.target.value),placeholder:__T("Kulüp adı")})]})]}),
+   multi?e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:__T("Grup No (aynı kulübün takımlarını ayırır)")}),e.jsx("input",{type:"number",min:1,style:{...S.inp,maxWidth:140,...(kilit?{opacity:.6}:{})},disabled:kilit,value:f.grupNo,onChange:ev=>set("grupNo",ev.target.value)})]}):e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".6rem"},children:[e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:__T("TCKN (isteğe bağlı)")}),e.jsx("input",{style:S.inp,value:f.tckn,onChange:ev=>set("tckn",ev.target.value),inputMode:"numeric"})]}),e.jsxs("div",{children:[e.jsx("label",{style:S.lbl,children:__T("Lisans No (isteğe bağlı)")}),e.jsx("input",{style:S.inp,value:f.lisans,onChange:ev=>set("lisans",ev.target.value)})]})]}),
+   kilit?e.jsx("div",{style:{marginTop:".6rem",fontSize:".78rem",fontWeight:700,color:"#B45309"},children:__T("⚠ Bu takımın puanı var: kulüp ve grup no kilitli (puan bağlantısı korunur). Üye isimleri düzeltilebilir.")}):null,
+   e.jsxs("div",{style:{display:"flex",gap:".6rem",marginTop:"1rem"},children:[e.jsx("button",{type:"button",style:{...S.ghost,flex:1,justifyContent:"center"},disabled:busy,onClick:()=>setModal(null),children:__T("Vazgeç")}),e.jsxs("button",{type:"button",style:{...S.btn("#16A34A"),flex:2,justifyContent:"center",opacity:busy?.6:1},disabled:busy,onClick:()=>kaydet(f),children:[MI("save"),busy?"Kaydediliyor…":"Kaydet"]})]})
   ]})})})();
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsx("div",{style:S.top,children:e.jsxs("div",{style:S.topIn,children:[
-   e.jsx("a",{href:"/aerobik",style:S.back,title:"Geri",children:MI("arrow_back",{fontSize:"1.4rem"})}),
+   e.jsx("a",{href:"/aerobik",style:S.back,title:__T("Geri"),children:MI("arrow_back",{fontSize:"1.4rem"})}),
    e.jsx("div",{style:S.ico,children:MI("groups",{fontSize:"1.4rem"})}),
-   e.jsxs("div",{style:{minWidth:0,flex:1},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.15rem",lineHeight:1.15},children:"Sporcular"}),e.jsx("div",{style:{fontSize:".8rem",fontWeight:700,color:C.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:Cp.isim?Cp.isim:"Aerobik · yarışmacı (bireysel / takım) yönetimi"})]}),
-   e.jsxs("button",{type:"button",style:S.ghost,onClick:onEski,title:"Eski Sporcular sayfasını aç",children:[MI("history"),"Eski versiyon"]})]})}),
+   e.jsxs("div",{style:{minWidth:0,flex:1},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.15rem",lineHeight:1.15},children:__T("Sporcular")}),e.jsx("div",{style:{fontSize:".8rem",fontWeight:700,color:C.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:Cp.isim?Cp.isim:__T("Aerobik · yarışmacı (bireysel / takım) yönetimi")})]}),
+   e.jsxs("button",{type:"button",style:S.ghost,onClick:onEski,title:__T("Eski Sporcular sayfasını aç"),children:[MI("history"),__T("Eski versiyon")]})]})}),
   e.jsxs("div",{style:S.in,children:[
    e.jsxs("div",{style:{...S.card,display:"flex",gap:".6rem",flexWrap:"wrap",alignItems:"center"},children:[
-    e.jsxs("select",{style:{...S.sel,flex:"1 1 260px"},value:comp,onChange:ev=>{setComp(ev.target.value);setKatF("")},children:[e.jsx("option",{value:"",children:"— Yarışma seçin —"}),list.map(([id,c])=>e.jsx("option",{value:id,children:(c.isim||id)+(c.arsivli===!0?" (arşiv)":"")},id))]}),
+    e.jsxs("select",{style:{...S.sel,flex:"1 1 260px"},value:comp,onChange:ev=>{setComp(ev.target.value);setKatF("")},children:[e.jsx("option",{value:"",children:__T("— Yarışma seçin —")}),list.map(([id,c])=>e.jsx("option",{value:id,children:(c.isim||id)+(c.arsivli===!0?" ("+__T("arşiv")+")":"")},id))]}),
     comp?e.jsxs(e.Fragment,{children:[
-     e.jsxs("div",{style:{flex:"1 1 200px",display:"flex",alignItems:"center",gap:".4rem",...S.sel,padding:"0 .7rem"},children:[MI("search",{color:C.sub}),e.jsx("input",{value:q,onChange:ev=>setQ(ev.target.value),placeholder:"Sporcu / kulüp / il ara…",style:{border:"none",background:"transparent",outline:"none",fontFamily:"inherit",fontWeight:700,fontSize:".9rem",padding:".6rem 0",flex:1,minWidth:0,color:C.ink}})]}),
-     e.jsxs("select",{style:{...S.sel,flex:"0 1 220px"},value:katF,onChange:ev=>setKatF(ev.target.value),children:[e.jsx("option",{value:"",children:"Tüm kategoriler"}),katlar.map(c=>e.jsx("option",{value:c,children:(isFinal(c)?"🏆 ":"")+katAd(c)},c))]})]}):null]}),
-   !comp?e.jsxs("div",{style:{...S.card,textAlign:"center",padding:"3rem 1rem",color:C.muted,fontWeight:700},children:[MI("emoji_events",{fontSize:"2.6rem",display:"block",margin:"0 auto .5rem",color:C.sub}),"Sporcuları görmek için yarışma seçin."]}):e.jsxs(e.Fragment,{children:[
-    e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:".75rem",marginBottom:"1rem"},children:[stat("how_to_reg","#16A34A",elemeEnt.length,"Yarışmacı (eleme)"),stat("person","#2563EB",kisiSet.size,"Farklı sporcu"),stat("shield","#7C3AED",kulupSet.size,"Kulüp"),stat("category","#D97706",katlar.filter(c=>!isFinal(c)).length,"Kategori")]}),
+     e.jsxs("div",{style:{flex:"1 1 200px",display:"flex",alignItems:"center",gap:".4rem",...S.sel,padding:"0 .7rem"},children:[MI("search",{color:C.sub}),e.jsx("input",{value:q,onChange:ev=>setQ(ev.target.value),placeholder:__T("Sporcu / kulüp / il ara…"),style:{border:"none",background:"transparent",outline:"none",fontFamily:"inherit",fontWeight:700,fontSize:".9rem",padding:".6rem 0",flex:1,minWidth:0,color:C.ink}})]}),
+     e.jsxs("select",{style:{...S.sel,flex:"0 1 220px"},value:katF,onChange:ev=>setKatF(ev.target.value),children:[e.jsx("option",{value:"",children:__T("Tüm kategoriler")}),katlar.map(c=>e.jsx("option",{value:c,children:(isFinal(c)?"🏆 ":"")+katAd(c)},c))]})]}):null]}),
+   !comp?e.jsxs("div",{style:{...S.card,textAlign:"center",padding:"3rem 1rem",color:C.muted,fontWeight:700},children:[MI("emoji_events",{fontSize:"2.6rem",display:"block",margin:"0 auto .5rem",color:C.sub}),__T("Sporcuları görmek için yarışma seçin.")]}):e.jsxs(e.Fragment,{children:[
+    e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:".75rem",marginBottom:"1rem"},children:[stat("how_to_reg","#16A34A",elemeEnt.length,__T("Yarışmacı (eleme)")),stat("person","#2563EB",kisiSet.size,__T("Farklı sporcu")),stat("shield","#7C3AED",kulupSet.size,__T("Kulüp")),stat("category","#D97706",katlar.filter(c=>!isFinal(c)).length,__T("Kategori"))]}),
     e.jsxs("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",marginBottom:"1rem",alignItems:"center"},children:[
-     e.jsxs("button",{type:"button",style:S.btn("#16A34A"),onClick:()=>ekleAc(),disabled:busy,children:[MI("person_add"),"Yarışmacı Ekle"]}),
-     e.jsxs("button",{type:"button",style:S.ghost,onClick:sablon,children:[MI("description"),"Şablon İndir"]}),
-     e.jsxs("button",{type:"button",style:S.ghost,onClick:()=>fileRef.current&&fileRef.current.click(),disabled:busy,children:[MI("upload_file"),"Excel'den Yükle"]}),
+     e.jsxs("button",{type:"button",style:S.btn("#16A34A"),onClick:()=>ekleAc(),disabled:busy,children:[MI("person_add"),__T("Yarışmacı Ekle")]}),
+     e.jsxs("button",{type:"button",style:S.ghost,onClick:sablon,children:[MI("description"),__T("Şablon İndir")]}),
+     e.jsxs("button",{type:"button",style:S.ghost,onClick:()=>fileRef.current&&fileRef.current.click(),disabled:busy,children:[MI("upload_file"),__T("Excel'den Yükle")]}),
      e.jsx("input",{ref:fileRef,type:"file",accept:".xlsx,.xls",style:{display:"none"},onChange:ev=>{const fl=ev.target.files[0];ev.target.value="";fl&&yukle(fl)}}),
-     e.jsxs("button",{type:"button",style:S.ghost,onClick:disari,children:[MI("table_view"),"Excel'e Aktar"]}),
+     e.jsxs("button",{type:"button",style:S.ghost,onClick:disari,children:[MI("table_view"),__T("Excel'e Aktar")]}),
      e.jsx("span",{style:{flex:1}}),
-     e.jsxs("label",{style:{display:"inline-flex",alignItems:"center",gap:".4rem",fontSize:".84rem",fontWeight:800,color:C.ink2,cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:finGoster,onChange:ev=>setFinGoster(ev.target.checked)}),"Finalleri göster"]})]}),
-    gruplu.length===0?e.jsx("div",{style:{...S.card,textAlign:"center",padding:"2.5rem 1rem",color:C.muted,fontWeight:700},children:q0?"Aramaya uyan yarışmacı yok.":"Bu yarışmada henüz sporcu yok. “Yarışmacı Ekle” ya da “Excel'den Yükle” ile başlayın."}):null,
+     e.jsxs("label",{style:{display:"inline-flex",alignItems:"center",gap:".4rem",fontSize:".84rem",fontWeight:800,color:C.ink2,cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:finGoster,onChange:ev=>setFinGoster(ev.target.checked)}),__T("Finalleri göster")]})]}),
+    gruplu.length===0?e.jsx("div",{style:{...S.card,textAlign:"center",padding:"2.5rem 1rem",color:C.muted,fontWeight:700},children:q0?__T("Aramaya uyan yarışmacı yok."):__T("Bu yarışmada henüz sporcu yok. “Yarışmacı Ekle” ya da “Excel'den Yükle” ile başlayın.")}):null,
     gruplu.map(g=>{const t=typeOf(g.cat),rk=TIP_RENK[t],kisi=g.list.reduce((a,x)=>a+x.members.length,0);return e.jsxs("div",{style:S.sec,children:[
-     e.jsxs("div",{style:{...S.secH,background:"linear-gradient(90deg,"+rk+"12,#fff 60%)"},children:[e.jsx("span",{style:{width:10,height:10,borderRadius:3,background:rk}}),e.jsx("span",{style:{fontWeight:900,fontSize:"1rem"},children:(isFinal(g.cat)?"🏆 ":"")+katAd(g.cat)}),e.jsx("span",{style:S.chip(rk,rk+"1a"),children:TIP_AD[t]}),e.jsx("span",{style:S.chip(C.ink2,C.soft),children:g.list.length+(isMulti(g.cat)?" takım · "+kisi+" sporcu":" sporcu")}),e.jsx("span",{style:{flex:1}}),isFinal(g.cat)?e.jsx("span",{style:{fontSize:".74rem",fontWeight:700,color:C.muted},children:"Final listesi Final Oluştur ekranından gelir"}):e.jsxs("button",{type:"button",style:{...S.ghost,padding:".35rem .65rem",fontSize:".78rem"},onClick:()=>ekleAc(g.cat),children:[MI("add",{fontSize:"1rem"}),"Ekle"]})]}),
-     g.list.length===0?e.jsx("div",{style:{padding:".9rem 1rem",color:C.muted,fontWeight:700,fontSize:".85rem"},children:"Bu kategoride yarışmacı yok."}):null,
+     e.jsxs("div",{style:{...S.secH,background:"linear-gradient(90deg,"+rk+"12,#fff 60%)"},children:[e.jsx("span",{style:{width:10,height:10,borderRadius:3,background:rk}}),e.jsx("span",{style:{fontWeight:900,fontSize:"1rem"},children:(isFinal(g.cat)?"🏆 ":"")+katAd(g.cat)}),e.jsx("span",{style:S.chip(rk,rk+"1a"),children:TIP_AD[t]}),e.jsx("span",{style:S.chip(C.ink2,C.soft),children:g.list.length+(isMulti(g.cat)?" "+__T("takım")+" · "+kisi+" "+__T("sporcu"):" "+__T("sporcu"))}),e.jsx("span",{style:{flex:1}}),isFinal(g.cat)?e.jsx("span",{style:{fontSize:".74rem",fontWeight:700,color:C.muted},children:__T("Final listesi Final Oluştur ekranından gelir")}):e.jsxs("button",{type:"button",style:{...S.ghost,padding:".35rem .65rem",fontSize:".78rem"},onClick:()=>ekleAc(g.cat),children:[MI("add",{fontSize:"1rem"}),__T("Ekle")]})]}),
+     g.list.length===0?e.jsx("div",{style:{padding:".9rem 1rem",color:C.muted,fontWeight:700,fontSize:".85rem"},children:__T("Bu kategoride yarışmacı yok.")}):null,
      g.list.map((x,i)=>e.jsxs("div",{style:S.row,children:[
-      e.jsx("div",{style:S.no,title:x.sira<1e9?"Çıkış sırası":"",children:x.sira<1e9?x.sira:i+1}),
+      e.jsx("div",{style:S.no,title:x.sira<1e9?__T("Çıkış sırası"):"",children:x.sira<1e9?x.sira:i+1}),
       e.jsxs("div",{style:{flex:1,minWidth:0},children:[
        isMulti(x.cat)?e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem"},children:x.members.map(m=>e.jsx("span",{style:{fontWeight:800,fontSize:".88rem",background:C.soft,border:"1px solid "+C.line,borderRadius:8,padding:".12rem .45rem"},children:UP(kisiAd(m))},m.id))}):e.jsx("div",{style:{fontWeight:900,fontSize:".95rem"},children:UP(x.ad)}),
        e.jsxs("div",{style:{display:"flex",flexWrap:"wrap",gap:".2rem .6rem",marginTop:".2rem",fontSize:".78rem",fontWeight:700,color:C.muted},children:[e.jsx("span",{children:x.okul||"—"}),x.il?e.jsxs("span",{children:["· ",UP(x.il)]}):null,isMulti(x.cat)?e.jsxs("span",{children:["· Grup ",x.grupNo]}):null,x.saat?e.jsxs("span",{children:["· ⏱ ",x.saat]}):null,!isMulti(x.cat)&&x.members[0].lisans?e.jsxs("span",{children:["· Lisans ",x.members[0].lisans]}):null,!isMulti(x.cat)&&x.members[0].tckn?e.jsxs("span",{children:["· TC ",maskele(x.members[0].tckn)]}):null]})]}),
-      x.puanli?e.jsx("span",{style:S.chip("#15803D","#DCFCE7"),title:"Puanı girilmiş",children:x.puan?.sonuc!=null?Number(x.puan.sonuc).toFixed(3):"PUANLI"}):null,
-      isFinal(x.cat)?null:e.jsx("button",{type:"button",style:S.ib,title:"Düzenle",onClick:()=>duzAc(x),children:MI("edit",{fontSize:"1.05rem"})}),
-      isFinal(x.cat)?null:e.jsx("button",{type:"button",style:{...S.ib,color:"#DC2626"},title:"Sil",onClick:()=>sil(x),disabled:busy,children:MI("delete",{fontSize:"1.05rem"})})]},x.key))]},g.cat)})]})]}),
+      x.puanli?e.jsx("span",{style:S.chip("#15803D","#DCFCE7"),title:__T("Puanı girilmiş"),children:x.puan?.sonuc!=null?Number(x.puan.sonuc).toFixed(3):__T("PUANLI")}):null,
+      isFinal(x.cat)?null:e.jsx("button",{type:"button",style:S.ib,title:__T("Düzenle"),onClick:()=>duzAc(x),children:MI("edit",{fontSize:"1.05rem"})}),
+      isFinal(x.cat)?null:e.jsx("button",{type:"button",style:{...S.ib,color:"#DC2626"},title:__T("Sil"),onClick:()=>sil(x),disabled:busy,children:MI("delete",{fontSize:"1.05rem"})})]},x.key))]},g.cat)})]})]}),
   modalEl]})}
 
 function AerobikSporcular(){usInit();
  const[eski,setEski]=R.useState(()=>{try{return localStorage.getItem(ESKI_KEY)==="1"}catch{return!1}});
  const sec=v=>{try{localStorage.setItem(ESKI_KEY,v?"1":"0")}catch{}setEski(v)};
- if(eski)return e.jsxs(e.Fragment,{children:[e.jsx(R.Suspense,{fallback:e.jsx("div",{style:{padding:"3rem",textAlign:"center",color:"#6B7280",fontWeight:700,fontFamily:"Nunito,system-ui,sans-serif"},children:"Eski sayfa yükleniyor…"}),children:e.jsx(EskiSayfa,{})}),
-  e.jsxs("button",{type:"button",onClick:()=>sec(!1),title:"Yeni aerobik Sporcular sayfasına dön",style:{position:"fixed",right:16,bottom:64,zIndex:9000,display:"inline-flex",alignItems:"center",gap:".4rem",border:"none",borderRadius:999,padding:".7rem 1.1rem",background:"#16A34A",color:"#fff",fontFamily:"Nunito,system-ui,sans-serif",fontWeight:900,fontSize:".88rem",cursor:"pointer",boxShadow:"0 10px 26px rgba(22,163,74,.4)"},children:[MI("auto_awesome"),"Yeni versiyon"]})]});
+ if(eski)return e.jsxs(e.Fragment,{children:[e.jsx(R.Suspense,{fallback:e.jsx("div",{style:{padding:"3rem",textAlign:"center",color:"#6B7280",fontWeight:700,fontFamily:"Nunito,system-ui,sans-serif"},children:__T("Eski sayfa yükleniyor…")}),children:e.jsx(EskiSayfa,{})}),
+  e.jsxs("button",{type:"button",onClick:()=>sec(!1),title:__T("Yeni aerobik Sporcular sayfasına dön"),style:{position:"fixed",right:16,bottom:64,zIndex:9000,display:"inline-flex",alignItems:"center",gap:".4rem",border:"none",borderRadius:999,padding:".7rem 1.1rem",background:"#16A34A",color:"#fff",fontFamily:"Nunito,system-ui,sans-serif",fontWeight:900,fontSize:".88rem",cursor:"pointer",boxShadow:"0 10px 26px rgba(22,163,74,.4)"},children:[MI("auto_awesome"),__T("Yeni versiyon")]})]});
  return e.jsx(YeniSayfa,{onEski:()=>sec(!0)})}
 export{AerobikSporcular as default};

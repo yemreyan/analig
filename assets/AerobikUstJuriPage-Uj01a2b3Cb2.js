@@ -115,7 +115,7 @@ function UstJuri(){
  if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Doğrulanıyor…")})});
  if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:__T("Yetkisiz Erişim")}),e.jsx("p",{children:__T("Geçersiz/süresi dolmuş bağlantı.")})]})});
 
- const scoreCards=C=>[["D — Zorluk",f2(C.d),"#8b5cf6"],["A — Artistik",f2(C.a),"#ec4899"],["E — Uygulama",f3(C.e),"#10b981"],["P — Ceza",C.p?"−"+f2(C.p):"0.00","#f59e0b"],["L — Çizgi",C.l!=null?"−"+f2(C.l):"—",P.sky],["T — Süre",C.t!=null?"−"+f2(C.t):"—","#f43f5e"]];
+ const scoreCards=C=>[["D — Zorluk",f2(C.d),"#8b5cf6"],["A — Artistik",f2(C.a),"#ec4899"],["E — Uygulama",f3(C.e),"#10b981"],["P — Ceza",C.p>5e-4?"−"+f2(C.p):"0.00","#f59e0b"],["L — Çizgi",C.l==null?"—":C.l>5e-4?"−"+f2(C.l):"0.00",P.sky],["T — Süre",C.t==null?"—":C.t>5e-4?"−"+f2(C.t):"0.00","#f43f5e"]];
  const judges=(sc,key,lbl,pref,neg)=>e.jsxs("div",{children:[e.jsx("div",{style:{...S.jrow,marginBottom:".35rem",background:P.card},children:e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontWeight:800},children:[e.jsx("span",{children:lbl}),e.jsx("span",{style:{color:P.amber}})]})}),e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".4rem",marginBottom:".6rem"},children:["j1","j2","j3","j4"].map(j=>e.jsxs("span",{style:{background:P.card,border:("1px solid "+P.line),borderRadius:8,padding:".3rem .6rem",fontSize:".82rem",fontWeight:700},children:[pref,j.replace("j","")," ",neg?"−":"",f2(sc[key]?.[j])]},j))})]});
 
  // ---- detay modal (zengin) ----
