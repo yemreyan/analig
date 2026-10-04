@@ -157,6 +157,28 @@ function Paneller(){
     e.jsxs("div",{style:{...S.card,display:"flex",gap:".8rem",alignItems:"center",flexWrap:"wrap"},children:[
      e.jsx("div",{style:{flex:1,minWidth:240,fontSize:".82rem",color:"#6B7280",fontWeight:600,lineHeight:1.5},children:__T("Panel grubu oluşturun (ör. Salon 1), içinde hangi panellerin (A, E, D, T, L, SJ) olacağını ve hakem sayısını seçin. Her panelin linki/QR'ı ayrıdır. Kategori eklediğinizde/çıkardığınızda açık paneller anında güncellenir.")}),
      e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#db2777,#6366f1)"},onClick:()=>formAc(null),children:"+ "+__T("Yeni panel grubu")})]}),
+    (()=>{const o=location.origin,tk=token?"&token="+token:"",cid=encodeURIComponent(comp),L=[
+      ["gavel","#7C3AED",__T("Üst Jüri"),o+"/aerobik/ustjuri?competitionId="+cid+tk],
+      ["groups","#0EA5E9",__T("Teknik Kurul"),o+"/aerobik/teknikkurul?competitionId="+cid+tk],
+      ["flag","#DC2626",__T("İtiraz Ekranı"),o+"/aerobik/itiraz?competitionId="+cid+tk],
+      ["live_tv","#D97706",__T("Canlı Skor (Flashcard)"),o+"/aerobik-canli-skor.html?compId="+cid],
+      ["balance","#DB2777",__T("SJA · Artistik"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sja"+tk],
+      ["balance","#16A34A",__T("SJE · Uygulama"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sje"+tk],
+      ["balance","#2563EB",__T("SJD · Zorluk"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sjd"+tk],
+      ["videocam","#475569",__T("Kamera A"),o+"/aerobik-kamera.html?cam=a&compId="+cid],
+      ["videocam","#475569",__T("Kamera B"),o+"/aerobik-kamera.html?cam=b&compId="+cid],
+      ["qr_code_2","#0F766E",__T("Birleşik Panel QR"),o+"/aerobik-panel-birlestir.html"],
+      ["format_list_numbered","#9333EA",__T("Çıkış Sırası"),o+"/aerobik-cikis-sirasi.html?comp="+cid]];
+     const ib={width:32,height:32,borderRadius:9,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0};
+     return e.jsxs("div",{style:{...S.card,borderColor:"#FCD34D",background:"linear-gradient(135deg,#FFFBEB,#fff 60%)"},children:[
+      e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",marginBottom:".8rem"},children:[e.jsx("div",{style:{width:38,height:38,borderRadius:11,background:"linear-gradient(135deg,#F59E0B,#D97706)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:e.jsx("span",{className:"material-icons-round",children:"dashboard"})}),
+       e.jsxs("div",{children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1rem"},children:__T("Hakem & Yönetim Ekranları")}),e.jsx("div",{style:{fontSize:".78rem",color:"#6B7280",fontWeight:600},children:__T("Seçili yarışma için tüm operasyon ekranları — yeni sekmede açılır.")})]})]}),
+      e.jsx("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))",gap:".5rem"},children:L.map(([ic,c,t,u])=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".45rem",border:"1px solid #E5E7EB",borderRadius:12,padding:".45rem .5rem .45rem .6rem",background:"#fff"},children:[
+        e.jsx("span",{className:"material-icons-round",style:{color:c,fontSize:"1.15rem"},children:ic}),
+        e.jsx("a",{href:u,target:"_blank",rel:"noreferrer",style:{flex:1,minWidth:0,fontWeight:800,fontSize:".86rem",color:"#1A1D26",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},title:u,children:t}),
+        e.jsx("button",{type:"button",style:ib,title:__T("Linki kopyala"),onClick:()=>{kopyala(u)},children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"content_copy"})}),
+        e.jsx("button",{type:"button",style:ib,title:__T("QR göster"),onClick:()=>qrGoster(t,u),children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"qr_code_2"})}),
+        e.jsx("a",{href:u,target:"_blank",rel:"noreferrer",style:{...ib,textDecoration:"none"},title:__T("Aç"),children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"open_in_new"})})]},t))})]})})(),
     !token?e.jsx("div",{style:{...S.card,borderColor:"#f59e0b",color:"#B45309",fontWeight:700,fontSize:".84rem"},children:__T("Bu yarışmanın hakem anahtarı (epanelToken) yok; linkler anahtarsız üretilir.")}):null,
     form?formKarti():null,
     gl.length?gl.map(grupKarti):!form?e.jsx("div",{style:{...S.card,textAlign:"center",color:"#6B7280",fontWeight:700},children:__T("Henüz panel grubu yok.")}):null
