@@ -19,7 +19,7 @@ function UstJuri(){
  const{toast}=usToast();usInit();
  const[sp]=usParams();
  const comp=sp.get("competitionId"),token=sp.get("token");
- const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0);
+ const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0);R.useEffect(()=>{if(!comp||!authed)return;let k=null,ok=!0;import("./aerobikMesaj-Ms01a2b3Cb2.js").then(m=>{if(ok)k=m.mesajKur({db,ref,onValue,update,base:BASE+"/"+comp,rol:"ustjuri"})}).catch(()=>{});return()=>{ok=!1;k&&k()}},[comp,authed]);
  const[pun,setPun]=R.useState({}),[spor,setSpor]=R.useState({}),[cats,setCats]=R.useState({}),[compName,setCompName]=R.useState("Yarışma");
  const[detail,setDetail]=R.useState(null),[jd,setJd]=R.useState(null),[reject,setReject]=R.useState(null),[note,setNote]=R.useState(""),[busy,setBusy]=R.useState(!1);
  const[itr,setItr]=R.useState({}),[showItr,setShowItr]=R.useState(!1),[selCat,setSelCat]=R.useState("__pending__");
@@ -111,7 +111,7 @@ function UstJuri(){
  ]});
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"gavel"})}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".76rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:__T("ÜST JÜRİ")})]}),e.jsxs("div",{style:S.pill(pending.length?"#fbbf24":"#86efac",pending.length?"rgba(251,191,36,.15)":"rgba(34,197,94,.12)"),children:[pending.length," onay bekliyor"]})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"gavel"})}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".76rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:__T("ÜST JÜRİ")})]}),e.jsx("div",{style:{flex:1}}),e.jsx("span",{id:"__msgSlot",style:{display:"inline-flex"}}),e.jsxs("div",{style:S.pill(pending.length?"#fbbf24":"#86efac",pending.length?"rgba(251,191,36,.15)":"rgba(34,197,94,.12)"),children:[pending.length," onay bekliyor"]})]}),
   e.jsxs("div",{style:S.layout,children:[
    // ---- SIDEBAR ----
    e.jsxs("aside",{style:S.side,children:[
