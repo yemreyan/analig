@@ -26,11 +26,12 @@ function Paneller(){
  const{toast}=usToast();usDisc();
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[C,setC]=R.useState(null),[busy,setBusy]=R.useState(!1),[form,setForm]=R.useState(null),[acik,setAcik]=R.useState({}),[qr,setQr]=R.useState(null);
 
- R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim||k,t:c.baslangicTarihi||""})});setComps(o)},{onlyOnce:!0});return()=>u()},[]);
+ R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.isim&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim,t:c.baslangicTarihi||""})});setComps(o)});return()=>u()},[]);
  // seçili yarışmanın yalnızca gereken düğümleri dinlenir
  R.useEffect(()=>{if(!comp){setC(null);return}const st={};const set=(k,v)=>{st[k]=v;setC({...st})};
-  const ul=[["kategoriler","kategoriler"],["panelGruplari","panelGruplari"],["hakemLinkleri","hakemLinkleri"],["epanelToken","epanelToken"],["aktifSporcu","aktifSporcu"]].map(([k,p])=>onValue(ref(db,`${BASE}/${comp}/${p}`),s=>set(k,s.val())));
+  const ul=[["isim","isim"],["kategoriler","kategoriler"],["panelGruplari","panelGruplari"],["hakemLinkleri","hakemLinkleri"],["epanelToken","epanelToken"],["aktifSporcu","aktifSporcu"]].map(([k,p])=>onValue(ref(db,`${BASE}/${comp}/${p}`),s=>set(k,s.val())));
   return()=>ul.forEach(u=>u())},[comp]);
+ R.useEffect(()=>{if(comp&&C&&"isim"in C&&!C.isim){toast(__T("Seçili yarışma silinmiş; seçim kaldırıldı."),"warning");setComp("");setForm(null)}},[comp,C?.isim]);
  const cats=C?.kategoriler||{},gruplar=C?.panelGruplari||{},linkler=C?.hakemLinkleri||{},token=C?.epanelToken||"";
  const katAd=k=>String(cats[k]?.name||V[k]?.label||V[String(k).replace(/^final_/,"")]?.label||k).replace(/^🏆\s*/,"🏆 ");
  const katSira=Object.keys(cats).sort((a,b)=>(/^final_/.test(a)?1:0)-(/^final_/.test(b)?1:0)||String(V[a.replace(/^final_/,"")]?.group||"").localeCompare(String(V[b.replace(/^final_/,"")]?.group||""),"tr")||katAd(a).localeCompare(katAd(b),"tr"));
@@ -38,12 +39,12 @@ function Paneller(){
  const aktifKat=ks=>{const a=C?.aktifSporcu||{};let en=null,t=-1;ks.forEach(k=>{const x=a[k];if(x&&(+x.ts||0)>t){t=+x.ts||0;en=k}});return en};
 
  // ---- yaz ----
- const yaz=async(upd,msg)=>{setBusy(!0);try{await update(ref(db,`${BASE}/${comp}`),upd);msg&&toast(msg,"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
+ const yaz=async(upd,msg)=>{if(!C||!C.isim){toast(__T("Bu yarışma artık mevcut değil; değişiklik yazılmadı."),"error");return}setBusy(!0);try{await update(ref(db,`${BASE}/${comp}`),upd);msg&&toast(msg,"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
  const panelKaydi=(g,gid,s,katObj)=>({ad:`${g.ad} · ${s.slot}`,kategoriler:Object.keys(katObj||{}).length?katObj:null,tumKategoriler:!1,panelGrubu:gid,slot:s.slot,guncelleme:Date.now()});
 
  // grup oluştur / düzenle
  const formAc=gid=>{const g=gid?gruplar[gid]:null;setForm(g?{gid,ad:g.ad||"",tipler:{...(g.tipler||{})},adet:{A:g.adet?.A||4,E:g.adet?.E||4},kategoriler:{...(g.kategoriler||{})}}:{gid:null,ad:"",tipler:{A:!0,E:!0,D:!0,T:!0,L:!0,SJ:!0},adet:{A:4,E:4},kategoriler:{}})};
- const formKaydet=async()=>{const f=form;if(!f)return;const ad=f.ad.trim();
+ const formKaydet=async()=>{const f=form;if(!f)return;if(!C||!C.isim){toast(__T("Bu yarışma artık mevcut değil; değişiklik yazılmadı."),"error");return}const ad=f.ad.trim();
   if(!ad){toast(__T("Grup adını yazın."),"warning");return}
   if(!TIP_SIRA.some(t=>f.tipler[t])){toast(__T("En az bir panel tipi seçin."),"warning");return}
   const gid=f.gid||yeniGid(),eski=f.gid?gruplar[f.gid]:null,yeniG={ad,tipler:Object.fromEntries(TIP_SIRA.filter(t=>f.tipler[t]).map(t=>[t,!0])),adet:{A:f.adet.A,E:f.adet.E},kategoriler:Object.keys(f.kategoriler).filter(k=>f.kategoriler[k]).length?Object.fromEntries(kListe(f.kategoriler).map(k=>[k,!0])):null};
