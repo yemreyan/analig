@@ -3,75 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARŞİV — TCF</title>
+<title>Arşiv — TCF</title>
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0e1a;--panel:#131a2b;--panel2:#1b2438;--line:#2a3550;--txt:#e8edf7;--muted:#8b97b3;--accent:#6366f1;--warn:#ef4444;--ok:#22c55e;--gold:#fbbf24}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(10,14,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:.7rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem}
-.brand .material-icons-round{color:var(--gold)}
-.wrap{max-width:960px;margin:0 auto;padding:1rem}
-/* şifre kapısı */
-.gate{max-width:420px;margin:6vh auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.6rem}
-.gate h2{font-size:1.15rem;font-weight:800;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem}
-.gate p{color:var(--muted);font-size:.85rem;font-weight:600;margin-bottom:1rem}
-.gate input{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;font:inherit;font-size:.95rem;margin-bottom:.7rem}
-.gate input:focus{outline:2px solid var(--accent)}
-.gate button{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.75rem;font:inherit;font-weight:800;cursor:pointer}
-.gate .err{color:#fca5a5;font-size:.82rem;font-weight:700;min-height:1.1rem;margin-bottom:.4rem}
-.tabs{display:flex;gap:.5rem;margin-bottom:1rem}
-.tab{background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.5rem 1rem;font:inherit;font-weight:800;font-size:.85rem;cursor:pointer}
-.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.tab .cnt{opacity:.8;font-weight:700}
-.list{display:flex;flex-direction:column;gap:.6rem}
-.row{display:flex;align-items:center;gap:1rem;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem}
-.row-info{flex:1;min-width:0}
-.row-name{font-weight:800;font-size:1.02rem}
-.row-sub{color:var(--muted);font-size:.8rem;font-weight:600;margin-top:.15rem}
-.btn{display:flex;align-items:center;gap:.35rem;border:none;border-radius:10px;padding:.6rem .9rem;font:inherit;font-weight:800;font-size:.85rem;cursor:pointer;white-space:nowrap;color:#fff}
-.btn-arch{background:var(--gold);color:#3a2c00}
+:root{--bg:#F0F2F5;--card:#fff;--line:#E5E7EB;--txt:#1A1D26;--muted:#6B7280;--soft:#F8FAFC;--p:#10B981;--p-rgb:16,185,129;--warn:#DC2626;--ok:#16A34A;--gold:#F59E0B}
+body{font-family:Nunito,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.hdr{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.hdr-in{max-width:1100px;margin:0 auto;height:68px;padding:0 1.25rem;display:flex;align-items:center;gap:.9rem}
+.back{width:38px;height:38px;border-radius:10px;border:none;background:transparent;color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+.back:hover{background:var(--soft)}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(var(--p-rgb),.35);flex-shrink:0}
+.ttl{min-width:0}
+.ttl h1{font-size:1.2rem;font-weight:800;line-height:1.15}
+.ttl p{font-size:.8rem;color:var(--muted);font-weight:600}
+.who{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.badge{background:#2563EB;color:#fff;font-size:.72rem;font-weight:800;padding:.3rem .7rem;border-radius:999px}
+.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px}
+/* giriş */
+.gate{max-width:420px;margin:7vh auto 0;padding:2rem 1.75rem;text-align:center}
+.gate .ic{width:60px;height:60px;border-radius:18px;margin:0 auto 1rem;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(245,158,11,.35)}
+.gate h2{font-size:1.1rem;font-weight:800;margin-bottom:.3rem}
+.gate p{color:var(--muted);font-size:.86rem;font-weight:600;margin-bottom:1.1rem}
+.gate input{width:100%;background:var(--soft);color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:.75rem .9rem;font:inherit;font-size:.95rem;margin-bottom:.7rem}
+.gate input:focus{outline:2px solid var(--p);outline-offset:1px}
+.gate .err{color:var(--warn);font-size:.82rem;font-weight:700;min-height:1.1rem;margin-bottom:.4rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:none;border-radius:12px;padding:.65rem 1rem;font-weight:800;font-size:.86rem;cursor:pointer;white-space:nowrap;color:#fff;background:var(--p)}
+.btn .material-icons-round{font-size:1.1rem}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.5;cursor:default;filter:none}
+.btn.full{width:100%;padding:.8rem}
+.btn-arch{background:var(--gold)}
 .btn-restore{background:var(--ok)}
-.btn:hover{filter:brightness(1.08)}
-.btn:disabled{opacity:.5;cursor:default}
-.empty{text-align:center;color:var(--muted);padding:3rem 1rem;font-weight:600}
-.empty .material-icons-round{font-size:2.4rem;opacity:.4;display:block;margin-bottom:.6rem}
-.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:.7rem 1.1rem;border-radius:12px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:.25s;pointer-events:none;z-index:50}
-.toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:#86efac}.toast.err{border-color:var(--warn);color:#fca5a5}
+.btn-ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
+/* branşlar */
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.1rem}
+.chip{display:flex;align-items:center;gap:.4rem;background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:.45rem .9rem .45rem .5rem;font-weight:800;font-size:.84rem;cursor:pointer}
+.chip i{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;font-style:normal}
+.chip.on{color:var(--txt);border-color:var(--c);box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 22%,transparent)}
+/* istatistik */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+.stat{padding:18px 16px;display:flex;align-items:center;gap:.85rem}
+.stat .si{width:44px;height:44px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat b{display:block;font-size:1.45rem;font-weight:900;line-height:1}
+.stat span.l{font-size:.8rem;color:var(--muted);font-weight:700}
+/* sekmeler */
+.bar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:.86rem;padding:.5rem .95rem;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--p);color:#fff}
+.seg .cnt{opacity:.85;font-weight:700}
+.bar .sp{flex:1}
+.search{flex:0 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:.55rem .8rem;font:inherit;font-size:.88rem;color:var(--txt);min-width:0}
+.search:focus{outline:2px solid var(--p);outline-offset:1px}
+/* liste */
+.list{display:flex;flex-direction:column;gap:.7rem}
+.row{display:flex;align-items:center;gap:1rem;padding:1rem 1.1rem}
+.row .ri{width:48px;height:48px;border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.row-info{flex:1;min-width:0}
+.row-name{font-weight:800;font-size:1rem;overflow-wrap:anywhere}
+.row-sub{color:var(--muted);font-size:.8rem;font-weight:700;margin-top:.2rem;display:flex;flex-wrap:wrap;gap:.25rem .7rem}
+.row-sub span{display:inline-flex;align-items:center;gap:.2rem}
+.row-sub .material-icons-round{font-size:.95rem}
+.tag{font-size:.7rem;font-weight:800;padding:.15rem .55rem;border-radius:999px;margin-left:.4rem;vertical-align:middle}
+.tag.past{background:#FEF3C7;color:#92400E}
+.tag.live{background:#DCFCE7;color:#166534}
+.tag.soon{background:#DBEAFE;color:#1E40AF}
+.empty{text-align:center;color:var(--muted);padding:3rem 1rem;font-weight:700}
+.empty .material-icons-round{font-size:2.6rem;opacity:.35;display:block;margin-bottom:.6rem}
+.note{font-size:.8rem;color:var(--muted);font-weight:600;margin-top:1.1rem;line-height:1.5}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--line);color:var(--txt);padding:.75rem 1.1rem;border-radius:12px;font-weight:800;font-size:.9rem;box-shadow:0 10px 30px rgba(15,23,42,.15);opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100% - 32px)}
+.toast.show{opacity:1}.toast.ok{border-color:var(--ok);color:var(--ok)}.toast.err{border-color:var(--warn);color:var(--warn)}
 .hidden{display:none!important}
+@media (max-width:640px){
+ .hdr-in{padding:0 1rem;gap:.6rem}.logo{width:38px;height:38px}.ttl h1{font-size:1.05rem}.badge{display:none}
+ .wrap{padding:1rem 1rem 2.5rem}
+ .stats{gap:.6rem}.stat{flex-direction:column;align-items:flex-start;gap:.5rem;padding:14px 12px}.stat .si{width:36px;height:36px}
+ .row{flex-wrap:wrap;gap:.75rem}.row .ri{width:40px;height:40px}.row .btn{width:100%}
+ .search{flex:1 1 100%}
+}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="brand"><span class="material-icons-round">inventory_2</span> ARŞİV</div>
-  <span id="who" style="margin-left:auto;color:var(--muted);font-weight:700;font-size:.82rem"></span>
-</div>
+<header class="hdr"><div class="hdr-in">
+  <a id="back" class="back" href="/" title="Geri"><span class="material-icons-round">arrow_back</span></a>
+  <div class="logo" id="logo"><span class="material-icons-round">inventory_2</span></div>
+  <div class="ttl"><h1>Arşiv</h1><p id="sub">TCF Puanlama Sistemi</p></div>
+  <div class="who"><span id="who" class="badge hidden">Super Admin</span></div>
+</div></header>
 
-<div id="gate" class="gate">
-  <h2><span class="material-icons-round" style="color:var(--gold)">lock</span> Süper Admin Doğrulama</h2>
+<div id="gate" class="card gate">
+  <div class="ic"><span class="material-icons-round">lock</span></div>
+  <h2>Süper Admin Doğrulama</h2>
   <p>Arşiv işlemleri için süper admin şifresi gerekir.</p>
   <div id="gateErr" class="err"></div>
   <input id="pw" type="password" placeholder="Süper admin şifresi" autocomplete="current-password">
-  <button id="unlock">Giriş</button>
+  <button id="unlock" class="btn full">Giriş</button>
 </div>
 
-<div id="app" class="wrap hidden">
-  <div class="tabs">
-    <button class="tab active" data-tab="active">Aktif <span class="cnt" id="cntA">(0)</span></button>
-    <button class="tab" data-tab="arsiv">Arşiv <span class="cnt" id="cntR">(0)</span></button>
+<main id="app" class="wrap hidden">
+  <div class="chips" id="chips"></div>
+  <div class="stats">
+    <div class="card stat"><div class="si" style="background:#DC2626"><span class="material-icons-round">play_circle</span></div><div><b id="sA">0</b><span class="l">Aktif listede</span></div></div>
+    <div class="card stat"><div class="si" style="background:#D97706"><span class="material-icons-round">event_busy</span></div><div><b id="sP">0</b><span class="l">Bitmiş, arşivlenmemiş</span></div></div>
+    <div class="card stat"><div class="si" style="background:#7C3AED"><span class="material-icons-round">inventory_2</span></div><div><b id="sR">0</b><span class="l">Arşivde</span></div></div>
+  </div>
+  <div class="bar">
+    <div class="seg">
+      <button class="on" data-tab="active">Aktif <span class="cnt" id="cntA">(0)</span></button>
+      <button data-tab="arsiv">Arşiv <span class="cnt" id="cntR">(0)</span></button>
+    </div>
+    <span class="sp"></span>
+    <input id="q" class="search" type="search" placeholder="Yarışma ara…">
+    <button id="bulk" class="btn btn-arch hidden"><span class="material-icons-round">archive</span> Bitmişleri arşive al</button>
   </div>
   <div id="list" class="list"></div>
-</div>
+  <p class="note">Arşive alınan yarışma; yarışma listelerinde, puanlama, skor tablosu ve diğer seçim ekranlarında görünmez. Hiçbir veri silinmez; “Arşivden Çıkar” ile aynen geri gelir.</p>
+</main>
 <div id="toast" class="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",
   authDomain: "analig.firebaseapp.com",
@@ -82,19 +141,53 @@ const firebaseConfig = {
   appId: "1:724523220392:web:5141cbdb98d5c85f9cb19d"
 };
 const db = getDatabase(initializeApp(firebaseConfig));
-const FB = "competitions";
+// Her branşın yarışmaları ayrı yolda tutulur (uygulamadaki firebasePath ile aynı)
+const BRANS = {
+  artistik:  {ad:"Artistik Cimnastik",  fb:"competitions",          renk:"#4F46E5", ikon:"sports_gymnastics"},
+  aerobik:   {ad:"Aerobik Cimnastik",   fb:"aerobik_yarismalar",    renk:"#10B981", ikon:"directions_run"},
+  trampolin: {ad:"Trampolin Cimnastik", fb:"trampolin_yarismalar",  renk:"#F97316", ikon:"rocket_launch"},
+  parkur:    {ad:"Parkur Cimnastik",    fb:"parkur_yarismalar",     renk:"#F59E0B", ikon:"accessibility_new"},
+  ritmik:    {ad:"Ritmik Cimnastik",    fb:"ritmik_yarismalar",     renk:"#EC4899", ikon:"auto_awesome"}
+};
 const $ = id => document.getElementById(id);
-const esc = s => String(s==null?"":s).replace(/</g,"&lt;");
-let comps = {}, tab = "active";
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const qp = new URLSearchParams(location.search);
+let brans = BRANS[qp.get("brans")] ? qp.get("brans") : "artistik";
+let comps = {}, tab = "active", unsub = null, q = "";
 
-function toast(msg, type){ const t=$("toast"); t.textContent=msg; t.className="toast show "+(type||""); setTimeout(()=>t.className="toast",2200); }
+function toast(msg, type){ const t=$("toast"); t.textContent=msg; t.className="toast show "+(type||""); clearTimeout(toast._t); toast._t=setTimeout(()=>t.className="toast",2600); }
+const hex2rgb = h => [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)).join(",");
+
+function temaUygula(){
+  const b = BRANS[brans];
+  document.documentElement.style.setProperty("--p", b.renk);
+  document.documentElement.style.setProperty("--p-rgb", hex2rgb(b.renk));
+  $("logo").innerHTML = `<span class="material-icons-round">${b.ikon}</span>`;
+  $("sub").textContent = `${b.ad} · TCF Puanlama Sistemi`;
+  $("back").href = "/" + brans;
+  document.title = `Arşiv — ${b.ad}`;
+  $("chips").innerHTML = Object.entries(BRANS).map(([k,v]) =>
+    `<button class="chip${k===brans?" on":""}" data-b="${k}" style="--c:${v.renk}"><i class="material-icons-round" style="background:${v.renk}">${v.ikon}</i>${esc(v.ad.replace(" Cimnastik",""))}</button>`).join("");
+  $("chips").querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => bransSec(c.dataset.b)));
+}
+
+function bransSec(b){
+  if(b===brans && unsub) return;
+  brans = b;
+  const u = new URL(location.href); u.searchParams.set("brans", b); history.replaceState(null, "", u);
+  temaUygula();
+  if(unsub){ unsub(); unsub=null; }
+  comps = {}; render();
+  $("list").innerHTML = `<div class="empty"><span class="material-icons-round">hourglass_empty</span>Yükleniyor…</div>`;
+  unsub = onValue(ref(db, BRANS[b].fb), s => { comps = s.val() || {}; render(); },
+    err => { $("list").innerHTML = `<div class="empty"><span class="material-icons-round">error_outline</span>Okunamadı: ${esc(err?.message||err)}</div>`; });
+}
 
 // --- SHA-256 (uygulama ile aynı) ---
 async function sha256hex(s){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
-
 async function verifySuperAdmin(pw){
   const snap = await get(ref(db, "kullanicilar"));
   const users = snap.val() || {};
@@ -108,75 +201,109 @@ async function verifySuperAdmin(pw){
   }
   return false;
 }
-
 $("unlock").addEventListener("click", doUnlock);
 $("pw").addEventListener("keydown", e=>{ if(e.key==="Enter") doUnlock(); });
-
 async function doUnlock(){
   const pw = $("pw").value;
   if(!pw){ $("gateErr").textContent="Şifre girin."; return; }
   $("unlock").disabled=true; $("gateErr").textContent="Doğrulanıyor…";
   try{
-    const ok = await verifySuperAdmin(pw);
-    if(ok){
-      sessionStorage.setItem("arsiv_ok","1");
-      openApp();
-    } else {
-      $("gateErr").textContent="Şifre hatalı.";
-    }
+    if(await verifySuperAdmin(pw)){ sessionStorage.setItem("arsiv_ok","1"); openApp(); }
+    else $("gateErr").textContent="Şifre hatalı.";
   }catch(err){ $("gateErr").textContent="Hata: "+(err?.message||err); }
   $("unlock").disabled=false;
 }
-
 function openApp(){
   $("gate").classList.add("hidden");
   $("app").classList.remove("hidden");
-  $("who").textContent="Süper Admin";
-  onValue(ref(db, FB), s=>{ comps = s.val() || {}; render(); });
+  $("who").classList.remove("hidden");
+  bransSec(brans);
 }
 
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click", ()=>{
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click", ()=>{
   tab=b.dataset.tab;
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll(".seg button").forEach(x=>x.classList.toggle("on",x===b));
   render();
 }));
+$("q").addEventListener("input", e=>{ q=e.target.value.toLocaleLowerCase("tr-TR").trim(); render(); });
+
+const arsivli = c => c && (c.arsivli===true || c.arsivli==="true");
+const bugun = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const gun = s => { const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||"")); return m?`${m[3]}.${m[2]}.${m[1]}`:""; };
+const bitis = c => String(c.bitisTarihi||c.baslangicTarihi||"").slice(0,10);
+function durum(c){
+  const t=bugun(), b=String(c.baslangicTarihi||"").slice(0,10), e=bitis(c);
+  if(e && e<t) return ["past","Bitti"];
+  if(b && b>t) return ["soon","Yaklaşan"];
+  if(b) return ["live","Devam ediyor"];
+  return null;
+}
 
 function render(){
-  const all = Object.entries(comps).filter(([id,c])=>c&&(c.kategoriler||c.isim||c.ad))
+  const all = Object.entries(comps).filter(([id,c])=>c&&typeof c==="object"&&(c.kategoriler||c.isim||c.ad))
     .sort((a,b)=>(b[1].baslangicTarihi||"").localeCompare(a[1].baslangicTarihi||""));
-  const active = all.filter(([id,c])=>!c.arsivli);
-  const arsiv  = all.filter(([id,c])=>c.arsivli);
-  $("cntA").textContent=`(${active.length})`;
-  $("cntR").textContent=`(${arsiv.length})`;
-  const rows = tab==="active" ? active : arsiv;
+  const active = all.filter(([,c])=>!arsivli(c)), arsiv = all.filter(([,c])=>arsivli(c));
+  const gecmis = active.filter(([,c])=>{const e=bitis(c);return e && e<bugun();});
+  $("cntA").textContent=`(${active.length})`; $("cntR").textContent=`(${arsiv.length})`;
+  $("sA").textContent=active.length; $("sP").textContent=gecmis.length; $("sR").textContent=arsiv.length;
+  $("bulk").classList.toggle("hidden", !(tab==="active" && gecmis.length>1));
+  $("bulk").innerHTML = `<span class="material-icons-round">archive</span> Bitmişleri arşive al (${gecmis.length})`;
+  let rows = tab==="active" ? active : arsiv;
+  if(q) rows = rows.filter(([id,c])=>`${c.isim||c.ad||""} ${c.il||""}`.toLocaleLowerCase("tr-TR").includes(q));
   if(!rows.length){
-    $("list").innerHTML=`<div class="empty"><span class="material-icons-round">${tab==="active"?"event_available":"inventory_2"}</span>${tab==="active"?"Aktif yarışma yok":"Arşivde yarışma yok"}</div>`;
+    $("list").innerHTML=`<div class="card empty"><span class="material-icons-round">${tab==="active"?"event_available":"inventory_2"}</span>${q?"Aramaya uyan yarışma yok":tab==="active"?"Aktif yarışma yok":"Arşivde yarışma yok"}</div>`;
     return;
   }
+  const B = BRANS[brans];
   $("list").innerHTML = rows.map(([id,c])=>{
     const name = esc(c.isim||c.ad||id);
-    const date = c.baslangicTarihi ? new Date(c.baslangicTarihi).toLocaleDateString("tr-TR") : "";
+    const b=gun(c.baslangicTarihi), e=gun(c.bitisTarihi);
+    const tarih = b ? (e && e!==b ? `${b} – ${e}` : b) : "";
     const kat = c.kategoriler ? Object.keys(c.kategoriler).length : 0;
+    const dr = tab==="active" ? durum(c) : null;
+    const tag = dr ? `<span class="tag ${dr[0]}">${dr[1]}</span>` : "";
+    const ikon = tab==="active" ? "emoji_events" : "inventory_2";
+    const renk = tab==="active" ? B.renk : "#7C3AED";
     const btn = tab==="active"
-      ? `<button class="btn btn-arch" data-id="${id}" data-act="arch"><span class="material-icons-round" style="font-size:1.1rem">archive</span> Arşive Al</button>`
-      : `<button class="btn btn-restore" data-id="${id}" data-act="restore"><span class="material-icons-round" style="font-size:1.1rem">unarchive</span> Arşivden Çıkar</button>`;
-    return `<div class="row"><div class="row-info"><div class="row-name">${name}</div><div class="row-sub">${date}${date&&kat?" · ":""}${kat?kat+" kategori":""}</div></div>${btn}</div>`;
+      ? `<button class="btn btn-arch" data-id="${esc(id)}" data-act="arch"><span class="material-icons-round">archive</span> Arşive Al</button>`
+      : `<button class="btn btn-restore" data-id="${esc(id)}" data-act="restore"><span class="material-icons-round">unarchive</span> Arşivden Çıkar</button>`;
+    const sub = [
+      tarih && `<span><span class="material-icons-round">event</span>${tarih}</span>`,
+      c.il && `<span><span class="material-icons-round">place</span>${esc(c.il)}</span>`,
+      kat && `<span><span class="material-icons-round">category</span>${kat} kategori</span>`
+    ].filter(Boolean).join("");
+    return `<div class="card row"><div class="ri" style="background:${renk};box-shadow:0 6px 16px ${renk}55"><span class="material-icons-round">${ikon}</span></div><div class="row-info"><div class="row-name">${name}${tag}</div><div class="row-sub">${sub}</div></div>${btn}</div>`;
   }).join("");
-  $("list").querySelectorAll(".btn").forEach(b=>b.addEventListener("click", ()=>doArchive(b)));
+  $("list").querySelectorAll(".row .btn").forEach(b=>b.addEventListener("click", ()=>doArchive(b)));
 }
 
 async function doArchive(btn){
-  const id=btn.dataset.id, act=btn.dataset.act;
+  const id=btn.dataset.id, act=btn.dataset.act, fb=BRANS[brans].fb;
   const name=(comps[id]?.isim||comps[id]?.ad||id);
   const arch = act==="arch";
-  if(!confirm(`"${name}" yarışması ${arch?"ARŞİVE alınacak":"arşivden ÇIKARILACAK"}.\n\nOnaylıyor musun?`)) return;
+  if(!confirm(`"${name}" (${BRANS[brans].ad}) yarışması ${arch?"ARŞİVE alınacak":"arşivden ÇIKARILACAK"}.\n\nOnaylıyor musun?`)) return;
   btn.disabled=true;
   try{
-    await set(ref(db, `${FB}/${id}/arsivli`), arch ? true : null);
-    toast(arch?"Arşive alındı ✓":"Arşivden çıkarıldı ✓","ok");
+    await set(ref(db, `${fb}/${id}/arsivli`), arch ? true : null);
+    toast(arch?"Arşive alındı":"Arşivden çıkarıldı","ok");
   }catch(err){ toast("Hata: "+(err?.message||err),"err"); btn.disabled=false; }
 }
 
+$("bulk").addEventListener("click", async ()=>{
+  const fb=BRANS[brans].fb, t=bugun();
+  const list = Object.entries(comps).filter(([,c])=>c&&typeof c==="object"&&!arsivli(c)&&bitis(c)&&bitis(c)<t);
+  if(!list.length) return;
+  if(!confirm(`${BRANS[brans].ad}: bitiş tarihi geçmiş ${list.length} yarışma ARŞİVE alınacak:\n\n${list.map(([,c])=>"• "+(c.isim||c.ad)).join("\n")}\n\nOnaylıyor musun?`)) return;
+  $("bulk").disabled=true;
+  try{
+    const u={}; list.forEach(([id])=>u[`${fb}/${id}/arsivli`]=true);
+    await update(ref(db), u);
+    toast(`${list.length} yarışma arşive alındı`,"ok");
+  }catch(err){ toast("Hata: "+(err?.message||err),"err"); }
+  $("bulk").disabled=false;
+});
+
+temaUygula();
 // oturumda daha önce doğrulandıysa direkt aç
 if(sessionStorage.getItem("arsiv_ok")==="1") openApp();
 </script>
