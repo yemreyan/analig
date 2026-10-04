@@ -2266,6 +2266,23 @@ const DICT={
  "Superior Jury hakem sapmalarını kayda geçirir; tekrarlayan sapma, taraflılık veya sürekli çok yüksek/düşük not → uyarı ya da hakem değişikliği.":"The Superior Jury records judges' deviations; repeated deviation, bias or consistently too high/low marks → warning or judge replacement.",
  "CJP yarışma sonunda tüm hakemlerin sapma raporunu Superior Jury'ye gönderir.":"At the end of the competition the CJP sends the discrepancy report of all judges to the Superior Jury.",
  "Karnede referans not: Superior Jury kontrol notu (SJA/SJE); yoksa panel sonucu. Hakemin notu referanstan §8.1.2 toleransından fazla saparsa tolerans dışı sayılır.":"Reference mark in the report: Superior Jury control score (SJA/SJE); otherwise the panel result. A judge's mark deviating from the reference by more than the §8.1.2 tolerance is out of tolerance.",
- "TCF iç değerlendirme eşikleri (FIG'de sayısal karşılığı yok)":"TCF internal evaluation thresholds (no numeric equivalent in FIG)"
+ "TCF iç değerlendirme eşikleri (FIG'de sayısal karşılığı yok)":"TCF internal evaluation thresholds (no numeric equivalent in FIG)",
+ "FİNAL":"FINAL",
+ "Canlı Skor Ekranı":"Live Score Screen",
+ "Seyirciler için dev ekran modunu başlatın":"Start big-screen mode for spectators",
+ "kategori seçili":"categories selected",
+ "Çıkar":"Remove",
+ "Sağdan yayınlanacak kategorileri seçin.":"Select the categories to broadcast on the right.",
+ "Önce yarışmayı seçin.":"Select a competition first.",
+ "Tam ekran açılır; ESC ile çıkabilirsiniz.":"Opens full screen; press ESC to exit.",
+ "Kategorileri görmek için yarışma seçin.":"Select a competition to see its categories.",
+ "Sadece finaller":"Finals only",
+ "Grubu kaldır":"Deselect group",
+ "Grubu seç":"Select group",
+ "Küçükler":"Juniors (U9)",
+ "Step Aerobik":"Step Aerobic",
+ "YARIŞAN SPORCU":"NOW COMPETING",
+ "YARIŞAN ÇİFT":"PAIR COMPETING",
+ "YARIŞAN TAKIM":"TEAM COMPETING"
 };
 export{DICT};
