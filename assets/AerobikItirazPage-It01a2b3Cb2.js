@@ -25,8 +25,8 @@ function Itiraz(){
  const nmeta=(cat,ath)=>{const cm=spor[cat]||{},i=cm[ath];
   if(i)return{name:[i.ad,i.soyad].filter(Boolean).join(" ")||ath,club:i.il||i.okul||i.kulup||"",ad:i.ad||"",soyad:i.soyad||""};
   const parts=String(ath).split("::"),gn=parts[parts.length-1],ok=parts.length>=3?parts.slice(1,-1).join("::"):"";
-  const mem=Object.values(cm).filter(m=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok));
-  const nm=mem.map(m=>[m.ad,m.soyad].filter(Boolean).join(" ")).filter(Boolean).join(", ");
+  const _kW=m=>String(cat+"::"+String(m.okul||m.kulup||"").trim()+"::"+(m.grupNo||1)).trim().replace(/[.#$[\]/]/g,"-").slice(0,60),_sO=v=>String(v||"").trim().replace(/[.#$[\]/]/g,"-");let mem=Object.values(cm).filter(m=>m&&_kW(m)===String(ath));if(!mem.length)mem=Object.values(cm).filter(m=>m&&String(m.grupNo??m.cikisSirasi??"")===String(gn)&&(ok===""||String(m.okul||m.kulup||"")===ok||_sO(m.okul||m.kulup)===ok));
+  const nm=[...new Set(mem.map(m=>[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad).filter(Boolean))].join(", ");
   return{name:nm||ath,club:mem[0]?.il||mem[0]?.okul||mem[0]?.kulup||"",ad:mem[0]?.ad||"",soyad:mem[0]?.soyad||""}};
 
  const list=[];

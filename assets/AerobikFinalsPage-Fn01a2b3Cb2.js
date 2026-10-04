@@ -12,6 +12,7 @@ const KK=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/[^A-Z0-9ÇĞİÖŞ
 // Esit puanda: once E, sonra A, sonra D yuksek olan one gecer
 const r3=v=>Math.round((parseFloat(v)||0)*1e3);
 const tbAnah=r=>[r3(r.score),r3(r.sc?.eScore),r3(r.sc?.aScore),r3(r.sc?.dScore)];
+const aeSirala=(ks,kat)=>{const _b=c=>String(c||"").replace(/^final_/,""),_d=c=>cfg(c),_nm=c=>String(kat?.[c]?.name||kat?.[c]?.ad||_d(c).label||"").toLocaleLowerCase("tr-TR"),_tp=c=>{const b=_b(c),x=_d(c),n=_nm(c);if(x.group==="Step Aerobik"||/^step_/.test(b)||/step/.test(n))return 6;if(/_kiz$/.test(b)||x.tip==="ferdi"&&x.cinsiyet==="Kız"||/tek\s*(kad[ıi]n|k[ıi]z)/.test(n))return 0;if(/_erkek$/.test(b)||x.tip==="ferdi"&&x.cinsiyet==="Erkek"||/tek\s*erkek/.test(n))return 1;if(/_cift$/.test(b)||/çift|ikili/.test(n))return 2;if(/_trio$/.test(b)||/trio/.test(n))return 3;if(/_grup$/.test(b)||/grup/.test(n))return 4;if(/_dans$/.test(b)||/dans/.test(n))return 5;return 7},_AG=["Minikler","Küçükler","Yıldızlar","Gençler","Büyükler"],_ag=c=>{let i=_AG.indexOf(_d(c).group);const m=/^(?:step_)?([a-z]+)/.exec(_b(c));if(i<0&&m)i=["minik","kucuk","yildiz","genc","buyuk"].indexOf(m[1]);return i<0?9:i},_ky=c=>(/^final_/.test(String(c))?1e4:0)+_tp(c)*100+_ag(c);return ks.map((c,i)=>[c,i]).sort((x,y)=>_ky(x[0])-_ky(y[0])||x[1]-y[1]).map(x=>x[0])};
 const tbKarsilastir=(a,b)=>{const x=tbAnah(a),y=tbAnah(b);for(let i=0;i<4;i++)if(x[i]!==y[i])return y[i]-x[i];return 0};
 
 // Final cikis sirasi PDF'i — Final Sonuclari PDF'iyle ayni tasarim (TCF logolu baslik bandi).
@@ -26,46 +27,53 @@ const finalCikisPdf=async({C,liste,catLabel,toast})=>{
   const a=new jsPDF("landscape","mm","a4");
   let FT="helvetica",UNI=!1;
   try{const{R:r,B:b}=await import("./fontTR-Fn01a2b3Cb2.js");if(r&&b){a.addFileToVFS("Roboto.ttf",r);a.addFont("Roboto.ttf","Roboto","normal");a.addFileToVFS("Roboto-Bold.ttf",b);a.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto";UNI=!0}}catch{}
-  const kucult=du=>new Promise(rs=>{try{const im=new Image;im.onload=()=>{try{const Z=256,cv=document.createElement("canvas");cv.width=Z;cv.height=Z;const cx=cv.getContext("2d");cx.clearRect(0,0,Z,Z);cx.drawImage(im,0,0,Z,Z);rs(cv.toDataURL("image/png"))}catch{rs(du)}};im.onerror=()=>rs(du);im.src=du}catch{rs(du)}});
+  const kucult=du=>new Promise(rs=>{try{const im=new Image;im.onload=()=>{try{const Z=640,cv=document.createElement("canvas");cv.width=Z;cv.height=Z;const cx=cv.getContext("2d");cx.clearRect(0,0,Z,Z);cx.drawImage(im,0,0,Z,Z);rs(cv.toDataURL("image/png"))}catch{rs(du)}};im.onerror=()=>rs(du);im.src=du}catch{rs(du)}});
   let logo=null;try{const bl=await(await fetch("/logo.png")).blob();const ham=await new Promise(k=>{const o=new FileReader;o.onloadend=()=>k(o.result),o.readAsDataURL(bl)});logo=await kucult(ham)}catch{}
   const o=v=>{const t=typeof v!="string"?String(v??""):v;return UNI?t:t.replace(/İ/g,"I").replace(/ı/g,"i").replace(/Ş/g,"S").replace(/ş/g,"s").replace(/Ğ/g,"G").replace(/ğ/g,"g").replace(/Ü/g,"U").replace(/ü/g,"u").replace(/Ö/g,"O").replace(/ö/g,"o").replace(/Ç/g,"C").replace(/ç/g,"c")};
   const UPL=v=>String(v||"").toLocaleUpperCase(__LANG()==="en"?"en":"tr-TR");
   const N=297,L=210,c=10;let k=0;
   const p=o(C.isim||""),h=o(C.il||""),S0=C.tarih||C.baslangicTarihi||"",S1=C.bitisTarihi||"";
   let n="";try{if(S0){const v=new Date(S0),z=S1?new Date(S1):null,K=x=>`${String(x.getDate()).padStart(2,"0")}.${String(x.getMonth()+1).padStart(2,"0")}.${x.getFullYear()}`;n=z&&z.getTime()!==v.getTime()?`${K(v)} - ${K(z)}`:K(v)}}catch{n=S0}
-  const baslik=(v,z)=>{k>0&&a.addPage(),k++;const K=40,O=N/2;a.setDrawColor(0,56,117),a.setLineWidth(.6),a.rect(c,5,N-2*c,K,"S"),a.setDrawColor(200,210,220),a.setLineWidth(.2),a.line(c+30,5,c+30,5+K),a.line(N-c-30,5,N-c-30,5+K);
-   if(logo)try{a.addImage(logo,"PNG",c+4,9,22,22,"tcflogo","FAST")}catch{}
-   a.setFont(FT,"bold"),a.setFontSize(13),a.setTextColor(0,56,117),a.text(o(__T("TÜRKİYE CİMNASTİK FEDERASYONU")),O,14,{align:"center"});
-   a.setFont(FT,"normal"),a.setFontSize(9),a.setTextColor(30,41,59),a.text(p,O,20,{align:"center"});(n||h)&&a.text(o(`${n}${h?" / "+h:""}`),O,25,{align:"center"});
-   a.setFont(FT,"bold"),a.setFontSize(12),a.setTextColor(0,56,117),a.text(o(v),O,32,{align:"center"}),a.setFontSize(10),a.text(o(z),O,38,{align:"center"});
-   if(logo)try{a.addImage(logo,"PNG",N-c-26,9,22,22,"tcflogo","FAST")}catch{}};
-  const u={fillColor:[0,56,117],textColor:[255,255,255],fontStyle:"bold",halign:"center",valign:"middle",fontSize:8.5,cellPadding:3,lineWidth:.2,lineColor:[0,56,117]},
-   R2={textColor:[15,23,42],fontSize:9,valign:"middle",lineWidth:.1,lineColor:[200,210,220],cellPadding:3},T2={fillColor:[240,244,248]};
+  let brl=null,brR=1.75;try{const bl=await(await fetch("/brans/aerobik.png")).blob();brl=await new Promise(k2=>{const o2=new FileReader;o2.onloadend=()=>k2(o2.result),o2.readAsDataURL(bl)});const im=new Image;await new Promise(r2=>{im.onload=r2;im.onerror=r2;im.src=brl});im.naturalHeight&&(brR=im.naturalWidth/im.naturalHeight)}catch{brl=null}
+  const IN=[67,56,202],INK=[30,27,75],mx=(P1,P2,t)=>P1.map((q1,j1)=>Math.round(q1+(P2[j1]-q1)*t)),grad=(cc,x0,y0,w0,h0,nn)=>{for(let g2=0;g2<nn;g2++){const t=g2/(nn-1),cA=t<.45?mx([49,46,129],IN,t/.45):mx(IN,cc,(t-.45)/.55);a.setFillColor(...cA);a.rect(x0+w0*g2/nn,y0,w0/nn+.3,h0,"F")}};
+  const renk=cat=>{const d=cfg(cat),t=String(catLabel(cat)||""),cs=d.cinsiyet||(/kad[ıi]n|k[ıi]z/i.test(t)?"Kız":/erkek/i.test(t)?"Erkek":"");return cs==="Kız"?[232,121,168]:cs==="Erkek"?[14,165,233]:[168,85,247]};
+  const baslik=(cat,cnt,first)=>{const cc=renk(cat);if(first){k>0&&a.addPage(),k++}
+   for(let g2=0;g2<80;g2++){const t=Math.max(0,(g2/79-.35)/.65);a.setFillColor(...mx([248,247,255],mx(cc,[255,255,255],.86),t));a.rect(N*g2/80,0,N/80+.4,46,"F")}grad(cc,0,46,N,1.8,80);
+   if(logo)try{a.addImage(logo,"PNG",c,6.5,32,32,"tcflogo","FAST")}catch{}
+   const tx=c+38,T1=o(UPL(String(catLabel(cat)).replace(/^[^A-Za-zÇĞİÖŞÜçğıöşü0-9]*final\s*[—–-]\s*/i,"").replace(/\s*\((Bireysel|Ferdi)\)\s*$/i,"")));a.setFont(FT,"bold");let fz=22;a.setFontSize(fz);while(fz>13&&a.getTextWidth(T1)>N-c-56-tx-62){fz--;a.setFontSize(fz)}a.setTextColor(...INK);a.text(T1,tx,21);
+   const bw=a.getTextWidth(T1),bt=o(__T("FİNAL ÇIKIŞ SIRASI"));a.setFontSize(10);const bl=a.getTextWidth(bt)+6;a.setFillColor(...cc);a.roundedRect(tx+bw+4,14.2,bl,8.2,1.4,1.4,"F");a.setTextColor(255,255,255);a.text(bt,tx+bw+7,20);
+   a.setFont(FT,"bold");a.setFontSize(10.5);a.setTextColor(51,65,85);a.text(p,tx,29.5);
+   a.setFont(FT,"normal");a.setFontSize(9);a.setTextColor(100,116,139);const ln3=o([n,h].filter(Boolean).join(" · "));ln3&&a.text(ln3,tx,35.5);
+   if(cnt){const cx=tx+(ln3?a.getTextWidth(ln3)+5:0),ct=o(cnt);a.setFont(FT,"bold");a.setFontSize(8.5);const cw=a.getTextWidth(ct)+6;a.setFillColor(235,233,252);a.roundedRect(cx,31.6,cw,5.6,2.8,2.8,"F");a.setTextColor(...IN);a.text(ct,cx+3,35.5)}
+   const bw2=Math.min(46,24*brR),bcx=N-c-Math.max(bw2,36)/2;if(brl)try{const bh2=bw2/brR;a.addImage(brl,"PNG",bcx-bw2/2,6+(24-bh2)/2,bw2,bh2,"aebrans","FAST")}catch{}
+   a.setFont(FT,"bold");a.setFontSize(8.5);a.setTextColor(48,56,104);const bt2=o(__T("AEROBİK CİMNASTİK"));a.text(bt2,bcx,36,{align:"center"});const btw=a.getTextWidth(bt2);a.setDrawColor(...cc);a.setLineWidth(.6);a.line(bcx-btw/2,38.6,bcx+btw/2,38.6)};
   hedef.forEach(cat=>{
-   const fc="final_"+cat,sp=spor[fc]||{},sr=C.siralama?.[fc],team=isTeam(cat);
+   const fc="final_"+cat,sp=spor[fc]||{},sr=C.siralama?.[fc],team=isTeam(cat),cc=renk(cat);
    // puanlama ekraniyla ayni sira
    let ids=[];
    if(sr&&typeof sr==="object"){Object.keys(sr).map(x=>[parseInt(String(x).replace("rotation_","")),sr[x]]).filter(([i,r])=>!isNaN(i)&&r&&typeof r==="object").sort((x,y)=>x[0]-y[0]).forEach(([,r])=>Object.keys(r).filter(id=>sp[id]).sort((x,y)=>(r[x]?.sirasi??999)-(r[y]?.sirasi??999)).forEach(id=>ids.push(id)))}
    const kalan=Object.keys(sp).filter(id=>sp[id]&&!ids.includes(id)).sort((x,y)=>{const A=sp[x],B=sp[y];return((A.cikisSirasi??999)-(B.cikisSirasi??999))||((A._yedek?1:0)-(B._yedek?1:0))||String(A.ad||"").localeCompare(String(B.ad||""),"tr")});
    ids=ids.concat(kalan);
-   // girisler (takimlarda okul+grupNo ile gruplanir)
    const giris=[],tm=new Map;
-   ids.forEach(id=>{const m=sp[id];if(!team){giris.push({uyeler:[m],okul:m.okul||m.kulup||"",il:m.il||"",yed:m._yedek||""});return}
+   ids.forEach(id=>{const m=sp[id];if(!team){giris.push({uyeler:[m],okul:m.okul||m.kulup||"",il:m.il||"",yed:m._yedek||"",er:m._finalRank});return}
     const ky=String(m.okul||m.kulup||"").trim()+"|"+(m.grupNo||1);
-    if(!tm.has(ky)){const g={uyeler:[],okul:m.okul||m.kulup||"",il:m.il||"",yed:m._yedek||""};tm.set(ky,g);giris.push(g)}
+    if(!tm.has(ky)){const g={uyeler:[],okul:m.okul||m.kulup||"",il:m.il||"",yed:m._yedek||"",er:m._finalRank};tm.set(ky,g);giris.push(g)}
     const g=tm.get(ky);if(!g.uyeler.some(x=>KK(x.ad)===KK(m.ad)&&KK(x.soyad)===KK(m.soyad)))g.uyeler.push(m);g.il||(g.il=m.il||"")});
-   baslik(UPL(catLabel(cat)),UPL(__T("Final Çıkış Sırası")));
-   const ad=m=>[m.ad,m.soyad].filter(Boolean).join(" ");
-   at(a,{startY:50,
-    head:[[__T("Sıra"),__T(team?"Sporcular":"Adı Soyadı"),__T("Kulüp"),__T("İl"),__T("Not")].map(o)],
-    body:giris.map((g,i)=>[{content:`${i+1}`,styles:{fontStyle:"bold",halign:"center",fontSize:11}},{content:o(g.uyeler.map(m=>UPL(ad(m))).join("\n")),styles:{fontStyle:"bold"}},{content:o(g.okul||"-")},{content:o(g.il||"-"),styles:{halign:"center"}},{content:g.yed?o(__T("Yedek")+" ("+g.yed+")"):"",styles:{halign:"center",textColor:[180,83,9],fontStyle:"bold"}}]),
-    theme:"grid",styles:{font:FT},headStyles:u,bodyStyles:R2,alternateRowStyles:T2,margin:{left:c,right:c},
-    columnStyles:{0:{cellWidth:18},1:{cellWidth:115},2:{cellWidth:90},3:{cellWidth:30},4:{cellWidth:24}},
-    didParseCell:function(x){if(x.section==="body"&&giris[x.row.index]?.yed){x.cell.styles.fillColor=[255,251,235]}}});
-   if(giris.some(g=>g.yed)){const fy=(a.lastAutoTable?.finalY||50)+5;a.setFont(FT,"normal"),a.setFontSize(7.5),a.setTextColor(100,116,139);
-   a.text(o(__T("İlk 8 finalist (8. ile puanları birebir eşit olanlar dahil); R1/R2 yedekler yalnızca finalistlerden biri çekilirse yarışır.")),c,fy),a.setTextColor(0,0,0)}});
+   const nf=giris.filter(g=>!g.yed).length,ny=giris.length-nf,cnt=nf+(team?" "+__T("takım"):" "+__T("finalist"))+(ny?" + "+ny+" "+__T("yedek"):"");
+   baslik(cat,cnt,!0);
+   const ad=m=>[m.ad,m.soyad].filter(Boolean).join(" "),meta=giris.map(g=>({yed:g.yed,kl:[g.okul,g.il&&g.il!==g.okul?g.il:""].filter(Boolean).join(" · ")})),cmp=giris.length>8;
+   at(a,{startY:54,
+    head:[["#",o(__T(team?"Takım":"Sporcu")),o(__T("Eleme")),o(__T("Durum"))]],
+    body:giris.map((g,i)=>[g.yed?g.yed:String(i+1),o(g.uyeler.map(m=>UPL(ad(m))).join(", "))+(meta[i].kl?"\n ":""),g.er&&!isNaN(g.er)?g.er+".":"–",g.yed?o(__T("YEDEK")):o(__T("FİNALİST"))]),
+    theme:"plain",styles:{font:FT,textColor:INK,valign:"middle",fontSize:10,cellPadding:{top:cmp?1.6:2.6,bottom:cmp?1.6:2.6,left:2.6,right:2.6}},headStyles:{font:FT,fontStyle:"bold",fontSize:9.5,textColor:INK,halign:"center",cellPadding:{top:1,bottom:2.2,left:2.6,right:2.6}},margin:{left:c,right:c,top:54,bottom:14},
+    columnStyles:{0:{cellWidth:18,halign:"center",fontStyle:"bold",fontSize:cmp?13:15},1:{cellWidth:"auto",fontStyle:"bold",fontSize:team?(cmp?9:10):(cmp?10.5:12)},2:{cellWidth:26,halign:"center",fontSize:10},3:{cellWidth:34,halign:"center",fontStyle:"bold",fontSize:8.5}},
+    didParseCell:z=>{const ci=z.column.index;if(z.section==="head"){ci===1&&(z.cell.styles.halign="left");return}const m=meta[z.row.index];if(m.yed){z.cell.styles.fillColor=[255,247,230];(ci===0||ci===3)&&(z.cell.styles.textColor=[180,83,9]);ci===0&&(z.cell.styles.fontSize=11);return}z.cell.styles.fillColor=z.row.index%2?mx(cc,[255,255,255],.87):[241,239,255];ci===0&&(z.cell.styles.textColor=IN);ci===2&&(z.cell.styles.textColor=[100,116,139]);ci===3&&(z.cell.styles.textColor=[21,128,61])},
+    didDrawCell:z=>{if(z.section!=="body")return;const m=meta[z.row.index],ci=z.column.index,C2=z.cell;if(ci===1&&m.kl){a.setFont(FT,"bold");a.setFontSize(cmp?6.5:7.5);a.setTextColor(51,65,85);const t=a.splitTextToSize(o(UPL(m.kl)),C2.width-5.2)[0];a.text(t,C2.x+2.6,C2.y+C2.height-(cmp?2.1:3.3))}if(ci===0){a.setFillColor(...(m.yed?[245,158,11]:cc));a.rect(C2.x,C2.y,1.5,C2.height,"F")}a.setDrawColor(255,255,255);a.setLineWidth(cmp?.7:1.1);a.line(C2.x,C2.y+C2.height,C2.x+C2.width,C2.y+C2.height)},
+    didDrawPage:z=>{z.pageNumber>1&&baslik(cat,cnt,!1)}});
+   if(ny){const fy=(a.lastAutoTable?.finalY||50)+5;if(fy<L-10){a.setFont(FT,"normal"),a.setFontSize(7.5),a.setTextColor(100,116,139);a.text(o(__T("R1/R2 yedekler yalnızca finalistlerden biri çekilirse yarışır.")),c,fy),a.setTextColor(0,0,0)}}});
   const g=a.internal.getNumberOfPages();for(let v=1;v<=g;v++)a.setPage(v),a.setFont(FT,"normal"),a.setFontSize(8),a.setTextColor(150,150,150),a.text(`${__T("Sayfa")} ${v} / ${g}`,N-c,L-6,{align:"right"});
-  const dos=o(C.isim||"yarisma").replace(/[^a-z0-9]/gi,"_").toLowerCase()+(hedef.length===1?"_"+o(catLabel(hedef[0])).replace(/[^a-z0-9]/gi,"_").toLowerCase():"_tum")+"_final_cikis_sirasi.pdf";
+  const _tr=t=>String(t||"").replace(/İ/g,"I").replace(/ı/g,"i").replace(/Ş/g,"S").replace(/ş/g,"s").replace(/Ğ/g,"G").replace(/ğ/g,"g").replace(/Ü/g,"U").replace(/ü/g,"u").replace(/Ö/g,"O").replace(/ö/g,"o").replace(/Ç/g,"C").replace(/ç/g,"c"),_fs=t=>_tr(t).replace(/[^A-Za-z0-9\s+-]/g," ").trim().replace(/\s*-\s*/g,"-").replace(/\s+/g,"_").replace(/_+/g,"_");
+  const dos=(hedef.length===1?_fs("Final "+catLabel(hedef[0])+" "+__T("Çıkış Sırası")):_fs((C.isim||"")+" "+__T("Final Çıkış Sıraları")))+".pdf";
   a.save(dos);toast(__T("PDF başarıyla indirildi."),"success");
  }catch(err){console.error(err);toast(__T("PDF oluşturulurken bir hata oluştu."),"error")}
 };
@@ -76,9 +84,15 @@ function Finals(){
 
  const reload=()=>get(ref(db,BASE)).then(s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]=c)});setComps(o)}).finally(()=>setLoading(!1));
  R.useEffect(()=>{reload()},[]);
+ // cikis sirasi sablonu kalici: yarismaya (finalCikisSablonu) + tarayiciya kaydedilir; son secilen yarisma hatirlanir
+ const _sbYuk=R.useRef(!1),_sbT=R.useRef(null),_ilkComp=R.useRef(!0);
+ const sbFb=t=>{const fb={};Object.entries(t||{}).forEach(([k2,v])=>{v!==""&&v!=null&&!isNaN(v)&&(fb["r"+k2]=Number(v))});return Object.keys(fb).length?fb:null};
+ R.useEffect(()=>{if(!_ilkComp.current||comp||!Object.keys(comps).length)return;_ilkComp.current=!1;try{const s2=localStorage.getItem("tcfAeFinalComp");s2&&comps[s2]&&setComp(s2)}catch{}},[comps]);
+ R.useEffect(()=>{if(!comp){setTmpl({});return}if(!comps[comp])return;_sbYuk.current=!0;let o={};const fb=comps[comp]?.finalCikisSablonu;if(fb&&typeof fb==="object"){Object.entries(fb).forEach(([k2,v])=>{const n2=parseInt(String(k2).replace(/^r/,""));n2>0&&v!=null&&v!==""&&!isNaN(v)&&(o[n2]=Number(v))})}else{try{o=JSON.parse(localStorage.getItem("tcfAeSablon_"+comp)||"{}")||{}}catch{o={}}}setTmpl(o);try{localStorage.setItem("tcfAeFinalComp",comp)}catch{}},[comp,!!comps[comp]]);
+ R.useEffect(()=>{if(!comp||!comps[comp])return;if(_sbYuk.current){_sbYuk.current=!1;return}try{localStorage.setItem("tcfAeSablon_"+comp,JSON.stringify(tmpl))}catch{}clearTimeout(_sbT.current);const c2=comp,v2=sbFb(tmpl);_sbT.current=setTimeout(()=>{update(ref(db,`${BASE}/${c2}`),{finalCikisSablonu:v2}).catch(()=>{})},700)},[tmpl]);
 
  const C=comps[comp]||{},cats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{};
- const realCats=Object.keys(cats).filter(c=>!isFinal(c)).sort();
+ const realCats=aeSirala(Object.keys(cats).filter(c=>!isFinal(c)),cats);
  const finalCats=Object.keys(cats).filter(isFinal);
  const catLabel=c=>cats[c]?.name||cfg(c).label||c;
 
@@ -138,6 +152,7 @@ function Finals(){
   setBusy(!0);setLog(null);
   const upd={},summary=[];
   if(isKA)upd.finalKulupKota=kotaN||null;
+  upd.finalCikisSablonu=sbFb(tmpl);
   hedef.forEach(cat=>{const _rf=rankFull(cat),top=_rf.top,_F=_rf.fSay;if(!top.length)return;const fcat="final_"+cat,team=isTeam(cat),newSpor={},names=[];
     top.forEach((row,ix)=>{const rank=ix+1,reserve=rank>_F,yed=reserve?"R"+(rank-_F):null,cs=csOf(rank),ex=reserve?{_yedek:yed}:{};
       if(team){const _gor=new Set;teamMembers(cat,row.id).slice().sort((a,b)=>(a[1].cikisSirasi==null||a[1].cikisSirasi===999?1:0)-(b[1].cikisSirasi==null||b[1].cikisSirasi===999?1:0)).forEach(([mid,md])=>{const _nk=KK(md.ad)+"|"+KK(md.soyad);if(_gor.has(_nk))return;_gor.add(_nk);newSpor[mid]={...md,cikisSirasi:cs,grupNo:md.grupNo??md.cikisSirasi??cs,_finalRank:rank,...ex}})}
@@ -206,7 +221,7 @@ function Finals(){
   e.jsxs("div",{style:S.in,children:[
    e.jsx("div",{style:{fontSize:".85rem",color:"#6B7280",fontWeight:700,margin:"0 0 .8rem"},children:[__T("Her kategoride ilk 8 sporcu finale, 9-10. sporcular R1/R2 yedek olarak alınır. Aşağıdaki tek çıkış-sırası şablonu (eleme sırası → çıkış no) TÜM kategorilere aynı uygulanır."),e.jsx("br",{}),__T("Finaller kategori bazında oluşturulur: biten kategorinin kartındaki düğmeyi kullanın.")]}),
    loading?e.jsx("div",{style:S.center,children:__T("Yükleniyor…")}):e.jsxs(e.Fragment,{children:[
-    e.jsxs("select",{style:S.sel,value:comp,onChange:x=>{setComp(x.target.value);setLog(null);setTmpl({});setExpanded({})},children:[e.jsx("option",{value:"",children:__T("— Yarışma seçin —")}),Object.entries(comps).map(([id,c])=>e.jsx("option",{value:id,children:c.isim||c.ad||id},id))]}),
+    e.jsxs("select",{style:S.sel,value:comp,onChange:x=>{setComp(x.target.value);setLog(null);setExpanded({})},children:[e.jsx("option",{value:"",children:__T("— Yarışma seçin —")}),Object.entries(comps).map(([id,c])=>e.jsx("option",{value:id,children:c.isim||c.ad||id},id))]}),
     comp?e.jsxs(e.Fragment,{children:[
      realCats.length===0?e.jsx("div",{style:S.center,children:__T("Bu yarışmada kategori yok.")}):e.jsxs(e.Fragment,{children:[
      anyCat?e.jsxs("div",{style:{...S.card,display:"block",border:"1px solid rgba(245,158,11,.4)",background:"#FFFBEB"},children:[

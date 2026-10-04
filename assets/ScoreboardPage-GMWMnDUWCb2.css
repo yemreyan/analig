@@ -349,3 +349,6 @@
 @keyframes sbIxFade{from{opacity:0}to{opacity:1}}
 .sb-rank.sb-ix-pop{animation:sbIxRk .75s cubic-bezier(.2,1.6,.3,1)}
 @keyframes sbIxRk{0%{transform:scale(1.9)}100%{transform:scale(1)}}
+
+.sbc.sbc-yar .sbc-tag{background:linear-gradient(120deg,#B91C1C,#EF4444)!important}.sbc.sbc-yar .sbc-dot{background:#fff;animation:sbcYarDot 1s ease-in-out infinite}@keyframes sbcYarDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+.sbk .sbk-say{margin:.1rem 0 .9rem}.sbk .sbk-say>.sb-label{margin-bottom:.45rem}.sbk .sbk-say-grid{display:grid;gap:.4rem}.sbk .sbk-say-it{display:flex;align-items:center;gap:.5rem;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;padding:.4rem .55rem .4rem .7rem;font-weight:700;font-size:.84rem;color:#334155;cursor:default}.sbk .sbk-say-it i{font-size:1.1rem;color:#6366F1}.sbk .sbk-say-it span{flex:1;min-width:0}.sbk .sbk-say-it input{width:64px;text-align:center;border:1px solid #CBD5E1;border-radius:8px;padding:.32rem .2rem;font:inherit;font-weight:800;color:#1A1D26;background:#fff}
