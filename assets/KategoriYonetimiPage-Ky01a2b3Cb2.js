@@ -101,30 +101,31 @@ function KategoriYonetimi(){
   try{await update(ref(db,`${FP}/${comp}`),upd);setYEd({});toast(yDegisim.length+" "+__T("değişiklik yarışmaya uygulandı ✓"),"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
 
  // ---- görünüm ----
- const S={wrap:{minHeight:"100vh",background:"radial-gradient(1200px 600px at 50% -10%,#111a30 0%,#0a0e1a 60%)",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"3rem"},
-  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.92)",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a3550",padding:".8rem 1.1rem",display:"flex",alignItems:"center",gap:".8rem",flexWrap:"wrap"},
-  ico:{width:38,height:38,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#0891b2,#6366f1)"},
-  in:{maxWidth:1150,margin:"0 auto",padding:"1rem"},
-  card:{background:"#131a2b",border:"1px solid #2a3550",borderRadius:14,padding:"1rem",marginBottom:"1rem"},
-  tab:on=>({padding:".55rem 1rem",borderRadius:10,border:"1px solid "+(on?"#0891b2":"#2a3550"),background:on?"rgba(8,145,178,.18)":"#131a2b",color:on?"#67e8f9":"#a9b4cc",fontWeight:800,cursor:"pointer",fontSize:".88rem"}),
-  inp:ch=>({width:"100%",padding:".42rem .55rem",borderRadius:8,border:"1px solid "+(ch?"#f59e0b":"#2a3550"),background:ch?"rgba(245,158,11,.08)":"#0b1120",color:"#e8edf7",fontWeight:700,fontSize:".85rem"}),
-  sel:{padding:".42rem .55rem",borderRadius:8,border:"1px solid #2a3550",background:"#0b1120",color:"#e8edf7",fontWeight:700,fontSize:".85rem"},
-  chip:on=>({padding:".25rem .5rem",borderRadius:7,fontSize:".74rem",fontWeight:700,cursor:"pointer",border:"1px solid "+(on?"#0ea5e9":"#2a3550"),background:on?"rgba(14,165,233,.2)":"#0b1120",color:on?"#7dd3fc":"#6b7690",whiteSpace:"nowrap"}),
-  gh:{fontSize:".7rem",color:"#7dd3fc",fontWeight:900,textTransform:"uppercase",letterSpacing:".05em",padding:".8rem 0 .3rem"},
-  row:{display:"grid",gridTemplateColumns:art?"130px 1.4fr 1fr 2.4fr 80px":(alet?"110px 1.8fr .9fr 150px 1.9fr 70px":"120px 1.8fr 1.1fr 210px 80px"),gap:".55rem",alignItems:"center",padding:".45rem 0",borderBottom:"1px solid rgba(40,52,79,.45)"},
-  kod:{fontFamily:"ui-monospace,monospace",fontSize:".7rem",color:"#6b7690",wordBreak:"break-all"},
-  th:{fontSize:".68rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase",letterSpacing:".04em"},
+ const S={wrap:{minHeight:"100vh",background:"#F0F2F5",color:"#1A1D26",fontFamily:"Nunito,system-ui,-apple-system,sans-serif",paddingBottom:"3rem"},
+  top:{position:"sticky",top:0,zIndex:10,background:"#fff",backdropFilter:"blur(12px)",borderBottom:"1px solid #E5E7EB",boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:"0 1.25rem",minHeight:68,display:"flex",alignItems:"center",gap:".9rem",flexWrap:"wrap"},
+  back:{width:38,height:38,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"#1A1D26",textDecoration:"none",flexShrink:0},
+  ico:{width:44,height:44,borderRadius:12,boxShadow:"0 6px 18px rgba(99,102,241,.28)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#0891b2,#6366f1)"},
+  in:{maxWidth:1150,margin:"0 auto",padding:"1.25rem"},
+  card:{background:"#fff",border:"1px solid #E5E7EB",borderRadius:16,padding:"1.1rem 1.15rem",marginBottom:"1rem"},
+  tab:on=>({padding:".55rem 1rem",borderRadius:10,border:"1px solid "+(on?"#0891b2":"#E5E7EB"),background:on?"rgba(8,145,178,.18)":"#fff",color:on?"#0E7490":"#475569",fontWeight:800,cursor:"pointer",fontSize:".88rem"}),
+  inp:ch=>({width:"100%",padding:".42rem .55rem",borderRadius:8,border:"1px solid "+(ch?"#f59e0b":"#E5E7EB"),background:ch?"rgba(245,158,11,.08)":"#F8FAFC",color:"#1A1D26",fontWeight:700,fontSize:".85rem"}),
+  sel:{padding:".42rem .55rem",borderRadius:8,border:"1px solid #E5E7EB",background:"#F8FAFC",color:"#1A1D26",fontWeight:700,fontSize:".85rem"},
+  chip:on=>({padding:".25rem .5rem",borderRadius:7,fontSize:".74rem",fontWeight:700,cursor:"pointer",border:"1px solid "+(on?"#0ea5e9":"#E5E7EB"),background:on?"rgba(14,165,233,.2)":"#F8FAFC",color:on?"#0369A1":"#64748B",whiteSpace:"nowrap"}),
+  gh:{fontSize:".7rem",color:"#0369A1",fontWeight:900,textTransform:"uppercase",letterSpacing:".05em",padding:".8rem 0 .3rem"},
+  row:{display:"grid",gridTemplateColumns:art?"130px 1.4fr 1fr 2.4fr 80px":(alet?"110px 1.8fr .9fr 150px 1.9fr 70px":"120px 1.8fr 1.1fr 210px 80px"),gap:".55rem",alignItems:"center",padding:".45rem 0",borderBottom:"1px solid #EEF2F7"},
+  kod:{fontFamily:"ui-monospace,monospace",fontSize:".7rem",color:"#64748B",wordBreak:"break-all"},
+  th:{fontSize:".68rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".04em"},
   btn:{padding:".6rem 1rem",borderRadius:10,border:"none",color:"#fff",fontWeight:800,cursor:"pointer",fontSize:".88rem"},
-  ghost:{padding:".5rem .85rem",borderRadius:10,border:"1px solid #2a3550",background:"#1b2438",color:"#cbd5e1",fontWeight:800,cursor:"pointer",fontSize:".82rem"},
+  ghost:{padding:".5rem .85rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",fontWeight:800,cursor:"pointer",fontSize:".82rem"},
   badge:(c,b)=>({fontSize:".64rem",fontWeight:800,padding:".12rem .4rem",borderRadius:5,background:b,color:c,marginLeft:".35rem",verticalAlign:"middle"}),
-  sub:{fontSize:".8rem",color:"#8b97b3",fontWeight:600,lineHeight:1.5,marginBottom:".7rem"}};
- const tog=(on,fn)=>e.jsx("button",{onClick:fn,style:{...S.chip(on),borderColor:on?"#22c55e":"#7f1d1d",color:on?"#86efac":"#fca5a5",background:on?"rgba(34,197,94,.12)":"rgba(127,29,29,.15)"},children:on?__T("Aktif"):__T("Pasif")});
+  sub:{fontSize:".8rem",color:"#6B7280",fontWeight:600,lineHeight:1.5,marginBottom:".7rem"}};
+ const tog=(on,fn)=>e.jsx("button",{onClick:fn,style:{...S.chip(on),borderColor:on?"#22c55e":"#FECACA",color:on?"#15803D":"#DC2626",background:on?"rgba(34,197,94,.12)":"rgba(127,29,29,.15)"},children:on?__T("Aktif"):__T("Pasif")});
  const grupla=(keys,fn)=>{let son=null;const out=[];keys.forEach(k=>{const g=(etkin[k]?.group)||__T("Grupsuz");if(g!==son){out.push(e.jsx("div",{style:S.gh,children:g},"g_"+g+"_"+k));son=g}out.push(fn(k))});return out};
  const aranan=k=>{const q=ara.trim().toLocaleLowerCase("tr-TR");return!q||[k,etkin[k]?.label,etkin[k]?.group].some(x=>String(x||"").toLocaleLowerCase("tr-TR").includes(q))};
 
  const katSatir=k=>{const x=etkin[k],ch=degisti(k);
   return e.jsxs("div",{style:{...S.row,opacity:deger(k,"aktif")?1:.55},children:[
-   e.jsxs("div",{children:[e.jsx("div",{style:S.kod,children:k}),!x.var&&!art?e.jsx("span",{style:S.badge("#a7f3d0","rgba(16,185,129,.18)"),children:__T("YENİ")}):null,x.katalog?e.jsx("span",{style:S.badge("#fde68a","rgba(245,158,11,.15)"),title:__T("Katalogda düzeltilmiş"),children:"✎"}):null]}),
+   e.jsxs("div",{children:[e.jsx("div",{style:S.kod,children:k}),!x.var&&!art?e.jsx("span",{style:S.badge("#047857","rgba(16,185,129,.18)"),children:__T("YENİ")}):null,x.katalog?e.jsx("span",{style:S.badge("#B45309","rgba(245,158,11,.15)"),title:__T("Katalogda düzeltilmiş"),children:"✎"}):null]}),
    e.jsx("input",{style:S.inp(ed[k]&&"label"in ed[k]&&ed[k].label!==x.label),value:deger(k,"label")||"",onChange:t=>set(k,"label",t.target.value)}),
    e.jsx("input",{style:S.inp(ed[k]&&"group"in ed[k]&&ed[k].group!==x.group),value:deger(k,"group")||"",placeholder:__T("Grup"),onChange:t=>set(k,"group",t.target.value)}),
    !art?e.jsxs("div",{style:{display:"flex",gap:".35rem"},children:[e.jsx("select",{style:{...S.sel,flex:1},value:deger(k,"tip"),onChange:t=>set(k,"tip",t.target.value),children:TIPLER.map(([v,l])=>e.jsx("option",{value:v,children:__T(l)},v))}),
@@ -147,20 +148,20 @@ function KategoriYonetimi(){
   e.jsxs("div",{style:{display:"flex",gap:".6rem",justifyContent:"flex-end",marginTop:".9rem"},children:[e.jsx("button",{style:S.ghost,onClick:()=>setYeni(null),children:__T("Vazgeç")}),e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#0891b2,#6366f1)"},disabled:busy,onClick:yeniKaydet,children:__T("Kategoriyi ekle")})]})]})};
 
  const yarismaSatir=k=>{const c=CK[k],v=yDeger(k,"var"),bilinmiyor=!etkin[k];
-  return e.jsxs("div",{style:{display:"grid",gridTemplateColumns:alet?"34px 1.6fr 2.4fr 120px":"34px 2fr 160px",gap:".55rem",alignItems:"center",padding:".42rem 0",borderBottom:"1px solid rgba(40,52,79,.45)",opacity:v?1:.55},children:[
+  return e.jsxs("div",{style:{display:"grid",gridTemplateColumns:alet?"34px 1.6fr 2.4fr 120px":"34px 2fr 160px",gap:".55rem",alignItems:"center",padding:".42rem 0",borderBottom:"1px solid #EEF2F7",opacity:v?1:.55},children:[
    e.jsx("input",{type:"checkbox",checked:v,onChange:t=>ySet(k,"var",t.target.checked),style:{width:18,height:18}}),
    e.jsxs("div",{children:[e.jsx("input",{style:S.inp(c&&String(yDeger(k,"name")).trim()!==c.name),value:yDeger(k,"name"),disabled:!v,onChange:t=>ySet(k,"name",t.target.value)}),
-    e.jsxs("div",{style:{...S.kod,marginTop:".15rem"},children:[k,bilinmiyor?" · "+__T("tanımsız kategori"):"",!c&&v?e.jsx("span",{style:S.badge("#a7f3d0","rgba(16,185,129,.18)"),children:__T("EKLENECEK")}):null,c&&!v?e.jsx("span",{style:S.badge("#fecaca","rgba(239,68,68,.18)"),children:__T("ÇIKARILACAK")}):null]})]}),
+    e.jsxs("div",{style:{...S.kod,marginTop:".15rem"},children:[k,bilinmiyor?" · "+__T("tanımsız kategori"):"",!c&&v?e.jsx("span",{style:S.badge("#047857","rgba(16,185,129,.18)"),children:__T("EKLENECEK")}):null,c&&!v?e.jsx("span",{style:S.badge("#B91C1C","rgba(239,68,68,.18)"),children:__T("ÇIKARILACAK")}):null]})]}),
    alet?e.jsx("div",{style:{display:"flex",gap:".3rem",flexWrap:"wrap"},children:yAletSec(k).map(([a,l])=>e.jsx("span",{style:{...S.chip((yDeger(k,"aletler")||[]).includes(a)),opacity:v?1:.5},onClick:()=>v&&yAletTik(k,a),children:__T(l)},a))}):null,
-   e.jsx("div",{style:{fontSize:".72rem",color:"#8b97b3",fontWeight:700,textAlign:"right"},children:c?`${c._sp} ${__T("sporcu")} · ${c._pu} ${__T("puan")}`:"—"})]},k)};
+   e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:700,textAlign:"right"},children:c?`${c._sp} ${__T("sporcu")} · ${c._pu} ${__T("puan")}`:"—"})]},k)};
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"category"})}),
-   e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:BAD||BR}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Kategori Yönetimi")})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/"+BR,title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"category"})}),
+   e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:BAD||BR}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Kategori Yönetimi")})]}),
    e.jsx("div",{style:{flex:1}}),
    e.jsx("button",{style:S.tab(sekme==="kat"),onClick:()=>setSekme("kat"),children:__T("Kategoriler")}),
-   e.jsx("button",{style:S.tab(sekme==="yar"),onClick:()=>setSekme("yar"),children:__T("Yarışmaya Uygula")}),
-   e.jsx("a",{href:"/"+BR,style:{...S.ghost,textDecoration:"none"},children:__T("← Geri")})]}),
+   e.jsx("button",{style:S.tab(sekme==="yar"),onClick:()=>setSekme("yar"),children:__T("Yarışmaya Uygula")})
+   ]}),
   e.jsx("div",{style:S.in,children:sekme==="kat"?e.jsxs(e.Fragment,{children:[
    e.jsxs("div",{style:{...S.card,display:"flex",gap:".6rem",flexWrap:"wrap",alignItems:"center"},children:[
     e.jsx("div",{style:{...S.sub,margin:0,flex:1,minWidth:260},children:art?__T("Artistik kategorileri ve aletleri (")+(yil||"…")+__T(" sezonu kriterleri). Alet değişiklikleri Kriterler sayfasındaki alet ayarlarıyla aynı kaynağa yazılır."):__T("Sabit tanımlar ve sonradan eklenen kategoriler. Düzeltmeler yeni yarışmalarda kullanılır; mevcut yarışmaya “Yarışmaya Uygula” sekmesinden aktarılır. Pasif kategori yeni yarışmalarda seçilemez.")}),
@@ -168,12 +169,12 @@ function KategoriYonetimi(){
     e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#0891b2,#6366f1)"},onClick:yeniAc,children:"+ "+__T("Yeni kategori")})]}),
    yeni?yeniForm():null,
    e.jsxs("div",{style:S.card,children:[
-    e.jsxs("div",{style:{...S.row,borderBottom:"1px solid #2a3550"},children:[e.jsx("span",{style:S.th,children:__T("Kod")}),e.jsx("span",{style:S.th,children:__T("Ad")}),e.jsx("span",{style:S.th,children:__T("Grup")}),!art?e.jsx("span",{style:S.th,children:__T("Tip · kişi")}):null,alet?e.jsx("span",{style:S.th,children:__T("Aletler")}):null,e.jsx("span",{style:{...S.th,textAlign:"right"},children:__T("Durum")})]}),
-    sirali.length?grupla(sirali.filter(aranan),katSatir):e.jsx("div",{style:{color:"#8b97b3",fontWeight:700,padding:".8rem 0"},children:__T("Yükleniyor…")}),
+    e.jsxs("div",{style:{...S.row,borderBottom:"1px solid #E5E7EB"},children:[e.jsx("span",{style:S.th,children:__T("Kod")}),e.jsx("span",{style:S.th,children:__T("Ad")}),e.jsx("span",{style:S.th,children:__T("Grup")}),!art?e.jsx("span",{style:S.th,children:__T("Tip · kişi")}):null,alet?e.jsx("span",{style:S.th,children:__T("Aletler")}):null,e.jsx("span",{style:{...S.th,textAlign:"right"},children:__T("Durum")})]}),
+    sirali.length?grupla(sirali.filter(aranan),katSatir):e.jsx("div",{style:{color:"#6B7280",fontWeight:700,padding:".8rem 0"},children:__T("Yükleniyor…")}),
     e.jsxs("div",{style:{display:"flex",gap:".6rem",alignItems:"center",marginTop:"1rem"},children:[
      degisenler.length?e.jsx("button",{style:S.ghost,onClick:()=>setEd({}),children:__T("Vazgeç")}):null,e.jsx("div",{style:{flex:1}}),
-     degisenler.length?e.jsx("span",{style:{color:"#fbbf24",fontWeight:800,fontSize:".82rem"},children:degisenler.length+" "+__T("kategori değişti")}):null,
-     e.jsx("button",{style:{...S.btn,background:degisenler.length?"linear-gradient(135deg,#22c55e,#0ea5e9)":"#1b2438",color:degisenler.length?"#fff":"#6b7690"},disabled:busy||!degisenler.length,onClick:katKaydet,children:busy?__T("Kaydediliyor…"):__T("Değişiklikleri kaydet")})]})]})
+     degisenler.length?e.jsx("span",{style:{color:"#B45309",fontWeight:800,fontSize:".82rem"},children:degisenler.length+" "+__T("kategori değişti")}):null,
+     e.jsx("button",{style:{...S.btn,background:degisenler.length?"linear-gradient(135deg,#22c55e,#0ea5e9)":"#F1F5F9",color:degisenler.length?"#fff":"#64748B"},disabled:busy||!degisenler.length,onClick:katKaydet,children:busy?__T("Kaydediliyor…"):__T("Değişiklikleri kaydet")})]})]})
   ]}):e.jsxs("div",{style:S.card,children:[
    e.jsx("div",{style:S.sub,children:__T("Yarışma seçin; kategori ekleyin, çıkarın, adını ve aletlerini düzeltin. Sporcusu veya puanı olan kategori çıkarılamaz. Final kategorilerine dokunulmaz.")}),
    e.jsxs("select",{style:{...S.sel,width:"100%",marginBottom:".8rem",padding:".6rem .8rem",fontSize:".92rem"},value:comp,onChange:t=>{if(Object.keys(yEd).length&&!window.confirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(t.target.value);setYEd({})},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
@@ -181,7 +182,7 @@ function KategoriYonetimi(){
    comp?e.jsxs(e.Fragment,{children:[...grupla(yKat,yarismaSatir),
     e.jsxs("div",{style:{display:"flex",gap:".6rem",alignItems:"center",marginTop:"1rem"},children:[
      Object.keys(yEd).length?e.jsx("button",{style:S.ghost,onClick:()=>setYEd({}),children:__T("Vazgeç")}):null,e.jsx("div",{style:{flex:1}}),
-     yDegisim.length?e.jsx("span",{style:{color:"#fbbf24",fontWeight:800,fontSize:".82rem"},children:yDegisim.length+" "+__T("değişiklik")}):null,
-     e.jsx("button",{style:{...S.btn,background:yDegisim.length?"linear-gradient(135deg,#22c55e,#0ea5e9)":"#1b2438",color:yDegisim.length?"#fff":"#6b7690"},disabled:busy||!yDegisim.length,onClick:yUygula,children:busy?__T("Kaydediliyor…"):__T("Yarışmaya uygula")})]})]}):null]})})]});
+     yDegisim.length?e.jsx("span",{style:{color:"#B45309",fontWeight:800,fontSize:".82rem"},children:yDegisim.length+" "+__T("değişiklik")}):null,
+     e.jsx("button",{style:{...S.btn,background:yDegisim.length?"linear-gradient(135deg,#22c55e,#0ea5e9)":"#F1F5F9",color:yDegisim.length?"#fff":"#64748B"},disabled:busy||!yDegisim.length,onClick:yUygula,children:busy?__T("Kaydediliyor…"):__T("Yarışmaya uygula")})]})]}):null]})})]});
 }
 export{KategoriYonetimi as default};

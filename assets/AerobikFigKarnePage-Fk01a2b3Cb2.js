@@ -21,7 +21,7 @@ const tolFor=v=>{for(const[m,t]of TOL)if(v>=m-1e-9)return t;return .6};
 const r3=v=>Math.round(v*1000)/1000,f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2),f3=v=>v==null||isNaN(v)?"—":Number(v).toFixed(3);
 const sg=v=>v==null||isNaN(v)?"—":(v>0?"+":"")+Number(v).toFixed(3);
 const num=v=>{const n=parseFloat(v);return isNaN(n)?null:n};
-const PANEL={a:{kod:"A",tr:"Artistik (A)",en:"Artistry (A)",sj:"SJA"},e:{kod:"E",tr:"İcra (E)",en:"Execution (E)",sj:"SJE"}};
+const PANEL={a:{kod:"A",tr:"Artistik (A)",en:"Artistry (A)",sj:"SJA"},e:{kod:"E",tr:"Uygulama (E)",en:"Execution (E)",sj:"SJE"}};
 const ESIK0={iyiCok:90,iyi:80,yeterli:70,uyariAdet:3,uyariYuzde:20,yonEsik:.2,yonMinN:5,ilFark:.2,ilMinN:2};
 const esikYukle=()=>{try{return{...ESIK0,...JSON.parse(localStorage.getItem("aeKarneEsik")||"{}")}}catch{return{...ESIK0}}};
 const derece=(pct,E)=>pct>=E.iyiCok?["Çok İyi","Very Good","#16a34a"]:pct>=E.iyi?["İyi","Good","#65a30d"]:pct>=E.yeterli?["Yeterli","Satisfactory","#ca8a04"]:["İncelenmeli","Review required","#dc2626"];
@@ -242,7 +242,7 @@ function Karne(){
     e.jsxs("div",{style:S.card,children:[
      e.jsxs("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",alignItems:"center",marginBottom:".6rem"},children:[
       e.jsx("span",{style:{fontSize:".72rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase"},children:__T("Panel")}),
-      ...[["","A + E"],["a","A — Artistik"],["e","E — İcra"]].map(([v,l])=>e.jsx("span",{style:S.chip(secPanel===v),onClick:()=>setSecPanel(v),children:__T(l)},v||"t")),
+      ...[["","A + E"],["a","A — Artistik"],["e","E — Uygulama"]].map(([v,l])=>e.jsx("span",{style:S.chip(secPanel===v),onClick:()=>setSecPanel(v),children:__T(l)},v||"t")),
       e.jsx("div",{style:{flex:1}}),
       e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#9333ea,#6366f1)"},disabled:busy||!A.ozet.length,onClick:()=>karnePdf(A.ozet),children:__T("Tüm karneler (PDF)")}),
       e.jsx("button",{style:{...S.btn,background:"#b91c1c"},disabled:busy||!A.rutinler.length,onClick:cjpPdf,children:__T("CJP Sapma Raporu (PDF)")}),

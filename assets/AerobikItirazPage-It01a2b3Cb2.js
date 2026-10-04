@@ -7,7 +7,7 @@ function trimA(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).f
 function calcE(o){if(!o)return null;const v=["j1","j2","j3","j4"].map(k=>o[k]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return null;let m;if(v.length===4){const s=[...v].sort((x,y)=>x-y);m=(s[1]+s[2])/2}else m=v.reduce((a,b)=>a+b,0)/v.length;return 10-m}
 const comps=sc=>{const d=sc.dScore!=null?sc.dScore:null,a=sc.aScore!=null?sc.aScore:trimA(sc.aPanel),ee=sc.eScore!=null?sc.eScore:calcE(sc.ePanel),fin=sc.finalScore!=null?sc.finalScore:(sc.sonuc!=null?sc.sonuc:null);return{d,a,e:ee,fin}};
 const finishTs=sc=>{let t=sc.ustJuriOnay||0;if(sc.timestamp){const p=Date.parse(sc.timestamp);if(!isNaN(p))t=Math.max(t,p)}return t};
-const TYPES=[["D","D — Zorluk","#8b5cf6"],["A","A — Artistik","#ec4899"],["E","E — İcra","#10b981"]];
+const TYPES=[["D","D — Zorluk","#8b5cf6"],["A","A — Artistik","#ec4899"],["E","E — Uygulama","#10b981"]];
 
 function Itiraz(){
  const{toast}=usToast();usInit();

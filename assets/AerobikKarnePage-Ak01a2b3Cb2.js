@@ -1,7 +1,7 @@
 import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,u as usAuth,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{f as usParams,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";import{v as verifyToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 const BASE="aerobik_yarismalar";
-const PANEL_LABEL={a:"A — Artistik",e:"E — İcra"};
+const PANEL_LABEL={a:"A — Artistik",e:"E — Uygulama"};
 const tr=s=>String(s==null?"":s).replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").replace(/Ş/g,"S").replace(/ğ/g,"g").replace(/Ğ/g,"G").replace(/ü/g,"u").replace(/Ü/g,"U").replace(/ö/g,"o").replace(/Ö/g,"O").replace(/ç/g,"c").replace(/Ç/g,"C");
 const NAVY=[28,37,64],TCFRED=[200,16,42];
 const trimmedMean=ds=>{ds=ds.filter(d=>d!=null&&!isNaN(d)).map(Number);if(ds.length>=4){const s=[...ds].sort((a,b)=>a-b);return s.slice(1,-1).reduce((a,b)=>a+b,0)/(s.length-2)}return ds.length?ds.reduce((a,b)=>a+b,0)/ds.length:0};

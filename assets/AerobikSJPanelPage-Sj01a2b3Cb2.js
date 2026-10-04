@@ -14,7 +14,7 @@ const A_KES={aerobik:[["ampSetMissing","Eksik AMP Seti"],["ampBlockMissing","Eks
 const A_GRP=c=>String(c||"").startsWith("step_")?"aero_step":"aerobik";
 const CFG={
  sja:{badge:"SJA",title:__T("Artistik"),color:"#ec4899",letter:"a",label:__T("SJA Referans Notu (Artistik)"),avg:sc=>trimA(sc.aPanel),avgLabel:"A Panel Ort.",has:sc=>sc.aPanel&&Object.keys(sc.aPanel).length>0,judges:sc=>{const o=sc.aPanel||{};return[["A1","a1",o.j1],["A2","a2",o.j2],["A3","a3",o.j3],["A4","a4",o.j4]]}},
- sje:{badge:"SJE",title:__T("İcra"),color:"#10b981",letter:"e",label:__T("SJE Referans Kesintisi (İcra)"),avg:sc=>trimDed(sc.ePanel),avgLabel:"E Panel Kesinti",has:sc=>sc.ePanel&&Object.keys(sc.ePanel).length>0,judges:sc=>{const o=sc.ePanel||{};return[["E1","e1",o.j1],["E2","e2",o.j2],["E3","e3",o.j3],["E4","e4",o.j4]]}},
+ sje:{badge:"SJE",title:__T("Uygulama"),color:"#10b981",letter:"e",label:__T("SJE Referans Kesintisi (Uygulama)"),avg:sc=>trimDed(sc.ePanel),avgLabel:"E Panel Kesinti",has:sc=>sc.ePanel&&Object.keys(sc.ePanel).length>0,judges:sc=>{const o=sc.ePanel||{};return[["E1","e1",o.j1],["E2","e2",o.j2],["E3","e3",o.j3],["E4","e4",o.j4]]}},
  sjd:{badge:"SJD",title:__T("Zorluk"),color:"#8b5cf6",letter:"d",label:__T("SJD Referans (D Değeri)"),avg:sc=>sc.dPanel&&sc.dPanel.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null),avgLabel:"D Panel Ham",has:sc=>(sc.dPanel&&sc.dPanel.rawTotal!=null)||sc.dScore!=null,judges:sc=>[["D Hakemi","d",sc.dPanel&&sc.dPanel.rawTotal!=null?sc.dPanel.rawTotal:(sc.dScore!=null?sc.dScore:null)]]}
 };
 

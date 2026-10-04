@@ -2283,6 +2283,13 @@ const DICT={
  "Step Aerobik":"Step Aerobic",
  "YARIŞAN SPORCU":"NOW COMPETING",
  "YARIŞAN ÇİFT":"PAIR COMPETING",
- "YARIŞAN TAKIM":"TEAM COMPETING"
+ "YARIŞAN TAKIM":"TEAM COMPETING",
+ "SJE Referans Kesintisi (Uygulama)":"SJE reference deduction (execution)",
+ "Uygulama (Execution) 1":"Execution 1",
+ "Uygulama (Execution) 2":"Execution 2",
+ "Uygulama (Execution) 3":"Execution 3",
+ "Uygulama (Execution) 4":"Execution 4",
+ "Uygulama Hakemleri (E1–E4)":"Execution judges (E1-E4)",
+ "Uygulama kesintisi girişi. Her kategori için 4 hakem paneli QR kodu.":"Execution deduction entry. Four judge panel QR codes per category."
 };
 export{DICT};

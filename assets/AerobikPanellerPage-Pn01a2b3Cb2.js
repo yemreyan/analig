@@ -8,7 +8,7 @@ import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db}fro
 const BASE="aerobik_yarismalar";
 const TIP={
  A:{ad:"Artistik (A)",renk:"#db2777",coklu:{yol:"apanel",on:"A",ek:i=>`&panelId=a${i}`,max:4}},
- E:{ad:"İcra (E)",renk:"#0891b2",coklu:{yol:"epanel",on:"E",ek:i=>`&panelId=e${i}`,max:4}},
+ E:{ad:"Uygulama (E)",renk:"#0891b2",coklu:{yol:"epanel",on:"E",ek:i=>`&panelId=e${i}`,max:4}},
  D:{ad:"Zorluk (D)",renk:"#6366f1",tek:[["D","dpanel",""]]},
  T:{ad:"Süre (T)",renk:"#06b6d4",tek:[["T","tpanel",""]]},
  L:{ad:"Çizgi (L)",renk:"#10b981",tek:[["L","lpanel",""]]},
@@ -82,48 +82,49 @@ function Paneller(){
  const qrSayfasi=async gid=>{const g=gruplar[gid],ss=slotlar(g),w=window.open("","_blank");if(!w){toast(__T("Açılır pencere engellendi."),"warning");return}
   w.document.write(`<title>${g.ad} — QR</title><p style="font:16px sans-serif">${__T("Hazırlanıyor…")}</p>`);
   const kart=[];for(const s of ss){const u=link(gid,s),im=await qrAl(u);kart.push(`<div class="k"><div class="t" style="color:${TIP[s.tip].renk}">${s.slot}</div><div class="g">${g.ad} · ${TIP[s.tip].ad}</div>${im?`<img src="${im}">`:""}<div class="u">${u.replace(/&/g,"&amp;")}</div></div>`)}
-  w.document.open();w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${g.ad} — ${__T("Panel QR")}</title><style>body{font-family:system-ui,sans-serif;margin:16px}h1{font-size:18px}.w{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.k{border:1px solid #cbd5e1;border-radius:10px;padding:10px;text-align:center;break-inside:avoid}.t{font-size:26px;font-weight:900}.g{font-size:12px;color:#475569}.k img{width:100%;max-width:220px}.u{font-size:8px;color:#94a3b8;word-break:break-all}@media print{button{display:none}}</style></head><body><h1>${(comps[comp]?.isim)||""} — ${g.ad}</h1><button onclick="print()">${__T("Yazdır")}</button><div class="w">${kart.join("")}</div></body></html>`);w.document.close()};
+  w.document.open();w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${g.ad} — ${__T("Panel QR")}</title><style>body{font-family:system-ui,sans-serif;margin:16px}h1{font-size:18px}.w{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.k{border:1px solid #334155;border-radius:10px;padding:10px;text-align:center;break-inside:avoid}.t{font-size:26px;font-weight:900}.g{font-size:12px;color:#475569}.k img{width:100%;max-width:220px}.u{font-size:8px;color:#94a3b8;word-break:break-all}@media print{button{display:none}}</style></head><body><h1>${(comps[comp]?.isim)||""} — ${g.ad}</h1><button onclick="print()">${__T("Yazdır")}</button><div class="w">${kart.join("")}</div></body></html>`);w.document.close()};
 
  // ---- görünüm ----
- const S={wrap:{minHeight:"100vh",background:"radial-gradient(1200px 600px at 50% -10%,#111a30 0%,#0a0e1a 60%)",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"3rem"},
-  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.92)",backdropFilter:"blur(12px)",borderBottom:"1px solid #2a3550",padding:".8rem 1.1rem",display:"flex",alignItems:"center",gap:".8rem"},
-  ico:{width:38,height:38,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#db2777,#6366f1)"},
-  in:{maxWidth:1150,margin:"0 auto",padding:"1rem"},
-  card:{background:"#131a2b",border:"1px solid #2a3550",borderRadius:14,padding:"1rem",marginBottom:"1rem"},
-  sel:{width:"100%",padding:".6rem .8rem",borderRadius:10,border:"1px solid #2a3550",background:"#131a2b",color:"#e8edf7",fontWeight:700,fontSize:".92rem",marginBottom:"1rem"},
-  inp:{width:"100%",padding:".5rem .65rem",borderRadius:9,border:"1px solid #2a3550",background:"#0b1120",color:"#e8edf7",fontWeight:700,fontSize:".9rem"},
-  chip:(on,c)=>({padding:".28rem .55rem",borderRadius:8,fontSize:".76rem",fontWeight:700,cursor:"pointer",border:"1px solid "+(on?(c||"#0ea5e9"):"#2a3550"),background:on?(c||"#0ea5e9")+"2e":"#0b1120",color:on?"#e0f2fe":"#6b7690",whiteSpace:"nowrap",userSelect:"none"}),
+ const S={wrap:{minHeight:"100vh",background:"#F0F2F5",color:"#1A1D26",fontFamily:"Nunito,system-ui,-apple-system,sans-serif",paddingBottom:"3rem"},
+  top:{position:"sticky",top:0,zIndex:10,background:"#fff",backdropFilter:"blur(12px)",borderBottom:"1px solid #E5E7EB",boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:"0 1.25rem",minHeight:68,display:"flex",alignItems:"center",gap:".9rem",flexWrap:"wrap"},
+  back:{width:38,height:38,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"#1A1D26",textDecoration:"none",flexShrink:0},
+  ico:{width:44,height:44,borderRadius:12,boxShadow:"0 6px 18px rgba(99,102,241,.28)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#db2777,#6366f1)"},
+  in:{maxWidth:1150,margin:"0 auto",padding:"1.25rem"},
+  card:{background:"#fff",border:"1px solid #E5E7EB",borderRadius:16,padding:"1.1rem 1.15rem",marginBottom:"1rem"},
+  sel:{width:"100%",padding:".6rem .8rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",color:"#1A1D26",fontWeight:700,fontSize:".92rem",marginBottom:"1rem"},
+  inp:{width:"100%",padding:".5rem .65rem",borderRadius:9,border:"1px solid #E5E7EB",background:"#F8FAFC",color:"#1A1D26",fontWeight:700,fontSize:".9rem"},
+  chip:(on,c)=>({padding:".28rem .55rem",borderRadius:8,fontSize:".76rem",fontWeight:700,cursor:"pointer",border:"1px solid "+(on?(c||"#0ea5e9"):"#E5E7EB"),background:on?(c||"#0ea5e9")+"2e":"#F8FAFC",color:on?"#0F172A":"#64748B",whiteSpace:"nowrap",userSelect:"none"}),
   btn:{padding:".55rem .9rem",borderRadius:10,border:"none",color:"#fff",fontWeight:800,cursor:"pointer",fontSize:".85rem"},
-  ghost:{padding:".45rem .75rem",borderRadius:9,border:"1px solid #2a3550",background:"#1b2438",color:"#cbd5e1",fontWeight:800,cursor:"pointer",fontSize:".78rem",whiteSpace:"nowrap"},
-  lbl:{fontSize:".7rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase",letterSpacing:".04em"},
+  ghost:{padding:".45rem .75rem",borderRadius:9,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",fontWeight:800,cursor:"pointer",fontSize:".78rem",whiteSpace:"nowrap"},
+  lbl:{fontSize:".7rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".04em"},
   slot:c=>({minWidth:54,textAlign:"center",fontWeight:900,fontSize:"1rem",color:c,border:"1px solid "+c+"66",background:c+"1f",borderRadius:9,padding:".35rem .5rem"})};
  const katChips=(secili,onTik,renk,devre)=>e.jsx("div",{style:{display:"flex",gap:".3rem",flexWrap:"wrap"},children:katSira.map(k=>e.jsx("span",{style:{...S.chip(!!secili?.[k],renk),opacity:devre?.45:1,pointerEvents:devre?"none":"auto"},onClick:()=>!busy&&onTik(k),children:katAd(k)},k))});
 
  const grupKarti=gid=>{const g=gruplar[gid],ss=slotlar(g),op=acik[gid]!==!1,gk=kListe(g.kategoriler),ak=aktifKat(gk),eksik=ss.filter(s=>!linkler[pidOf(gid,s.slot)]);
-  return e.jsxs("div",{style:{...S.card,borderColor:"#3b4a72"},children:[
+  return e.jsxs("div",{style:{...S.card,borderColor:"#C7D2FE"},children:[
    e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[
     e.jsx("button",{style:{...S.ghost,padding:".3rem .55rem"},onClick:()=>setAcik(o=>({...o,[gid]:!op})),children:op?"▲":"▼"}),
     e.jsxs("div",{style:{flex:1,minWidth:200},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:g.ad}),
-     e.jsxs("div",{style:{fontSize:".76rem",color:"#8b97b3",fontWeight:700},children:[TIP_SIRA.filter(t=>g.tipler?.[t]).map(t=>t+(TIP[t].coklu?"×"+(g.adet?.[t]||4):"")).join(" · ")," · ",ss.length," ",__T("panel")," · ",gk.length," ",__T("kategori"),
-      ak?e.jsxs("span",{style:{color:"#86efac"},children:["  ● ",__T("şu an")," ",katAd(ak)]}):null]})]}),
+     e.jsxs("div",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:700},children:[TIP_SIRA.filter(t=>g.tipler?.[t]).map(t=>t+(TIP[t].coklu?"×"+(g.adet?.[t]||4):"")).join(" · ")," · ",ss.length," ",__T("panel")," · ",gk.length," ",__T("kategori"),
+      ak?e.jsxs("span",{style:{color:"#15803D"},children:["  ● ",__T("şu an")," ",katAd(ak)]}):null]})]}),
     e.jsx("button",{style:S.ghost,onClick:()=>kopyala(ss.map(s=>`${s.slot}: ${link(gid,s)}`).join("\n")),children:__T("Tüm linkleri kopyala")}),
     e.jsx("button",{style:S.ghost,onClick:()=>qrSayfasi(gid),children:__T("QR sayfası")}),
     e.jsx("button",{style:S.ghost,onClick:()=>formAc(gid),children:__T("Düzenle")}),
-    e.jsx("button",{style:{...S.ghost,borderColor:"#7f1d1d",color:"#fca5a5"},onClick:()=>grupSil(gid),children:__T("Sil")})]}),
+    e.jsx("button",{style:{...S.ghost,borderColor:"#FECACA",color:"#DC2626"},onClick:()=>grupSil(gid),children:__T("Sil")})]}),
    op?e.jsxs(e.Fragment,{children:[
-    eksik.length?e.jsxs("div",{style:{marginTop:".7rem",fontSize:".8rem",color:"#fbbf24",fontWeight:700},children:[eksik.map(s=>s.slot).join(", ")," — ",__T("panel kaydı eksik. "),e.jsx("button",{style:{...S.ghost,padding:".2rem .5rem"},onClick:()=>eksikOnar(gid),children:__T("Oluştur")})]}):null,
-    e.jsxs("div",{style:{marginTop:".8rem",padding:".7rem .8rem",background:"#0f1626",border:"1px solid #24304a",borderRadius:12},children:[
+    eksik.length?e.jsxs("div",{style:{marginTop:".7rem",fontSize:".8rem",color:"#B45309",fontWeight:700},children:[eksik.map(s=>s.slot).join(", ")," — ",__T("panel kaydı eksik. "),e.jsx("button",{style:{...S.ghost,padding:".2rem .5rem"},onClick:()=>eksikOnar(gid),children:__T("Oluştur")})]}):null,
+    e.jsxs("div",{style:{marginTop:".8rem",padding:".7rem .8rem",background:"#F8FAFC",border:"1px solid #E5E7EB",borderRadius:12},children:[
      e.jsxs("div",{style:{...S.lbl,marginBottom:".45rem"},children:[__T("Grubun kategorileri")," ",e.jsx("span",{style:{textTransform:"none",letterSpacing:0,fontWeight:600},children:__T("(dokununca anında eklenir/çıkarılır; özel listesi olmayan tüm panellere uygulanır)")})]}),
      katChips(g.kategoriler,k=>grupKatTik(gid,k),"#22c55e")]}),
     TIP_SIRA.filter(t=>g.tipler?.[t]).map(t=>e.jsxs("div",{style:{marginTop:".8rem"},children:[
      e.jsx("div",{style:{...S.lbl,color:TIP[t].renk,marginBottom:".35rem"},children:__T(TIP[t].ad)}),
      ss.filter(s=>s.tip===t).map(s=>{const pid=pidOf(gid,s.slot),rec=linkler[pid],oz=!!g.paneller?.[s.slot]?.ozel,pk=kListe(rec?.kategoriler),u=link(gid,s);
-      return e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"64px 1fr auto",gap:".6rem",alignItems:"start",padding:".5rem 0",borderBottom:"1px solid rgba(40,52,79,.5)"},children:[
+      return e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"64px 1fr auto",gap:".6rem",alignItems:"start",padding:".5rem 0",borderBottom:"1px solid #EEF2F7"},children:[
        e.jsx("div",{style:S.slot(TIP[t].renk),children:s.slot}),
        e.jsxs("div",{style:{minWidth:0},children:[
         e.jsxs("div",{style:{display:"flex",gap:".5rem",alignItems:"center",flexWrap:"wrap",marginBottom:oz?".4rem":0},children:[
-         e.jsxs("label",{style:{display:"flex",alignItems:"center",gap:".35rem",fontSize:".76rem",fontWeight:700,color:oz?"#fbbf24":"#8b97b3",cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:oz,disabled:busy,onChange:ev=>ozelDegis(gid,s,ev.target.checked)}),__T("Özel kategori listesi")]}),
-         !oz?e.jsx("span",{style:{fontSize:".76rem",color:"#8b97b3",fontWeight:600},children:pk.length?pk.map(katAd).join(", "):__T("— kategori yok —")}):null]}),
+         e.jsxs("label",{style:{display:"flex",alignItems:"center",gap:".35rem",fontSize:".76rem",fontWeight:700,color:oz?"#B45309":"#6B7280",cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:oz,disabled:busy,onChange:ev=>ozelDegis(gid,s,ev.target.checked)}),__T("Özel kategori listesi")]}),
+         !oz?e.jsx("span",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:600},children:pk.length?pk.map(katAd).join(", "):__T("— kategori yok —")}):null]}),
         oz?katChips(rec?.kategoriler,k=>panelKatTik(gid,s,k),TIP[t].renk,!rec):null]}),
        e.jsxs("div",{style:{display:"flex",gap:".35rem",flexWrap:"wrap",justifyContent:"flex-end"},children:[
         e.jsx("button",{style:S.ghost,onClick:()=>kopyala(u),children:__T("Kopyala")}),
@@ -135,31 +136,31 @@ function Paneller(){
   e.jsx("div",{style:S.lbl,children:__T("Grup adı")}),
   e.jsx("input",{style:{...S.inp,margin:".3rem 0 .8rem"},placeholder:__T("ör. Salon 1 / Panel 1"),value:f.ad,onChange:t=>setForm({...f,ad:t.target.value})}),
   e.jsx("div",{style:S.lbl,children:__T("Bu grupta hangi paneller olacak?")}),
-  e.jsx("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",margin:".4rem 0 .8rem"},children:TIP_SIRA.map(t=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".35rem",border:"1px solid "+(f.tipler[t]?TIP[t].renk:"#2a3550"),background:f.tipler[t]?TIP[t].renk+"22":"#0b1120",borderRadius:10,padding:".35rem .6rem"},children:[
+  e.jsx("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",margin:".4rem 0 .8rem"},children:TIP_SIRA.map(t=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".35rem",border:"1px solid "+(f.tipler[t]?TIP[t].renk:"#E5E7EB"),background:f.tipler[t]?TIP[t].renk+"22":"#F8FAFC",borderRadius:10,padding:".35rem .6rem"},children:[
    e.jsxs("label",{style:{display:"flex",alignItems:"center",gap:".35rem",fontWeight:800,fontSize:".82rem",cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:!!f.tipler[t],onChange:ev=>setForm({...f,tipler:{...f.tipler,[t]:ev.target.checked}})}),__T(TIP[t].ad)]}),
-   TIP[t].coklu&&f.tipler[t]?e.jsx("select",{style:{background:"#0b1120",color:"#e8edf7",border:"1px solid #2a3550",borderRadius:7,fontWeight:800,padding:".15rem .3rem"},value:f.adet[t],onChange:ev=>setForm({...f,adet:{...f.adet,[t]:parseInt(ev.target.value)}}),children:Array.from({length:TIP[t].coklu.max},(_,i)=>i+1).map(n=>e.jsx("option",{value:n,children:n+" "+__T("hakem")+" ("+TIP[t].coklu.on+"1–"+TIP[t].coklu.on+n+")"},n))}):null,
-   TIP[t].tek?e.jsx("span",{style:{fontSize:".7rem",color:"#8b97b3",fontWeight:700},children:TIP[t].tek.map(x=>x[0]).join(", ")}):null]},t))}),
+   TIP[t].coklu&&f.tipler[t]?e.jsx("select",{style:{background:"#F8FAFC",color:"#1A1D26",border:"1px solid #E5E7EB",borderRadius:7,fontWeight:800,padding:".15rem .3rem"},value:f.adet[t],onChange:ev=>setForm({...f,adet:{...f.adet,[t]:parseInt(ev.target.value)}}),children:Array.from({length:TIP[t].coklu.max},(_,i)=>i+1).map(n=>e.jsx("option",{value:n,children:n+" "+__T("hakem")+" ("+TIP[t].coklu.on+"1–"+TIP[t].coklu.on+n+")"},n))}):null,
+   TIP[t].tek?e.jsx("span",{style:{fontSize:".7rem",color:"#6B7280",fontWeight:700},children:TIP[t].tek.map(x=>x[0]).join(", ")}):null]},t))}),
   e.jsx("div",{style:S.lbl,children:__T("Grubun kategorileri (sonradan da eklenip çıkarılabilir)")}),
-  e.jsx("div",{style:{margin:".4rem 0 .9rem"},children:katSira.length?e.jsx("div",{style:{display:"flex",gap:".3rem",flexWrap:"wrap"},children:katSira.map(k=>e.jsx("span",{style:S.chip(!!f.kategoriler[k],"#22c55e"),onClick:()=>setForm(o=>({...o,kategoriler:{...o.kategoriler,[k]:!o.kategoriler[k]}})),children:katAd(k)},k))}):e.jsx("span",{style:{color:"#8b97b3",fontSize:".8rem"},children:__T("Bu yarışmada kategori yok.")})}),
+  e.jsx("div",{style:{margin:".4rem 0 .9rem"},children:katSira.length?e.jsx("div",{style:{display:"flex",gap:".3rem",flexWrap:"wrap"},children:katSira.map(k=>e.jsx("span",{style:S.chip(!!f.kategoriler[k],"#22c55e"),onClick:()=>setForm(o=>({...o,kategoriler:{...o.kategoriler,[k]:!o.kategoriler[k]}})),children:katAd(k)},k))}):e.jsx("span",{style:{color:"#6B7280",fontSize:".8rem"},children:__T("Bu yarışmada kategori yok.")})}),
   e.jsxs("div",{style:{display:"flex",gap:".6rem",justifyContent:"flex-end"},children:[e.jsx("button",{style:S.ghost,onClick:()=>setForm(null),children:__T("Vazgeç")}),
    e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#db2777,#6366f1)"},disabled:busy,onClick:formKaydet,children:f.gid?__T("Kaydet"):__T("Grubu oluştur")})]})]})};
 
  const gl=Object.keys(gruplar).sort((a,b)=>String(gruplar[a]?.ad||"").localeCompare(String(gruplar[b]?.ad||""),"tr",{numeric:!0}));
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"view_module"})}),
-   e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:__T("Aerobik")}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Paneller")})]}),
-   e.jsx("div",{style:{flex:1}}),e.jsx("a",{href:"/aerobik",style:{...S.ghost,textDecoration:"none"},children:__T("← Geri")})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/aerobik",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"view_module"})}),
+   e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:__T("Aerobik")}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Paneller")})]})
+   ]}),
   e.jsxs("div",{style:S.in,children:[
    e.jsxs("select",{style:S.sel,value:comp,onChange:t=>{setComp(t.target.value);setForm(null)},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
     Object.entries(comps).sort((a,b)=>String(b[1].t).localeCompare(String(a[1].t))).map(([k,c])=>e.jsx("option",{value:k,children:c.isim},k))]}),
    comp&&C?e.jsxs(e.Fragment,{children:[
     e.jsxs("div",{style:{...S.card,display:"flex",gap:".8rem",alignItems:"center",flexWrap:"wrap"},children:[
-     e.jsx("div",{style:{flex:1,minWidth:240,fontSize:".82rem",color:"#8b97b3",fontWeight:600,lineHeight:1.5},children:__T("Panel grubu oluşturun (ör. Salon 1), içinde hangi panellerin (A, E, D, T, L, SJ) olacağını ve hakem sayısını seçin. Her panelin linki/QR'ı ayrıdır. Kategori eklediğinizde/çıkardığınızda açık paneller anında güncellenir.")}),
+     e.jsx("div",{style:{flex:1,minWidth:240,fontSize:".82rem",color:"#6B7280",fontWeight:600,lineHeight:1.5},children:__T("Panel grubu oluşturun (ör. Salon 1), içinde hangi panellerin (A, E, D, T, L, SJ) olacağını ve hakem sayısını seçin. Her panelin linki/QR'ı ayrıdır. Kategori eklediğinizde/çıkardığınızda açık paneller anında güncellenir.")}),
      e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#db2777,#6366f1)"},onClick:()=>formAc(null),children:"+ "+__T("Yeni panel grubu")})]}),
-    !token?e.jsx("div",{style:{...S.card,borderColor:"#f59e0b",color:"#fbbf24",fontWeight:700,fontSize:".84rem"},children:__T("Bu yarışmanın hakem anahtarı (epanelToken) yok; linkler anahtarsız üretilir.")}):null,
+    !token?e.jsx("div",{style:{...S.card,borderColor:"#f59e0b",color:"#B45309",fontWeight:700,fontSize:".84rem"},children:__T("Bu yarışmanın hakem anahtarı (epanelToken) yok; linkler anahtarsız üretilir.")}):null,
     form?formKarti():null,
-    gl.length?gl.map(grupKarti):!form?e.jsx("div",{style:{...S.card,textAlign:"center",color:"#8b97b3",fontWeight:700},children:__T("Henüz panel grubu yok.")}):null
-   ]}):comp?e.jsx("div",{style:{color:"#8b97b3",fontWeight:700},children:__T("Yükleniyor…")}):null]}),
+    gl.length?gl.map(grupKarti):!form?e.jsx("div",{style:{...S.card,textAlign:"center",color:"#6B7280",fontWeight:700},children:__T("Henüz panel grubu yok.")}):null
+   ]}):comp?e.jsx("div",{style:{color:"#6B7280",fontWeight:700},children:__T("Yükleniyor…")}):null]}),
   qr?e.jsx("div",{onClick:()=>setQr(null),style:{position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,.7)",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem"},children:e.jsxs("div",{onClick:ev=>ev.stopPropagation(),style:{background:"#fff",color:"#0f172a",borderRadius:16,padding:"1.2rem",maxWidth:420,width:"100%",textAlign:"center"},children:[
    e.jsx("div",{style:{fontWeight:900,fontSize:"1.1rem",marginBottom:".6rem"},children:qr.baslik}),
    qr.img&&qr.img!=="yok"?e.jsx("img",{src:qr.img,alt:"QR",style:{width:"100%",maxWidth:320}}):e.jsx("div",{style:{padding:"2rem",color:"#64748b"},children:qr.img==="yok"?__T("QR oluşturulamadı; linki kopyalayın."):__T("Hazırlanıyor…")}),
