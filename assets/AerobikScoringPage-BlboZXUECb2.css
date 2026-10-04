@@ -46,3 +46,8 @@ body:has(.as-modal-overlay){overflow:hidden}
 .as-dark .as-divisor-btn--active{background:#d97706;border-color:#b45309;color:#fff}
 .as-dark .as-divisor-btn:hover:not(:disabled){background:rgba(251,191,36,.18)}
 .as-dark .as-element-remove:hover{background:rgba(248,113,113,.15)}
+/* itirazla değişen D hareketi: yeni değer + üstü çizili eski değer */
+.as-dpanel-slot--itiraz{border-color:#7c3aed!important;background:#F5F3FF!important}
+.as-dpanel-slot--itiraz .as-dpanel-slot-label,.as-dpanel-slot--itiraz .as-dpanel-slot-val{color:#7c3aed!important}
+.as-dpanel-slot-old{font-size:.68rem;font-weight:800;color:#7c3aed;text-decoration:line-through;opacity:.8}
+.as-dark .as-dpanel-slot--itiraz{background:rgba(124,58,237,.16)!important}
