@@ -36,7 +36,7 @@ html,body{height:100%;background:#000;overflow:hidden;font-family:system-ui,-app
 .kam-ath .club{font-size:12px;font-weight:600;opacity:.8;margin-top:2px}
 .err-full{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;padding:2rem;font-weight:700}
 </style>
-  <script src="/brand/cobrand.js" defer></script>
+  <script src="/brand/cobrand.js" defer></script><script src="/video-depo/drive.js" defer></script>
 </head>
 <body>
 <div class="kam-root">
@@ -111,9 +111,13 @@ function renderFailed(){ const b=$("failBox"); if(!b)return; if(!failedUploads.l
 function retryFailed(){ const items=failedUploads.slice(); failedUploads=[]; renderFailed(); items.forEach(it=>uploadRec(it.blob,it.pid,it.J,it.CW,it.meta,1)); }
 function uploadRec(blob,pid,J,CW,meta,attempt){
   attempt=attempt||1; setRec("uploading",attempt>1?("yeniden "+attempt+"/3"):"");
-  const c=new FormData(); c.append("file",blob); c.append("upload_preset",PRESET); c.append("public_id",pid);
-  fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:"POST",body:c})
-    .then(r=>r.json().then(u=>r.ok?u:Promise.reject(new Error(u.error?.message||"Yükleme başarısız"))))
+  // Google Drive (video-depo) ayarlıysa oraya, değilse eski Cloudinary hesabına yüklenir
+  const cldYukle=()=>{ const c=new FormData(); c.append("file",blob); c.append("upload_preset",PRESET); c.append("public_id",pid);
+    return fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,{method:"POST",body:c})
+      .then(r=>r.json().then(u=>r.ok?u:Promise.reject(new Error(u.error?.message||"Yükleme başarısız")))); };
+  const gdAd=`${meta.name||"Sporcu"} - KAM ${CW} - ${new Date(meta.ts||Date.now()).toISOString().slice(0,16).replace("T","_")}.${mimeExt}`.replace(/[/\\:*?"<>|]/g,"-");
+  (window.gxDrive?window.gxDrive.hazir():Promise.resolve(false))
+    .then(dr=>dr?window.gxDrive.yukle(blob,{name:gdAd,base:BASE,comp,kat:J.split("/").slice(-2)[0]}).then(u=>({secure_url:u.url,public_id:"gdrive:"+u.id})):cldYukle())
     .then(u=>{ set(ref(db,`${J}/videoUrl${CW}`),u.secure_url); set(ref(db,`${J}/videoPath${CW}`),u.public_id||""); set(ref(db,`${J}/videoBilgi`),meta); setRec("uploaded"); setTimeout(()=>{if(recState==="uploaded")setRec("idle");reconcile();},1200); })
     .catch(e=>{ if(attempt<3){ setTimeout(()=>uploadRec(blob,pid,J,CW,meta,attempt+1),1500*attempt); }
       else { failedUploads.push({blob,pid,J,CW,meta}); renderFailed(); setRec("error",(e?.message||"ağ hatası")+" · kuyrukta"); setTimeout(()=>{if(recState==="error")setRec("idle");reconcile();},3500); } });
