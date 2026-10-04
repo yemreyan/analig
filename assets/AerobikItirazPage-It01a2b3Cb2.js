@@ -13,7 +13,7 @@ function Itiraz(){
  const{toast}=usToast();usInit();
  const[sp]=usParams();
  const comp=sp.get("competitionId"),token=sp.get("token");
- const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0);
+ const[authed,setAuthed]=R.useState(!1),[loading,setLoading]=R.useState(!0),[dk,setDk]=R.useState(()=>{try{return localStorage.getItem("tcfItTema")==="koyu"}catch{return!1}});
  const[pun,setPun]=R.useState({}),[spor,setSpor]=R.useState({}),[cats,setCats]=R.useState({}),[compName,setCompName]=R.useState("Yarışma"),[itr,setItr]=R.useState({});
  const[pick,setPick]=R.useState(""),[now,setNow]=R.useState(Date.now()),[busy,setBusy]=R.useState(!1);
 
@@ -37,29 +37,30 @@ function Itiraz(){
  const send=async it=>{if(busy)return;setBusy(!0);try{await fset(ref(db,`${BASE}/${comp}/itirazlar/${it.cat}__${it.ath}__D`),{catId:it.cat,catName:catName(it.cat),athId:it.ath,athName:it.name,ad:it.ad,soyad:it.soyad,scoreType:"D",value:it.C.d,total:it.C.fin!=null?it.C.fin:null,ts:Date.now(),status:"pending"});await fset(ref(db,`${BASE}/${comp}/flashTrigger`),{isAerobik:!0,itiraz:"pending",adSoyad:it.name,kulup:it.club,aletAd:catName(it.cat),scoreType:"D",timestamp:Date.now()});toast(it.name+" — D puanına itiraz gönderildi ✓","success")}catch{toast("İtiraz gönderilemedi.","error")}setBusy(!1)};
 
  const fmt=ms=>{const s=Math.ceil(ms/1e3),m=Math.floor(s/60),ss=s%60;return m+":"+String(ss).padStart(2,"0")};
- const S={wrap:{minHeight:"100vh",background:"#0a0e1a",color:"#e8edf7",fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif",paddingBottom:"2rem"},
-  top:{position:"sticky",top:0,zIndex:10,background:"rgba(10,14,26,.92)",backdropFilter:"blur(10px)",borderBottom:"1px solid #2a3550",padding:".8rem 1.1rem",display:"flex",alignItems:"center",gap:"1rem",flexWrap:"wrap"},
+ const P=dk?{bg:"#0b1220",card:"#111a2e",soft:"#16213a",soft2:"#0f1729",line:"#24324d",line2:"rgba(42,53,80,.55)",ink:"#e5ebf5",ink2:"#cbd5e1",muted:"#94a3b8",hdr:"#0f172a",amber:"#fbbf24",red:"#fca5a5",green:"#86efac",green2:"#6ee7b7",pink:"#f9a8d4",violet:"#c4b5fd",sky:"#38bdf8"}:{bg:"#F0F2F5",card:"#fff",soft:"#F8FAFC",soft2:"#F1F5F9",line:"#E5E7EB",line2:"#EEF2F7",ink:"#1A1D26",ink2:"#334155",muted:"#6B7280",hdr:"#fff",amber:"#B45309",red:"#DC2626",green:"#15803D",green2:"#047857",pink:"#DB2777",violet:"#6D28D9",sky:"#0369A1"};
+ const S={wrap:{minHeight:"100vh",background:P.bg,color:P.ink,fontFamily:"Nunito,system-ui,-apple-system,sans-serif",paddingBottom:"2rem"},
+  top:{position:"sticky",top:0,zIndex:10,background:P.hdr,backdropFilter:"blur(10px)",borderBottom:("1px solid "+P.line),boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:".5rem 1.25rem",minHeight:68,display:"flex",alignItems:"center",gap:".9rem",flexWrap:"wrap"},
   wrapIn:{maxWidth:820,margin:"0 auto",padding:"1rem"},
-  card:{background:"#131a2b",border:"1px solid #2a3550",borderRadius:16,padding:"1rem 1.2rem",marginBottom:".9rem"},
+  card:{background:P.card,border:("1px solid "+P.line),borderRadius:16,padding:"1rem 1.2rem",marginBottom:".9rem"},
   chead:{display:"flex",alignItems:"center",gap:".8rem",flexWrap:"wrap"},
-  nm:{fontSize:"1.2rem",fontWeight:800},meta:{color:"#8b97b3",fontWeight:700,fontSize:".82rem"},
-  kat:{background:"#1b2438",border:"1px solid #2a3550",borderRadius:999,padding:".3rem .8rem",fontWeight:800,fontSize:".8rem"},
-  clk:{marginLeft:"auto",background:"rgba(234,179,8,.15)",color:"#fbbf24",borderRadius:10,padding:".35rem .8rem",fontWeight:800,fontSize:".85rem",whiteSpace:"nowrap"},
-  mini:{display:"flex",gap:"1rem",flexWrap:"wrap",margin:".7rem 0",fontSize:".92rem",color:"#8b97b3",fontWeight:700},
+  nm:{fontSize:"1.2rem",fontWeight:800},meta:{color:P.muted,fontWeight:700,fontSize:".82rem"},
+  kat:{background:P.soft,border:("1px solid "+P.line),borderRadius:999,padding:".3rem .8rem",fontWeight:800,fontSize:".8rem"},
+  clk:{marginLeft:"auto",background:"rgba(234,179,8,.15)",color:P.amber,borderRadius:10,padding:".35rem .8rem",fontWeight:800,fontSize:".85rem",whiteSpace:"nowrap"},
+  mini:{display:"flex",gap:"1rem",flexWrap:"wrap",margin:".7rem 0",fontSize:".92rem",color:P.muted,fontWeight:700},
   itbtn:{width:"100%",marginTop:".3rem",padding:".8rem",border:"none",borderRadius:12,fontWeight:800,fontSize:"1rem",cursor:"pointer",color:"#fff",background:"linear-gradient(135deg,#e11d48,#f43f5e)"},
   tyrow:{display:"flex",gap:".6rem",flexWrap:"wrap",marginTop:".6rem"},
-  center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#8b97b3",fontWeight:700,padding:"2rem 1rem"}};
+  center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:P.muted,fontWeight:700,padding:"2rem 1rem"}};
 
  if(!comp)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Hatalı link.")})});
  if(loading)return e.jsx("div",{style:S.wrap,children:e.jsx("div",{style:S.center,children:__T("Doğrulanıyor…")})});
  if(!authed)return e.jsx("div",{style:S.wrap,children:e.jsxs("div",{style:S.center,children:[e.jsx("h2",{children:__T("Yetkisiz Erişim")}),e.jsx("p",{children:__T("Geçersiz/süresi dolmuş bağlantı.")})]})});
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("span",{className:"material-icons-round",style:{color:"#f43f5e"},children:"gavel"}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700},children:compName}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem"},children:__T("İTİRAZ EKRANI")})]}),e.jsxs("div",{style:{marginLeft:"auto",background:"rgba(244,63,94,.12)",color:"#fca5a5",fontWeight:800,padding:".4rem .9rem",borderRadius:999},children:[list.length," aktif sporcu"]})]}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:{width:44,height:44,borderRadius:12,background:"#e11d48",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 6px 18px rgba(225,29,72,.35)"},children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"gavel"})}),e.jsxs("div",{style:{minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.12rem",lineHeight:1.15},children:__T("İtiraz Ekranı")}),e.jsx("div",{style:{fontSize:".8rem",color:P.muted,fontWeight:700},children:compName})]}),e.jsxs("div",{style:{marginLeft:"auto",background:"rgba(244,63,94,.12)",color:P.red,fontWeight:800,padding:".4rem .9rem",borderRadius:999},children:[list.length," aktif sporcu"]}),e.jsx("button",{type:"button",title:dk?__T("Açık tema"):__T("Karanlık tema"),onClick:()=>setDk(v=>{const y=!v;try{localStorage.setItem("tcfItTema",y?"koyu":"acik")}catch{}return y}),style:{width:38,height:38,borderRadius:10,border:"1px solid "+P.line,background:P.card,color:P.ink,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0},children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1.2rem"},children:dk?"light_mode":"dark_mode"})})]}),
   e.jsxs("div",{style:S.wrapIn,children:[
-   e.jsx("div",{style:{fontSize:".8rem",color:"#8b97b3",fontWeight:700,margin:"0 0 .8rem"},children:__T("Yarışması biten sporcular 10 dakika boyunca burada görünür. İtiraz D puanına yapılır — sporcunun yanındaki İtiraz Et butonuna basın.")}),
+   e.jsx("div",{style:{fontSize:".8rem",color:P.muted,fontWeight:700,margin:"0 0 .8rem"},children:__T("Yarışması biten sporcular 10 dakika boyunca burada görünür. İtiraz D puanına yapılır — sporcunun yanındaki İtiraz Et butonuna basın.")}),
    list.length===0?e.jsxs("div",{style:S.center,children:[e.jsx("div",{style:{fontSize:"2.4rem",marginBottom:".5rem"},children:"⏳"}),e.jsx("div",{children:__T("İtiraz penceresinde sporcu yok.")}),e.jsx("p",{style:{marginTop:".4rem",fontSize:".85rem"},children:__T("Sporcu yarışıp puanı onaylandıktan sonra 10 dk boyunca burada listelenir.")})]}):
-   list.map(it=>{const o=objOf(it.cat,it.ath);const st=o&&(o.status==="accepted"?["İTİRAZ KABUL EDİLDİ","#86efac","rgba(34,197,94,.15)"]:o.status==="rejected"?["İTİRAZ REDDEDİLDİ","#fca5a5","rgba(244,63,94,.15)"]:o.status==="resolved"?["İTİRAZ DEĞERLENDİRİLDİ","#86efac","rgba(34,197,94,.15)"]:["İTİRAZ VAR · değerlendiriliyor","#fbbf24","rgba(234,179,8,.15)"]);return e.jsxs("div",{style:S.card,children:[
+   list.map(it=>{const o=objOf(it.cat,it.ath);const st=o&&(o.status==="accepted"?["İTİRAZ KABUL EDİLDİ",P.green,"rgba(34,197,94,.15)"]:o.status==="rejected"?["İTİRAZ REDDEDİLDİ",P.red,"rgba(244,63,94,.15)"]:o.status==="resolved"?["İTİRAZ DEĞERLENDİRİLDİ",P.green,"rgba(34,197,94,.15)"]:["İTİRAZ VAR · değerlendiriliyor",P.amber,"rgba(234,179,8,.15)"]);return e.jsxs("div",{style:S.card,children:[
      e.jsxs("div",{style:S.chead,children:[e.jsxs("div",{children:[e.jsx("div",{style:S.nm,children:it.name}),e.jsx("div",{style:S.meta,children:it.club||"—"})]}),e.jsx("div",{style:S.kat,children:catName(it.cat)}),e.jsxs("div",{style:S.clk,children:["⏱ ",fmt(it.left)]})]}),
      o?e.jsxs("div",{style:{width:"100%",marginTop:".7rem",padding:".7rem",borderRadius:12,fontWeight:800,textAlign:"center",color:st[1],background:st[2],border:"1px solid "+st[1]},children:["⚖️ ",st[0]]}):e.jsx("button",{style:S.itbtn,disabled:busy,onClick:()=>send(it),children:__T("⚖️ İtiraz Et")})
    ]},it.cat+"/"+it.ath)})

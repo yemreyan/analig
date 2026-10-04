@@ -2323,6 +2323,7 @@ const DICT={
  "uyarıldı":"warned",
  "dokun → uyar":"tap → warn",
  "fark":"gap",
- "dokun/uyar":"tap/warn"
+ "dokun/uyar":"tap/warn",
+ "İtiraz Ekranı":"Inquiry Screen"
 };
 export{DICT};
