@@ -12,7 +12,7 @@ const KK=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/[^A-Z0-9ÇĞİÖŞ
 // Esit puanda: once E, sonra A, sonra D yuksek olan one gecer
 const r3=v=>Math.round((parseFloat(v)||0)*1e3);
 const tbAnah=r=>[r3(r.score),r3(r.sc?.eScore),r3(r.sc?.aScore),r3(r.sc?.dScore)];
-const aeSirala=(ks,kat)=>{const _b=c=>String(c||"").replace(/^final_/,""),_d=c=>cfg(c),_nm=c=>String(kat?.[c]?.name||kat?.[c]?.ad||_d(c).label||"").toLocaleLowerCase("tr-TR"),_tp=c=>{const b=_b(c),x=_d(c),n=_nm(c);if(x.group==="Step Aerobik"||/^step_/.test(b)||/step/.test(n))return 6;if(/_kiz$/.test(b)||x.tip==="ferdi"&&x.cinsiyet==="Kız"||/tek\s*(kad[ıi]n|k[ıi]z)/.test(n))return 0;if(/_erkek$/.test(b)||x.tip==="ferdi"&&x.cinsiyet==="Erkek"||/tek\s*erkek/.test(n))return 1;if(/_cift$/.test(b)||/çift|ikili/.test(n))return 2;if(/_trio$/.test(b)||/trio/.test(n))return 3;if(/_grup$/.test(b)||/grup/.test(n))return 4;if(/_dans$/.test(b)||/dans/.test(n))return 5;return 7},_AG=["Minikler","Küçükler","Yıldızlar","Gençler","Büyükler"],_ag=c=>{let i=_AG.indexOf(_d(c).group);const m=/^(?:step_)?([a-z]+)/.exec(_b(c));if(i<0&&m)i=["minik","kucuk","yildiz","genc","buyuk"].indexOf(m[1]);return i<0?9:i},_ky=c=>(/^final_/.test(String(c))?1e4:0)+_tp(c)*100+_ag(c);return ks.map((c,i)=>[c,i]).sort((x,y)=>_ky(x[0])-_ky(y[0])||x[1]-y[1]).map(x=>x[0])};
+const aeSirala=(ks,kat)=>{const _b=c=>String(c||"").replace(/^final_/,""),_d=c=>cfg(c),_nm=c=>String(kat?.[c]?.name||kat?.[c]?.ad||_d(c).label||"").toLocaleLowerCase("tr-TR"),_tp=c=>{const b=_b(c),x=_d(c),n=_nm(c);if(x.group==="Step Aerobik"||/^step_/.test(b)||/step/.test(n))return 6;if(/_kiz$/.test(b)||x.tip==="ferdi"&&x.cinsiyet==="Kız"||/tek\s*(kad[ıi]n|k[ıi]z)/.test(n))return 0;if(/_erkek$/.test(b)||x.tip==="ferdi"&&x.cinsiyet==="Erkek"||/tek\s*erkek/.test(n))return 1;if(/_cift$/.test(b)||/çift|ikili/.test(n))return 2;if(/_trio$/.test(b)||/trio/.test(n))return 3;if(/_grup$/.test(b)||/grup/.test(n))return 4;if(/_dans$/.test(b)||/dans/.test(n))return 5;return 7},_AG=["Minikler","Küçükler","Yıldızlar","Gençler","Büyükler"],_ag=c=>{let i=_AG.indexOf(_d(c).group);const m=/^(?:step_)?([a-z]+)/.exec(_b(c));if(i<0&&m)i=["minik","kucuk","yildiz","genc","buyuk"].indexOf(m[1]);return i<0?9:i},_ky=c=>(/^final_/.test(String(c))?1e4:0)+_ag(c)*100+_tp(c);return ks.map((c,i)=>[c,i]).sort((x,y)=>_ky(x[0])-_ky(y[0])||x[1]-y[1]).map(x=>x[0])};
 const tbKarsilastir=(a,b)=>{const x=tbAnah(a),y=tbAnah(b);for(let i=0;i<4;i++)if(x[i]!==y[i])return y[i]-x[i];return 0};
 
 // Final cikis sirasi PDF'i — Final Sonuclari PDF'iyle ayni tasarim (TCF logolu baslik bandi).
@@ -60,7 +60,7 @@ const finalCikisPdf=async({C,liste,catLabel,toast})=>{
     if(!tm.has(ky)){const g={uyeler:[],okul:m.okul||m.kulup||"",il:m.il||"",yed:m._yedek||"",er:m._finalRank};tm.set(ky,g);giris.push(g)}
     const g=tm.get(ky);if(!g.uyeler.some(x=>KK(x.ad)===KK(m.ad)&&KK(x.soyad)===KK(m.soyad)))g.uyeler.push(m);g.il||(g.il=m.il||"")});
    const nf=giris.filter(g=>!g.yed).length,ny=giris.length-nf,cnt=nf+(team?" "+__T("takım"):" "+__T("finalist"))+(ny?" + "+ny+" "+__T("yedek"):"");
-   baslik(cat,cnt,!0);
+   baslik(cat,cnt,!0);try{a.outline&&a.outline.add(null,o(String(catLabel(cat)).replace(/^\s*\u{1F3C6}\s*/u,"")),{pageNumber:a.internal.getNumberOfPages()})}catch{}
    const ad=m=>[m.ad,m.soyad].filter(Boolean).join(" "),meta=giris.map(g=>({yed:g.yed,kl:[g.okul,g.il&&g.il!==g.okul?g.il:""].filter(Boolean).join(" · ")})),cmp=giris.length>8;
    at(a,{startY:54,
     head:[["#",o(__T(team?"Takım":"Sporcu")),o(__T("Eleme")),o(__T("Durum"))]],
