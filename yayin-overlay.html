@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yayın Overlay — TCF</title>
 <link rel="icon" type="image/png" href="/logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
 /* =====================================================================
    TCF YAYIN OVERLAY
@@ -51,33 +52,79 @@ body.ov{background:transparent!important;overflow:hidden}
 .chip.ded b{color:#fca5a5}
 .rank{margin-top:calc(8*var(--s));background:var(--red);color:#fff;border-radius:calc(8*var(--s));padding:calc(4*var(--s)) calc(14*var(--s));font-size:calc(22*var(--s));font-weight:800;letter-spacing:.06em}
 
-/* ---------- KURULUM ---------- */
-body.kur{background:#070b16;color:#e8edf7;min-height:100vh}
-.kw{max-width:1100px;margin:0 auto;padding:1.2rem}
-.kh{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
-.kh img{width:44px;height:44px;background:#fff;border-radius:10px;padding:4px}
-.kh h1{font-size:1.25rem}
-.kh p{color:#93a1c0;font-size:.85rem;font-weight:600}
-.grid{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:1rem}
-@media(max-width:860px){.grid{grid-template-columns:1fr}}
-.card{background:#111a2e;border:1px solid #28344f;border-radius:14px;padding:1rem}
-.card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#93a1c0;margin-bottom:.6rem}
-label.f{display:block;font-size:.76rem;font-weight:800;color:#93a1c0;margin:.7rem 0 .3rem}
-select,input[type=number],input[type=text]{width:100%;background:#18233c;color:#eef3fb;border:1px solid #28344f;border-radius:9px;padding:.5rem .65rem;font:inherit;font-size:.88rem;font-weight:700}
-.cats{display:flex;flex-wrap:wrap;gap:.35rem;max-height:220px;overflow:auto;padding:.2rem 0}
-.cats label{font-size:.76rem;font-weight:700;background:#18233c;border:1px solid #28344f;border-radius:8px;padding:.3rem .5rem;cursor:pointer;display:flex;gap:.3rem;align-items:center}
-.row{display:flex;gap:.5rem}
-.row>*{flex:1}
-.url{width:100%;font-family:ui-monospace,monospace;font-size:.76rem;background:#0b1120;color:#7dd3fc;border:1px solid #28344f;border-radius:9px;padding:.6rem;word-break:break-all;margin-top:.4rem}
-.btn{border:none;border-radius:10px;padding:.6rem .9rem;font:inherit;font-weight:800;font-size:.85rem;cursor:pointer;color:#fff;background:linear-gradient(135deg,#0ea5e9,#6366f1)}
-.btn.g{background:#1b2438;border:1px solid #28344f;color:#cbd5e1}
-.btns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
-.prev{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid #28344f;
- background:repeating-conic-gradient(#2b3346 0 25%,#222a3b 0 50%) 50%/32px 32px}
+/* ---------- KURULUM (ana sayfa tasarım dili) ---------- */
+body.kur{--bg:#F0F2F5;--line:#E5E7EB;--ink:#1A1D26;--muted:#6B7280;--soft:#F8FAFC;--p:#10B981;--p-rgb:16,185,129;background:var(--bg);color:var(--ink);min-height:100vh;font-family:Nunito,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+body.kur button,body.kur input,body.kur select{font:inherit}
+.kh{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.kh-in{max-width:1180px;margin:0 auto;height:68px;padding:0 1.25rem;display:flex;align-items:center;gap:.9rem}
+.kback{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--ink);text-decoration:none}
+.kback:hover{background:var(--soft)}
+.klogo{width:44px;height:44px;border-radius:12px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(var(--p-rgb),.35);flex-shrink:0}
+.kttl{min-width:0}.kttl h1{font-size:1.2rem;font-weight:800;line-height:1.15}.kttl p{font-size:.8rem;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kw{max-width:1180px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+.grid{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:1.1rem;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:1.15rem 1.2rem}
+.card+.card{margin-top:1.1rem}
+.card h2{display:flex;align-items:center;gap:.5rem;font-size:.95rem;font-weight:800;margin-bottom:.9rem}
+.card h2 .ic{width:30px;height:30px;border-radius:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem}
+.card h2 small{margin-left:auto;font-size:.74rem;color:var(--muted);font-weight:700}
+label.f{display:block;font-size:.74rem;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:.95rem 0 .4rem}
+label.f:first-of-type{margin-top:0}
+label.f span{text-transform:none;letter-spacing:0;font-weight:600}
+select,input[type=number]{width:100%;background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:.62rem .75rem;font-size:.9rem;font-weight:700}
+select:focus,input:focus{outline:2px solid var(--p);outline-offset:1px}
+.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:none;background:transparent;color:var(--muted);font-weight:800;font-size:.84rem;padding:.5rem .4rem;border-radius:9px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:.35rem}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+.seg.br button.on{background:var(--p);color:#fff;box-shadow:0 4px 12px rgba(var(--p-rgb),.3)}
+.pos{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.pos button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:.45rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.35rem;font-weight:800;font-size:.76rem;color:var(--muted)}
+.pos button i{position:relative;display:block;width:100%;aspect-ratio:16/9;border-radius:6px;background:#EEF2F7}
+.pos button i::after{content:"";position:absolute;height:22%;width:48%;border-radius:3px;background:#CBD5E1}
+.pos button[data-v="alt-sol"] i::after{left:8%;bottom:10%}
+.pos button[data-v="alt-orta"] i::after{left:26%;bottom:10%}
+.pos button[data-v="ust-sol"] i::after{left:8%;top:10%}
+.pos button.on{border-color:var(--p);color:var(--ink);box-shadow:0 0 0 3px rgba(var(--p-rgb),.15)}
+.pos button.on i::after{background:var(--p)}
+.row{display:flex;gap:.7rem}.row>*{flex:1;min-width:0}
+.num{display:flex;align-items:center;background:var(--soft);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.num input{border:none;background:transparent;text-align:center;padding:.6rem 0;border-radius:0;-moz-appearance:textfield}
+.num input::-webkit-outer-spin-button,.num input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.num button{border:none;background:transparent;width:38px;align-self:stretch;font-size:1.15rem;font-weight:800;color:var(--muted);cursor:pointer}
+.num button:hover{background:#EEF2F7;color:var(--ink)}
+.ctools{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
+.ctools button{display:inline-flex;align-items:center;gap:.3rem;border:1px solid var(--line);background:#fff;color:#334155;border-radius:10px;padding:.4rem .7rem;font-size:.78rem;font-weight:800;cursor:pointer}
+.ctools button:hover{background:var(--soft)}
+.ctools .fin{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
+.ctools .cnt{margin-left:auto;align-self:center;font-size:.76rem;color:var(--muted);font-weight:700}
+.cats{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:.7rem;padding-right:2px}
+.cgh{font-size:.76rem;font-weight:900;color:#334155;margin-bottom:.35rem}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.35rem}
+.cats label{position:relative;display:flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:700;color:#334155;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:.4rem .55rem;cursor:pointer;user-select:none;min-width:0}
+.cats label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cats label input{position:absolute;opacity:0;pointer-events:none}
+.cats label::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid #CBD5E1;flex-shrink:0;box-sizing:border-box}
+.cats label:has(input:checked){border-color:var(--p);background:rgba(var(--p-rgb),.08);color:var(--ink)}
+.cats label:has(input:checked)::before{border-color:var(--p);background:var(--p);box-shadow:inset 0 0 0 2px #fff}
+.cg-fin{background:linear-gradient(180deg,#FFFBEB,#fff 75%);border:1px solid #FDE68A;border-radius:12px;padding:.6rem}
+.url{width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.76rem;background:var(--soft);color:#334155;border:1px dashed #CBD5E1;border-radius:12px;padding:.75rem .8rem;word-break:break-all;line-height:1.5}
+.url.bos{color:var(--muted);font-family:inherit;font-weight:700;text-align:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:none;border-radius:12px;padding:.68rem 1rem;font-weight:800;font-size:.86rem;cursor:pointer;color:#fff;background:var(--p);box-shadow:0 4px 12px rgba(var(--p-rgb),.28)}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
+.btn.g{background:#fff;border:1px solid var(--line);color:var(--ink);box-shadow:none}
+.btn .material-icons-round{font-size:1.1rem}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;align-items:center}
+.prev{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:repeating-conic-gradient(#E2E8F0 0 25%,#F1F5F9 0 50%) 50%/28px 28px}
 .prev iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
-.note{font-size:.78rem;color:#93a1c0;font-weight:600;line-height:1.55;margin-top:.6rem}
-.note code{color:#7dd3fc}
-.ok{color:#86efac;font-weight:800;font-size:.8rem;margin-left:.4rem}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.9rem}
+.steps div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:.6rem .7rem;font-size:.76rem;font-weight:600;color:#475569;line-height:1.45}
+.steps b{display:block;color:var(--ink);font-size:.8rem;margin-bottom:.15rem}
+.steps code{font-family:ui-monospace,monospace;color:var(--p);font-weight:700}
+@media(max-width:600px){.steps{grid-template-columns:1fr}.kttl p{display:none}}
+.note{font-size:.78rem;color:var(--muted);font-weight:600;line-height:1.55;margin-top:.7rem}
+.ok{color:#16A34A;font-weight:800;font-size:.8rem}
 </style>
 </head>
 <body>
@@ -207,44 +254,71 @@ function demoCalistir(isimGoster,puanGoster){
 async function kurulum(){
  document.body.className="kur";
  const app=document.getElementById("app");
- app.innerHTML=`<div class="kw">
-  <div class="kh"><img src="/logo.png" alt=""><div><h1>Yayın Overlay</h1><p>YouTube / OBS yayını için çağrılan sporcu adı ve yayınlanan puan</p></div></div>
-  <div class="grid">
-   <div class="card">
-    <h2>Ayarlar</h2>
-    <label class="f">Branş</label><select id="br"><option value="aerobik">Aerobik</option><option value="ritmik">Ritmik</option><option value="artistik">Artistik</option></select>
-    <label class="f">Yarışma</label><select id="cp"><option value="">Yükleniyor…</option></select>
-    <label class="f">Kategori filtresi <span style="font-weight:600">(boş = tümü; birden fazla panel aynı anda çalışıyorsa yayındaki alanı seçin)</span></label><div class="cats" id="ct"></div>
-    <div class="row"><div><label class="f">Konum</label><select id="ps"><option value="alt-sol">Alt sol</option><option value="alt-orta">Alt orta</option><option value="ust-sol">Üst sol</option></select></div>
-     <div><label class="f">Boyut (%)</label><input type="number" id="ol" value="100" min="40" max="200" step="5"></div></div>
-    <div class="row"><div><label class="f">Puan kartı süresi (sn)</label><input type="number" id="su" value="12" min="3" max="120"></div>
-     <div><label class="f">İsim süresi (sn, 0 = sürekli)</label><input type="number" id="is" value="0" min="0" max="600"></div></div>
-    <div class="row"><div><label class="f">Göster</label><select id="gs"><option value="">İsim + puan</option><option value="isim">Yalnız isim</option><option value="puan">Yalnız puan</option></select></div>
-     <div><label class="f">Dil</label><select id="dl"><option value="">Türkçe</option><option value="en">English</option></select></div></div>
+ const RENK={aerobik:["#10B981","16,185,129","directions_run"],ritmik:["#EC4899","236,72,153","auto_awesome"],artistik:["#4F46E5","79,70,229","sports_gymnastics"]};
+ const MI=n=>`<span class="material-icons-round">${n}</span>`;
+ const seg=(id,ops,cls="")=>`<div class="seg ${cls}" id="${id}">${ops.map(([v,t])=>`<button type="button" data-v="${v}">${t}</button>`).join("")}</div>`;
+ const num=(id,v,mn,mx,st=1)=>`<div class="num"><button type="button" data-d="-${st}">−</button><input type="number" id="${id}" value="${v}" min="${mn}" max="${mx}" step="${st}"><button type="button" data-d="${st}">+</button></div>`;
+ app.innerHTML=`<header class="kh"><div class="kh-in">
+   <a class="kback" id="bk" href="/aerobik" title="Geri">${MI("arrow_back")}</a>
+   <div class="klogo" id="lg">${MI("live_tv")}</div>
+   <div class="kttl"><h1>Yayın Overlay</h1><p>YouTube / OBS yayını için çağrılan sporcu adı ve yayınlanan puan bandı</p></div>
+  </div></header>
+  <div class="kw"><div class="grid">
+   <div>
+    <div class="card"><h2><span class="ic" style="background:#2563EB">${MI("emoji_events")}</span>Yarışma</h2>
+     <label class="f">Branş</label>${seg("br",[["aerobik","Aerobik"],["ritmik","Ritmik"],["artistik","Artistik"]],"br")}
+     <label class="f">Yarışma</label><select id="cp"><option value="">Yükleniyor…</option></select>
+     <label class="f">Kategori filtresi <span>· boş = tümü</span></label>
+     <div class="ctools" id="ctl" style="display:none"><button type="button" id="cAll">${MI("done_all")}Tümü</button><button type="button" class="fin" id="cFin">🏆 Sadece finaller</button><button type="button" id="cClr">${MI("backspace")}Temizle</button><span class="cnt" id="cCnt"></span></div>
+     <div class="cats" id="ct"><span class="note">Önce yarışma seçin.</span></div>
+     <p class="note" style="margin-top:.5rem">Birden fazla alan aynı anda yarışıyorsa yalnızca yayındaki alanın kategorilerini seçin.</p>
+    </div>
+    <div class="card"><h2><span class="ic" style="background:#7C3AED">${MI("tune")}</span>Görünüm</h2>
+     <label class="f">Konum</label><div class="pos" id="ps"><button type="button" data-v="alt-sol"><i></i>Alt sol</button><button type="button" data-v="alt-orta"><i></i>Alt orta</button><button type="button" data-v="ust-sol"><i></i>Üst sol</button></div>
+     <label class="f">Göster</label>${seg("gs",[["","İsim + puan"],["isim","Yalnız isim"],["puan","Yalnız puan"]])}
+     <div class="row"><div><label class="f">Boyut (%)</label>${num("ol",100,40,200,5)}</div><div><label class="f">Dil</label>${seg("dl",[["","TR"],["en","EN"]])}</div></div>
+     <div class="row"><div><label class="f">Puan süresi (sn)</label>${num("su",12,3,120)}</div><div><label class="f">İsim süresi <span>· 0 = sürekli</span></label>${num("is",0,0,600)}</div></div>
+    </div>
    </div>
    <div>
-    <div class="card"><h2>OBS / vMix linki</h2>
-     <div class="url" id="url">Önce yarışma seçin.</div>
-     <div class="btns"><button class="btn" id="kp">Linki kopyala</button><button class="btn g" id="ac">Yeni sekmede aç</button><span class="ok" id="okm"></span></div>
-     <div class="note">OBS'te <b>Kaynak ekle → Tarayıcı</b> (Browser Source) seçin, bu linki yapıştırın, genişlik <code>1920</code>, yükseklik <code>1080</code> yapın. Arka plan otomatik şeffaftır. Sayfa yalnızca okur; hiçbir veriyi değiştirmez.</div></div>
-    <div class="card" style="margin-top:1rem"><h2>Önizleme (örnek veriyle)</h2><div class="prev"><iframe id="pv" title="önizleme"></iframe></div>
+    <div class="card"><h2><span class="ic" style="background:#DB2777">${MI("link")}</span>OBS / vMix linki</h2>
+     <div class="url bos" id="url">Önce yarışma seçin.</div>
+     <div class="btns"><button class="btn" id="kp" disabled>${MI("content_copy")}Linki kopyala</button><button class="btn g" id="ac" disabled>${MI("open_in_new")}Yeni sekmede aç</button><span class="ok" id="okm"></span></div>
+     <div class="steps"><div><b>1 · Kaynak ekle</b>OBS'te <b style="display:inline">Kaynak ekle → Tarayıcı</b> seçin.</div><div><b>2 · Linki yapıştır</b>Genişlik <code>1920</code>, yükseklik <code>1080</code>.</div><div><b>3 · Hazır</b>Arka plan şeffaftır; sayfa yalnızca okur, veri değiştirmez.</div></div>
+    </div>
+    <div class="card"><h2><span class="ic" style="background:#0EA5E9">${MI("visibility")}</span>Önizleme <small>örnek veriyle</small></h2><div class="prev"><iframe id="pv" title="önizleme"></iframe></div>
      <div class="note">Sporcu başhakem ekranında çağrılınca adı, Üst Jüri / başhakem puanı yayınlayınca puan kartı (E, A, D, kesinti, toplam, anlık sıra) çıkar. Puan kartından sonra yeni bir sporcu çağrılmışsa onun adına geçer.</div></div>
    </div>
   </div></div>`;
  const $=id=>document.getElementById(id);
  const db=getDatabase(initializeApp(firebaseConfig));
- const brIlk=BRANS[Q.get("brans")]?Q.get("brans"):"aerobik";$("br").value=brIlk;
+ // seçmeli (segment) kontroller: değer .value'da tutulur
+ const segKur=(id,ilk,cb)=>{const el=$(id);const sec=v=>{el.value=v;el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v))};sec(ilk);el.querySelectorAll("button").forEach(b=>b.onclick=()=>{sec(b.dataset.v);cb&&cb()});};
+ document.querySelectorAll(".num").forEach(n=>{const inp=n.querySelector("input");n.querySelectorAll("button").forEach(b=>b.onclick=()=>{const v=Math.min(+inp.max,Math.max(+inp.min,(+inp.value||0)+(+b.dataset.d)));inp.value=v;uret()})});
+ const tema=()=>{const b=$("br").value,[c,rgb,ic]=RENK[b];document.body.style.setProperty("--p",c);document.body.style.setProperty("--p-rgb",rgb);$("lg").innerHTML=MI(ic);$("bk").href="/"+b};
  let kats={};
+ const isFin=k=>/^final_/.test(k)||(kats[k]&&kats[k].final===!0);
+ const katAdi=k=>String(kats[k].name||kats[k].ad||k).replace(/^🏆\s*/,"").replace(/^final\s*[—–-]\s*/i,"");
  const yarismalar=async()=>{
-  $("cp").innerHTML=`<option value="">Yükleniyor…</option>`;$("ct").innerHTML="";
+  tema();
+  $("cp").innerHTML=`<option value="">Yükleniyor…</option>`;$("ct").innerHTML=`<span class="note">Önce yarışma seçin.</span>`;$("ctl").style.display="none";
   const s=await get(ref(db,BRANS[$("br").value]));const v=s.val()||{};
   const l=Object.entries(v).filter(([,c])=>c&&c.arsivli!==!0&&c.arsivli!=="true").map(([k,c])=>({k,ad:c.isim||c.name||k,t:c.baslangicTarihi||c.tarih||""})).sort((a,b)=>String(b.t).localeCompare(String(a.t)));
   $("cp").innerHTML=`<option value="">— Yarışma seçin —</option>`+l.map(x=>`<option value="${esc(x.k)}">${esc(x.ad)}</option>`).join("");
-  $("cp")._v=v;uret();
+  $("cp")._v=v;
+  if(l.length===1){$("cp").value=l[0].k;katlar()}else uret();
  };
+ const sayac=()=>{const n=$("ct").querySelectorAll("input:checked").length,t=$("ct").querySelectorAll("input").length;$("cCnt").textContent=n?`${n}/${t} seçili`:"Tümü yayında"};
  const katlar=()=>{const c=($("cp")._v||{})[$("cp").value]||{};kats=c.kategoriler||{};
-  $("ct").innerHTML=Object.keys(kats).sort().map(k=>`<label><input type="checkbox" value="${esc(k)}">${esc(String(kats[k].name||kats[k].ad||k).replace(/^🏆\s*/,""))}</label>`).join("")||`<span class="note">Kategori yok</span>`;
-  $("ct").querySelectorAll("input").forEach(i=>i.onchange=uret);uret()};
+  const ks=Object.keys(kats).sort(),fin=ks.filter(isFin),dig=ks.filter(k=>!isFin(k));
+  const ch=k=>`<label title="${esc(kats[k].name||k)}"><input type="checkbox" value="${esc(k)}"><span>${esc(katAdi(k))}</span></label>`;
+  $("ct").innerHTML=!ks.length?`<span class="note">${$("cp").value?"Kategori yok":"Önce yarışma seçin."}</span>`:
+   (fin.length?`<div class="cg-fin"><div class="cgh">🏆 Finaller</div><div class="cgrid">${fin.map(ch).join("")}</div></div>`:"")+
+   (dig.length?`<div><div class="cgh">${fin.length?"Elemeler":"Kategoriler"}</div><div class="cgrid">${dig.map(ch).join("")}</div></div>`:"");
+  $("ctl").style.display=ks.length?"flex":"none";$("cFin").style.display=fin.length?"":"none";
+  $("ct").querySelectorAll("input").forEach(i=>i.onchange=()=>{sayac();uret()});sayac();uret()};
+ const toplu=f=>{$("ct").querySelectorAll("input").forEach(i=>i.checked=f(i.value));sayac();uret()};
+ $("cAll").onclick=()=>toplu(()=>!0);$("cClr").onclick=()=>toplu(()=>!1);$("cFin").onclick=()=>toplu(isFin);
  const uret=()=>{const cp=$("cp").value,p=new URLSearchParams();
   const kat=[...$("ct").querySelectorAll("input:checked")].map(i=>i.value);
   p.set("brans",$("br").value);
@@ -257,10 +331,13 @@ async function kurulum(){
   if($("dl").value)p.set("dil",$("dl").value);
   const pv=new URLSearchParams(p);pv.set("demo","1");pv.delete("kat");
   const src=location.origin+location.pathname+"?"+pv.toString();if($("pv").src!==src)$("pv").src=src;
-  if(!cp){$("url").textContent="Önce yarışma seçin.";$("url")._u="";return}
+  const yok=!cp;$("kp").disabled=yok;$("ac").disabled=yok;$("url").classList.toggle("bos",yok);
+  if(yok){$("url").textContent="Önce yarışma seçin.";$("url")._u="";return}
   const u=location.origin+location.pathname+"?comp="+encodeURIComponent(cp)+"&"+p.toString();
   $("url").textContent=u;$("url")._u=u;};
- $("br").onchange=yarismalar;$("cp").onchange=katlar;["ps","ol","su","is","gs","dl"].forEach(i=>$(i).oninput=$(i).onchange=uret);
+ segKur("br",BRANS[Q.get("brans")]?Q.get("brans"):"aerobik",yarismalar);
+ segKur("ps","alt-sol",uret);segKur("gs","",uret);segKur("dl","",uret);
+ $("cp").onchange=katlar;["ol","su","is"].forEach(i=>$(i).oninput=$(i).onchange=uret);
  $("kp").onclick=async()=>{const u=$("url")._u;if(!u)return;try{await navigator.clipboard.writeText(u);$("okm").textContent="Kopyalandı ✓"}catch{$("okm").textContent="Kopyalanamadı — linki elle seçin"}setTimeout(()=>$("okm").textContent="",2500)};
  $("ac").onclick=()=>{const u=$("url")._u;u&&window.open(u,"_blank")};
  await yarismalar();
