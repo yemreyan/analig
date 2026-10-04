@@ -2324,6 +2324,7 @@ const DICT={
  "dokun → uyar":"tap → warn",
  "fark":"gap",
  "dokun/uyar":"tap/warn",
- "İtiraz Ekranı":"Inquiry Screen"
+ "İtiraz Ekranı":"Inquiry Screen",
+ "Teknik Kurul · Sıralama":"Technical Committee · Ranking"
 };
 export{DICT};
