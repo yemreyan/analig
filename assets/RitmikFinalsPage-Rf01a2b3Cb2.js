@@ -40,7 +40,7 @@ function RitmikFinals(){
  const rank=(cat,alet)=>{
   const P=partOf(cat);
   const rows=Object.entries(pun[cat]||{}).map(([id,sc])=>{
-    const s=alet===AA?num(sc?.sonuc):num(sc?.[alet]?.sonuc);
+    const s=alet===AA?(Object.values(sc||{}).some(v=>v&&typeof v==="object"&&v.irm)?null:num(sc?.sonuc)):(sc?.[alet]?.irm?null:num(sc?.[alet]?.sonuc));
     return{id,score:s,club:clubOf(P[id])}}).filter(r=>r.score!=null)
    .sort((a,b)=>b.score-a.score);
   const cap=Math.max(0,parseInt(limit)||0),used={},pick=[],over=[];
