@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,_ as Oe}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,v as set,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,_ as Oe,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,v as set,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK — PROGRAM & ÇIKIŞ LİSTESİ (kura listesi)
 //  ritmik_yarismalar/<yarışma>/cikisListesi : {ayar:{ust1,ust2,ust3}, gunler:[{id,tarih,bloklar:[blok]}], ts}
@@ -48,7 +48,7 @@ const S={
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:"1.1rem",...(st||{})},children:n});
 
 function Program({onEski}){
- const{toast,confirm}=usToast();
+ const{toast,confirm}=usToast();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(()=>{try{return new URLSearchParams(location.search).get("comp")||localStorage.getItem("tcfRtProgramComp")||""}catch{return""}});
  const[plan,setPlan]=R.useState(null),[kirli,setKirli]=R.useState(!1),[busy,setBusy]=R.useState(!1),[kura,setKura]=R.useState(null),[hedef,setHedef]=R.useState(""),[ac,setAc]=R.useState({}),[ayarAc,setAyarAc]=R.useState(!1);
  R.useEffect(()=>onValue(ref(db,BASE),s=>setComps(s.val()||{})),[]);
@@ -110,11 +110,11 @@ function Program({onEski}){
   setKura(null);toast(`${gruplar.filter(G=>G.length).length} ${__T("çıkış grubu oluşturuldu")} — ${ids.length} ${__T("sporcu")}`,"success")};
 
  // ---- kaydet / puanlamaya aktar ----
- const kaydet=async()=>{if(!comp||!plan)return;setBusy(!0);try{await set(ref(db,`${BASE}/${comp}/cikisListesi`),{...kopya(plan),ts:Date.now()});setKirli(!1);toast(__T("Çıkış listesi kaydedildi ✓"),"success")}catch(er){toast(__T("Kaydedilemedi: ")+(er?.message||er),"error")}setBusy(!1)};
+ const kaydet=async()=>{if(!comp||!plan)return;setBusy(!0);try{await set(ref(db,`${BASE}/${comp}/cikisListesi`),{...kopya(plan),ts:Date.now()});logAction("program_save",`[Ritmik] Çıkış listesi kaydedildi: ${plan.gunler.length} gün · ${tumBloklar.filter(b=>b.tip==="grup").length} çıkış grubu`,{user:_un,competitionId:comp,discipline:"ritmik",data:{gunler:plan.gunler.map(g=>({tarih:g.tarih,bloklar:g.bloklar.map(b=>b.tip==="grup"?{grup:grupNo[b.id],kategori:b.kat,aletler:b.aletler,sporcu:b.rows.length}:b.tip==="ara"?{ara:b.metin,bas:b.bas,bit:b.bit}:{grupYarismasi:b.kat,sayi:b.rows.length})}))}});setKirli(!1);toast(__T("Çıkış listesi kaydedildi ✓"),"success")}catch(er){toast(__T("Kaydedilemedi: ")+(er?.message||er),"error")}setBusy(!1)};
  const aktar=async()=>{if(!plan)return;const byCat={};tumBloklar.forEach(b=>{if(b.tip!=="grup"||!b.kat)return;(byCat[b.kat]||(byCat[b.kat]=[])).push(b)});const cats=Object.keys(byCat);if(!cats.length){toast(__T("Aktarılacak çıkış grubu yok."),"warning");return}
   if(!await confirm(`${cats.map(c=>katAd(c)+": "+byCat[c].length+" "+__T("grup")).join("\n")}\n\n${__T("Bu kategorilerin çıkış sırası puanlama ekranına aktarılacak (Çıkış Sırası sayfasındaki sıralama bu listeyle değiştirilir). Listede olmayan sporcuların sırası değişmez.")}`,{title:__T("Puanlamaya Aktar"),type:"warning"}))return;
   const up={};cats.forEach(cat=>{let say=0;up[`${BASE}/${comp}/siralama/${cat}`]=null;const sira={};byCat[cat].forEach((b,gi)=>{const goren=new Set,ids=[];b.rows.forEach(r=>{const a=r.r[0]?.a;a&&!goren.has(a)&&(goren.add(a),ids.push(a))});b.rows.forEach(r=>r.r.slice(1).forEach(x=>{x&&x.a&&!goren.has(x.a)&&(goren.add(x.a),ids.push(x.a))}));const rot={};ids.forEach((id,i)=>{const a=sp(cat,id);if(!a)return;say++;rot[id]={sirasi:i+1,ad:a.ad||"",soyad:a.soyad||"",tckn:a.tckn||"",okul:a.okul||a.kulup||"",yarismaTuru:a.yarismaTuru||"ferdi",...(a.grupNo!=null?{grupNo:a.grupNo}:{})};up[`${BASE}/${comp}/sporcular/${cat}/${id}/sirasi`]=i+1;up[`${BASE}/${comp}/sporcular/${cat}/${id}/cikisSirasi`]=say;up[`${BASE}/${comp}/sporcular/${cat}/${id}/rotasyonGrubu`]=gi+1});sira["rotation_"+gi]=rot});up[`${BASE}/${comp}/siralama/${cat}`]=sira});
-  setBusy(!0);try{await update(ref(db),up);toast(__T("Çıkış sırası puanlamaya aktarıldı ✓"),"success")}catch(er){toast(__T("Aktarılamadı: ")+(er?.message||er),"error")}setBusy(!1)};
+  setBusy(!0);try{await update(ref(db),up);logAction("program_transfer",`[Ritmik] Çıkış listesi puanlamaya aktarıldı: ${cats.map(c=>katAd(c)+" ("+byCat[c].length+" grup)").join(", ")}`.slice(0,480),{user:_un,competitionId:comp,discipline:"ritmik",data:{kategoriler:cats.map(c=>({kategori:c,gruplar:byCat[c].map(b=>({grup:grupNo[b.id],sporcu:b.rows.length}))}))}});toast(__T("Çıkış sırası puanlamaya aktarıldı ✓"),"success")}catch(er){toast(__T("Aktarılamadı: ")+(er?.message||er),"error")}setBusy(!1)};
 
  // ---- PDF (ekteki kura listesi düzeni) ----
  const pdf=async()=>{if(!plan)return;toast(__T("PDF hazırlanıyor…"),"info");try{

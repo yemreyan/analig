@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 const BASE="ritmik_yarismalar",TOP=8,RES=2,TAKE=TOP+RES,AA="_cm";
 const f3=v=>v==null||isNaN(v)?"—":Number(v).toFixed(3);
@@ -9,7 +9,7 @@ const aletLabel=a=>RA[a]?.label||a;
 const num=v=>v==null||v===""||isNaN(v)?null:Number(v);
 
 function RitmikFinals(){
- const{toast}=usToast();usInit();
+ const{toast}=usToast();usInit();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[busy,setBusy]=R.useState(!1),
        [log,setLog]=R.useState(null),[loading,setLoading]=R.useState(!0),
        [tmpl,setTmpl]=R.useState({}),[texp,setTexp]=R.useState(!1),[expanded,setExpanded]=R.useState({}),
@@ -80,7 +80,7 @@ function RitmikFinals(){
    upd["sporcular/"+fcat]=newSpor;upd["puanlar/"+fcat]=null;
    summary.push({fcat,cat,alet,label:catLabel(cat),aletAd:alet===AA?"Genel Tasnif":aletLabel(alet),names})});
   if(!Object.keys(upd).length){toast("Seçili finallerde puanı girilmiş sporcu bulunamadı.","warning");setBusy(!1);return}
-  try{await update(ref(db,BASE+"/"+comp),upd);await reload();setLog(summary);
+  try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_create",`[Ritmik] ${summary.length} final oluşturuldu: ${summary.map(x=>x.label+" — "+x.aletAd).join(", ")}`.slice(0,480),{user:_un,competitionId:comp,discipline:"ritmik",data:{kulupKotasi:Math.max(0,parseInt(limit)||0),kotaTamamla:fill,finaller:summary.map(x=>({kategori:x.fcat,ad:x.label+" — "+x.aletAd,sporcular:x.names.map(n=>({cikis:n.reserve?n.yed:n.cs,ad:n.name,kulup:n.club,eleme:n.rank,puan:n.score}))}))}});await reload();setLog(summary);
     toast(summary.length+" final oluşturuldu ✓ — ilk "+TOP+" + "+RES+" yedek","success")}
   catch{toast("Hata oluştu.","error")}
   setBusy(!1)};
@@ -90,7 +90,7 @@ function RitmikFinals(){
   [Object.keys(cats),Object.keys(spor),Object.keys(pun)].forEach(a=>a.forEach(c=>{isFinal(c)&&keys.add(c)}));
   if(!keys.size){toast("Silinecek final kategorisi yok.","warning");setBusy(!1);return}
   keys.forEach(fc=>{upd["kategoriler/"+fc]=null;upd["sporcular/"+fc]=null;upd["puanlar/"+fc]=null});
-  try{await update(ref(db,BASE+"/"+comp),upd);await reload();toast(keys.size+" final kategorisi silindi.","success")}
+  try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_delete",`[Ritmik] ${keys.size} final kategorisi silindi`,{user:_un,competitionId:comp,discipline:"ritmik",data:{silinen:[...keys]}});await reload();toast(keys.size+" final kategorisi silindi.","success")}
   catch{toast("Hata oluştu.","error")}
   setBusy(!1)};
 

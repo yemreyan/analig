@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK PANELLER (aerobik Paneller sayfasıyla aynı yapı; ritmik DA/DB/A/E/T/L/SJ panelleri)
 //  <yarışma>/panelGruplari/<gid> : {ad, tipler{A,E,D,T,L,SJ}, adet{A,E}, kategoriler{kat:true}, paneller{SLOT:{ozel}}}
@@ -25,7 +25,7 @@ const kListe=o=>Object.keys(o||{}).filter(k=>o[k]);
 let _qrMod=null;const qrAl=async t=>{try{_qrMod=_qrMod||(await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm")).default;return await _qrMod.toDataURL(t,{margin:1,width:360})}catch{return null}};
 
 function Paneller(){
- const{toast}=usToast();usDisc();
+ const{toast}=usToast();usDisc();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[C,setC]=R.useState(null),[busy,setBusy]=R.useState(!1),[form,setForm]=R.useState(null),[acik,setAcik]=R.useState({}),[qr,setQr]=R.useState(null);
 
  R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.isim&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim,t:c.baslangicTarihi||""})});setComps(o)});return()=>u()},[]);
@@ -41,7 +41,7 @@ function Paneller(){
  const aktifKat=ks=>{const a=C?.aktifSporcu||{};let en=null,t=-1;ks.forEach(k=>{const x=a[k];if(x&&(+x.ts||0)>t){t=+x.ts||0;en=k}});return en};
 
  // ---- yaz ----
- const yaz=async(upd,msg)=>{if(!C||!C.isim){toast(__T("Bu yarışma artık mevcut değil; değişiklik yazılmadı."),"error");return}setBusy(!0);try{await update(ref(db,`${BASE}/${comp}`),upd);msg&&toast(msg,"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
+ const yaz=async(upd,msg)=>{if(!C||!C.isim){toast(__T("Bu yarışma artık mevcut değil; değişiklik yazılmadı."),"error");return}setBusy(!0);try{await update(ref(db,`${BASE}/${comp}`),upd);try{logAction("panel_group_update",`[Ritmik] Paneller: ${msg||"panel kategorileri güncellendi"}`,{user:_un,competitionId:comp,discipline:"ritmik",data:{degisiklik:Object.fromEntries(Object.entries(upd).slice(0,40).map(([k,v])=>[k,v&&typeof v=="object"?{ad:v.ad||null,kategoriler:v.kategoriler?Object.keys(v.kategoriler):null}:v]))}})}catch{}msg&&toast(msg,"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
  const panelKaydi=(g,gid,s,katObj)=>({ad:`${g.ad} · ${s.slot}`,kategoriler:Object.keys(katObj||{}).length?katObj:null,tumKategoriler:!1,panelGrubu:gid,slot:s.slot,guncelleme:Date.now()});
 
  // grup oluştur / düzenle

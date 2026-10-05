@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{utils as XU,writeFile as XW,read as XR}from"./vendor-xlsx-CNerDvZXCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{utils as XU,writeFile as XW,read as XR}from"./vendor-xlsx-CNerDvZXCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // Ritmik Sporcular — aerobik Sporcular sayfasıyla aynı standart yapı (bireysel / grup).
 // Grup kategorilerinde kulüp + grup no = bir grup; puan anahtarı "<kat>::<kulüp>::<grupNo>" (Final Oluştur ile aynı).
@@ -57,7 +57,7 @@ const S={
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:"1.1rem",...(st||{})},children:n});
 
 function YeniSayfa({onEski}){
- const{toast}=usToast();
+ const{toast}=usToast();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(()=>{try{return new URLSearchParams(location.search).get("comp")||localStorage.getItem("tcfRtSporcuComp")||""}catch{return""}});
  const[q,setQ]=R.useState(""),[katF,setKatF]=R.useState(""),[finGoster,setFinGoster]=R.useState(!1);
  const[modal,setModal]=R.useState(null),[busy,setBusy]=R.useState(!1);
@@ -100,11 +100,11 @@ function YeniSayfa({onEski}){
    else{const id=yeniId(),ek={};if(eski[0]){["cikisSirasi","baslangicSaati","gun"].forEach(k=>{if(eski[0][k]!=null)ek[k]=eski[0][k]})}up[`${P}/${id}`]={...kayit,...ek,appId:"manuel",kayitTs:Date.now()}}});
   eski.slice(lines.length).forEach(m=>{up[`${P}/${m.id}`]=null});
   if(!kats[cat])up[`${BASE}/${comp}/kategoriler/${cat}`]={name:katAd(cat)};
-  setBusy(!0);try{await update(ref(db),up);toast(ent?__T("Yarışmacı güncellendi ✓"):__T("Yarışmacı eklendi ✓"),"success");setModal(null)}catch(er){toast(__T("Kaydedilemedi: ")+(er?.message||er),"error")}setBusy(!1)};
+  setBusy(!0);try{await update(ref(db),up);logAction(ent?"athlete_update":"athlete_create",`[Ritmik] ${ent?"Güncellendi":"Eklendi"}: ${lines.join(", ")} · ${katAd(cat)} · ${okul}`.slice(0,480),{user:_un,competitionId:comp,category:cat,athleteId:ent?ent.key:null,athleteName:lines.join(", "),discipline:"ritmik",oldValue:ent?JSON.stringify({ad:ent.ad,kulup:ent.okul,il:ent.il,grupNo:ent.grupNo}):null,newValue:JSON.stringify({ad:lines.join(", "),kulup:okul,il,grupNo:gn}),data:{kategori:cat,uyeler:lines,kulup:okul,il,grupNo:gn,tckn:f.tckn||"",lisans:f.lisans||""}});toast(ent?__T("Yarışmacı güncellendi ✓"):__T("Yarışmacı eklendi ✓"),"success");setModal(null)}catch(er){toast(__T("Kaydedilemedi: ")+(er?.message||er),"error")}setBusy(!1)};
  const sil=async ent=>{const uy=ent.puanli?"\n\n"+__T("⚠ Bu yarışmacının PUANI VAR. Kayıt silinirse puan tablolarda sahipsiz kalır."):"";
   if(!window.confirm(`"${ent.ad}" (${katAd(ent.cat)}) ${__T("silinsin mi?")}${uy}`))return;
   const up={};ent.members.forEach(m=>{up[`${BASE}/${comp}/sporcular/${ent.cat}/${m.id}`]=null});
-  setBusy(!0);try{await update(ref(db),up);toast(__T("Silindi."),"success")}catch(er){toast(__T("Silinemedi: ")+(er?.message||er),"error")}setBusy(!1)};
+  setBusy(!0);try{await update(ref(db),up);logAction("athlete_delete",`[Ritmik] Silindi: ${ent.ad} · ${katAd(ent.cat)} · ${ent.okul}${ent.puanli?" (PUANI VARDI)":""}`.slice(0,480),{user:_un,competitionId:comp,category:ent.cat,athleteId:ent.key,athleteName:ent.ad,discipline:"ritmik",oldValue:JSON.stringify({ad:ent.ad,kulup:ent.okul,il:ent.il,grupNo:ent.grupNo}),data:{uyeler:ent.members.map(m=>({id:m.id,ad:kisiAd(m),kulup:m.okul||m.kulup||"",il:m.il||""})),puanli:!!ent.puanli,puan:ent.pz||null}});toast(__T("Silindi."),"success")}catch(er){toast(__T("Silinemedi: ")+(er?.message||er),"error")}setBusy(!1)};
 
  // ---- Excel ----
  const katEsle=()=>{const norm=s=>String(s||"").toLocaleLowerCase("tr").replace(/[^a-zçğıöşü0-9]+/g,"");const map={};const add=(l,c)=>{const n=norm(l);if(n&&!(n in map))map[n]=c};katlar.filter(c=>!isFinal(c)).forEach(c=>{[c,katAd(c),kats[c]?.name,cfg(c).label].forEach(l=>add(l,c))});return{map,norm}};
@@ -124,7 +124,7 @@ function YeniSayfa({onEski}){
     up[`${BASE}/${comp}/sporcular/${cat}/${yeniId()}`]=rec;if(!kats[cat])up[`${BASE}/${comp}/kategoriler/${cat}`]={name:katAd(cat)};ok++});
    if(!ok){toast(__T("Geçerli satır yok.")+(bad.size?" "+__T("Tanınmayan kategori:")+" "+[...bad].slice(0,3).join(", "):""),"error");return}
    if(!window.confirm(`${ok} ${__T("sporcu")} → "${Cp.isim||comp}": ${__T("yarışmasına eklenecek.")}${atla?`\n${atla} ${__T("satır atlanacak")}${bad.size?" ("+__T("tanınmayan kategori:")+" "+[...bad].slice(0,3).join(", ")+")":""}.`:""}\n\n${__T("Devam edilsin mi?")}`))return;
-   setBusy(!0);await update(ref(db),up);setBusy(!1);toast(ok+" "+__T("sporcu eklendi ✓"),"success")}catch(er){setBusy(!1);toast(__T("İçe aktarma hatası: ")+(er?.message||er),"error")}};
+   setBusy(!0);await update(ref(db),up);logAction("athlete_import",`[Ritmik] Excel ile ${ok} sporcu eklendi: ${Cp.isim||comp}${atla?" · "+atla+" satır atlandı":""}`,{user:_un,competitionId:comp,discipline:"ritmik",data:{dosya:file?.name||"",eklenen:ok,atlanan:atla,taninmayanKategori:[...bad].slice(0,10)}});setBusy(!1);toast(ok+" "+__T("sporcu eklendi ✓"),"success")}catch(er){setBusy(!1);toast(__T("İçe aktarma hatası: ")+(er?.message||er),"error")}};
  const disari=()=>{const s1=[],s2=[];katlar.forEach(c=>entries.filter(x=>x.cat===c).sort((a,b)=>a.sira-b.sira||a.ad.localeCompare(b.ad,"tr")).forEach(x=>{s1.push({Kategori:katAd(c),Tür:TIP_AD[typeOf(c)],Yarışmacı:x.ad,Kulüp:x.okul,İl:x.il,["Grup No"]:x.grupNo??"",["Çıkış Sırası"]:x.sira<1e9?x.sira:"",Saat:x.saat,Puan:x.pz?Number(x.pz.t.toFixed(3)):""});x.members.forEach((m,i)=>s2.push({Kategori:katAd(c),Ad:m.ad||"",Soyad:m.soyad||"",["Ad Soyad"]:kisiAd(m),İl:m.il||"",Kulüp:m.okul||m.kulup||"",TCKN:m.tckn||"",["Lisans No"]:m.lisans||"",["Grup No"]:x.grupNo??"",["Üye Sıra"]:x.members.length>1?i+1:""}))}));
   const wb=XU.book_new(),w1=XU.json_to_sheet(s1);w1["!cols"]=[{wch:26},{wch:12},{wch:40},{wch:26},{wch:12},{wch:8},{wch:11},{wch:8},{wch:8}];XU.book_append_sheet(wb,w1,"Yarışmacılar");const w2=XU.json_to_sheet(s2);XU.book_append_sheet(wb,w2,"Sporcular");
   XW(wb,String(Cp.isim||"sporcular").replace(/[^a-zA-Z0-9ğüşöçıİĞÜŞÖÇ ]+/g,"_").replace(/\s+/g,"_").slice(0,40)+"_sporcular.xlsx")};
