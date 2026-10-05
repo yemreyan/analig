@@ -146,9 +146,9 @@ function Finals(){
   const hedef=Array.isArray(liste)?liste:realCats;
   // final kategorisinde puan girilmisse uzerine yazmadan once onay al
   const puanli=hedef.filter(c=>Object.keys(pun["final_"+c]||{}).length>0);
-  if(puanli.length&&!window.confirm(puanli.map(catLabel).join(", ")+"\n\n"+__T("Bu finalde girilmiş puanlar var. Yeniden oluşturulursa final puanları SİLİNİR. Devam edilsin mi?")))return;
+  if(puanli.length&&!await window.__gxConfirm(puanli.map(catLabel).join(", ")+"\n\n"+__T("Bu finalde girilmiş puanlar var. Yeniden oluşturulursa final puanları SİLİNİR. Devam edilsin mi?")))return;
   const eksik=hedef.map(c=>({c,d:durumCat(c)})).filter(x=>!x.d.tamam&&x.d.toplam>0);
-  if(eksik.length&&!window.confirm(eksik.map(x=>catLabel(x.c)+" ("+x.d.bitti+"/"+x.d.toplam+")").join(", ")+"\n\n"+__T("Bu kategoride puanı girilmemiş sporcu/takım var. Yine de final oluşturulsun mu?")))return;
+  if(eksik.length&&!await window.__gxConfirm(eksik.map(x=>catLabel(x.c)+" ("+x.d.bitti+"/"+x.d.toplam+")").join(", ")+"\n\n"+__T("Bu kategoride puanı girilmemiş sporcu/takım var. Yine de final oluşturulsun mu?")))return;
   setBusy(!0);setLog(null);
   const upd={},summary=[];
   if(isKA)upd.finalKulupKota=kotaN||null;
@@ -173,7 +173,7 @@ function Finals(){
  const clearOne=async cat=>{
   const fc="final_"+cat;if(busy||!comp)return;
   const np=Object.keys(pun[fc]||{}).length;
-  if(!window.confirm(catLabel(cat)+" — "+__T("finali silinsin mi?")+(np?"\n\n"+np+" "+__T("final puanı da silinecek."):"")))return;
+  if(!await window.__gxConfirm(catLabel(cat)+" — "+__T("finali silinsin mi?")+(np?"\n\n"+np+" "+__T("final puanı da silinecek."):"")))return;
   setBusy(!0);setLog(null);
   try{await update(ref(db,`${BASE}/${comp}`),{[`kategoriler/${fc}`]:null,[`sporcular/${fc}`]:null,[`puanlar/${fc}`]:null,[`siralama/${fc}`]:null});await reload();toast(catLabel(cat)+" — "+__T("finali silindi."),"success")}catch{toast("Hata oluştu.","error")}
   setBusy(!1);
@@ -182,7 +182,7 @@ function Finals(){
   if(busy||!comp)return;const upd={},keys=new Set();
   [Object.keys(cats),Object.keys(spor),Object.keys(pun)].forEach(a=>a.forEach(c=>{if(isFinal(c))keys.add(c)}));
   if(!keys.size){toast("Silinecek final kategorisi yok.","warning");return}
-  if(!window.confirm(keys.size+" "+__T("final kategorisi ve bu finallerde girilmiş TÜM puanlar silinecek. Emin misiniz?")))return;
+  if(!await window.__gxConfirm(keys.size+" "+__T("final kategorisi ve bu finallerde girilmiş TÜM puanlar silinecek. Emin misiniz?")))return;
   setBusy(!0);setLog(null);
   keys.forEach(fc=>{upd[`kategoriler/${fc}`]=null;upd[`sporcular/${fc}`]=null;upd[`puanlar/${fc}`]=null;upd[`siralama/${fc}`]=null});
   try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();toast(keys.size+" final kategorisi silindi.","success")}catch{toast("Hata oluştu.","error")}

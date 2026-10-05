@@ -45,7 +45,7 @@ function KategoriYonetimi(){
  // ---- kaydet (katalog / artistik kriter) ----
  const artSablon=(a,haric)=>{for(const k of Object.keys(artC))if(k!==haric&&artC[k]?.[a])return JSON.parse(JSON.stringify(artC[k][a]));return{bonus:{maxE:10,requiredD:0,value:0},hakemSayisi:4}};
  const katKaydet=async()=>{if(busy||!degisenler.length)return;
-  if(!window.confirm(degisenler.map(k=>"• "+(deger(k,"label")||k)).join("\n")+"\n\n"+__T("Değişiklikler kaydedilsin mi? Yeni oluşturulacak yarışmalar bu tanımları kullanır; mevcut yarışmalara uygulamak için “Yarışmaya Uygula” sekmesini kullanın.")))return;
+  if(!await window.__gxConfirm(degisenler.map(k=>"• "+(deger(k,"label")||k)).join("\n")+"\n\n"+__T("Değişiklikler kaydedilsin mi? Yeni oluşturulacak yarışmalar bu tanımları kullanır; mevcut yarışmalara uygulamak için “Yarışmaya Uygula” sekmesini kullanın.")))return;
   setBusy(!0);const upd={};
   degisenler.forEach(k=>{const x={...etkin[k],...ed[k]};
    if(art){
@@ -62,7 +62,7 @@ function KategoriYonetimi(){
     upd[`criteria/kategoriKatalog/${BR}/${k}`]=v;
    }});
   try{await update(ref(db),upd);setEd({});toast(degisenler.length+" "+__T("kategori kaydedildi ✓"),"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
- const varsayilana=async k=>{if(!kat[k])return;if(!window.confirm((etkin[k]?.label||k)+": "+__T("katalogdaki düzeltmeler silinip sabit tanıma dönülsün mü? (Değişiklik sayfa yenilenince tüm ekranlarda görünür.)")))return;
+ const varsayilana=async k=>{if(!kat[k])return;if(!await window.__gxConfirm((etkin[k]?.label||k)+": "+__T("katalogdaki düzeltmeler silinip sabit tanıma dönülsün mü? (Değişiklik sayfa yenilenince tüm ekranlarda görünür.)")))return;
   setBusy(!0);try{await update(ref(db),{[`criteria/kategoriKatalog/${BR}/${k}`]:null});setEd(o=>{const n={...o};delete n[k];return n});toast(__T("Sabit tanıma dönüldü."),"success")}catch{toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
 
  // ---- yeni kategori ----
@@ -92,7 +92,7 @@ function KategoriYonetimi(){
   if(engel.length){toast(engel.map(d=>yDeger(d.k,"name")).join(", ")+" — "+__T("sporcusu veya puanı olan kategori yarışmadan çıkarılamaz."),"warning");return}
   const puanliAlet=yDegisim.filter(d=>d.tur==="duzelt"&&d.ch.includes("aletler")&&CK[d.k]._pu);
   const ozet=yDegisim.map(d=>(d.tur==="ekle"?"＋ ":d.tur==="cikar"?"－ ":"✎ ")+String(yDeger(d.k,"name")).trim()+(d.tur==="duzelt"?" ("+d.ch.map(c=>__T(c==="ad"?"ad":"aletler")).join(", ")+")":"")).join("\n");
-  if(!window.confirm(C.isim+"\n\n"+ozet+(puanliAlet.length?"\n\n⚠ "+__T("Puan girilmiş kategoride alet listesi değişiyor; çıkarılan aletin puanları silinmez ama ekranlarda görünmez."):"")+"\n\n"+__T("Yarışmaya uygulansın mı?")))return;
+  if(!await window.__gxConfirm(C.isim+"\n\n"+ozet+(puanliAlet.length?"\n\n⚠ "+__T("Puan girilmiş kategoride alet listesi değişiyor; çıkarılan aletin puanları silinmez ama ekranlarda görünmez."):"")+"\n\n"+__T("Yarışmaya uygulansın mı?")))return;
   setBusy(!0);const upd={};
   yDegisim.forEach(({k,tur,ch})=>{const n=String(yDeger(k,"name")||"").trim()||etkin[k]?.label||k,al=yDeger(k,"aletler")||[];
    if(tur==="ekle")upd[`kategoriler/${k}`]={name:n,aletler:alet?al:[],athleteCount:etkin[k]?.athleteCount||1,tip:etkin[k]?.tip||"ferdi"};
@@ -177,7 +177,7 @@ function KategoriYonetimi(){
      e.jsx("button",{style:{...S.btn,background:degisenler.length?"linear-gradient(135deg,#22c55e,#0ea5e9)":"#F1F5F9",color:degisenler.length?"#fff":"#64748B"},disabled:busy||!degisenler.length,onClick:katKaydet,children:busy?__T("Kaydediliyor…"):__T("Değişiklikleri kaydet")})]})]})
   ]}):e.jsxs("div",{style:S.card,children:[
    e.jsx("div",{style:S.sub,children:__T("Yarışma seçin; kategori ekleyin, çıkarın, adını ve aletlerini düzeltin. Sporcusu veya puanı olan kategori çıkarılamaz. Final kategorilerine dokunulmaz.")}),
-   e.jsxs("select",{style:{...S.sel,width:"100%",marginBottom:".8rem",padding:".6rem .8rem",fontSize:".92rem"},value:comp,onChange:t=>{if(Object.keys(yEd).length&&!window.confirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(t.target.value);setYEd({})},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
+   e.jsxs("select",{style:{...S.sel,width:"100%",marginBottom:".8rem",padding:".6rem .8rem",fontSize:".92rem"},value:comp,onChange:async t=>{const _v=t.target.value;if(Object.keys(yEd).length&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(_v);setYEd({})},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
     Object.entries(comps).sort((a,b)=>String(b[1].tarih).localeCompare(String(a[1].tarih))).map(([k,c])=>e.jsx("option",{value:k,children:c.isim},k))]}),
    comp?e.jsxs(e.Fragment,{children:[...grupla(yKat,yarismaSatir),
     e.jsxs("div",{style:{display:"flex",gap:".6rem",alignItems:"center",marginTop:"1rem"},children:[

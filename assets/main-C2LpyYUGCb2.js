@@ -34,3 +34,32 @@ function __HG({disc:s,children:o}){const L=typeof window<"u"?window.location:nul
   c.jsx("input",{style:inp,type:"password",value:sf,onChange:e=>setSf(e.target.value),placeholder:__T("Şifre"),autoComplete:"current-password"}),
   er?c.jsx("div",{style:{color:"#B91C1C",fontSize:13,fontWeight:700},children:er}):null,
   c.jsx("button",{type:"submit",disabled:bk||!ad||!sf,style:{padding:"12px",borderRadius:12,border:"none",background:"#4F46E5",color:"#fff",font:"inherit",fontWeight:800,fontSize:16,cursor:"pointer",opacity:bk||!ad||!sf?.6:1},children:bk?"…":__T("Giriş yap")})]}))}
+
+// Uygulama içi mesaj kutuları: tarayıcının alert/confirm/prompt pencereleri yerine.
+// window.__gxConfirm(msg)→Promise<bool>, window.__gxPrompt(msg,def)→Promise<string|null>, window.__gxAlert(msg); window.alert de buraya yönlenir.
+;(()=>{if(typeof window>"u"||window.__gxDlg)return;window.__gxDlg=1;let q=Promise.resolve();
+const CSS=`.gx-dlg-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.5);display:grid;place-items:center;padding:16px;animation:gxDlgF .14s ease;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.gx-dlg-ov.out{opacity:0;transition:opacity .12s}
+.gx-dlg{width:min(440px,100%);background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(15,23,42,.35);padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;animation:gxDlgU .16s ease;color:#0F172A;text-align:left}
+.gx-dlg-hd{display:flex;align-items:center;gap:12px}.gx-dlg-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex-shrink:0;background:#EEF2FF;color:#4F46E5}.gx-dlg-ic i{font-size:24px}.gx-dlg-ic.dan{background:#FEF2F2;color:#DC2626}.gx-dlg-ic.alert{background:#EFF6FF;color:#2563EB}.gx-dlg-ic.err{background:#FEF2F2;color:#DC2626}.gx-dlg-ic.ok{background:#F0FDF4;color:#16A34A}
+.gx-dlg-t{font-size:1.05rem;font-weight:900}.gx-dlg-m{font-size:.92rem;font-weight:600;color:#334155;line-height:1.55;white-space:pre-line;max-height:55vh;overflow:auto;word-break:break-word}
+.gx-dlg-in{width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid #CBD5E1;border-radius:12px;font:inherit;font-size:.95rem;font-weight:600;outline:none}.gx-dlg-in:focus{border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.18)}
+.gx-dlg-b{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}.gx-dlg-b button{padding:10px 18px;border-radius:12px;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer;border:1px solid #E2E8F0;background:#fff;color:#334155}.gx-dlg-b button:focus-visible{outline:3px solid rgba(79,70,229,.35);outline-offset:1px}
+.gx-dlg-b .gx-dlg-o{background:#4F46E5;border-color:#4F46E5;color:#fff}.gx-dlg-b .gx-dlg-o.dan{background:#DC2626;border-color:#DC2626}
+@keyframes gxDlgF{from{opacity:0}}@keyframes gxDlgU{from{transform:translateY(10px) scale(.98);opacity:0}}`;
+const T=t=>{try{return typeof __T=="function"?__T(t):t}catch{return t}},esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const css=()=>{if(document.getElementById("gx-dlg-css"))return;const st=document.createElement("style");st.id="gx-dlg-css";st.textContent=CSS;(document.head||document.documentElement).appendChild(st)};
+const show=(k,msg,def)=>new Promise(res=>{if(!document.body){res(k==="confirm"?!1:k==="prompt"?null:void 0);return}css();const m=String(msg??""),lm=m.toLocaleLowerCase("tr-TR"),
+ dan=k==="confirm"&&/(sil|kald[ıi]r|kal[ıi]c[ıi]|geri al[ıi]namaz|s[ıi]f[ıi]rla|temizle|delete|remove|reset)/.test(lm),err=k==="alert"&&/(hata|başarısız|yapılamadı|edilemedi|kaydedilemedi|okunamadı|error|failed)/.test(lm),okm=k==="alert"&&!err&&/(✓|başarı|tamamlandı|kaydedildi|eklendi)/.test(lm),
+ ic=dan?"warning":k==="prompt"?"edit_note":k==="confirm"?"help_outline":err?"error_outline":okm?"check_circle":"info",cl=dan?"dan":err?"err":okm?"ok":k==="alert"?"alert":"",
+ tt=dan?T("Emin misiniz?"):k==="confirm"?T("Onay"):k==="prompt"?T("Bilgi girin"):err?T("Hata"):okm?T("Tamam"):T("Bilgi"),
+ ov=document.createElement("div");ov.className="gx-dlg-ov";
+ ov.innerHTML=`<div class="gx-dlg" role="${k==="alert"?"alertdialog":"dialog"}" aria-modal="true"><div class="gx-dlg-hd"><div class="gx-dlg-ic ${cl}"><i class="material-icons-round">${ic}</i></div><div class="gx-dlg-t">${esc(tt)}</div></div><div class="gx-dlg-m"></div>${k==="prompt"?'<input class="gx-dlg-in" type="text">':""}<div class="gx-dlg-b">${k==="alert"?"":`<button type="button" class="gx-dlg-c">${esc(T("İptal"))}</button>`}<button type="button" class="gx-dlg-o ${dan?"dan":""}">${esc(k==="confirm"?(dan?T("Evet, devam et"):T("Onayla")):T("Tamam"))}</button></div></div>`;
+ ov.querySelector(".gx-dlg-m").textContent=m;const inp=ov.querySelector(".gx-dlg-in");inp&&(inp.value=def==null?"":String(def));const prev=document.activeElement;
+ let bitti=!1;const done=v=>{if(bitti)return;bitti=!0;document.removeEventListener("keydown",kd,!0);ov.classList.add("out");setTimeout(()=>{ov.remove();try{prev&&prev.focus&&prev.focus()}catch{}},120);res(v)},
+ ok=()=>done(k==="confirm"?!0:k==="prompt"?inp.value:void 0),no=()=>done(k==="confirm"?!1:k==="prompt"?null:void 0),
+ kd=e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();k==="alert"?ok():no()}else if(e.key==="Enter"){const a=document.activeElement;if(a&&a.classList&&a.classList.contains("gx-dlg-c"))return;e.preventDefault();e.stopPropagation();ok()}else if(e.key==="Tab"){const f=[...ov.querySelectorAll("input,button")],i=f.indexOf(document.activeElement);e.preventDefault();f[(i+(e.shiftKey?-1:1)+f.length)%f.length].focus()}};
+ document.addEventListener("keydown",kd,!0);ov.querySelector(".gx-dlg-o").onclick=ok;const cb=ov.querySelector(".gx-dlg-c");cb&&(cb.onclick=no);ov.addEventListener("mousedown",e=>{e.target===ov&&k!=="alert"&&no()});
+ document.body.appendChild(ov);setTimeout(()=>{try{(inp||ov.querySelector(dan?".gx-dlg-c":".gx-dlg-o")).focus();inp&&inp.select()}catch{}},30)});
+const enq=(k,m,d)=>{const p=q.then(()=>show(k,m,d));q=p.catch(()=>{});return p};
+window.__gxAlert=m=>enq("alert",m);window.__gxConfirm=m=>enq("confirm",m);window.__gxPrompt=(m,d)=>enq("prompt",m,d);
+try{window.alert=m=>{enq("alert",m)}}catch{}})();

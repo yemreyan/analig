@@ -37,7 +37,7 @@ function Kriterler(){
   toast(Object.keys(o).length?Object.keys(o).length+" "+__T("kategoriye varsayılan ad dolduruldu — kaydetmeyi unutmayın."):__T("Bu yarışmadaki adlar zaten varsayılanlarla aynı."),"info")};
  const yKaydet=async()=>{if(busy||!comp||!degisen.length)return;
   const liste=degisen.map(c=>`• ${mevcut(c)}  →  ${temizAd(yDeger(c))}`).join("\n");
-  if(!window.confirm(C.isim+"\n\n"+liste+"\n\n"+__T("Bu adlar yarışmada (puanlama, canlı sonuçlar, finaller, final oluşturma, PDF) görünecek. Kaydedilsin mi?")))return;
+  if(!await window.__gxConfirm(C.isim+"\n\n"+liste+"\n\n"+__T("Bu adlar yarışmada (puanlama, canlı sonuçlar, finaller, final oluşturma, PDF) görünecek. Kaydedilsin mi?")))return;
   setBusy(!0);const upd={};
   degisen.forEach(c=>{const t=temizAd(yDeger(c));upd[`kategoriler/${c}/name`]=t;if(cats["final_"+c])upd[`kategoriler/final_${c}/name`]="🏆 Final — "+t});
   try{await update(ref(db,`${BASE}/${comp}`),upd);setYEd({});toast(degisen.length+" "+__T("kategori adı güncellendi ✓"),"success")}catch{toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
@@ -71,7 +71,7 @@ function Kriterler(){
    e.jsxs("div",{style:{...S.card,borderColor:"#3b4a72"},children:[
     e.jsx("div",{style:S.h,children:__T("Yarışmada görünen kategori adları")}),
     e.jsx("div",{style:S.sub,children:__T("Bir yarışma seçin, adları düzenleyin ve kaydedin. Puanlama ekranı, canlı sonuçlar, final sonuçları, final oluşturma, PDF/Excel ve yayın overlay'i bu adları gösterir. Final kategorisi varsa onun adı da güncellenir.")}),
-    e.jsxs("select",{style:S.sel,value:comp,onChange:t=>{if(Object.keys(yEd).length&&!window.confirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(t.target.value)},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
+    e.jsxs("select",{style:S.sel,value:comp,onChange:async t=>{const _v=t.target.value;if(Object.keys(yEd).length&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(_v)},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
      Object.entries(comps).sort((a,b)=>String(b[1].baslangicTarihi).localeCompare(String(a[1].baslangicTarihi))).map(([k,c])=>e.jsx("option",{value:k,children:c.isim},k))]}),
     comp?yKat.length?e.jsxs(e.Fragment,{children:[
      e.jsxs("div",{style:{...S.row,borderBottom:"1px solid #2a3550"},children:[e.jsx("span",{style:{...S.kod,fontWeight:800},children:__T("Kod")}),e.jsx("span",{style:{...S.sys,fontWeight:800},children:__T("Şu anki ad")}),e.jsx("span",{style:{...S.sys,fontWeight:800},children:__T("Görünecek ad")})]}),

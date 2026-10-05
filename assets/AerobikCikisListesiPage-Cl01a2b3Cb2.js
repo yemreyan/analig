@@ -161,7 +161,7 @@ function wire(){
   L.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>move(+b.dataset.up,+b.dataset.up-1));
   L.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>move(+b.dataset.dn,+b.dataset.dn+1));
   L.querySelectorAll("[data-delbreak]").forEach(b=>b.onclick=()=>{breaks.splice(+b.dataset.delbreak,1);render();});
-  L.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const it=items[+b.dataset.del];if(confirm(`"${nameOf(it)||"Bu yarışmacı"}" listeden çıkarılsın mı?`)){items.splice(+b.dataset.del,1);render();}});
+  L.querySelectorAll("[data-del]").forEach(b=>b.onclick=async ()=>{const it=items[+b.dataset.del];if(await window.__gxConfirm(`"${nameOf(it)||"Bu yarışmacı"}" listeden çıkarılsın mı?`)){items.splice(+b.dataset.del,1);render();}});
   L.querySelectorAll("[data-brk]").forEach(b=>b.onclick=()=>insertBreakAfter(+b.dataset.brk+1));
   L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{items[+inp.dataset.gi].grupNo=Math.max(1,parseInt(inp.value)||1);});
   let dragI=null;
@@ -214,17 +214,17 @@ $("mCancel").addEventListener("click",closeModal);
 $("mAdd").addEventListener("click",doAddCompetitor);
 $("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 
-function insertBreakAfter(after){
-  const dur=parseInt(prompt(`${after}. çıkıştan sonra mola — süre (dakika):`,"10")); if(!dur||dur<1)return;
-  const label=prompt("Mola etiketi:","ARA")||"ARA";
+async function insertBreakAfter(after){
+  const dur=parseInt(await window.__gxPrompt(`${after}. çıkıştan sonra mola — süre (dakika):`,"10")); if(!dur||dur<1)return;
+  const label=await window.__gxPrompt("Mola etiketi:","ARA")||"ARA";
   breaks.push({after,dur,label}); render();
   toast(`${after}. çıkıştan sonra ${dur} dk mola eklendi ✓`,"ok");
 }
-function addBreak(){
-  const pos=prompt("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-"+items.length+")");
+async function addBreak(){
+  const pos=await window.__gxPrompt("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-"+items.length+")");
   if(pos==null)return; const after=parseInt(pos); if(isNaN(after)||after<1||after>=items.length){toast("Geçersiz konum.","err");return;}
-  const dur=parseInt(prompt("Mola süresi (dk):","10"))||10;
-  const label=prompt("Etiket:","ARA")||"ARA";
+  const dur=parseInt(await window.__gxPrompt("Mola süresi (dk):","10"))||10;
+  const label=await window.__gxPrompt("Etiket:","ARA")||"ARA";
   breaks.push({after,dur,label}); render();
 }
 

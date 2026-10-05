@@ -54,7 +54,7 @@ function Paneller(){
   const ozel={...(eski?.paneller||{})};
   // kaldırılan paneller
   const kaldir=eskiS.filter(s=>!yeniS.some(y=>y.slot===s.slot));
-  if(kaldir.length&&!window.confirm(kaldir.map(s=>s.slot).join(", ")+" — "+__T("bu panellerin linkleri silinecek; açık olan bu paneller çalışmaz hâle gelir. Devam edilsin mi?")))return;
+  if(kaldir.length&&!await window.__gxConfirm(kaldir.map(s=>s.slot).join(", ")+" — "+__T("bu panellerin linkleri silinecek; açık olan bu paneller çalışmaz hâle gelir. Devam edilsin mi?")))return;
   kaldir.forEach(s=>{upd[`hakemLinkleri/${pidOf(gid,s.slot)}`]=null;delete ozel[s.slot]});
   yeniS.forEach(s=>{const pid=pidOf(gid,s.slot),cur=linkler[pid];
    if(!cur)upd[`hakemLinkleri/${pid}`]=panelKaydi(yeniG,gid,s,yeniG.kategoriler);
@@ -62,7 +62,7 @@ function Paneller(){
   upd[`panelGruplari/${gid}`]={...yeniG,paneller:Object.keys(ozel).length?ozel:null,olusturma:eski?.olusturma||Date.now(),guncelleme:Date.now()};
   await yaz(upd,eski?__T("Panel grubu güncellendi ✓"):__T("Panel grubu oluşturuldu ✓"));setForm(null);setAcik(o=>({...o,[gid]:!0}))};
  const grupSil=async gid=>{const g=gruplar[gid];if(!g)return;
-  if(!window.confirm(g.ad+" — "+__T("grup ve tüm panel linkleri silinsin mi? Açık olan bu paneller çalışmaz hâle gelir.")))return;
+  if(!await window.__gxConfirm(g.ad+" — "+__T("grup ve tüm panel linkleri silinsin mi? Açık olan bu paneller çalışmaz hâle gelir.")))return;
   const upd={[`panelGruplari/${gid}`]:null};slotlar(g).forEach(s=>{upd[`hakemLinkleri/${pidOf(gid,s.slot)}`]=null});
   Object.keys(linkler).forEach(k=>{if(linkler[k]?.panelGrubu===gid)upd[`hakemLinkleri/${k}`]=null});
   await yaz(upd,__T("Panel grubu silindi."))};
@@ -79,7 +79,7 @@ function Paneller(){
  const eksikOnar=gid=>{const g=gruplar[gid],upd={};slotlar(g).forEach(s=>{const pid=pidOf(gid,s.slot);if(!linkler[pid])upd[`hakemLinkleri/${pid}`]=panelKaydi(g,gid,s,g.paneller?.[s.slot]?.ozel?{}:g.kategoriler)});
   Object.keys(upd).length&&yaz(upd,__T("Eksik panel kayıtları oluşturuldu."))};
 
- const kopyala=async t=>{try{await navigator.clipboard.writeText(t);toast(__T("Kopyalandı ✓"),"success")}catch{window.prompt(__T("Linki kopyalayın:"),t)}};
+ const kopyala=async t=>{try{await navigator.clipboard.writeText(t);toast(__T("Kopyalandı ✓"),"success")}catch{await window.__gxPrompt(__T("Linki kopyalayın:"),t)}};
  const qrGoster=async(baslik,url)=>{setQr({baslik,url,img:null});const img=await qrAl(url);setQr(o=>o&&o.url===url?{...o,img:img||"yok"}:o)};
  const qrSayfasi=async gid=>{const g=gruplar[gid],ss=slotlar(g),w=window.open("","_blank");if(!w){toast(__T("Açılır pencere engellendi."),"warning");return}
   w.document.write(`<title>${g.ad} — QR</title><p style="font:16px sans-serif">${__T("Hazırlanıyor…")}</p>`);

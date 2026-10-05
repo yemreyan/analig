@@ -24,7 +24,7 @@ function KulupPuani(){
  const degis=fn=>setEd(o=>{const k=temiz(o||kayitli);fn(k);return k});
  const sirDegis=(si,patch)=>degis(k=>{Object.assign(k[si],patch)});
  const sirEkle=()=>degis(k=>{k.push({id:yid("s"),ad:"",grup:"",minPuan:MIN_PUAN,puanlar:[{id:yid("p"),ad:"",kategoriler:[]}]})});
- const sirSil=si=>{if(!window.confirm(__T("Bu takım kategorisi silinsin mi?")))return;degis(k=>{k.splice(si,1)})};
+ const sirSil=async si=>{if(!await window.__gxConfirm(__T("Bu takım kategorisi silinsin mi?")))return;degis(k=>{k.splice(si,1)})};
  const puanEkle=si=>degis(k=>{k[si].puanlar.push({id:yid("p"),ad:"",kategoriler:[]})});
  const puanSil=(si,pi)=>degis(k=>{k[si].puanlar.splice(pi,1)});
  const puanTasi=(si,pi,d)=>degis(k=>{const a=k[si].puanlar,j=pi+d;if(j<0||j>=a.length)return;[a[pi],a[j]]=[a[j],a[pi]]});
@@ -39,7 +39,7 @@ function KulupPuani(){
   try{await update(ref(db,`${BASE}/${comp}`),{kulupPuani:{surum:3,siralamalar:temiz(liste)}});setEd(null);toast(__T("Kulüp puanı ayarları kaydedildi ✓"),"success")}
   catch{toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
  const hazirKurulum=async()=>{if(!comp||busy)return;
-  if(!window.confirm(__T("Kayıtlı ayar silinip hazır kuruluma (her yaş grubu: Tekler / Çiftler-Trio / Grup) dönülsün mü?")))return;
+  if(!await window.__gxConfirm(__T("Kayıtlı ayar silinip hazır kuruluma (her yaş grubu: Tekler / Çiftler-Trio / Grup) dönülsün mü?")))return;
   setBusy(!0);try{await update(ref(db,`${BASE}/${comp}`),{kulupPuani:null});setEd(null);toast(__T("Hazır kuruluma dönüldü."),"success")}catch{toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
  const kaDegis=async v=>{if(!comp||busy)return;setBusy(!0);
   try{await update(ref(db,`${BASE}/${comp}`),{kuluplerarasi:v===!0});toast(v?__T("Yarışma kulüplerarası olarak işaretlendi."):__T("Kulüplerarası işareti kaldırıldı."),"success")}
@@ -112,7 +112,7 @@ function KulupPuani(){
    ]}),
   e.jsxs("div",{style:S.in,children:[
    loading?e.jsx("div",{style:{color:"#6B7280",fontWeight:700},children:__T("Yükleniyor…")}):e.jsxs(e.Fragment,{children:[
-    e.jsxs("select",{style:S.sel,value:comp,onChange:t=>{if(dirty&&!window.confirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(t.target.value)},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
+    e.jsxs("select",{style:S.sel,value:comp,onChange:async t=>{const _v=t.target.value;if(dirty&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(_v)},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),
      Object.entries(comps).sort((a,b)=>String(b[1].baslangicTarihi||"").localeCompare(String(a[1].baslangicTarihi||""))).map(([k,c])=>e.jsx("option",{value:k,children:(c.isim||k)+(c.kuluplerarasi===!0?" · ⭐":"")},k))]}),
     comp?e.jsxs(e.Fragment,{children:[
      e.jsxs("div",{style:{...S.card,display:"flex",alignItems:"center",gap:".8rem",flexWrap:"wrap",borderColor:kaIsaret?"#0ea5e9":"#E5E7EB"},children:[
