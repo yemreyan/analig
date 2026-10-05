@@ -165,10 +165,10 @@ function Paneller(){
       ["balance","#DB2777",__T("SJA · Artistik"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sja"+tk],
       ["balance","#16A34A",__T("SJE · Uygulama"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sje"+tk],
       ["balance","#2563EB",__T("SJD · Zorluk"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sjd"+tk],
-      ["videocam","#475569",__T("Kamera A"),o+"/aerobik-kamera.html?cam=a&compId="+cid],
-      ["videocam","#475569",__T("Kamera B"),o+"/aerobik-kamera.html?cam=b&compId="+cid],
-      ["qr_code_2","#0F766E",__T("Birleşik Panel QR"),o+"/aerobik-panel-birlestir.html"],
-      ["format_list_numbered","#9333EA",__T("Çıkış Sırası"),o+"/aerobik-cikis-sirasi.html?comp="+cid]];
+      ["videocam","#475569",__T("Kamera A"),o+"/aerobik/kamera?cam=a&compId="+cid],
+      ["videocam","#475569",__T("Kamera B"),o+"/aerobik/kamera?cam=b&compId="+cid],
+      ["qr_code_2","#0F766E",__T("Birleşik Panel QR"),o+"/aerobik/panel-birlestir"],
+      ["format_list_numbered","#9333EA",__T("Çıkış Sırası"),o+"/aerobik/cikis-listesi?comp="+cid]];
      const ib={width:32,height:32,borderRadius:9,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0};
      return e.jsxs("div",{style:{...S.card,borderColor:"#FCD34D",background:"linear-gradient(135deg,#FFFBEB,#fff 60%)"},children:[
       e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",marginBottom:".8rem"},children:[e.jsx("div",{style:{width:38,height:38,borderRadius:11,background:"linear-gradient(135deg,#F59E0B,#D97706)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:e.jsx("span",{className:"material-icons-round",children:"dashboard"})}),
