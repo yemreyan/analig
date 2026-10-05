@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entry Form — Gymexa Score</title>
+<link rel="icon" href="/brand/gymnaxis-favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+:root{--bg:#F0F2F5;--card:#fff;--line:#E5E7EB;--ink:#1A1D26;--ink2:#334155;--muted:#64748B;--sub:#94A3B8;--pri:#6D28D9;--pri2:#DB2777;--ok:#16A34A;--err:#DC2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,-apple-system,sans-serif}
+.top{background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.top img.tcf{height:46px}.top i.sep{width:1px;height:36px;background:var(--line)}.top img.gx{height:40px}
+.top .ttl{margin-left:auto;text-align:right}.top .ttl b{display:block;font-size:1.05rem;font-weight:900}.top .ttl span{font-size:.8rem;font-weight:700;color:var(--muted)}
+main{max-width:1080px;margin:0 auto;padding:18px 16px 60px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.h{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:1rem;font-weight:900}
+.h .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--pri2),var(--pri))}.h .ic i{font-size:19px}
+.h small{font-weight:700;color:var(--sub);font-size:.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:.78rem;font-weight:800;color:var(--ink2)}
+label.f span{font-weight:700;color:var(--sub)}
+input,select{font:inherit;font-size:.92rem;font-weight:700;padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(109,40,217,.12)}
+.fed{display:flex;align-items:center;gap:10px}.fed img{width:32px;height:24px;border-radius:3px;object-fit:cover;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+table{width:100%;border-collapse:collapse}th{font-size:.7rem;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:6px 6px;border-bottom:1px solid var(--line)}
+td{padding:5px 4px;vertical-align:middle}td input,td select{padding:7px 8px;font-size:.86rem}
+.rm{border:none;background:transparent;color:var(--sub);cursor:pointer;padding:4px;border-radius:8px}.rm:hover{color:var(--err);background:#FEF2F2}
+.add{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 14px;border-radius:10px;border:1.5px dashed #C4B5FD;background:#F5F3FF;color:var(--pri);font:inherit;font-weight:800;cursor:pointer}
+.add i{font-size:18px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border:none;border-radius:12px;font:inherit;font-weight:900;font-size:1rem;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--pri2),var(--pri));box-shadow:0 8px 22px rgba(109,40,217,.28)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.note{font-size:.82rem;font-weight:700;color:var(--muted);line-height:1.5}
+.msg{padding:12px 14px;border-radius:12px;font-weight:800;font-size:.9rem}.msg.ok{background:#F0FDF4;border:1px solid #86EFAC;color:#166534}.msg.err{background:#FEF2F2;border:1px solid #FCA5A5;color:#991B1B}
+.empty{padding:28px;text-align:center;color:var(--muted);font-weight:800}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:.75rem;font-weight:900;color:var(--pri);background:#F5F3FF;border:1px solid #DDD6FE;border-radius:999px;padding:3px 10px}
+.wrap-x{overflow-x:auto}
+.foot{text-align:center;font-size:.75rem;font-weight:700;color:var(--sub);margin-top:6px}
+@media(max-width:700px){.top .ttl{display:none}th.hide,td.hide{display:none}}
+</style></head>
+<body>
+<div class="top"><div class="top-in"><img class="tcf" src="/logo.png" alt="Turkish Gymnastics Federation"><i class="sep"></i><img class="gx" src="/brand/gymnaxis-logo.svg" alt="Gymexa Score"><div class="ttl"><b>International Entry Form</b><span id="brTtl">Nominative registration</span></div></div></div>
+<main id="app"><div class="card empty">Loading…</div></main>
+<div class="foot">© <span id="yr"></span> Gymexa Score · Türkiye Cimnastik Federasyonu</div>
+<script src="/brand/cobrand.js" defer></script>
+<script type="module">
+import{ULKELER,bayrakUrl,katEN,ulkeAd}from"/assets/intl-Ul01a2b3Cb2.js";
+const DB="https://analig-default-rtdb.firebaseio.com";
+const BR={artistik:{base:"competitions",ad:"Artistic Gymnastics"},ritmik:{base:"ritmik_yarismalar",ad:"Rhythmic Gymnastics"},aerobik:{base:"aerobik_yarismalar",ad:"Aerobic Gymnastics"},parkur:{base:"parkur_yarismalar",ad:"Parkour"},trampolin:{base:"trampolin_yarismalar",ad:"Trampoline Gymnastics"}};
+const q=new URLSearchParams(location.search);let br=q.get("b")||q.get("brans")||"ritmik";if(!BR[br])br="ritmik";let comp=q.get("comp")||"";
+document.getElementById("yr").textContent=new Date().getFullYear();document.getElementById("brTtl").textContent=BR[br].ad;
+const $=s=>document.querySelector(s),app=$("#app"),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const j=async u=>{const r=await fetch(DB+u);if(!r.ok)throw new Error("HTTP "+r.status);return r.json()};
+const isGrp=(k,c)=>!!c&&(c.tip==="takim"||c.tip==="karma"||Number(c.athleteCount)>1)||/_(grup|cift|trio|takim|group|pair)$/.test(String(k).split("__")[0]);
+const katAdi=(k,c)=>katEN(String(c?.name||k).replace(/^\s*\u{1F3C6}\s*/u,""));
+let C=null,rows=[],jud=[];
+async function compsList(){const keys=Object.keys(await j(`/${BR[br].base}.json?shallow=true`)||{});const out=[];
+ await Promise.all(keys.map(async k=>{try{const[t,i,d,a]=await Promise.all([j(`/${BR[br].base}/${k}/tur.json`),j(`/${BR[br].base}/${k}/isim.json`),j(`/${BR[br].base}/${k}/baslangicTarihi.json`),j(`/${BR[br].base}/${k}/arsivli.json`)]);if(t==="uluslararasi"&&!(a===true||a==="true"))out.push({k,i:i||k,d:d||""})}catch{}}));
+ return out.sort((a,b)=>String(b.d).localeCompare(String(a.d)))}
+function ulkeOpts(sel){return'<option value="">— Select federation —</option>'+ULKELER.slice().sort((a,b)=>a.en.localeCompare(b.en)).map(u=>`<option value="${u.kod}"${u.kod===sel?" selected":""}>${esc(u.en)} (${u.kod})</option>`).join("")}
+function katOpts(sel){const ks=Object.keys(C.kategoriler||{}).filter(k=>!/^final_/.test(k));return'<option value="">— Category —</option>'+ks.map(k=>`<option value="${k}"${k===sel?" selected":""}>${esc(katAdi(k,C.kategoriler[k]))}</option>`).join("")}
+async function start(){
+ if(!comp){let L=[];try{L=await compsList()}catch(e){app.innerHTML=`<div class="card msg err">Could not load competitions: ${esc(e.message)}</div>`;return}
+  if(!L.length){app.innerHTML=`<div class="card empty">No international ${esc(BR[br].ad.toLowerCase())} competition is open for entries.</div>`;return}
+  if(L.length===1){comp=L[0].k}else{app.innerHTML=`<div class="card"><div class="h"><span class="ic"><i class="material-icons-round">emoji_events</i></span>Select competition</div><div class="grid">${L.map(x=>`<a class="card" style="text-decoration:none;color:inherit" href="?b=${br}&comp=${encodeURIComponent(x.k)}"><b>${esc(x.i)}</b><div class="note">${esc(x.d)}</div></a>`).join("")}</div></div>`;return}}
+ try{await loadMeta()}catch(e){app.innerHTML=`<div class="card msg err">Competition not found.</div>`;return}
+ if(C.tur!=="uluslararasi"){app.innerHTML=`<div class="card msg err">This competition is not open for international entries.</div>`;return}
+ rows=[{}];jud=[];render()}
+async function loadMeta(){const f=["isim","tur","kategoriler","baslangicTarihi","bitisTarihi","il","basvuruKapaliMi"];const v=await Promise.all(f.map(x=>j(`/${BR[br].base}/${comp}/${x}.json`)));C={};f.forEach((x,i)=>C[x]=v[i]);C.kategoriler=C.kategoriler||{}}
+function rowHtml(r,i){const c=r.kat&&C.kategoriler[r.kat],g=isGrp(r.kat,c);return`<tr data-i="${i}"><td style="width:28px;color:#94A3B8;font-weight:900">${i+1}</td>
+ <td><input data-f="ad" value="${esc(r.ad)}" placeholder="First name"></td><td><input data-f="soyad" value="${esc(r.soyad)}" placeholder="Last name"></td>
+ <td class="hide" style="width:150px"><input data-f="dob" type="date" value="${esc(r.dob)}"></td><td style="min-width:180px"><select data-f="kat">${katOpts(r.kat)}</select></td>
+ <td class="hide"><input data-f="kulup" value="${esc(r.kulup)}" placeholder="Club (optional)"></td><td style="width:78px">${g?`<input data-f="grupNo" type="number" min="1" value="${esc(r.grupNo||1)}" title="Group no">`:'<span class="note">—</span>'}</td>
+ <td style="width:34px"><button class="rm" data-rm="${i}" title="Remove"><i class="material-icons-round">close</i></button></td></tr>`}
+function render(){const fed=$("#fed")?.value||"";
+ app.innerHTML=`<div class="card"><div class="h"><span class="ic"><i class="material-icons-round">emoji_events</i></span><div>${esc(C.isim||"")}<br><small>${esc(BR[br].ad)} · ${esc([C.baslangicTarihi,C.bitisTarihi].filter(Boolean).join(" – "))}${C.il?" · "+esc(C.il):""}</small></div></div>${C.basvuruKapaliMi?'<div class="msg err">Entries for this competition are closed.</div>':'<div class="note">Complete the nominative entry for your federation. Entries are reviewed by the organising committee before they appear in the start lists.</div>'}</div>
+ <div class="card"><div class="h"><span class="ic"><i class="material-icons-round">flag</i></span>Federation</div><div class="grid">
+  <label class="f">Country / NOC *<div class="fed"><img id="fedFlag" alt="" style="display:none"><select id="fed">${ulkeOpts(fed)}</select></div></label>
+  <label class="f">Federation name <span>(optional)</span><input id="fedAd" placeholder="e.g. Azerbaijan Gymnastics Federation"></label>
+  <label class="f">Contact person *<input id="kisi" placeholder="Full name"></label><label class="f">E-mail *<input id="mail" type="email" placeholder="name@federation.org"></label><label class="f">Phone<input id="tel" placeholder="+90 …"></label></div></div>
+ <div class="card"><div class="h"><span class="ic"><i class="material-icons-round">groups</i></span>Gymnasts <small id="say"></small></div><div class="wrap-x"><table><thead><tr><th>#</th><th>First name</th><th>Last name</th><th class="hide">Date of birth</th><th>Category</th><th class="hide">Club</th><th>Group</th><th></th></tr></thead><tbody id="tb">${rows.map(rowHtml).join("")}</tbody></table></div>
+  <button class="add" id="addR"><i class="material-icons-round">person_add</i>Add gymnast</button><div class="note" style="margin-top:8px">Group / pair categories: give all members of the same group the same group number.</div></div>
+ <div class="card"><div class="h"><span class="ic"><i class="material-icons-round">gavel</i></span>Judges <small>(optional)</small></div><div class="wrap-x"><table><thead><tr><th>#</th><th>Full name</th><th>FIG brevet category</th><th></th></tr></thead><tbody id="jb">${jud.map((r,i)=>`<tr data-j="${i}"><td style="width:28px;color:#94A3B8;font-weight:900">${i+1}</td><td><input data-jf="ad" value="${esc(r.ad)}" placeholder="Full name"></td><td style="width:200px"><select data-jf="kat"><option value="">—</option>${["1","2","3","4"].map(k=>`<option${r.kat===k?" selected":""}>${k}</option>`).join("")}</select></td><td style="width:34px"><button class="rm" data-jrm="${i}"><i class="material-icons-round">close</i></button></td></tr>`).join("")}</tbody></table></div><button class="add" id="addJ"><i class="material-icons-round">add</i>Add judge</button></div>
+ <div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><button class="btn" id="gonder" ${C.basvuruKapaliMi?"disabled":""}><i class="material-icons-round">send</i>Submit entry</button><div id="sonuc" style="flex:1"></div></div>`;
+ const fs=$("#fed");const fl=()=>{const u=bayrakUrl(fs.value),im=$("#fedFlag");if(u){im.src=u;im.style.display=""}else im.style.display="none"};fs.onchange=fl;fl();
+ $("#say").textContent=`(${rows.filter(r=>r.ad||r.soyad).length})`;
+ $("#tb").oninput=$("#tb").onchange=ev=>{const t=ev.target,tr=t.closest("tr");if(!tr||!t.dataset.f)return;const i=+tr.dataset.i;rows[i][t.dataset.f]=t.value;if(t.dataset.f==="kat"&&ev.type==="change"){keep();render()}else $("#say").textContent=`(${rows.filter(r=>r.ad||r.soyad).length})`};
+ $("#tb").onclick=ev=>{const b=ev.target.closest("[data-rm]");if(!b)return;keep();rows.splice(+b.dataset.rm,1);if(!rows.length)rows=[{}];render()};
+ $("#addR").onclick=()=>{keep();const l=rows[rows.length-1]||{};rows.push({kat:l.kat||"",kulup:l.kulup||"",grupNo:l.grupNo||""});render()};
+ $("#jb").oninput=ev=>{const t=ev.target,tr=t.closest("tr");if(!tr)return;jud[+tr.dataset.j][t.dataset.jf]=t.value};$("#jb").onchange=$("#jb").oninput;
+ $("#jb").onclick=ev=>{const b=ev.target.closest("[data-jrm]");if(!b)return;keep();jud.splice(+b.dataset.jrm,1);render()};
+ $("#addJ").onclick=()=>{keep();jud.push({});render()};
+ ["fedAd","kisi","mail","tel"].forEach(k=>{const el=$("#"+k);if(el&&mem[k]!=null)el.value=mem[k]});
+ $("#gonder").onclick=gonder}
+const mem={};function keep(){["fed","fedAd","kisi","mail","tel"].forEach(k=>{const el=$("#"+k);if(el)mem[k]=el.value})}
+async function gonder(){keep();const S=$("#sonuc"),hata=t=>{S.innerHTML=`<div class="msg err">${esc(t)}</div>`};
+ const fed=mem.fed,kisi=(mem.kisi||"").trim(),mail=(mem.mail||"").trim();
+ if(!fed)return hata("Please select your federation (country).");if(!kisi||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail))return hata("Please enter a contact person and a valid e-mail.");
+ const sp=rows.map(r=>({ad:(r.ad||"").trim(),soyad:(r.soyad||"").trim(),dob:r.dob||"",kat:r.kat||"",kulup:(r.kulup||"").trim(),grupNo:r.grupNo?+r.grupNo:null})).filter(r=>r.ad||r.soyad);
+ if(!sp.length)return hata("Add at least one gymnast.");const eks=sp.findIndex(r=>!r.ad||!r.soyad||!r.kat);if(eks>=0)return hata(`Gymnast #${eks+1}: first name, last name and category are required.`);
+ const b=$("#gonder");b.disabled=!0;S.innerHTML='<div class="note">Submitting…</div>';
+ const kayit={ulke:fed,federasyon:(mem.fedAd||"").trim()||ulkeAd(fed,"en"),iletisim:{ad:kisi,email:mail,tel:(mem.tel||"").trim()},sporcular:sp,hakemler:jud.map(x=>({ad:(x.ad||"").trim(),kat:x.kat||""})).filter(x=>x.ad),durum:"beklemede",ts:Date.now(),kaynak:"entry.html"};
+ try{const r=await fetch(`${DB}/${BR[br].base}/${comp}/uluslararasiKayit.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(kayit)});if(!r.ok)throw new Error("HTTP "+r.status);const k=(await r.json()).name;
+  app.innerHTML=`<div class="card" style="text-align:center;padding:34px 18px"><i class="material-icons-round" style="font-size:54px;color:#16A34A">task_alt</i><h2 style="margin:8px 0 4px;font-weight:900">Entry submitted</h2><div class="note">${esc(C.isim||"")} · ${esc(ulkeAd(fed,"en"))} · ${sp.length} gymnast(s)</div><div style="margin:14px 0"><span class="badge">Reference: ${esc(String(k).slice(-8).toUpperCase())}</span></div><div class="note">The organising committee will review your entry. Please keep the reference number for any correspondence.</div><div style="margin-top:16px"><a class="add" style="text-decoration:none" href="?b=${br}&comp=${encodeURIComponent(comp)}"><i class="material-icons-round">add</i>Submit another entry</a></div></div>`}
+ catch(e){b.disabled=!1;hata("Submission failed: "+e.message)}}
+(async()=>{try{if(comp){await loadMeta();if(C.tur!=="uluslararasi"){app.innerHTML=`<div class="card msg err">This competition is not open for international entries.</div>`;return}rows=[{}];render()}else await start()}catch(e){app.innerHTML=`<div class="card msg err">Could not load: ${esc(e.message)}</div>`}})();
+</script></body></html>

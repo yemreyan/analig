@@ -179,6 +179,9 @@ function overlay(){
  const goster=()=>{lt.classList.remove("on");void lt.offsetWidth;requestAnimationFrame(()=>lt.classList.add("on"))};
  const gizle=()=>lt.classList.remove("on");
 
+ // ---- ülke (uluslararası yarışma): bayrak + IOC kodu ----
+ let GXI=null;try{import("/assets/intl-Ul01a2b3Cb2.js").then(m=>{GXI=m}).catch(()=>{})}catch(e){}
+ const ulkeBas=(el,k)=>{if(!k)return;const u=GXI&&GXI.bayrakUrl(k);if(!u)return;const im=document.createElement("img");im.src=u;im.alt="";im.setAttribute("style","height:1em;width:1.333em;object-fit:cover;border-radius:2px;vertical-align:-0.12em;margin-right:.4em;box-shadow:0 0 0 1px rgba(0,0,0,.15)");el.insertBefore(im,el.firstChild)};
  // ---- sporcu adı ----
  const isimGoster=a=>{
   log("isim",a&&a.ad,a&&a.soyad,"scoreUntil-now",scoreUntil-Date.now());
@@ -186,7 +189,7 @@ function overlay(){
   lt.classList.remove("puanli");
   const ad=[a.ad,a.soyad].filter(Boolean).join(" ");
   $("cat").textContent=UP(katAd(a._kat));$("nm").textContent=UP(ad);fitName(ad);
-  $("cl").textContent=UP([a.okul||a.kulup,a.il].filter(Boolean).join("  •  "));$("ch").innerHTML="";
+  $("cl").textContent=a.ulke?[a.ulke,(a.okul||a.kulup)&&(a.okul||a.kulup)!==a.ulke?UP(a.okul||a.kulup):""].filter(Boolean).join("  •  "):UP([a.okul||a.kulup,a.il].filter(Boolean).join("  •  "));ulkeBas($("cl"),a.ulke);$("ch").innerHTML="";
   goster();
   clearTimeout(nameTimer);if(isimSure)nameTimer=setTimeout(gizle,isimSure);
  };
@@ -196,7 +199,7 @@ function overlay(){
   if(!puanAcik)return;
   clearTimeout(nameTimer);lt.classList.add("puanli");
   $("cat").textContent=UP(t.aletAd||katAd(t.kategori)||"");
-  const ad=t.adSoyad||"";$("nm").textContent=UP(ad);fitName(ad);$("cl").textContent=UP(t.kulup||"");
+  const ad=t.adSoyad||"";$("nm").textContent=UP(ad);fitName(ad);$("cl").textContent=t.ulke?[t.ulke,t.kulup&&t.kulup!==t.ulke?UP(t.kulup):""].filter(Boolean).join("  •  "):UP(t.kulup||"");ulkeBas($("cl"),t.ulke);
   const c=[];
   if(t.isRitmik){[["DA",t.da],["DB",t.db],["A",t.a],["E",t.e]].forEach(([k,v])=>v!=null&&c.push(`<span class="chip"><b>${k}</b>${f3(v)}</span>`));if(+t.pen>0)c.push(`<span class="chip ded"><b>${L.ksn}</b>-${f3(t.pen)}</span>`)}
   else{[["E",t.e],["A",t.a],["D",t.d]].forEach(([k,v])=>v!=null&&c.push(`<span class="chip"><b>${k}</b>${f3(v)}</span>`));const ded=+(t.p??t.pen??0);if(ded>0)c.push(`<span class="chip ded"><b>${L.ksn}</b>-${f3(ded)}</span>`)}
