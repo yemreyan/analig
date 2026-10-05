@@ -99,3 +99,23 @@
 .rtm-sure-sonuc--var b{color:#DC2626}
 .rtm-sure-sonuc small{font-size:11px;font-weight:800;color:#94A3B8;text-transform:uppercase}
 .rtm-sure-not{margin-left:auto;font-size:11px;font-weight:700;color:#94A3B8;padding-bottom:8px}
+
+/* FIG revizyonu: ceza kısayolları, SJ uygula, sıralama, itiraz */
+.rtm-pen-step{display:flex;align-items:center;gap:4px;margin-top:2px}
+.rtm-pen-step button{min-width:26px;height:24px;padding:0 6px;border-radius:6px;border:1px solid #FCA5A5;background:#FEF2F2;color:#B91C1C;font-weight:900;font-size:12px;cursor:pointer;font-family:inherit}
+.rtm-pen-step button:hover:not(:disabled){background:#FEE2E2}
+.rtm-pen-step button:disabled{opacity:.4;cursor:not-allowed}
+.rtm-pen-step span{font-size:11px;font-weight:800;color:#64748B;white-space:nowrap}
+.rtm-sure-gec{flex-direction:row!important;align-items:center;gap:6px!important;padding-bottom:8px;cursor:pointer;text-transform:none!important;font-size:12px!important;color:#475569!important}
+.rtm-sure-gec input{width:16px!important;height:16px;padding:0!important;accent-color:#DC2626}
+.rtm-sure-gec b{color:#B91C1C;font-weight:900}
+.rtm-fig-apply{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px;border:1px solid #DC2626;background:#DC2626;color:#fff;cursor:pointer;font-family:inherit}
+.rtm-fig-apply:hover{background:#B91C1C}
+.rtm-fig-apply .material-icons-round{font-size:14px}
+.rtm-sira{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:#475569;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:6px 10px}
+.rtm-sira .material-icons-round{font-size:16px;color:#8B5CF6}
+.rtm-sira b{font-size:15px;font-weight:900;color:#1A1D26}
+.rtm-itiraz{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:#92400E;background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:6px 10px}
+.rtm-itiraz .material-icons-round{font-size:16px}
+.rtm-itiraz b{font-variant-numeric:tabular-nums;font-size:14px}
+.rtm-card:has(.rtm-card-label--ded) .rtm-sub-row{align-items:flex-start}
