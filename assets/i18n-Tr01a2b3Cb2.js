@@ -7,6 +7,12 @@ const KEY="tcf_lang";
 import{DICT}from"./i18n-dict-Tr01a2b3Cb2.js";
 
 let _lang=null;
+// Uluslararası yarışma + İngilizce çıktı: hakem panelleri (dil seçilmemişse) İngilizce açılır.
+try{(function(){const m=location.pathname.match(/^\/(artistik|ritmik|aerobik|parkur|trampolin)\/(epanel|dpanel|lpanel|tpanel|apanel|sjpanel|split)\b/);if(!m)return;
+ if(localStorage.getItem(KEY))return;const q=new URLSearchParams(location.search),c=q.get("competitionId")||q.get("comp");if(!c)return;
+ const B={artistik:"competitions",ritmik:"ritmik_yarismalar",aerobik:"aerobik_yarismalar",parkur:"parkur_yarismalar",trampolin:"trampolin_yarismalar"}[m[1]],sk="tcf_intl_"+m[1]+"_"+c,v=sessionStorage.getItem(sk);
+ if(v==="en"){_lang="en";return}if(v==="tr")return;const U="https://analig-default-rtdb.firebaseio.com/"+B+"/"+encodeURIComponent(c);
+ fetch(U+"/tur.json").then(r=>r.json()).then(async t=>{let en=!1;if(t==="uluslararasi"){const d=await(await fetch(U+"/ciktiDili.json")).json();en=d!=="tr"}sessionStorage.setItem(sk,en?"en":"tr");if(en)location.reload()}).catch(()=>{})})()}catch{}
 function cur(){
  if(_lang)return _lang;
  try{
