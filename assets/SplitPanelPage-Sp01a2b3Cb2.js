@@ -29,9 +29,10 @@ function SplitPanel(){
  R.useEffect(()=>{
   if(elle||!comp)return;
   atRef.current=Array.from({length:adet},(z,i)=>atRef.current[i]||null);
-  return onValue(ref(db,`${fp}/${comp}/aktifSporcuAlet`),s=>{
-   const v=s.val()||{},aktif=[];
-   Object.keys(v).forEach(k=>{const m=v[k]||{};Object.keys(m).forEach(al=>{
+  // linkId verilirse (ör. Paneller sayfasındaki SJ paneli) yalnızca o kaydın kategorileri gösterilir
+  let izin=null,sonV=null;const ciz=()=>{if(sonV)isle(sonV)};
+  const isle=v=>{sonV=v;const aktif=[];
+   Object.keys(v).forEach(k=>{if(izin&&!izin.has(k))return;const m=v[k]||{};Object.keys(m).forEach(al=>{
     if(m[al])aktif.push({anahtar:k+"|"+al,ts:Number(m[al].ts)||0})})});
    // En yeni cagrilar oncelikli: bolme sayisi kadar en guncel cagri gosterilir,
    // fazlasi (bitmis/eski cagrilar) bolmeden dusurulur.
@@ -42,8 +43,11 @@ function SplitPanel(){
    gost.slice().reverse().forEach(z=>{if(var_.has(z.anahtar))return;
     const bos=cur.findIndex(x=>!x);if(bos>=0){cur[bos]=z.anahtar;var_.add(z.anahtar)}});
    atRef.current=cur;setOto(cur.slice(0,adet));
-  });
- },[elle,comp,fp,adet]);
+  };
+  const u2=link?onValue(ref(db,`${fp}/${comp}/hakemLinkleri/${link}`),s=>{const r=s.val()||{};izin=r.tumKategoriler||!r.kategoriler?null:new Set(Object.keys(r.kategoriler));ciz()}):null;
+  const u1=onValue(ref(db,`${fp}/${comp}/aktifSporcuAlet`),s=>isle(s.val()||{}));
+  return()=>{u1();u2&&u2()};
+ },[elle,comp,fp,adet,link]);
 
  const bolmeler=elle?sabit:Array.from({length:adet},(z,i)=>{
   const a=oto[i];if(!a)return null;

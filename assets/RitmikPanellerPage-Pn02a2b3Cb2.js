@@ -25,7 +25,7 @@ const kListe=o=>Object.keys(o||{}).filter(k=>o[k]);
 let _qrMod=null;const qrAl=async t=>{try{_qrMod=_qrMod||(await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm")).default;return await _qrMod.toDataURL(t,{margin:1,width:360})}catch{return null}};
 
 function Paneller(){
- const{toast}=usToast();usDisc();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
+ const{toast}=usToast();usDisc();const[bolSay,setBolSay]=R.useState(2);const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[C,setC]=R.useState(null),[busy,setBusy]=R.useState(!1),[form,setForm]=R.useState(null),[acik,setAcik]=R.useState({}),[qr,setQr]=R.useState(null);
 
  R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.isim&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim,t:c.baslangicTarihi||""})});setComps(o)});return()=>u()},[]);
@@ -131,7 +131,8 @@ function Paneller(){
        e.jsxs("div",{style:{display:"flex",gap:".35rem",flexWrap:"wrap",justifyContent:"flex-end"},children:[
         e.jsx("button",{style:S.ghost,onClick:()=>kopyala(u),children:__T("Kopyala")}),
         e.jsx("button",{style:S.ghost,onClick:()=>window.open(u,"_blank"),children:__T("Aç")}),
-        e.jsx("button",{style:S.ghost,onClick:()=>qrGoster(`${g.ad} · ${s.slot}`,u),children:"QR"})]})]},s.slot)})]},t))]}):null]},gid)};
+        e.jsx("button",{style:S.ghost,onClick:()=>qrGoster(`${g.ad} · ${s.slot}`,u),children:"QR"}),
+        t==="SJ"?(()=>{const pt=(/panelType=([a-z]+)/.exec(s.ek)||[])[1]||"",su=`${location.origin}/ritmik/split?competitionId=${encodeURIComponent(comp)}&hedef=dpanel&panelType=${pt}&linkId=${pid}&bolme=${bolSay}${token?`&token=${token}`:""}`;return e.jsxs("span",{style:{display:"inline-flex",gap:".35rem",alignItems:"center",paddingLeft:".35rem",marginLeft:".1rem",borderLeft:"2px solid #FCD34D"},children:[e.jsxs("span",{style:{fontSize:".72rem",fontWeight:900,color:"#B45309",whiteSpace:"nowrap"},children:["⧉ ",__T("Bölünmüş")," ×",bolSay]}),e.jsx("button",{style:S.ghost,onClick:()=>kopyala(su),children:__T("Kopyala")}),e.jsx("button",{style:S.ghost,onClick:()=>window.open(su,"_blank"),children:__T("Aç")}),e.jsx("button",{style:S.ghost,onClick:()=>qrGoster(`${g.ad} · ${s.slot} · ${__T("Bölünmüş")}`,su),children:"QR"})]})})():null]})]},s.slot)})]},t))]}):null]},gid)};
 
  const formKarti=()=>{const f=form;return e.jsxs("div",{style:{...S.card,borderColor:"#db2777"},children:[
   e.jsx("div",{style:{fontWeight:900,marginBottom:".7rem"},children:f.gid?__T("Panel grubunu düzenle"):__T("Yeni panel grubu")}),
@@ -161,8 +162,7 @@ function Paneller(){
      e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#db2777,#6366f1)"},onClick:()=>formAc(null),children:"+ "+__T("Yeni panel grubu")})]}),
     (()=>{const o=location.origin,tk=token?"&token="+token:"",cid=encodeURIComponent(comp),L=[
       ["sports_score","#DB2777",__T("Başhakem"),o+"/ritmik/scoring?competitionId="+cid],
-      ["view_quilt","#6366f1",__T("Bölünmüş · A"),o+"/ritmik/split?competitionId="+cid+"&hedef=epanel&panelType=a&panelId=a1&bolme=2"+tk],
-      ["view_quilt","#0891b2",__T("Bölünmüş · E"),o+"/ritmik/split?competitionId="+cid+"&hedef=epanel&panelType=e&panelId=e1&bolme=2"+tk],
+      ...["sjda","sjdb","sja","sje"].map(p=>["vertical_split","#f59e0b",__T("Bölünmüş · ")+p.toUpperCase(),o+"/ritmik/split?competitionId="+cid+"&hedef=dpanel&panelType="+p+"&bolme="+bolSay+tk]),
       ["live_tv","#D97706",__T("Canlı Skor"),o+"/ritmik/scoreboard?compId="+cid],
       ["cast","#E30613",__T("Yayın Overlay"),o+"/yayin-overlay.html?comp="+cid+"&brans=ritmik"],
       ["event_note","#9333EA",__T("Çıkış Listesi"),o+"/ritmik/schedule?comp="+cid],
@@ -171,7 +171,7 @@ function Paneller(){
      const ib={width:32,height:32,borderRadius:9,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0};
      return e.jsxs("div",{style:{...S.card,borderColor:"#FCD34D",background:"linear-gradient(135deg,#FFFBEB,#fff 60%)"},children:[
       e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",marginBottom:".8rem"},children:[e.jsx("div",{style:{width:38,height:38,borderRadius:11,background:"linear-gradient(135deg,#F59E0B,#D97706)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:e.jsx("span",{className:"material-icons-round",children:"dashboard"})}),
-       e.jsxs("div",{children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1rem"},children:__T("Hakem & Yönetim Ekranları")}),e.jsx("div",{style:{fontSize:".78rem",color:"#6B7280",fontWeight:600},children:__T("Seçili yarışma için tüm operasyon ekranları — yeni sekmede açılır.")})]})]}),
+       e.jsxs("div",{children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1rem"},children:__T("Hakem & Yönetim Ekranları")}),e.jsx("div",{style:{fontSize:".78rem",color:"#6B7280",fontWeight:600},children:__T("Seçili yarışma için tüm operasyon ekranları — yeni sekmede açılır.")})]}),e.jsxs("div",{style:{marginLeft:"auto",display:"flex",alignItems:"center",gap:".35rem",fontSize:".76rem",fontWeight:800,color:"#92400E"},title:__T("SJ bölünmüş ekranlarında kaç alan/bölme gösterilsin"),children:[__T("SJ bölünmüş ekran"),[2,3,4].map(n=>e.jsx("button",{type:"button",onClick:()=>setBolSay(n),style:{width:30,height:28,borderRadius:8,border:"1px solid "+(bolSay===n?"#D97706":"#FCD34D"),background:bolSay===n?"#D97706":"#fff",color:bolSay===n?"#fff":"#92400E",fontWeight:900,cursor:"pointer",fontFamily:"inherit"},children:n},n)),__T("bölme")]})]}),
       e.jsx("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))",gap:".5rem"},children:L.map(([ic,c,t,u])=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".45rem",border:"1px solid #E5E7EB",borderRadius:12,padding:".45rem .5rem .45rem .6rem",background:"#fff"},children:[
         e.jsx("span",{className:"material-icons-round",style:{color:c,fontSize:"1.15rem"},children:ic}),
         e.jsx("a",{href:u,target:"_blank",rel:"noreferrer",style:{flex:1,minWidth:0,fontWeight:800,fontSize:".86rem",color:"#1A1D26",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},title:u,children:t}),
