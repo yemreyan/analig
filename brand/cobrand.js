@@ -1,4 +1,4 @@
-// Gymnaxis × TCF ortak marka rozeti — her sayfanın sol altında küçük, tıklamayı engellemeyen rozet.
+// Gymexa Score × TCF ortak marka rozeti — her sayfanın sol altında küçük, tıklamayı engellemeyen rozet.
 // Gizlendiği yerler: giriş sayfası (büyük ortak logo var), canlı skor yayın modu, yazdırma.
 (function () {
   if (window.__gxCobrand) return; window.__gxCobrand = 1;
@@ -12,8 +12,8 @@
     if (!document.body || document.getElementById('gx-cobrand')) return;
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     var el = document.createElement('div'); el.id = 'gx-cobrand';
-    el.title = 'Gymnaxis · Türkiye Cimnastik Federasyonu';
-    el.innerHTML = '<img class="gx-l" src="/brand/gymnaxis-logo.svg" alt="Gymnaxis"><i></i><img class="gx-t" src="/logo.png" alt="Türkiye Cimnastik Federasyonu">';
+    el.title = 'Gymexa Score · Türkiye Cimnastik Federasyonu';
+    el.innerHTML = '<img class="gx-l" src="/brand/gymnaxis-logo.svg" alt="Gymexa Score"><i></i><img class="gx-t" src="/logo.png" alt="Türkiye Cimnastik Federasyonu">';
     document.body.appendChild(el);
     var gizle = function () {
       var p = location.pathname, h = p === '/' || p === '/index.html' || !!document.querySelector('.sb-live,[data-gx-hide],body.ov');

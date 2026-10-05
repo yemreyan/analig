@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yayın Overlay — Gymnaxis · TCF</title>
+<title>Yayın Overlay — Gymexa Score · TCF</title>
 <link rel="icon" type="image/svg+xml" href="/brand/gymnaxis-favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -163,7 +163,7 @@ function overlay(){
  const olcek=Math.min(200,Math.max(40,parseInt(Q.get("olcek"))||100))/100;
 
  document.getElementById("app").innerHTML=`<div class="stage pos-${pos}" style="--s:calc(100vw/1920*${olcek})"><div class="lt" id="lt">
-  <div class="logo"><img src="/logo.png" alt=""><img class="gx" src="/brand/gymnaxis-logo.svg" alt="Gymnaxis"></div>
+  <div class="logo"><img src="/logo.png" alt=""><img class="gx" src="/brand/gymnaxis-logo.svg" alt="Gymexa Score"></div>
   <div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
   <div class="score"><div class="slbl">${L.puan}</div><div class="stot" id="tot"></div><div class="rank" id="rk"></div></div></div></div>`;
  const $=id=>document.getElementById(id),lt=$("lt");

@@ -1,7 +1,7 @@
 {
-  "name": "Gymnaxis · Yarışma Yönetim Sistemi",
-  "short_name": "Gymnaxis",
-  "description": "Gymnaxis · Türkiye Cimnastik Federasyonu yarışma yönetim ve puanlama sistemi",
+  "name": "Gymexa Score · Yarışma Yönetim Sistemi",
+  "short_name": "Gymexa",
+  "description": "Gymexa Score · Türkiye Cimnastik Federasyonu yarışma yönetim ve puanlama sistemi",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
