@@ -122,7 +122,7 @@ ${z?`<div class="comp-info">
 ${l}
 
 <div class="page-footer">
-  <span>TCF Trampolin Yarışma Yönetim Sistemi</span>
+  <span>© ${new Date().getFullYear()} Gymexa Score · Türkiye Cimnastik Federasyonu</span>
   <span>${s(e)}</span>
 </div>
 

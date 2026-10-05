@@ -11,7 +11,7 @@ import{u as Ae,a as Re,b as Ne,r as w,o as G,c as H,j as t,d as X}from"./index-e
                 ${s?`<div class="note">${o(s)}</div>`:""}
                 ${n}
                 <div class="footer">
-                    <div>TCF TRAMBOLİN CİMNASTİK SİSTEMİ</div>
+                    <div>© ${new Date().getFullYear()} Gymexa Score · Türkiye Cimnastik Federasyonu</div>
                     <div>Oluşturulma: ${new Date().toLocaleString("tr-TR")}</div>
                 </div>
                 <div class="signs">

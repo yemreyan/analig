@@ -32,7 +32,7 @@ import{u as Q,a as X,b as Z,r as w,g as B,c as S,j as e,d as _,f as M}from"./ind
                     </tbody>
                 </table>
                 <div class="footer">
-                    <div>TCF TRAMBOLİN CİMNASTİK SİSTEMİ</div>
+                    <div>© ${new Date().getFullYear()} Gymexa Score · Türkiye Cimnastik Federasyonu</div>
                     <div>Oluşturulma: ${new Date().toLocaleString("tr-TR")}</div>
                 </div>
                 <div class="signs">

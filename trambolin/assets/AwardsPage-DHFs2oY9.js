@@ -120,7 +120,7 @@ import{u as ee,a as te,b as se,r as p,g as ae,c as y,d as v,o as A,j as t}from".
     ${l}
     ${a}
     <div class="footer">
-      <div>TCF TRAMBOLİN CİMNASTİK SİSTEMİ</div>
+      <div>© ${new Date().getFullYear()} Gymexa Score · Türkiye Cimnastik Federasyonu</div>
       <div>Oluşturulma: ${new Date().toLocaleString("tr-TR")}</div>
     </div>
     <div class="signs">
