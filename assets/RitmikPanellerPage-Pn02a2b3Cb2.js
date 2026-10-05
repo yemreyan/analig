@@ -45,7 +45,7 @@ function Paneller(){
  const panelKaydi=(g,gid,s,katObj)=>({ad:`${g.ad} · ${s.slot}`,kategoriler:Object.keys(katObj||{}).length?katObj:null,tumKategoriler:!1,panelGrubu:gid,slot:s.slot,guncelleme:Date.now()});
 
  // grup oluştur / düzenle
- const formAc=gid=>{const g=gid?gruplar[gid]:null;setForm(g?{gid,ad:g.ad||"",tipler:{...(g.tipler||{})},adet:{A:g.adet?.A||4,E:g.adet?.E||4},kategoriler:{...(g.kategoriler||{})}}:{gid:null,ad:"",tipler:{DA:!0,DB:!0,A:!0,E:!0,T:!0,L:!0,SJ:!1},adet:{A:4,E:4},kategoriler:{}})};
+ const formAc=gid=>{const g=gid?gruplar[gid]:null;setForm(g?{gid,ad:g.ad||"",tipler:{...(g.tipler||{})},adet:{A:g.adet?.A||4,E:g.adet?.E||4},kategoriler:{...(g.kategoriler||{})}}:{gid:null,ad:"",tipler:{DA:!0,DB:!0,A:!0,E:!0,T:!0,L:!0,SJ:!0},adet:{A:4,E:4},kategoriler:{}})};
  const formKaydet=async()=>{const f=form;if(!f)return;if(!C||!C.isim){toast(__T("Bu yarışma artık mevcut değil; değişiklik yazılmadı."),"error");return}const ad=f.ad.trim();
   if(!ad){toast(__T("Grup adını yazın."),"warning");return}
   if(!TIP_SIRA.some(t=>f.tipler[t])){toast(__T("En az bir panel tipi seçin."),"warning");return}
