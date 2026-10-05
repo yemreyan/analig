@@ -15,7 +15,7 @@ const TIP={
  referee_create:{ad:"Hakem Ekleme",ic:"gavel",renk:"#0D9488"},
  application_approve:{ad:"Başvuru Onaylama",ic:"check_circle",renk:"#16A34A"},
  application_reject:{ad:"Başvuru Reddetme",ic:"cancel",renk:"#DC2626"},
- login:{ad:"Giriş",ic:"login",renk:"#4F46E5"},logout:{ad:"Çıkış",ic:"logout",renk:"#6B7280"},
+ login:{ad:"Giriş",ic:"login",renk:"#4F46E5"},logout:{ad:"Çıkış",ic:"logout",renk:"#6B7280"},user_create:{ad:"Kullanıcı Oluşturma",ic:"person_add",renk:"#4F46E5"},user_update:{ad:"Kullanıcı Güncelleme",ic:"manage_accounts",renk:"#4F46E5"},user_delete:{ad:"Kullanıcı Silme",ic:"person_remove",renk:"#DC2626"},user_bulk:{ad:"Toplu Yetki İşlemi",ic:"group",renk:"#4F46E5"},role_template:{ad:"Rol Şablonu",ic:"badge",renk:"#4F46E5"},
  broadcast:{ad:"Duyuru",ic:"campaign",renk:"#4F46E5"},schedule:{ad:"Program",ic:"calendar_month",renk:"#8B5CF6"},
  score_submitted:{ad:"Puan Kaydı",ic:"task_alt",renk:"#16A34A"},
  sj_field_override:{ad:"Başhakem Düzeltmesi",ic:"edit_note",renk:"#D97706"},
