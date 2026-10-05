@@ -7,3 +7,53 @@
 .cl-page .cl-topbar-filters select{background:#F8FAFC;color:#1A1D26;border:1px solid #E5E7EB;border-radius:10px;padding:7px 10px;font-weight:700;font-size:13px}
 .cl-page .cl-back-btn{background:#fff;color:#1A1D26;border:1px solid #E5E7EB;border-radius:10px;padding:7px 11px;font-size:12px}
 .cl-page .cl-back-btn:hover{background:#F1F5F9}
+
+/* ==== Modern görünüm revizyonu (2026-10): açık standart tema + tek ekranda iki sütunlu düzen ==== */
+.rtm-page{--rtm-bg:#F0F2F5;--rtm-surface:#fff;--rtm-surface2:#F8FAFC;--rtm-border:#E5E7EB;--rtm-text:#1A1D26;--rtm-text-sec:#6B7280;--rtm-green:#16A34A;--rtm-amber:#D97706;--rtm-red:#DC2626;--rtm-blue:#2563EB;font-family:Nunito,system-ui,-apple-system,sans-serif}
+.rtm-sidebar{box-shadow:1px 0 3px rgba(0,0,0,.04)}
+.rtm-sidebar-header{padding-top:68px}
+.rtm-card{box-shadow:0 1px 3px rgba(0,0,0,.05);border-radius:16px}
+.rtm-card-header{background:#FAFBFC;padding:11px 16px}
+.rtm-layout-switch{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.rtm-main{max-width:none;padding:68px 24px 24px}
+.rtm-scoring-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;max-width:1380px}
+.rtm-scoring-wrap>*{grid-column:1/-1}
+.rtm-scoring-wrap>.rtm-card{grid-column:auto}
+.rtm-scoring-wrap>.rtm-card:has(.rtm-card-label--ded){grid-column:1/-1}
+@media(max-width:1100px){.rtm-scoring-wrap{grid-template-columns:1fr}}
+.rtm-athlete-header{box-shadow:0 1px 3px rgba(0,0,0,.05);border-radius:16px;padding:12px 18px;align-items:center}
+.rtm-athlete-name{font-size:22px;font-weight:900}
+.rtm-alet-tab{background:#fff;padding:10px 14px}
+.rtm-da-input,.rtm-sub-cell input[type=number],.rtm-judge-cell input{background:#fff;border:1.5px solid #E5E7EB;color:var(--rtm-text)}
+.rtm-da-input:focus,.rtm-sub-cell input[type=number]:focus,.rtm-judge-cell input:focus{border-color:var(--rtm-primary);box-shadow:0 0 0 3px rgba(236,72,153,.15)}
+.rtm-judges-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px;padding:12px 16px}
+.rtm-judge-cell{min-width:0}
+.rtm-judge-cell input{width:100%;font-size:18px;padding:9px 4px;border-radius:10px}
+.rtm-judge-cell--sj{border-left:2px dashed #FCD34D;padding-left:8px;opacity:1}
+.rtm-sub-row{padding:8px 16px 12px}
+.rtm-da-input-row{padding:12px 16px}
+.rtm-penalties-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rtm-final-bar{flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:12px 18px;border:1.5px solid #F9A8D4;box-shadow:0 -6px 24px rgba(15,23,42,.12);z-index:10;bottom:10px}
+.rtm-final-breakdown{flex:1 1 360px}
+.rtm-final-score{font-size:34px;min-width:auto;text-align:right}
+.rtm-toplam-bar{width:auto;margin:0;background:var(--rtm-primary-light)}
+.rtm-final-bar .rtm-btn--submit{padding:13px 28px;font-size:16px;border-radius:12px;box-shadow:0 6px 16px rgba(236,72,153,.35)}
+.rtm-locked-banner{background:#FFFBEB;border-color:#FCD34D;color:#92400E}
+.rtm-athlete-item{color:var(--rtm-text)}
+.rtm-athlete-item--active{background:#FDF2F8!important}
+/* FIG kontrolleri */
+.rtm-fig-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px}
+.rtm-sub-row .rtm-fig-chip{align-self:flex-end}
+.rtm-fig-chip{display:inline-flex;align-items:center;font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
+.rtm-fig-chip--info{background:#F1F5F9;color:#334155}
+.rtm-fig-chip--ok{background:#DCFCE7;color:#15803D}
+.rtm-fig-chip--blok{background:#FEE2E2;color:#B91C1C;animation:rtmBlok 1.4s ease-in-out infinite}
+.rtm-fig-chip--bos{background:#FFF7ED;color:#C2410C}
+@keyframes rtmBlok{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.35)}50%{box-shadow:0 0 0 4px rgba(220,38,38,0)}}
+.rtm-judge-cell--drop input{background:#F1F5F9!important;color:#94A3B8!important;text-decoration:line-through}
+.rtm-judge-cell--drop label::after{content:" ✕";color:#94A3B8}
+.rtm-judge-cell--drop .rtm-judge-result{color:#94A3B8}
+.rtm-fig-ozet{flex-basis:100%;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;border-radius:10px;padding:7px 12px}
+.rtm-fig-ozet .material-icons-round{font-size:18px}
+.rtm-fig-ozet--ok{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.rtm-fig-ozet--blok{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA}
