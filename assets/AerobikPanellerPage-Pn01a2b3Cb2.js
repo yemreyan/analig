@@ -161,7 +161,7 @@ function Paneller(){
       ["gavel","#7C3AED",__T("Üst Jüri"),o+"/aerobik/ustjuri?competitionId="+cid+tk],
       ["groups","#0EA5E9",__T("Teknik Kurul"),o+"/aerobik/teknikkurul?competitionId="+cid+tk],
       ["flag","#DC2626",__T("İtiraz Ekranı"),o+"/aerobik/itiraz?competitionId="+cid+tk],
-      ["live_tv","#D97706",__T("Canlı Skor (Flashcard)"),o+"/aerobik-canli-skor.html?compId="+cid],
+      ["live_tv","#D97706",__T("Canlı Skor (Flashcard)"),o+"/aerobik/canli?comp="+cid],
       ["balance","#DB2777",__T("SJA · Artistik"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sja"+tk],
       ["balance","#16A34A",__T("SJE · Uygulama"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sje"+tk],
       ["balance","#2563EB",__T("SJD · Zorluk"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sjd"+tk],
