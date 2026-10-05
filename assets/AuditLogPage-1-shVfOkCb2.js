@@ -22,7 +22,7 @@ const TIP={
  score_field_cleared:{ad:"Not Silme (alan)",ic:"backspace",renk:"#DC2626"},
  call_cancelled:{ad:"Çağrı İptali",ic:"phone_disabled",renk:"#DC2626"},
  athlete_call:{ad:"Sporcu Çağrısı",ic:"campaign",renk:"#0EA5E9"},
- score_unlock:{ad:"Kilit Açma",ic:"lock_open",renk:"#B45309"},
+ score_unlock:{ad:"Kilit Açma",ic:"lock_open",renk:"#B45309"},score_stop:{ad:"Yayın STOP",ic:"pan_tool",renk:"#DC2626"},score_stop_edit:{ad:"STOP → Düzenleme",ic:"edit",renk:"#B45309"},score_stop_release:{ad:"STOP → Yayın",ic:"publish",renk:"#16A34A"},
  alet_transfer:{ad:"Alet Değişikliği",ic:"swap_horiz",renk:"#7C3AED"},
  final_create:{ad:"Final Oluşturma",ic:"emoji_events",renk:"#F59E0B"},
  final_delete:{ad:"Final Silme",ic:"delete_sweep",renk:"#DC2626"},

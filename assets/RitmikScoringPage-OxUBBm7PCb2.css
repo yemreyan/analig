@@ -119,3 +119,25 @@
 .rtm-itiraz .material-icons-round{font-size:16px}
 .rtm-itiraz b{font-variant-numeric:tabular-nums;font-size:14px}
 .rtm-card:has(.rtm-card-label--ded) .rtm-sub-row{align-items:flex-start}
+
+/* FIG yayın akışı — 10 sn STOP */
+.rtm-yayin{display:flex;flex-direction:column;gap:10px}
+.rtm-yayin-ayar{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#475569;cursor:pointer;align-self:flex-start}
+.rtm-yayin-ayar input{width:16px;height:16px;accent-color:#DC2626}
+.rtm-yayin--sayac,.rtm-yayin--stop{flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;border-radius:14px}
+.rtm-yayin--sayac{background:#FFF7ED;border:1.5px solid #FDBA74}
+.rtm-yayin--stop{background:#FEF2F2;border:1.5px solid #FCA5A5}
+.rtm-yayin-sayac{position:relative;width:56px;height:56px;flex-shrink:0}
+.rtm-yayin-sayac svg{width:56px;height:56px;transform:rotate(-90deg)}
+.rtm-yayin-iz{fill:none;stroke:#FED7AA;stroke-width:4}
+.rtm-yayin-dolu{fill:none;stroke:#EA580C;stroke-width:4;stroke-linecap:round;stroke-dasharray:119.4;transition:stroke-dashoffset 1s linear}
+.rtm-yayin-sayac b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#9A3412;font-variant-numeric:tabular-nums}
+.rtm-yayin-metin{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
+.rtm-yayin-metin b{display:inline-flex;align-items:center;gap:5px;font-size:14px;font-weight:900;color:#1A1D26}
+.rtm-yayin--stop .rtm-yayin-metin b{color:#B91C1C}
+.rtm-yayin-metin span{font-size:12px;font-weight:600;color:#64748B}
+.rtm-yayin-stop{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:12px;border:none;background:#DC2626;color:#fff;font-size:18px;font-weight:900;letter-spacing:.08em;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(220,38,38,.35);animation:rtmStopPuls 1s ease-in-out infinite}
+.rtm-yayin-stop:hover{background:#B91C1C}
+.rtm-yayin-stop .material-icons-round{font-size:22px}
+@keyframes rtmStopPuls{50%{box-shadow:0 0 0 8px rgba(220,38,38,.15),0 6px 18px rgba(220,38,38,.35)}}
+.rtm-modal:has(.rtm-yayin--sayac),.rtm-modal:has(.rtm-yayin--stop){max-width:620px}
