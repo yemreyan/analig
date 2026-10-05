@@ -2408,6 +2408,21 @@ const DICT={
  "Şablon indirildi.":"Template downloaded.",
  "Şablon İndir":"Download Template",
  "⚠ Bu takımın puanı var: kulüp ve grup no kilitli (puan bağlantısı korunur). Üye isimleri düzeltilebilir.":"⚠ This team has a score: club and group no are locked (the score link is preserved). Member names can be corrected.",
- "⚠ Bu yarışmacının PUANI VAR. Kayıt silinirse puan tablolarda sahipsiz kalır.":"⚠ This entry HAS A SCORE. If deleted, the score will be left without an owner in the tables."
+ "⚠ Bu yarışmacının PUANI VAR. Kayıt silinirse puan tablolarda sahipsiz kalır.":"⚠ This entry HAS A SCORE. If deleted, the score will be left without an owner in the tables.",
+ "TAKIM TASNİF":"TEAM RANKING",
+ "Takım Tasnif":"Team Ranking",
+ "Takım Tasnifi":"Team Ranking",
+ "Ülke Sıralaması":"Nation Ranking",
+ "Madalya Tablosu":"Medal Table",
+ "Madalya Kazananlar":"Medallists",
+ "Henüz madalya dağıtılmadı.":"No medals awarded yet.",
+ "Madalya tablosu hesaplanıyor…":"Calculating medal table…",
+ "Ülke (NOC)":"Country (NOC)",
+ "Şehir":"City",
+ "Çıktı dili (PDF / sonuç / start list)":"Output language (PDF / results / start list)",
+ "Uluslararası yarışma: sporcular il/kulüp yerine ülke kodu ve bayrakla (TUR, AZE, ITA…) görünür; sonuçlarda ülke sıralaması ve madalya tablosu çıkar. Hakem atamasında önce ülke, sonra o ülkenin FIG bröveli hakemi seçilir.":"International competition: gymnasts are shown with country code and flag (TUR, AZE, ITA…) instead of city/club; results include a nation ranking and medal table. Judge assignment selects the country first, then that country's FIG-brevet judge.",
+ "Uluslararası Yarışma":"International Competition",
+ "Takim Puani Henuz Olusturulmadi":"No Team Score Yet",
+ "Henuz Puan Girilmedi":"No Scores Yet"
 };
 export{DICT};

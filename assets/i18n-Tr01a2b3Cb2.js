@@ -23,10 +23,12 @@ function set(l){
  location.reload();
 }
 function T(s){
- if(cur()==="tr")return s;
+ const l=globalThis.__TF||cur();
+ if(l==="tr")return s;
  if(typeof s!=="string")return s;
  const v=DICT[s];
- return v===undefined?s:v;
+ if(v===undefined){try{if(globalThis.__TF)(globalThis.__TMISS||(globalThis.__TMISS=new Set)).add(s)}catch{}return s}
+ return v;
 }
 
 // Sayfalar import etmeden kullanabilsin diye global.
