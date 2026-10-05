@@ -49,6 +49,24 @@ const S={
  ov:{position:"fixed",inset:0,zIndex:80,background:"rgba(15,23,42,.5)",backdropFilter:"blur(3px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem"},
  modal:{background:"#fff",borderRadius:16,width:"100%",maxWidth:520,maxHeight:"92vh",overflow:"auto",padding:"1.2rem",boxShadow:"0 24px 60px rgba(15,23,42,.3)",color:C.ink}
 };
+// Branş paletli görünüm katmanı (yarışmalar / ana sayfa ile aynı dil)
+;(()=>{const p1=C.p,p2=({"#4F46E5":"#7C3AED","#EC4899":"#8B5CF6","#10B981":"#0EA5E9"})[C.p]||C.p,G="linear-gradient(135deg,"+p1+","+p2+")",mx=a=>"color-mix(in srgb,"+p1+" "+a+"%,#fff)",SH="0 1px 2px rgba(15,23,42,.05),0 8px 24px -16px rgba(15,23,42,.22)",b0=S.btn,s0=S.statI;
+ Object.assign(S,{wrap:{...S.wrap,background:"#F6F7FB"},
+  top:{...S.top,borderBottom:"none",background:"linear-gradient(90deg,"+p1+","+p2+") bottom/100% 3px no-repeat,#fff",boxShadow:"0 1px 2px rgba(15,23,42,.05)"},
+  ico:{...S.ico,background:G,boxShadow:"0 8px 20px -6px color-mix(in srgb,"+p1+" 60%,transparent)"},
+  card:{...S.card,border:"none",borderRadius:18,boxShadow:SH},
+  sel:{...S.sel,background:"#fff",border:"1px solid #E2E8F0"},inp:{...S.inp,background:"#fff",border:"1px solid #E2E8F0"},
+  btn:(bg,fg)=>({...b0(bg,fg),borderRadius:12,...(bg==="#16A34A"?{background:G,boxShadow:"0 8px 18px -8px color-mix(in srgb,"+p1+" 70%,transparent)"}:{})}),
+  ghost:{...S.ghost,border:"1px solid "+mx(28),color:p1,borderRadius:12},
+  stat:{...S.stat,border:"none",borderRadius:18,boxShadow:SH},
+  statI:c=>({...s0(c),background:G,borderRadius:12,boxShadow:"0 6px 14px -6px color-mix(in srgb,"+p1+" 60%,transparent)"}),
+  sec:{...S.sec,border:"none",borderRadius:18,boxShadow:"0 1px 2px rgba(15,23,42,.05),0 10px 28px -18px rgba(15,23,42,.25)"},
+  secH:{...S.secH,borderBottom:"1px solid #EEF0F4",padding:".85rem 1rem"},
+  row:{...S.row,borderBottom:"1px solid #F1F3F8"},
+  no:{...S.no,background:mx(10),border:"1px solid "+mx(24),color:p1},
+  ib:{...S.ib,border:"1px solid #E2E8F0",borderRadius:10},
+  lbl:{...S.lbl,color:p1}})})();
+
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:"1.1rem",...(st||{})},children:n});
 
 
@@ -184,7 +202,7 @@ function YeniSayfa({onEski}){
      e.jsxs("label",{style:{display:"inline-flex",alignItems:"center",gap:".4rem",fontSize:".84rem",fontWeight:800,color:C.ink2,cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:finGoster,onChange:ev=>setFinGoster(ev.target.checked)}),__T("Finalleri göster")]})]}),
     INTL?e.jsx(__IntlKayit,{base:BASE,comp,Cp,toast,katAd,brans:"aerobik",lg:typeof logAction==="function"?(t,m,o)=>logAction(t,m,{user:typeof _un!=="undefined"?_un:"",...o}):null}):null,gruplu.length===0?e.jsx("div",{style:{...S.card,textAlign:"center",padding:"2.5rem 1rem",color:C.muted,fontWeight:700},children:q0?__T("Aramaya uyan yarışmacı yok."):__T("Bu yarışmada henüz sporcu yok. “Yarışmacı Ekle” ya da “Excel'den Yükle” ile başlayın.")}):null,
     gruplu.map(g=>{const t=typeOf(g.cat),rk=TIP_RENK[t],kisi=g.list.reduce((a,x)=>a+x.members.length,0);return e.jsxs("div",{style:S.sec,children:[
-     e.jsxs("div",{style:{...S.secH,background:"linear-gradient(90deg,"+rk+"12,#fff 60%)"},children:[e.jsx("span",{style:{width:10,height:10,borderRadius:3,background:rk}}),e.jsx("span",{style:{fontWeight:900,fontSize:"1rem"},children:(isFinal(g.cat)?"🏆 ":"")+katAd(g.cat)}),e.jsx("span",{style:S.chip(rk,rk+"1a"),children:TIP_AD[t]}),e.jsx("span",{style:S.chip(C.ink2,C.soft),children:g.list.length+(isMulti(g.cat)?" "+__T("takım")+" · "+kisi+" "+__T("sporcu"):" "+__T("sporcu"))}),e.jsx("span",{style:{flex:1}}),isFinal(g.cat)?e.jsx("span",{style:{fontSize:".74rem",fontWeight:700,color:C.muted},children:__T("Final listesi Final Oluştur ekranından gelir")}):e.jsxs("button",{type:"button",style:{...S.ghost,padding:".35rem .65rem",fontSize:".78rem"},onClick:()=>ekleAc(g.cat),children:[MI("add",{fontSize:"1rem"}),__T("Ekle")]})]}),
+     e.jsxs("div",{style:{...S.secH,background:"linear-gradient(90deg,"+rk+"26,"+rk+"08 45%,#fff 80%)",borderLeft:"5px solid "+rk},children:[e.jsx("span",{style:{width:10,height:10,borderRadius:3,background:rk}}),e.jsx("span",{style:{fontWeight:900,fontSize:"1rem"},children:(isFinal(g.cat)?"🏆 ":"")+katAd(g.cat)}),e.jsx("span",{style:S.chip(rk,rk+"1a"),children:TIP_AD[t]}),e.jsx("span",{style:S.chip(C.ink2,C.soft),children:g.list.length+(isMulti(g.cat)?" "+__T("takım")+" · "+kisi+" "+__T("sporcu"):" "+__T("sporcu"))}),e.jsx("span",{style:{flex:1}}),isFinal(g.cat)?e.jsx("span",{style:{fontSize:".74rem",fontWeight:700,color:C.muted},children:__T("Final listesi Final Oluştur ekranından gelir")}):e.jsxs("button",{type:"button",style:{...S.ghost,padding:".35rem .65rem",fontSize:".78rem"},onClick:()=>ekleAc(g.cat),children:[MI("add",{fontSize:"1rem"}),__T("Ekle")]})]}),
      g.list.length===0?e.jsx("div",{style:{padding:".9rem 1rem",color:C.muted,fontWeight:700,fontSize:".85rem"},children:__T("Bu kategoride yarışmacı yok.")}):null,
      g.list.map((x,i)=>e.jsxs("div",{style:S.row,children:[
       e.jsx("div",{style:S.no,title:x.sira<1e9?__T("Çıkış sırası"):"",children:x.sira<1e9?x.sira:i+1}),
