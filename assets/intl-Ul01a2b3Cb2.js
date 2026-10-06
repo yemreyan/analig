@@ -74,10 +74,10 @@ export function madalyaTablosu(listeler){const T={};listeler.forEach(ls=>ls.forE
 // Ülke seçimi <select> seçenekleri
 export function UlkeSecenekleri(e,dil){return ULKELER.slice().sort((a,b)=>(dil==="en"?a.en:a.tr).localeCompare(dil==="en"?b.en:b.tr,dil==="en"?"en":"tr")).map(u=>e.jsx("option",{value:u.kod,children:u.kod+" — "+(dil==="en"?u.en:u.tr)},u.kod))}
 // Kategori / alet adlarını İngilizceye (FIG terimleri) çevirir — PDF başlıkları için
-const KW=[[/Büyükler/g,"Seniors"],[/Büyük/g,"Senior"],[/Gençler/g,"Juniors"],[/Genç/g,"Junior"],[/Yıldızlar/g,"Pre-Juniors"],[/Yıldız/g,"Pre-Junior"],[/Küçükler/g,"Children"],[/Küçük/g,"Children"],[/Minikler/g,"Mini"],[/Minik/g,"Mini"],
+const KW=[[/Büyükler/g,"Senior"],[/Büyük/g,"Senior"],[/Gençler/g,"Junior"],[/Genç/g,"Junior"],[/Yıldızlar/g,"Pre-Junior"],[/Yıldız/g,"Pre-Junior"],[/Küçükler/g,"Children"],[/Küçük/g,"Children"],[/Minikler/g,"Mini"],[/Minik/g,"Mini"],
  [/Kızlar/g,"Women"],[/Kız/g,"Women"],[/Kadınlar/g,"Women"],[/Kadın/g,"Women"],[/Erkekler/g,"Men"],[/Erkek/g,"Men"],[/Bireysel/g,"Individual"],[/Ferdi/g,"Individual"],[/Grup/g,"Group"],[/Takım/g,"Team"],[/Karma/g,"Mixed"],
  [/Genel Tasnif/g,"All-Around"],[/Çok Mücadele/g,"All-Around"],[/Finali/g,"Final"],[/Final/g,"Final"],[/Çember/g,"Hoop"],[/Kurdele/g,"Ribbon"],[/Labut/g,"Clubs"],[/\bTop\b/g,"Ball"],[/İp/g,"Rope"],[/Serbest/g,"Free"],[/(\d)\. Seri/g,"Routine $1"],
  [/Yer/g,"Floor"],[/Atlama/g,"Vault"],[/Barfiks/g,"High Bar"],[/Denge/g,"Beam"],[/Asimetrik Paralel/g,"Uneven Bars"],[/Halka/g,"Rings"],[/Kulplu Beygir/g,"Pommel Horse"],[/Paralel/g,"Parallel Bars"],[/Kategori/g,"Category"]];
-export function katEN(s){let t=String(s||"");KW.forEach(([r,v])=>{t=t.replace(r,v)});return t}
+export function katEN(s){let t=String(s||"");KW.forEach(([r,v])=>{t=t.replace(r,v)});return t.replace(/(Children|Mini) Women/g,"$1 Girls").replace(/(Children|Mini) Men/g,"$1 Boys")}
 const KWU=KW.map(([r,v])=>[new RegExp(r.source.toLocaleUpperCase("tr-TR").replace(/\\B/g,"\\b"),"g"),v.toUpperCase()]);
 export function katENup(s){let t=String(s||"");KWU.forEach(([r,v])=>{t=t.replace(r,v)});return katEN(t)}
