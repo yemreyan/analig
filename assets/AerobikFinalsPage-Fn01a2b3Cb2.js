@@ -166,8 +166,8 @@ function Finals(){
     const _rot={};_ord.forEach(([mid,md],ix)=>{md.sirasi=ix+1;md.rotasyonGrubu=0;_rot[mid]={sirasi:ix+1,ad:md.ad||"",soyad:md.soyad||"",tckn:md.tckn||"",okul:md.okul||"",yarismaTuru:md.yarismaTuru||"ferdi",...(md.grupNo!=null?{grupNo:md.grupNo}:{})}});
     upd[`sporcular/${fcat}`]=newSpor;upd[`puanlar/${fcat}`]=null;upd[`siralama/${fcat}`]=_ord.length?{rotation_0:_rot}:null;
     summary.push({cat,fcat,label:catLabel(cat),team,names});});
-  if(!summary.length){toast("Sıralanacak (puanı girilmiş) sporcu bulunamadı.","warning");setBusy(!1);return}
-  try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();setLog(summary);toast((summary.length===1?"🏆 "+summary[0].label+" — ":summary.length+" kategori — ")+__T("final oluşturuldu ✓")+" (ilk "+TOP+" + "+RES+" yedek"+(kotaN?", "+__T("kulüp başına en fazla")+" "+kotaN:"")+")","success")}catch{toast("Hata oluştu.","error")}
+  if(!summary.length){toast(__T("Sıralanacak (puanı girilmiş) sporcu bulunamadı."),"warning");setBusy(!1);return}
+  try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();setLog(summary);toast((summary.length===1?"🏆 "+summary[0].label+" — ":summary.length+" kategori — ")+__T("final oluşturuldu ✓")+" (ilk "+TOP+" + "+RES+" yedek"+(kotaN?", "+__T("kulüp başına en fazla")+" "+kotaN:"")+")","success")}catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1);
  };
  const clearOne=async cat=>{
@@ -175,7 +175,7 @@ function Finals(){
   const np=Object.keys(pun[fc]||{}).length;
   if(!await window.__gxConfirm(catLabel(cat)+" — "+__T("finali silinsin mi?")+(np?"\n\n"+np+" "+__T("final puanı da silinecek."):"")))return;
   setBusy(!0);setLog(null);
-  try{await update(ref(db,`${BASE}/${comp}`),{[`kategoriler/${fc}`]:null,[`sporcular/${fc}`]:null,[`puanlar/${fc}`]:null,[`siralama/${fc}`]:null});await reload();toast(catLabel(cat)+" — "+__T("finali silindi."),"success")}catch{toast("Hata oluştu.","error")}
+  try{await update(ref(db,`${BASE}/${comp}`),{[`kategoriler/${fc}`]:null,[`sporcular/${fc}`]:null,[`puanlar/${fc}`]:null,[`siralama/${fc}`]:null});await reload();toast(catLabel(cat)+" — "+__T("finali silindi."),"success")}catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1);
  };
  const clearFinals=async()=>{
@@ -185,7 +185,7 @@ function Finals(){
   if(!await window.__gxConfirm(keys.size+" "+__T("final kategorisi ve bu finallerde girilmiş TÜM puanlar silinecek. Emin misiniz?")))return;
   setBusy(!0);setLog(null);
   keys.forEach(fc=>{upd[`kategoriler/${fc}`]=null;upd[`sporcular/${fc}`]=null;upd[`puanlar/${fc}`]=null;upd[`siralama/${fc}`]=null});
-  try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();toast(keys.size+" final kategorisi silindi.","success")}catch{toast("Hata oluştu.","error")}
+  try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();toast(keys.size+" final kategorisi silindi.","success")}catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1);
  };
  const clearReserves=async()=>{
@@ -195,8 +195,8 @@ function Finals(){
       if(team){const ok=(m.okul||m.kulup||"").trim(),gn=m.grupNo??m.cikisSirasi,sid=We(fc+"::"+ok+"::"+gn);scored=scores[sid]&&scoreOf(scores[sid])!=null}
       else scored=scores[mid]&&scoreOf(scores[mid])!=null;
       if(!scored){upd[`sporcular/${fc}/${mid}`]=null;n++}});});
-  if(!n){toast("Kaldırılacak (yarışmamış/puansız) yedek bulunamadı.","warning");setBusy(!1);return}
-  try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();toast(n+" yedek sporcu (R1/R2) kaldırıldı.","success")}catch{toast("Hata oluştu.","error")}
+  if(!n){toast(__T("Kaldırılacak (yarışmamış/puansız) yedek bulunamadı."),"warning");setBusy(!1);return}
+  try{await update(ref(db,`${BASE}/${comp}`),upd);await reload();toast(n+__T(" yedek sporcu (R1/R2) kaldırıldı."),"success")}catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1);
  };
  const hasReserves=finalCats.some(fc=>Object.values(spor[fc]||{}).some(m=>m&&m._yedek));
@@ -264,7 +264,7 @@ function Finals(){
        kotaN?e.jsx("button",{style:{...S.btn,padding:".45rem .7rem",fontSize:".78rem",background:"#fff",border:"1px solid #E5E7EB",color:"#334155"},onClick:()=>setKota(""),children:__T("Sınırsız")}):null]}):null,
      realCats.map(cat=>{const _rf=rankFull(cat),_dr=durumCat(cat),top=_rf.top,fc="final_"+cat,has=!!cats[fc],op=!!expanded[cat]&&top.length>0,nc=Math.min(top.length,_rf.fSay),nr=Math.max(0,top.length-_rf.fSay);return e.jsxs("div",{style:{...S.card,display:"block"},children:[
        e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".7rem",cursor:top.length?"pointer":"default"},onClick:()=>top.length&&setExpanded(x=>({...x,[cat]:!x[cat]})),children:[
-        e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsxs("div",{style:{fontWeight:800},children:[catLabel(cat),isTeam(cat)?e.jsx("span",{style:{...S.badge,marginLeft:".4rem",background:"rgba(8,145,178,.2)",color:"#0E7490"},children:__T("GRUP/ÇİFT")}):null]}),e.jsxs("div",{style:{color:"#6B7280",fontSize:".8rem",fontWeight:700},children:[top.length>0?nc+(isTeam(cat)?" takım":" sporcu")+(nr?" + "+nr+" yedek":"")+" · çıkış sırasını görmek için dokunun":"puanı girilmiş sporcu yok",_rf.atlanan.length?e.jsxs("span",{style:{color:"#0369A1"},children:[" · ",_rf.atlanan.length," ",__T("giriş kulüp kotası nedeniyle atlandı")]}):null,_rf.top.some(r=>r._istisna)?e.jsxs("span",{style:{color:"#0369A1"},children:[" · ",_rf.top.filter(r=>r._istisna).length," ",__T("eşitlik istisnası")]}):null]})]}),
+        e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsxs("div",{style:{fontWeight:800},children:[catLabel(cat),isTeam(cat)?e.jsx("span",{style:{...S.badge,marginLeft:".4rem",background:"rgba(8,145,178,.2)",color:"#0E7490"},children:__T("GRUP/ÇİFT")}):null]}),e.jsxs("div",{style:{color:"#6B7280",fontSize:".8rem",fontWeight:700},children:[top.length>0?nc+(isTeam(cat)?__T(" takım"):" sporcu")+(nr?" + "+nr+" yedek":"")+__T(" · çıkış sırasını görmek için dokunun"):__T("puanı girilmiş sporcu yok"),_rf.atlanan.length?e.jsxs("span",{style:{color:"#0369A1"},children:[" · ",_rf.atlanan.length," ",__T("giriş kulüp kotası nedeniyle atlandı")]}):null,_rf.top.some(r=>r._istisna)?e.jsxs("span",{style:{color:"#0369A1"},children:[" · ",_rf.top.filter(r=>r._istisna).length," ",__T("eşitlik istisnası")]}):null]})]}),
         _dr.toplam?(_dr.tamam?e.jsx("span",{style:{...S.badge,background:"rgba(34,197,94,.12)",color:"#15803D",border:"1px solid rgba(34,197,94,.35)"},children:__T("✓ TAMAMLANDI")}):e.jsxs("span",{style:{...S.badge,background:"rgba(245,158,11,.12)",color:"#B45309",border:"1px solid rgba(245,158,11,.35)"},children:[_dr.bitti,"/",_dr.toplam," ",__T("puanlandı")]})):null,
         has?e.jsx("span",{style:{...S.badge,background:"rgba(34,197,94,.18)",color:"#15803D"},children:__T("✓ FİNAL VAR")}):null,
         top.length?e.jsx("span",{style:{color:"#6B7280",fontWeight:800},children:op?"▲":"▼"}):null
@@ -290,7 +290,7 @@ function Finals(){
        hasReserves?e.jsx("button",{style:{...S.btn,background:"#fff",border:"1px solid #f59e0b",color:"#B45309"},disabled:busy,onClick:clearReserves,children:__T("Yedekleri Kaldır (R1/R2)")}):null,
        finalCats.length>0?e.jsx("button",{style:{...S.btn,background:"#fff",border:"1px solid #ef4444",color:"#DC2626"},disabled:busy,onClick:clearFinals,children:__T("Tüm Finalleri Sil")}):null
      ]}),
-     log?e.jsxs("div",{style:{marginTop:"1.2rem"},children:[e.jsx("div",{style:{fontWeight:800,color:"#15803D",marginBottom:".5rem"},children:__T("✓ Oluşturulan finaller")}),log.map(g=>e.jsxs("div",{style:{...S.card,display:"block"},children:[e.jsxs("div",{style:{fontWeight:800,marginBottom:".4rem"},children:["🏆 Final — ",g.label,g.team?" (grup/çift)":""]}),e.jsx("div",{style:{display:"grid",gap:".2rem"},children:[...g.names].sort((a,b)=>(a.reserve?1e3+a.rank:a.cs)-(b.reserve?1e3+b.rank:b.cs)).map(n=>e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontSize:".85rem",fontWeight:700,gap:".5rem"},children:[e.jsxs("span",{style:{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:[e.jsx("b",{style:{color:n.reserve?"#B45309":"#0E7490"},children:n.reserve?n.yed+" · yedek ":n.cs+". çıkış "}),n.name,e.jsxs("span",{style:{color:"#6B7280",fontWeight:600},children:[" (eleme ",n.rank,".)"]})]}),e.jsx("span",{style:{color:"#6B7280",whiteSpace:"nowrap"},children:f3(n.score)})]},n.rank))})]},g.fcat))]}):null
+     log?e.jsxs("div",{style:{marginTop:"1.2rem"},children:[e.jsx("div",{style:{fontWeight:800,color:"#15803D",marginBottom:".5rem"},children:__T("✓ Oluşturulan finaller")}),log.map(g=>e.jsxs("div",{style:{...S.card,display:"block"},children:[e.jsxs("div",{style:{fontWeight:800,marginBottom:".4rem"},children:["🏆 Final — ",g.label,g.team?__T(" (grup/çift)"):""]}),e.jsx("div",{style:{display:"grid",gap:".2rem"},children:[...g.names].sort((a,b)=>(a.reserve?1e3+a.rank:a.cs)-(b.reserve?1e3+b.rank:b.cs)).map(n=>e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontSize:".85rem",fontWeight:700,gap:".5rem"},children:[e.jsxs("span",{style:{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:[e.jsx("b",{style:{color:n.reserve?"#B45309":"#0E7490"},children:n.reserve?n.yed+" · yedek ":n.cs+__T(". çıkış ")}),n.name,e.jsxs("span",{style:{color:"#6B7280",fontWeight:600},children:[" (eleme ",n.rank,".)"]})]}),e.jsx("span",{style:{color:"#6B7280",whiteSpace:"nowrap"},children:f3(n.score)})]},n.rank))})]},g.fcat))]}):null
     ]}):null
    ]})
   ]})

@@ -90,10 +90,10 @@ function RitmikFinals(){
    // çıkış sırası (şablon) siralama'ya da: puanlama ve çıkış listesi bu sırayı gösterir
    {const _ord=Object.entries(newSpor).sort((p,q)=>(p[1].cikisSirasi-q[1].cikisSirasi)||((p[1]._yedek?1:0)-(q[1]._yedek?1:0))||String(p[1].ad||"").localeCompare(String(q[1].ad||""),"tr")),_rot={};_ord.forEach(([mid,md],ix)=>{md.sirasi=ix+1;md.rotasyonGrubu=0;_rot[mid]={sirasi:ix+1,ad:md.ad||"",soyad:md.soyad||"",tckn:md.tckn||"",okul:md.okul||"",yarismaTuru:md.yarismaTuru||"ferdi",...(md.grupNo!=null?{grupNo:md.grupNo}:{})}});upd["siralama/"+fcat]=_ord.length?{rotation_0:_rot}:null}
    summary.push({fcat,cat,alet,label:catLabel(cat),aletAd:alet===AA?"Genel Tasnif":aletLabel(alet),names})});
-  if(!summary.length){toast("Seçili finallerde puanı girilmiş sporcu bulunamadı.","warning");setBusy(!1);return}
+  if(!summary.length){toast(__T("Seçili finallerde puanı girilmiş sporcu bulunamadı."),"warning");setBusy(!1);return}
   try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_create",`[Ritmik] ${summary.length} final oluşturuldu: ${summary.map(x=>x.label+" — "+x.aletAd).join(", ")}`.slice(0,480),{user:_un,competitionId:comp,discipline:"ritmik",data:{kulupKotasi:Math.max(0,parseInt(limit)||0),kotaTamamla:fill,finaller:summary.map(x=>({kategori:x.fcat,ad:x.label+" — "+x.aletAd,sporcular:x.names.map(n=>({cikis:n.reserve?n.yed:n.cs,ad:n.name,kulup:n.club,eleme:n.rank,puan:n.score}))}))}});await reload();setLog(summary);
-    toast(summary.length+" final oluşturuldu ✓ — ilk "+TOP+" + "+RES+" yedek","success")}
-  catch{toast("Hata oluştu.","error")}
+    toast(summary.length+__T(" final oluşturuldu ✓ — ilk ")+TOP+" + "+RES+" yedek","success")}
+  catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1)};
 
  const clearFinals=async()=>{
@@ -102,7 +102,7 @@ function RitmikFinals(){
   if(!keys.size){toast("Silinecek final kategorisi yok.","warning");setBusy(!1);return}
   keys.forEach(fc=>{upd["kategoriler/"+fc]=null;upd["sporcular/"+fc]=null;upd["puanlar/"+fc]=null;upd["siralama/"+fc]=null});
   try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_delete",`[Ritmik] ${keys.size} final kategorisi silindi`,{user:_un,competitionId:comp,discipline:"ritmik",data:{silinen:[...keys]}});await reload();toast(keys.size+" final kategorisi silindi.","success")}
-  catch{toast("Hata oluştu.","error")}
+  catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1)};
 
  const P1="#EC4899",P2="#8B5CF6",G="linear-gradient(135deg,"+P1+","+P2+")",SH="0 1px 2px rgba(15,23,42,.05),0 8px 24px -16px rgba(15,23,42,.22)";
@@ -137,7 +137,7 @@ function RitmikFinals(){
       e.jsxs("div",{style:{flex:1,minWidth:0,cursor:list.length?"pointer":"default"},onClick:()=>list.length&&setExpanded(x=>({...x,[k]:!x[k]})),children:[
         e.jsxs("div",{style:{fontWeight:900,display:"flex",alignItems:"center",gap:".4rem",flexWrap:"wrap"},children:[alet===AA?__T("Genel Tasnif Finali"):aletLabel(alet)+" "+__T("Finali"),
           has?e.jsx("span",{style:{...S.badge,background:"#DCFCE7",color:"#15803D"},children:__T("✓ OLUŞTURULDU")}):null]}),
-        e.jsx("div",{style:{color:"#64748B",fontSize:".78rem",fontWeight:700},children:list.length?nc+" "+(isGrp(cat)?"grup":"sporcu")+(nr?" + "+nr+" yedek":"")+(excluded.length?" · "+excluded.length+" kulüp kotasıyla elendi":""):__T("puanı girilmiş sporcu yok")})]}),
+        e.jsx("div",{style:{color:"#64748B",fontSize:".78rem",fontWeight:700},children:list.length?nc+" "+(isGrp(cat)?"grup":"sporcu")+(nr?" + "+nr+" yedek":"")+(excluded.length?" · "+excluded.length+__T(" kulüp kotasıyla elendi"):""):__T("puanı girilmiş sporcu yok")})]}),
       list.length?e.jsx("button",{type:"button",onClick:()=>setExpanded(x=>({...x,[k]:!x[k]})),style:{...S.ghost,padding:".35rem .6rem"},children:MI(op?"expand_less":"expand_more")}):null]}),
     op?e.jsxs("div",{style:{marginTop:".6rem",borderTop:"1px solid #F1F5F9",paddingTop:".5rem"},children:[
       e.jsx("div",{style:{fontSize:".7rem",fontWeight:900,color:"#94A3B8",letterSpacing:".08em",textTransform:"uppercase",marginBottom:".3rem"},children:__T("Final çıkış sırası")}),

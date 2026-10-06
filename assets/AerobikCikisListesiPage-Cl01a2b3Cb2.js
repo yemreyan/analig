@@ -47,7 +47,7 @@ $("saveBtn").addEventListener("click",save);
 $("printBtn").addEventListener("click",printList);
 $("excelBtn").addEventListener("click",excelExport);
 $("tplBtn").addEventListener("click",downloadTemplate);
-$("importBtn").addEventListener("click",()=>{if(!comp){toast("Önce yarışma seçin.","err");return;}$("fileInput").click();});
+$("importBtn").addEventListener("click",()=>{if(!comp){toast(__T("Önce yarışma seçin."),"err");return;}$("fileInput").click();});
 $("fileInput").addEventListener("change",e=>{const f=e.target.files[0];if(f)importExcel(f);e.target.value="";});
 $("importDaySel").addEventListener("change",()=>{const days=Object.keys(importedByDay);loadImportedDay(days[+$("importDaySel").value]);});
 $("keepTimes").addEventListener("change",()=>{const days=Object.keys(importedByDay);if(days.length)loadImportedDay(days[+($("importDaySel").value||0)]);});
@@ -75,7 +75,7 @@ function buildCompetitors(){
 
 function generate(){
   const all=buildCompetitors();
-  if(!all.length){toast("Bu yarışmada sporcu yok.","err");return;}
+  if(!all.length){toast(__T("Bu yarışmada sporcu yok."),"err");return;}
   const rng=mulberry32(parseInt($("seed").value)||1);
   // faza göre grupla + her fazda kura
   const byPhase={}; all.forEach(c=>{const p=typeOf(c.cat);(byPhase[p]=byPhase[p]||[]).push(c);});
@@ -102,7 +102,7 @@ function generate(){
   if(be>0){for(let p=be;p<items.length;p+=be)breaks.push({after:p,dur:10,label:"ARA"});}
   render();
   checkRest();
-  toast("Çıkış listesi oluşturuldu ✓","ok");
+  toast(__T("Çıkış listesi oluşturuldu ✓"),"ok");
 }
 
 function toMin(hhmm){const [h,m]=(hhmm||"09:00").split(":").map(Number);return h*60+m;}
@@ -161,7 +161,7 @@ function wire(){
   L.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>move(+b.dataset.up,+b.dataset.up-1));
   L.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>move(+b.dataset.dn,+b.dataset.dn+1));
   L.querySelectorAll("[data-delbreak]").forEach(b=>b.onclick=()=>{breaks.splice(+b.dataset.delbreak,1);render();});
-  L.querySelectorAll("[data-del]").forEach(b=>b.onclick=async ()=>{const it=items[+b.dataset.del];if(await window.__gxConfirm(`"${nameOf(it)||"Bu yarışmacı"}" listeden çıkarılsın mı?`)){items.splice(+b.dataset.del,1);render();}});
+  L.querySelectorAll("[data-del]").forEach(b=>b.onclick=async ()=>{const it=items[+b.dataset.del];if(await window.__gxConfirm(`"${nameOf(it)||__T("Bu yarışmacı")}${__T("\" listeden çıkarılsın mı?")}`)){items.splice(+b.dataset.del,1);render();}});
   L.querySelectorAll("[data-brk]").forEach(b=>b.onclick=()=>insertBreakAfter(+b.dataset.brk+1));
   L.querySelectorAll("input[data-gi]").forEach(inp=>inp.onchange=()=>{items[+inp.dataset.gi].grupNo=Math.max(1,parseInt(inp.value)||1);});
   let dragI=null;
@@ -186,9 +186,9 @@ function onCatChange(){const cat=$("mCat").value,multi=isMulti(cat),tp=typeOf(ca
   if(multi)$("mGrup").value=nextGrupNo(cat);
 }
 function openAddModal(){
-  if(!comp){toast("Önce yarışma seçin.","err");return;}
+  if(!comp){toast(__T("Önce yarışma seçin."),"err");return;}
   const {cats}=catLookup();
-  if(!cats.length){toast("Bu yarışmada kategori yok.","err");return;}
+  if(!cats.length){toast(__T("Bu yarışmada kategori yok."),"err");return;}
   $("mCat").innerHTML=cats.map(c=>`<option value="${c}">${esc(catKategori(c))}${isMulti(c)?" (takım)":""}</option>`).join("");
   $("mIl").value="";$("mKulup").value="";$("mNames").value="";
   onCatChange();
@@ -196,7 +196,7 @@ function openAddModal(){
 }
 function closeModal(){$("modal").classList.add("hidden");}
 function doAddCompetitor(){
-  const cat=$("mCat").value;if(!cat){toast("Kategori seçin.","err");return;}
+  const cat=$("mCat").value;if(!cat){toast(__T("Kategori seçin."),"err");return;}
   const il=$("mIl").value.trim(),okul=$("mKulup").value.trim()||il;
   const lines=$("mNames").value.split("\n").map(s=>s.trim()).filter(Boolean);
   if(!lines.length){toast("En az bir isim girin.","err");return;}
@@ -215,15 +215,15 @@ $("mAdd").addEventListener("click",doAddCompetitor);
 $("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 
 async function insertBreakAfter(after){
-  const dur=parseInt(await window.__gxPrompt(`${after}. çıkıştan sonra mola — süre (dakika):`,"10")); if(!dur||dur<1)return;
+  const dur=parseInt(await window.__gxPrompt(`${after}${__T(". çıkıştan sonra mola — süre (dakika):")}`,"10")); if(!dur||dur<1)return;
   const label=await window.__gxPrompt("Mola etiketi:","ARA")||"ARA";
   breaks.push({after,dur,label}); render();
-  toast(`${after}. çıkıştan sonra ${dur} dk mola eklendi ✓`,"ok");
+  toast(`${after}${__T(". çıkıştan sonra ")}${dur}${__T(" dk mola eklendi ✓")}`,"ok");
 }
 async function addBreak(){
-  const pos=await window.__gxPrompt("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-"+items.length+")");
-  if(pos==null)return; const after=parseInt(pos); if(isNaN(after)||after<1||after>=items.length){toast("Geçersiz konum.","err");return;}
-  const dur=parseInt(await window.__gxPrompt("Mola süresi (dk):","10"))||10;
+  const pos=await window.__gxPrompt(__T("Molayı kaçıncı çıkıştan SONRA eklemek istersin? (1-")+items.length+")");
+  if(pos==null)return; const after=parseInt(pos); if(isNaN(after)||after<1||after>=items.length){toast(__T("Geçersiz konum."),"err");return;}
+  const dur=parseInt(await window.__gxPrompt(__T("Mola süresi (dk):"),"10"))||10;
   const label=await window.__gxPrompt("Etiket:","ARA")||"ARA";
   breaks.push({after,dur,label}); render();
 }
@@ -251,7 +251,7 @@ async function save(){
       }
     });});
     await update(ref(db),up);
-    toast("Çıkış sırası + saatler kaydedildi ✓","ok");
+    toast(__T("Çıkış sırası + saatler kaydedildi ✓"),"ok");
   }catch(err){toast("Hata: "+(err?.message||err),"err");}
   $("saveBtn").disabled=false;
 }
@@ -272,8 +272,8 @@ function catLookup(){
   return {map,norm,cats};
 }
 function downloadTemplate(){
-  if(!comp){toast("Önce yarışma seçin.","err");return;}
-  if(!window.XLSX){toast("Excel bileşeni yüklenemedi.","err");return;}
+  if(!comp){toast(__T("Önce yarışma seçin."),"err");return;}
+  if(!window.XLSX){toast(__T("Excel bileşeni yüklenemedi."),"err");return;}
   const {cats}=catLookup(); const ex=cats[0]||"kucuk_kiz", exMulti=cats.find(isMulti)||"";
   const tpl=[
     {Ad:"Ayşe",Soyad:"Yılmaz",İl:"İZMİR",Kulüp:"Örnek S.K.",Kategori:catKategori(ex),TCKN:"",["Lisans No"]:"",["Grup No"]:""},
@@ -289,13 +289,13 @@ function downloadTemplate(){
   w2["!cols"]=[{wch:24},{wch:16},{wch:44}];
   XLSX.utils.book_append_sheet(wb,w2,"Kategoriler");
   XLSX.writeFile(wb,"aerobik_sporcu_sablonu.xlsx");
-  toast("Şablon indirildi ✓ (Kategoriler sayfasındaki etiketleri kullan)","ok");
+  toast(__T("Şablon indirildi ✓ (Kategoriler sayfasındaki etiketleri kullan)"),"ok");
 }
 const TRM={ocak:1,şubat:2,subat:2,mart:3,nisan:4,mayıs:5,mayis:5,haziran:6,temmuz:7,ağustos:8,agustos:8,eylül:9,eylul:9,ekim:10,kasım:11,kasim:11,aralık:12,aralik:12};
 function dayToISO(day){const m=String(day||"").match(/(\d{1,2})\s+(\S+)\s+(\d{4})/);if(!m)return"";const mo=TRM[m[2].toLocaleLowerCase("tr")];if(!mo)return"";return `${m[3]}-${String(mo).padStart(2,"0")}-${String(+m[1]).padStart(2,"0")}`;}
 async function importExcel(file){
-  if(!comp){toast("Önce yarışma seçin.","err");return;}
-  if(!window.XLSX){toast("Excel bileşeni yüklenemedi.","err");return;}
+  if(!comp){toast(__T("Önce yarışma seçin."),"err");return;}
+  if(!window.XLSX){toast(__T("Excel bileşeni yüklenemedi."),"err");return;}
   try{
     const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});
     // TÜM sayfaları oku: kişi-bazlı (Ad/Soyad/Ad Soyad içeren) sayfaları birleştir; özet/mola sayfalarını atla
@@ -304,7 +304,7 @@ async function importExcel(file){
       const h=Object.keys(rr[0]).map(x=>String(x).toLocaleLowerCase("tr").replace(/\s+/g,""));
       if(h.some(x=>x==="ad"||x==="soyad"||x==="adsoyad")){rows=rows.concat(rr);usedSheets.push(sn);}});
     if(!rows.length){rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});usedSheets.push(wb.SheetNames[0]);}
-    if(!rows.length){toast("Excel boş.","err");return;}
+    if(!rows.length){toast(__T("Excel boş."),"err");return;}
     if(usedSheets.length>1)toast(`${usedSheets.length} sayfa okundu: ${usedSheets.join(", ")}`,"ok");
     const {map,norm}=catLookup();
     const G=k=>{const r={};Object.keys(k).forEach(x=>r[norm(x)]=k[x]);return n=>r[norm(n)];};
@@ -332,12 +332,12 @@ async function importExcel(file){
       up[`${BASE}/${comp}/kategoriler/${cat}`]=comps[comp]?.kategoriler?.[cat]||{name:catKategori(cat)};
       ok++;
     });
-    if(!ok){toast("Geçerli satır yok. 'Kategori' sütununu kontrol et"+(badCats.size?": "+[...badCats].slice(0,3).join(", "):""),"err");return;}
+    if(!ok){toast(__T("Geçerli satır yok. 'Kategori' sütununu kontrol et")+(badCats.size?": "+[...badCats].slice(0,3).join(", "):""),"err");return;}
     await update(ref(db),up);
     let msg=ok+" sporcu içeri aktarıldı ✓";
     if(bad)msg+=` — ${bad} satır kategori tanınmadı (${[...badCats].slice(0,3).join(", ")})`;
     toast(msg,bad?"":"ok");
-  }catch(err){toast("İçe aktarma hatası: "+(err?.message||err),"err");}
+  }catch(err){toast(__T("İçe aktarma hatası: ")+(err?.message||err),"err");}
 }
 // Liste modu: (Gün, Çıkış Sırası) ile birleştir, sıraya göre yükle (kaydetmeden items'a)
 function importList(rows,G,map,norm){
@@ -356,7 +356,7 @@ function importList(rows,G,map,norm){
       member:{ad,soyad,adSoyad:(ad+" "+soyad).trim(),soyadAd:(soyad+" "+ad).trim(),il:String(g("İl")||g("Il")||"").trim(),okul,kulup:okul,tckn:String(g("TCKN")||"").trim(),lisans:String(g("Lisans No")||g("Lisans")||"").trim()},
       grupNo:parseInt(g("Grup No")||g("GrupNo"))||sira});
   });
-  if(!parsed.length){toast("Geçerli satır yok. Kategori/Çıkış Sırası sütununu kontrol et"+(badCats.size?": "+[...badCats].slice(0,2).join(", "):""),"err");return;}
+  if(!parsed.length){toast(__T("Geçerli satır yok. Kategori/Çıkış Sırası sütununu kontrol et")+(badCats.size?": "+[...badCats].slice(0,2).join(", "):""),"err");return;}
   importedByDay={};
   parsed.forEach(p=>{
     const day=(importedByDay[p.gun]=importedByDay[p.gun]||{});
@@ -372,7 +372,7 @@ function importList(rows,G,map,norm){
   $("dayWrap").style.display=days.length>1?"":"none";
   loadImportedDay(days[0]);
   const tot=days.reduce((s,d)=>s+Object.keys(importedByDay[d]).length,0);
-  toast(`Liste yüklendi: ${tot} yarışmacı (${parsed.length} satır birleşti)${days.length>1?` — ${days.length} gün, "${days[0].split(",")[0]}" gösteriliyor`:""}${bad?` · ${bad} satır atlandı`:""}`,bad?"":"ok");
+  toast(`${__T("Liste yüklendi: ")}${tot}${__T(" yarışmacı (")}${parsed.length}${__T(" satır birleşti)")}${days.length>1?` — ${days.length}${__T(" gün, \"")}${days[0].split(",")[0]}${__T("\" gösteriliyor")}`:""}${bad?` · ${bad}${__T(" satır atlandı")}`:""}`,bad?"":"ok");
 }
 function loadImportedDay(day){
   const d=importedByDay[day]; if(!d)return;
@@ -393,7 +393,7 @@ function loadImportedDay(day){
 }
 function excelExport(){
   if(!items.length)return;
-  if(!window.XLSX){toast("Excel bileşeni yüklenemedi (internet?).","err");return;}
+  if(!window.XLSX){toast(__T("Excel bileşeni yüklenemedi (internet?)."),"err");return;}
   const rows=computeRows().filter(r=>r.type==="item");
   // Sayfa 1: "Çıkış Listesi" — bir satır = bir yarışmacı (PDF'teki gibi), yüklenebilir düz veri
   const s1=rows.map(r=>({
@@ -437,10 +437,12 @@ function printList(){
   const rows=computeRows();
   const perDay=fmtD($("listDate").value||compMeta.baslangicTarihi,true);
   const logo=location.origin+"/logo.png";
+  const bibOf=it=>String(it.bib||(it.members||[]).map(m=>m&&m.bib).find(Boolean)||"");
+  const HB=rows.some(r=>r.type!=="break"&&r.it&&bibOf(r.it));
   const body=rows.map(r=>{
-    if(r.type==="break")return `<tr class="brk"><td colspan="5">${fmt(r.start)} - ${fmt(r.end)} / ${esc(r.label)}</td></tr>`;
+    if(r.type==="break")return `<tr class="brk"><td colspan="${HB?6:5}">${fmt(r.start)} - ${fmt(r.end)} / ${esc(r.label)}</td></tr>`;
     const it=r.it, cat=it.cat, cls=isMulti(cat)?"t":(/_erkek$/.test(cat)?"e":"k");
-    return `<tr class="${cls}"><td class="c s">${r.order}</td><td class="n">${esc(nameOf(it)).toLocaleUpperCase("tr")}</td><td class="rd">${esc(ilOf(it)).toLocaleUpperCase("tr")}</td><td class="rd">${esc(catKategori(cat)).toLocaleUpperCase("tr")}</td><td class="c s">${r.time}</td></tr>`;
+    return `<tr class="${cls}"><td class="c s">${r.order}</td>${HB?`<td class="c s b">${esc(bibOf(it))}</td>`:""}<td class="n">${esc(nameOf(it)).toLocaleUpperCase("tr")}</td><td class="rd">${esc(ilOf(it)).toLocaleUpperCase("tr")}</td><td class="rd">${esc(catKategori(cat)).toLocaleUpperCase("tr")}</td><td class="c s">${r.time}</td></tr>`;
   }).join("");
   const html=`<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Çıkış Listesi</title><style>
   *{font-family:Arial,Helvetica,sans-serif;box-sizing:border-box}body{margin:0;padding:16px;color:#111}
@@ -459,6 +461,7 @@ function printList(){
   tr.k td{background:#fefdec}tr.e td{background:#e9f1fb}tr.t td{background:#eaf7ee}
   tr.brk td{background:#fbe7d6;text-align:center;font-weight:800;font-size:10px;border:1px solid #222;color:#333}
   th:first-child,td:first-child{width:70px}th:nth-child(3),td:nth-child(3){width:100px}th:nth-child(4),td:nth-child(4){width:120px}th:last-child,td:last-child{width:95px}
+  table.hb th:nth-child(2),table.hb td:nth-child(2){width:52px;text-align:center}td.b{font-weight:800}table.hb th:nth-child(3),table.hb td:nth-child(3){width:auto}table.hb th:nth-child(4),table.hb td:nth-child(4){width:100px}table.hb th:nth-child(5),table.hb td:nth-child(5){width:120px}
   @media print{body{padding:6px}@page{margin:10mm}}
   </style></head><body>
   <div class="hd"><img src="${logo}" alt="TCF">
@@ -469,7 +472,7 @@ function printList(){
     <div class="l5">${esc(dateRange())}${compMeta.il?" / "+esc((compMeta.il||"").toLocaleUpperCase("tr")):""}</div>
   </div>
   <div class="sub">${esc(perDay)},<br>SPORCU ÇIKIŞ LİSTESİ</div>
-  <table><thead><tr><th>ÇIKIŞ SIRASI</th><th>SPORCU</th><th>İL</th><th>KATEGORİ</th><th>BAŞLANGIÇ SAATİ</th></tr></thead><tbody>${body}</tbody></table>
+  <table class="${HB?"hb":""}"><thead><tr><th>ÇIKIŞ SIRASI</th>${HB?"<th>BIB</th>":""}<th>SPORCU</th><th>İL</th><th>KATEGORİ</th><th>BAŞLANGIÇ SAATİ</th></tr></thead><tbody>${body}</tbody></table>
   </body></html>`;
   const w=window.open("","_blank");
   w.document.write(html); w.document.close();

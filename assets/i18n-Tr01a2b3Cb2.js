@@ -78,4 +78,32 @@ if(typeof document!=="undefined"){
   if(gizliMi()){v&&v.remove()}else if(!v)ciz()},1500);
 }
 
+
+// --- EN modunda DOM yedek çevirisi --------------------------------------
+// __T ile sarmalanmamış ama sözlükte birebir karşılığı olan görünür metinleri
+// (dizi/nesne içindeki sekme adları, eski HTML üretilen sayfalar vb.) ekranda çevirir.
+// Girdi alanlarına, value'su olmayan <option>'lara ve translate="no" bölgelerine dokunmaz.
+if(typeof document!=="undefined"&&cur()==="en"){try{
+ const AY=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"],AYE=["January","February","March","April","May","June","July","August","September","October","November","December"];
+ const GN=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"],GNE=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+ const UP=x=>x.toLocaleUpperCase("tr-TR"),esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+ const AYR=new RegExp("(\\d{1,2})\\s+("+AY.map(x=>esc(x)+"|"+esc(UP(x))).join("|")+")(\\s+\\d{4})?","g"),GNR=new RegExp("(\\d{4}|,)\\s*("+GN.map(x=>esc(x)+"|"+esc(UP(x))).join("|")+")(?![\\p{L}])","gu");
+ const ayE=m=>{let i=AY.indexOf(m);if(i<0)i=AY.map(UP).indexOf(m);const v=AYE[i]||m;return m===UP(m)?v.toUpperCase():v},gnE=m=>{let i=GN.indexOf(m);if(i<0)i=GN.map(UP).indexOf(m);const v=GNE[i]||m;return m===UP(m)?v.toUpperCase():v};
+ const APF={"Çember":"Hoop","Top":"Ball","Labut":"Clubs","Kurdele":"Ribbon","İp":"Rope","Çok Mücadele":"All-Around","Grup 1. Seri":"Group Routine 1","Grup 2. Seri":"Group Routine 2","Serbest":"Free"};
+ const PAT=[[/^(.*?)(Çember|Top|Labut|Kurdele|İp|Çok Mücadele|Grup 1\. Seri|Grup 2\. Seri|Serbest) Finali$/,(m,a,b)=>a+APF[b]+" Final"],[/^Bugün · (.*)$/,(m,a)=>"Today · "+(cev(a)||a)],[/^Dün · (.*)$/,(m,a)=>"Yesterday · "+(cev(a)||a)],[/^(\d+) gün sonra$/,"in $1 days"],[/^(\d+) gün önce$/,"$1 days ago"],[/^(\d+) (dk|dakika) önce$/,"$1 min ago"],[/^(\d+) (sa|saat) önce$/,"$1 h ago"],[/^(\d+) sn önce$/,"$1 s ago"],[/^az önce$/i,"just now"],[/^yarın$/i,"tomorrow"],[/^(\d+) işlem$/,"$1 actions"],[/^(\d+) sporcu$/,"$1 gymnasts"],[/^(\d+) hakem$/,"$1 judges"],[/^(\d+) yarışma$/,"$1 competitions"],[/^(\d+) kategori$/,"$1 categories"]];
+ let UPM=null;const upm=()=>{if(UPM)return UPM;UPM=new Map;for(const k in DICT){const u=UP(k);if(u!==k&&!UPM.has(u))UPM.set(u,String(DICT[k]).toUpperCase())}return UPM};
+ const TRC=/[çğıöşüÇĞİÖŞÜ]/;
+ const cev=t=>{const k=t.trim();if(!k||k.length>400)return null;let v=DICT[k];
+  if(v===undefined&&/[A-ZÇĞİÖŞÜ]/.test(k)&&k===UP(k))v=upm().get(k);
+  if(v===undefined){for(const[r,x]of PAT)if(r.test(k)){v=k.replace(r,x);break}}
+  if(v===undefined&&TRC.test(k)){const d=k.replace(AYR,(m,g,a,y)=>g+" "+ayE(a)+(y||"")).replace(GNR,(m,p,g)=>p+" "+gnE(g));if(d!==k)v=d}
+  if(v===undefined||v===k)return null;const i=t.indexOf(k);return t.slice(0,i)+v+t.slice(i+k.length)};
+ const atla=el=>{for(let e=el;e&&e!==document.body;e=e.parentElement){const n=e.tagName;if(n==="SCRIPT"||n==="STYLE"||n==="TEXTAREA"||n==="INPUT"||e.isContentEditable||e.getAttribute&&e.getAttribute("translate")==="no")return!0;if(n==="OPTION"&&!e.hasAttribute("value"))return!0}return!1};
+ const metin=n=>{if(!n.nodeValue||!/\S/.test(n.nodeValue))return;const p=n.parentElement;if(!p||atla(p))return;const v=cev(n.nodeValue);if(v!=null&&v!==n.nodeValue)n.nodeValue=v};
+ const ATR=["placeholder","title","aria-label"];
+ const oge=el=>{if(el.nodeType!==1||el.isContentEditable||atla(el.parentElement))return;ATR.forEach(a=>{const x=el.getAttribute(a);if(x){const v=cev(x);v!=null&&el.setAttribute(a,v)}});if(el.tagName==="INPUT"&&(el.type==="button"||el.type==="submit")&&el.value){const v=cev(el.value);v!=null&&(el.value=v)}};
+ const tara=r=>{if(!r)return;if(r.nodeType===3){metin(r);return}if(r.nodeType!==1)return;oge(r);const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let n;while(n=w.nextNode())n.nodeType===3?metin(n):oge(n)};
+ const bas=()=>{tara(document.body);new MutationObserver(ms=>{for(const m of ms){if(m.type==="characterData")metin(m.target);else if(m.type==="attributes")oge(m.target);else m.addedNodes.forEach(tara)}}).observe(document.body,{subtree:!0,childList:!0,characterData:!0,attributes:!0,attributeFilter:ATR})};
+ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",bas):bas();
+}catch{}}
 export{T,cur as getLang,set as setLang,DICT};

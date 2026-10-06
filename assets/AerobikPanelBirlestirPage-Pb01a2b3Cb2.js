@@ -60,7 +60,7 @@ function renderMgmt(){
     return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}</div><div id="mg${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(mgUrl(c))}">Linki Kopyala</div></div>`;
   }).join("");
   mgs.forEach((c,i)=>{try{new QRCode($("mg"+i),{text:mgUrl(c),width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
-  $("mgmtGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Link kopyalandı ✓","ok");});
+  $("mgmtGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast(__T("Link kopyalandı ✓"),"ok");});
 }
 function renderCameras(){
   const cams=[{cam:"a",t:"📹 Kamera A",d:"Buluta yükler (skorlara eklenir)"},{cam:"b",t:"📹 Kamera B",d:"Yedek (indirir)"}];
@@ -70,7 +70,7 @@ function renderCameras(){
     return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}${_cl}</div><div id="cam${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(url)}">Linki Kopyala</div></div>`;
   }).join("");
   cams.forEach((c,i)=>{const url=`${location.origin}/aerobik/kamera?compId=${encodeURIComponent(comp)}&cam=${c.cam}${_cq}`;try{new QRCode($("cam"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
-  $("camGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Kamera linki kopyalandı ✓","ok");});
+  $("camGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast(__T("Kamera linki kopyalandı ✓"),"ok");});
 }
 $("selAll").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=true;i.dispatchEvent(new Event("change"));});
 $("selNone").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=false;i.dispatchEvent(new Event("change"));});
@@ -83,8 +83,8 @@ function buildUrl(route,catId,panelId){
 }
 $("genBtn").addEventListener("click",()=>{
   const cats=selectedCats();
-  if(cats.length<1){toast("En az bir kategori seç.","err");return;}
-  if(selPanels.size<1){toast("En az bir panel türü seç.","err");return;}
+  if(cats.length<1){toast(__T("En az bir kategori seç."),"err");return;}
+  if(selPanels.size<1){toast(__T("En az bir panel türü seç."),"err");return;}
   const catId=cats.join(",");
   const catNames=cats.map(c=>catLabel(c,comps[comp].kategoriler?.[c])).join(" + ");
   const cards=[];
@@ -98,8 +98,8 @@ $("genBtn").addEventListener("click",()=>{
   });
   $("out").innerHTML=cards.map((c,i)=>`<div class="qrcard"><h4>${esc(c.title)}</h4><div class="sub">Birleşik: ${esc(c.sub)}</div><div id="qc${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(c.url)}">Linki Kopyala</div></div>`).join("");
   cards.forEach((c,i)=>{try{new QRCode($("qc"+i),{text:c.url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
-  $("out").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast("Link kopyalandı ✓","ok");});
-  toast(`${cards.length} birleşik QR üretildi ✓`,"ok");
+  $("out").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast(__T("Link kopyalandı ✓"),"ok");});
+  toast(`${cards.length}${__T(" birleşik QR üretildi ✓")}`,"ok");
 });
 $("printBtn").addEventListener("click",()=>window.print());
 
