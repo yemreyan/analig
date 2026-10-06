@@ -205,7 +205,7 @@ function Finals(){
  const S={wrap:{minHeight:"100vh",background:"#F0F2F5",color:"#1A1D26",fontFamily:"Nunito,system-ui,-apple-system,sans-serif",paddingBottom:"3rem"},
   top:{position:"sticky",top:0,zIndex:10,background:"#fff",backdropFilter:"blur(12px)",borderBottom:"1px solid #E5E7EB",boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:"0 1.25rem",minHeight:68,display:"flex",alignItems:"center",gap:".9rem",flexWrap:"wrap"},
   back:{width:38,height:38,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"#1A1D26",textDecoration:"none",flexShrink:0},
-  ico:{width:44,height:44,borderRadius:12,boxShadow:"0 6px 18px rgba(99,102,241,.28)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#f59e0b,#ef4444)",boxShadow:"0 6px 18px rgba(245,158,11,.35)"},
+  ico:{width:44,height:44,borderRadius:12,boxShadow:"0 6px 18px rgba(99,102,241,.28)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:"linear-gradient(135deg,#10B981,#0EA5E9)",boxShadow:"0 6px 18px rgba(245,158,11,.35)"},
   in:{maxWidth:820,margin:"0 auto",padding:"1rem"},
   sel:{width:"100%",padding:".65rem .8rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",color:"#1A1D26",fontWeight:700,fontSize:".95rem",marginBottom:"1rem"},
   card:{background:"#fff",border:"1px solid #E5E7EB",borderRadius:14,padding:".8rem 1rem",marginBottom:".6rem",display:"flex",alignItems:"center",gap:".7rem",flexWrap:"wrap"},
@@ -215,6 +215,20 @@ function Finals(){
   numin:{width:60,textAlign:"center",background:"#fff",border:"1px solid #f59e0b66",borderRadius:8,color:"#1A1D26",padding:".4rem",fontWeight:800,font:"inherit",fontSize:"1rem"},
   btn:{padding:".85rem 1.1rem",border:"none",borderRadius:12,fontWeight:800,fontSize:"1rem",cursor:"pointer",color:"#fff"},
   center:{maxWidth:560,margin:"3rem auto 0",textAlign:"center",color:"#6B7280",fontWeight:700,padding:"2rem 1rem"}};
+  // Aerobik paletli görünüm (ritmik Final Oluştur ile aynı dil)
+  {const P1="#10B981",P2="#0EA5E9",G="linear-gradient(135deg,"+P1+","+P2+")",SH="0 1px 2px rgba(15,23,42,.05),0 8px 24px -16px rgba(15,23,42,.22)";
+   Object.assign(S,{wrap:{...S.wrap,background:"#F6F7FB",paddingBottom:"4rem"},
+    top:{...S.top,borderBottom:"none",background:"linear-gradient(90deg,"+P1+","+P2+") bottom/100% 3px no-repeat,#fff",boxShadow:"0 1px 2px rgba(15,23,42,.05)"},
+    back:{...S.back,borderRadius:12,border:"1px solid #E2E8F0",background:"#fff"},
+    ico:{...S.ico,borderRadius:14,background:G,boxShadow:"0 8px 20px -6px rgba(16,185,129,.55)"},
+    in:{...S.in,maxWidth:900,padding:"1.1rem 1.25rem"},
+    sel:{...S.sel,borderRadius:12,border:"1px solid #E2E8F0",fontWeight:800,boxShadow:SH},
+    card:{...S.card,border:"none",borderRadius:18,padding:".9rem 1.1rem",marginBottom:".75rem",boxShadow:SH},
+    yed:{...S.yed,borderRadius:8,background:"#F0F9FF",color:"#0369A1",border:"1px dashed #7DD3FC"},
+    csb:{...S.csb,borderRadius:9,background:G,color:"#fff"},
+    numin:{...S.numin,borderRadius:10,border:"1.5px solid #6EE7B7",fontWeight:900},
+    btn:{...S.btn,borderRadius:14,fontWeight:900}})}
+
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/aerobik",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff",fontSize:"22px"},children:"emoji_events"})}),e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:__T("Aerobik")}),e.jsx("div",{style:{fontWeight:800,fontSize:"1.05rem",lineHeight:1.1},children:__T("Final Oluştur")})]})]}),
@@ -224,10 +238,10 @@ function Finals(){
     e.jsxs("select",{style:S.sel,value:comp,onChange:x=>{setComp(x.target.value);setLog(null);setExpanded({})},children:[e.jsx("option",{value:"",children:__T("— Yarışma seçin —")}),Object.entries(comps).map(([id,c])=>e.jsx("option",{value:id,children:c.isim||c.ad||id},id))]}),
     comp?e.jsxs(e.Fragment,{children:[
      realCats.length===0?e.jsx("div",{style:S.center,children:__T("Bu yarışmada kategori yok.")}):e.jsxs(e.Fragment,{children:[
-     anyCat?e.jsxs("div",{style:{...S.card,display:"block",border:"1px solid rgba(245,158,11,.4)",background:"#FFFBEB"},children:[
+     anyCat?e.jsxs("div",{style:{...S.card,display:"block",border:"none",background:"#fff",boxShadow:"0 1px 2px rgba(15,23,42,.05),0 8px 24px -16px rgba(15,23,42,.22),inset 0 0 0 1.5px #A7F3D0"},children:[
        e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".7rem",cursor:"pointer"},onClick:()=>setTexp(x=>!x),children:[
         e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsx("div",{style:{fontWeight:800},children:__T("🎬 Çıkış Sırası Şablonu")}),e.jsx("div",{style:{color:"#6B7280",fontSize:".8rem",fontWeight:700},children:__T("Eleme sırası → çıkış no · tek seferde belirle, tüm kategorilere uygulanır")})]}),
-        e.jsx("span",{style:{color:"#B45309",fontWeight:800},children:texp?"▲":"▼"})]}),
+        e.jsx("span",{style:{color:"#059669",fontWeight:900},children:texp?"▲":"▼"})]}),
        texp?e.jsxs("div",{style:{marginTop:".7rem",borderTop:"1px solid #E5E7EB",paddingTop:".6rem"},children:[
         e.jsxs("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",marginBottom:".7rem"},children:[
           e.jsx("button",{style:{...S.btn,padding:".45rem .7rem",fontSize:".78rem",background:"#fff",border:"1px solid #E5E7EB",color:"#334155"},onClick:()=>setTmpl({}),children:__T("↧ Sıfırla (1→1 … 8→8)")}),
@@ -237,8 +251,8 @@ function Finals(){
             e.jsxs("span",{style:{color:"#6B7280",fontSize:".82rem",fontWeight:800,whiteSpace:"nowrap"},children:["Eleme ",rank,". →"]}),
             e.jsx("input",{type:"number",min:"1",max:String(TOP),value:tmpl[rank]??rank,onChange:ev=>setTnum(rank,ev.target.value),style:S.numin}),
             e.jsx("span",{style:{color:"#6B7280",fontSize:".72rem",fontWeight:700},children:__T("çıkış")})]},rank)),
-          e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",background:"#fff",border:"1px dashed rgba(245,158,11,.5)",borderRadius:10,padding:".4rem .6rem"},children:[e.jsx("span",{style:S.yed,children:__T("R1")}),e.jsx("span",{style:{color:"#6B7280",fontSize:".82rem",fontWeight:800},children:__T("→ çıkış 9 (sabit)")})]}),
-          e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",background:"#fff",border:"1px dashed rgba(245,158,11,.5)",borderRadius:10,padding:".4rem .6rem"},children:[e.jsx("span",{style:S.yed,children:__T("R2")}),e.jsx("span",{style:{color:"#6B7280",fontSize:".82rem",fontWeight:800},children:__T("→ çıkış 10 (sabit)")})]})]}),
+          e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",background:"#fff",border:"1px dashed #7DD3FC",borderRadius:10,padding:".4rem .6rem"},children:[e.jsx("span",{style:S.yed,children:__T("R1")}),e.jsx("span",{style:{color:"#6B7280",fontSize:".82rem",fontWeight:800},children:__T("→ çıkış 9 (sabit)")})]}),
+          e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",background:"#fff",border:"1px dashed #7DD3FC",borderRadius:10,padding:".4rem .6rem"},children:[e.jsx("span",{style:S.yed,children:__T("R2")}),e.jsx("span",{style:{color:"#6B7280",fontSize:".82rem",fontWeight:800},children:__T("→ çıkış 10 (sabit)")})]})]}),
         dupWarn?e.jsx("div",{style:{fontSize:".76rem",color:"#DC2626",fontWeight:800,marginTop:".6rem"},children:__T("⚠ Aynı çıkış numarası birden fazla eleme sırasına verilmiş — kontrol edin.")}):e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:600,marginTop:".6rem"},children:__T("Örn. Eleme 1. → 2, Eleme 2. → 6 yazarsanız her kategoride 1. sıradaki 2. çıkar, 2. sıradaki 6. çıkar.")})
        ]}):null
      ]}):null,
@@ -256,7 +270,7 @@ function Finals(){
         top.length?e.jsx("span",{style:{color:"#6B7280",fontWeight:800},children:op?"▲":"▼"}):null
        ]}),
        top.length?e.jsxs("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",marginTop:".6rem"},children:[
-        e.jsx("button",{style:{...S.btn,padding:".5rem .8rem",fontSize:".82rem",background:_dr.tamam?"linear-gradient(135deg,#f59e0b,#ef4444)":"#fff",border:_dr.tamam?"none":"1px solid #f59e0b",color:_dr.tamam?"#fff":"#B45309"},disabled:busy,onClick:ev=>{ev.stopPropagation();generate([cat])},children:busy?__T("İşleniyor…"):(has?__T("🔄 Finali Yeniden Oluştur"):__T("🏆 Finali Oluştur"))}),
+        e.jsx("button",{style:{...S.btn,padding:".5rem .8rem",fontSize:".82rem",background:_dr.tamam?"linear-gradient(135deg,#10B981,#0EA5E9)":"#fff",border:_dr.tamam?"none":"1px solid #f59e0b",color:_dr.tamam?"#fff":"#B45309"},disabled:busy,onClick:ev=>{ev.stopPropagation();generate([cat])},children:busy?__T("İşleniyor…"):(has?__T("🔄 Finali Yeniden Oluştur"):__T("🏆 Finali Oluştur"))}),
         has?e.jsx("button",{style:{...S.btn,padding:".5rem .8rem",fontSize:".82rem",background:"#fff",border:"1px solid #38bdf8",color:"#0369A1"},disabled:busy,onClick:ev=>{ev.stopPropagation();finalCikisPdf({C,liste:[cat],catLabel,toast})},children:__T("📄 Çıkış Sırası PDF")}):null,
         has?e.jsx("button",{style:{...S.btn,padding:".5rem .8rem",fontSize:".82rem",background:"#fff",border:"1px solid #ef4444",color:"#DC2626"},disabled:busy,onClick:ev=>{ev.stopPropagation();clearOne(cat)},children:__T("Finali Sil")}):null]}):null,
        op?e.jsxs("div",{style:{marginTop:".7rem",borderTop:"1px solid #E5E7EB",paddingTop:".6rem"},children:[
@@ -272,7 +286,7 @@ function Finals(){
        ]}):null
      ]},cat)})]}),
      e.jsxs("div",{style:{display:"flex",gap:".6rem",flexWrap:"wrap",marginTop:"1rem"},children:[
-       finalCats.length>0?e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#0ea5e9,#1e3a8a)",flex:1,minWidth:220},disabled:busy,onClick:()=>finalCikisPdf({C,liste:realCats,catLabel,toast}),children:__T("📄 Tüm Final Çıkış Sıraları (PDF)")}):null,
+       finalCats.length>0?e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#10B981,#0EA5E9)",flex:1,minWidth:220},disabled:busy,onClick:()=>finalCikisPdf({C,liste:realCats,catLabel,toast}),children:__T("📄 Tüm Final Çıkış Sıraları (PDF)")}):null,
        hasReserves?e.jsx("button",{style:{...S.btn,background:"#fff",border:"1px solid #f59e0b",color:"#B45309"},disabled:busy,onClick:clearReserves,children:__T("Yedekleri Kaldır (R1/R2)")}):null,
        finalCats.length>0?e.jsx("button",{style:{...S.btn,background:"#fff",border:"1px solid #ef4444",color:"#DC2626"},disabled:busy,onClick:clearFinals,children:__T("Tüm Finalleri Sil")}):null
      ]}),
