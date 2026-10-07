@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{YAPI_VARS,yapiNorm,dSlotlari}from"./RitmikHakemV2-Hv01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK PANELLER (aerobik Paneller sayfasıyla aynı yapı; ritmik DA/DB/A/E/T/L/SJ panelleri)
 //  <yarışma>/panelGruplari/<gid> : {ad, tipler{A,E,D,T,L,SJ}, adet{A,E}, kategoriler{kat:true}, paneller{SLOT:{ozel}}}
@@ -18,15 +18,54 @@ const TIP={
 const TIP_SIRA=["DA","DB","A","E","T","L","SJ"];
 const slotlar=g=>{const out=[];TIP_SIRA.forEach(t=>{if(!g?.tipler?.[t])return;const d=TIP[t];
  if(d.coklu){const n=Math.max(1,Math.min(d.coklu.max,parseInt(g.adet?.[t])||d.coklu.max));for(let i=1;i<=n;i++)out.push({slot:d.coklu.on+i,tip:t,yol:d.coklu.yol,ek:d.coklu.ek(i)})}
+ else if((t==="DA"||t==="DB")&&g.yapi)dSlotlari(g.yapi,t).forEach(s=>out.push({slot:s,tip:t,yol:"dpanel",ek:"&panelType="+s.toLowerCase()}));
  else d.tek.forEach(([s,y,ek])=>out.push({slot:s,tip:t,yol:y,ek}))});return out};
 const pidOf=(gid,slot)=>gid+"_"+String(slot).toLowerCase();
 const yeniGid=()=>"pg"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const kListe=o=>Object.keys(o||{}).filter(k=>o[k]);
 let _qrMod=null;const qrAl=async t=>{try{_qrMod=_qrMod||(await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm")).default;return await _qrMod.toDataURL(t,{margin:1,width:360})}catch{return null}};
 
+// ---- Hakem ekranı yapısı (v2) düzenleyici ----
+const YX_CSS=`.pyx{margin-top:.8rem;border:1.5px solid #C4B5FD;border-radius:16px;background:linear-gradient(135deg,#FAF5FF,#fff 55%);padding:1rem}
+.pyx h4{margin:0 0 .2rem;font-size:.98rem;font-weight:900;display:flex;align-items:center;gap:.45rem}.pyx>p{margin:0 0 .8rem;font-size:.8rem;color:#6B7280;font-weight:600}
+.pyx-blk{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:.8rem .9rem;margin-bottom:.7rem}
+.pyx-blk b.t{display:flex;align-items:center;gap:.45rem;font-size:.9rem;font-weight:900;margin-bottom:.55rem}.pyx-tag{color:#fff;font-size:.7rem;font-weight:900;padding:.15rem .45rem;border-radius:7px}
+.pyx-rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}@media(max-width:760px){.pyx-rules{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pyx-rule{border:1.5px solid #E5E7EB;border-radius:12px;padding:.55rem .6rem;cursor:pointer;background:#F8FAFC}.pyx-rule.on{border-color:var(--rc);background:color-mix(in srgb,var(--rc) 8%,#fff);box-shadow:0 0 0 3px color-mix(in srgb,var(--rc) 14%,transparent)}
+.pyx-rule b{display:flex;align-items:center;gap:.3rem;font-size:.82rem;font-weight:900}.pyx-rule b .material-icons-round{font-size:1rem;color:var(--rc)}.pyx-rule small{display:block;margin-top:.25rem;font-size:.72rem;color:#6B7280;font-weight:600;line-height:1.35}
+.pyx-jr{display:grid;grid-template-columns:96px 1fr;gap:.6rem;align-items:center;padding:.45rem 0;border-top:1px solid #EEF2F7}
+.pyx-jn{display:flex;align-items:center;gap:.35rem;font-weight:900}.pyx-jn span{min-width:44px;text-align:center;padding:.25rem .4rem;border-radius:8px;color:#fff;font-size:.8rem}
+.pyx-star{border:0;background:none;cursor:pointer;padding:0;color:#D97706;display:grid}.pyx-star.off{color:#CBD5E1}
+.pyx-seg{display:inline-flex;flex-wrap:wrap;gap:.3rem}.pyx-seg button{border:1px solid #E5E7EB;background:#F8FAFC;color:#64748B;border-radius:9px;padding:.32rem .6rem;font:inherit;font-size:.76rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem}
+.pyx-seg button .material-icons-round{font-size:.95rem}.pyx-seg button.on{border-color:var(--rc);color:var(--rc);background:color-mix(in srgb,var(--rc) 10%,#fff)}
+.pyx-tg{display:flex;align-items:center;gap:.7rem;padding:.5rem 0;border-top:1px solid #EEF2F7;cursor:pointer}.pyx-tg:first-of-type{border-top:0}.pyx-tg div{flex:1}.pyx-tg b{display:block;font-size:.84rem}.pyx-tg small{display:block;font-size:.74rem;color:#6B7280;font-weight:600}
+.pyx-sw{width:42px;height:24px;border-radius:999px;background:#E2E8F0;position:relative;flex-shrink:0}.pyx-sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}.pyx-tg.on .pyx-sw{background:linear-gradient(135deg,#EC4899,#8B5CF6)}.pyx-tg.on .pyx-sw::after{left:21px}
+.pyx-sl{display:flex;align-items:center;gap:.6rem;margin-top:.5rem;font-size:.8rem;font-weight:800}.pyx-sl input{flex:1;accent-color:#8B5CF6}
+.pyx-foot{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap}`;
+const YX_YAPI={tek:["looks_one","Tek not","Tek hakem tek not girer; doğrudan kesin not. Aşama 2 yok."],sorumlu:["star","İki aşamalı","Hakemler kendi notunu girer; ⭐ sorumlu hakem kesin notu girer."],ortalama:["functions","Otomatik ortalama","Kesin not = hakem notlarının ortalaması."],bashakem:["gavel","Başhakem belirler","Hakem notları başhakeme gider; kesin notu başhakem yazar."]};
+const YX_MOD=[["toplam","dialpad","Toplam"],["element","format_list_numbered","Element sayma"],["ikisi","playlist_add_check","Element + toplam"]],YX_DUZ=[["acik","lock_open","Açık"],["sureli","timer","Süreli"],["kapali","lock","Kapalı"]],YX_RENK={DA:"#7C3AED",DB:"#4F46E5",A:"#EC4899",E:"#10B981"};
+function YapiEditor({y0,onSave,onCancel,busy,tipler}){const[y,setY]=R.useState(()=>yapiNorm(y0||YAPI_VARS));const up=f=>setY(o=>{const n=JSON.parse(JSON.stringify(o));f(n);return yapiNorm(n)});const I=n=>e.jsx("span",{className:"material-icons-round",children:n});
+ const dBlk=P=>{const C=y[P],sl=dSlotlari(y,P);return e.jsxs("div",{className:"pyx-blk",style:{"--rc":YX_RENK[P]},children:[e.jsxs("b",{className:"t",children:[e.jsx("span",{className:"pyx-tag",style:{background:YX_RENK[P]},children:P}),P==="DA"?__T("Alet Zorluğu"):__T("Vücut Zorluğu"),e.jsx("span",{style:{flex:1}}),C.yapi!=="tek"?e.jsxs("span",{className:"pyx-seg",children:[e.jsx("span",{style:{fontSize:".74rem",color:"#6B7280",alignSelf:"center",marginRight:".2rem"},children:__T("Hakem sayısı")}),[2,3,4].map(n=>e.jsx("button",{type:"button",className:C.n===n?"on":"",onClick:()=>up(o=>{o[P].n=n}),children:n},n))]}):null]}),
+  e.jsx("div",{className:"pyx-rules",children:Object.entries(YX_YAPI).map(([k,[ic,t,d]])=>e.jsxs("div",{className:"pyx-rule"+(C.yapi===k?" on":""),onClick:()=>up(o=>{o[P].yapi=k}),children:[e.jsxs("b",{children:[I(ic),__T(t)]}),e.jsx("small",{children:__T(d)})]},k))}),
+  e.jsx("div",{style:{marginTop:".55rem"},children:sl.map(s=>e.jsxs("div",{className:"pyx-jr",children:[e.jsxs("div",{className:"pyx-jn",children:[e.jsx("span",{style:{background:YX_RENK[P]},children:s}),C.yapi==="sorumlu"?e.jsx("button",{type:"button",className:"pyx-star"+(C.sorumlu===s?"":" off"),title:__T("Sorumlu hakem (kesin notu girer)"),onClick:()=>up(o=>{o[P].sorumlu=s}),children:I(C.sorumlu===s?"star":"star_border")}):null]}),
+   e.jsx("div",{className:"pyx-seg",children:YX_MOD.map(([k,ic,t])=>e.jsxs("button",{type:"button",className:(C.mod[s]||"toplam")===k?"on":"",onClick:()=>up(o=>{o[P].mod[s]=k}),children:[I(ic),__T(t)]},k))})]},s))})]})};
+ return e.jsxs("div",{className:"pyx",children:[e.jsx("style",{children:YX_CSS}),e.jsxs("h4",{children:[I("tune"),__T("Hakem ekranı yapısı")]}),e.jsx("p",{children:__T("Bu grubun linkleriyle açılan DA/DB ve A/E hakem ekranları bu ayarlarla çalışır. Kaydedince DA/DB linkleri yapıya göre yeniden oluşturulur (ör. Tek not → tek DA linki).")}),
+  tipler?.DA?dBlk("DA"):null,tipler?.DB?dBlk("DB"):null,
+  e.jsxs("div",{className:"pyx-blk",style:{"--rc":"#8B5CF6"},children:[e.jsxs("b",{className:"t",children:[I("compare_arrows"),__T("Hakemler arası fark")]}),e.jsx("small",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:600},children:__T("Çok hakemli yapılarda (iki aşamalı / ortalama / başhakem) uygulanır.")}),
+   e.jsxs("div",{className:"pyx-sl",children:[__T("Fark eşiği"),e.jsx("input",{type:"range",min:"0.1",max:"1",step:"0.05",value:y.esik,onChange:ev=>up(o=>{o.esik=+ev.target.value})}),e.jsx("span",{style:{fontFamily:"monospace",minWidth:42,textAlign:"right"},children:y.esik.toFixed(2)})]}),
+   e.jsx("div",{className:"pyx-seg",style:{marginTop:".5rem"},children:[["uyar","warning","Eşik aşılınca uyar"],["onay","how_to_reg","Başhakem onayı iste"]].map(([k,ic,t])=>e.jsxs("button",{type:"button",className:y.esikDavranis===k?"on":"",onClick:()=>up(o=>{o.esikDavranis=k}),children:[I(ic),__T(t)]},k))})]}),
+  e.jsxs("div",{className:"pyx-blk",style:{"--rc":"#8B5CF6"},children:[e.jsxs("b",{className:"t",children:[I("edit_note"),__T("Not düzeltme")]}),e.jsx("small",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:600},children:__T("Hakem notunu gönderdikten sonra düzeltebilsin mi? Başhakem puanlama ekranından hakem bazında ayrıca açıp kapatabilir.")}),
+   ["DA","DB","A","E"].filter(k=>tipler?.[k]).map(k=>e.jsxs("div",{className:"pyx-jr",style:{gridTemplateColumns:"60px 1fr","--rc":YX_RENK[k]},children:[e.jsx("div",{className:"pyx-jn",children:e.jsx("span",{style:{background:YX_RENK[k]},children:k})}),e.jsx("div",{className:"pyx-seg",children:YX_DUZ.map(([v,ic,t])=>e.jsxs("button",{type:"button",className:y.duz[k]===v?"on":"",onClick:()=>up(o=>{o.duz[k]=v}),children:[I(ic),__T(t)]},v))})]},k)),
+   Object.entries(y.duz).some(([k,v])=>k!=="sure"&&v==="sureli")?e.jsxs("div",{className:"pyx-sl",children:[__T("Süre"),e.jsx("input",{type:"range",min:"10",max:"120",step:"5",value:y.duz.sure,onChange:ev=>up(o=>{o.duz.sure=+ev.target.value})}),e.jsx("span",{style:{fontFamily:"monospace",minWidth:42,textAlign:"right"},children:y.duz.sure+" sn"})]}):null]}),
+  e.jsxs("div",{className:"pyx-blk",style:{"--rc":"#8B5CF6"},children:[e.jsxs("b",{className:"t",children:[I("visibility"),__T("Görünürlük ve tema")]}),
+   [["partner","Hakemler birbirinin notunu görsün","Aynı alt paneldeki diğer hakemlerin notları ekranda görünür (tek not yapısında geçersiz)."],["sjRef","SJ referans notu hakeme gösterilsin","Üst Jüri referans notu (SJDA/SJDB) hakem ekranında görünür."],["elemListe","Element listesi başhakeme gitsin","Element sayma modunda girilen liste başhakem ekranında görünür."]].map(([k,t,d])=>e.jsxs("div",{className:"pyx-tg"+(y.gor[k]?" on":""),onClick:()=>up(o=>{o.gor[k]=!o.gor[k]}),children:[e.jsxs("div",{children:[e.jsx("b",{children:__T(t)}),e.jsx("small",{children:__T(d)})]}),e.jsx("span",{className:"pyx-sw"})]},k)),
+   e.jsxs("div",{className:"pyx-jr",style:{gridTemplateColumns:"96px 1fr","--rc":"#8B5CF6"},children:[e.jsx("b",{style:{fontSize:".84rem"},children:__T("Ekran teması")}),e.jsx("div",{className:"pyx-seg",children:[["koyu","dark_mode","Koyu (tablet)"],["acik","light_mode","Açık"]].map(([k,ic,t])=>e.jsxs("button",{type:"button",className:y.tema===k?"on":"",onClick:()=>up(o=>{o.tema=k}),children:[I(ic),__T(t)]},k))})]})]}),
+  e.jsxs("div",{className:"pyx-foot",children:[e.jsx("button",{type:"button",style:{padding:".5rem .8rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",fontWeight:800,cursor:"pointer"},onClick:()=>setY(yapiNorm(YAPI_VARS)),children:__T("Varsayılanlar")}),e.jsx("button",{type:"button",style:{padding:".5rem .8rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",fontWeight:800,cursor:"pointer"},onClick:onCancel,children:__T("Vazgeç")}),
+   e.jsx("button",{type:"button",disabled:busy,style:{padding:".55rem 1.1rem",borderRadius:10,border:0,color:"#fff",fontWeight:900,cursor:"pointer",background:"linear-gradient(135deg,#EC4899,#8B5CF6)"},onClick:()=>onSave(y),children:__T("Yapıyı kaydet")})]})]})}
+
 function Paneller(){
  const{toast}=usToast();usDisc();const[bolSay,setBolSay]=R.useState(2);const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
- const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[C,setC]=R.useState(null),[busy,setBusy]=R.useState(!1),[form,setForm]=R.useState(null),[acik,setAcik]=R.useState({}),[qr,setQr]=R.useState(null);
+ const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[C,setC]=R.useState(null),[busy,setBusy]=R.useState(!1),[form,setForm]=R.useState(null),[acik,setAcik]=R.useState({}),[qr,setQr]=R.useState(null),[yac,setYac]=R.useState(null);
 
  R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.isim&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim,t:c.baslangicTarihi||""})});setComps(o)});return()=>u()},[]);
  // seçili yarışmanın yalnızca gereken düğümleri dinlenir
@@ -50,7 +89,7 @@ function Paneller(){
   if(!ad){toast(__T("Grup adını yazın."),"warning");return}
   if(!TIP_SIRA.some(t=>f.tipler[t])){toast(__T("En az bir panel tipi seçin."),"warning");return}
   const gid=f.gid||yeniGid(),eski=f.gid?gruplar[f.gid]:null,yeniG={ad,tipler:Object.fromEntries(TIP_SIRA.filter(t=>f.tipler[t]).map(t=>[t,!0])),adet:{A:f.adet.A,E:f.adet.E},kategoriler:Object.keys(f.kategoriler).filter(k=>f.kategoriler[k]).length?Object.fromEntries(kListe(f.kategoriler).map(k=>[k,!0])):null};
-  const yeniS=slotlar(yeniG),eskiS=eski?slotlar(eski):[],upd={};
+  const yeniS=slotlar({...yeniG,yapi:eski?eski.yapi:YAPI_VARS}),eskiS=eski?slotlar(eski):[],upd={};
   const ozel={...(eski?.paneller||{})};
   // kaldırılan paneller
   const kaldir=eskiS.filter(s=>!yeniS.some(y=>y.slot===s.slot));
@@ -59,8 +98,18 @@ function Paneller(){
   yeniS.forEach(s=>{const pid=pidOf(gid,s.slot),cur=linkler[pid];
    if(!cur)upd[`hakemLinkleri/${pid}`]=panelKaydi(yeniG,gid,s,yeniG.kategoriler);
    else{upd[`hakemLinkleri/${pid}/ad`]=`${ad} · ${s.slot}`;if(!ozel[s.slot]?.ozel)upd[`hakemLinkleri/${pid}/kategoriler`]=yeniG.kategoriler}});
-  upd[`panelGruplari/${gid}`]={...yeniG,paneller:Object.keys(ozel).length?ozel:null,olusturma:eski?.olusturma||Date.now(),guncelleme:Date.now()};
+  upd[`panelGruplari/${gid}`]={...yeniG,yapi:eski?eski.yapi||null:YAPI_VARS,paneller:Object.keys(ozel).length?ozel:null,olusturma:eski?.olusturma||Date.now(),guncelleme:Date.now()};
   await yaz(upd,eski?__T("Panel grubu güncellendi ✓"):__T("Panel grubu oluşturuldu ✓"));setForm(null);setAcik(o=>({...o,[gid]:!0}))};
+ // yapı kaydet: DA/DB slotları yapıya göre değişir → linkleri eşitle
+ const linkEsitle=(gid,eskiG,yeniG,upd)=>{const yS=slotlar(yeniG),eS=slotlar(eskiG),oz={...(eskiG.paneller||{})};
+  eS.filter(s=>!yS.some(x=>x.slot===s.slot)).forEach(s=>{upd[`hakemLinkleri/${pidOf(gid,s.slot)}`]=null;delete oz[s.slot]});
+  yS.forEach(s=>{const pid=pidOf(gid,s.slot);if(!linkler[pid])upd[`hakemLinkleri/${pid}`]=panelKaydi(yeniG,gid,s,yeniG.kategoriler)});
+  upd[`panelGruplari/${gid}/paneller`]=Object.keys(oz).length?oz:null};
+ const yapiKaydet=async(gid,y)=>{const g=gruplar[gid];if(!g)return;const yeniG={...g,yapi:y},kalk=slotlar(g).filter(s=>!slotlar(yeniG).some(x=>x.slot===s.slot));
+  if(kalk.length&&!await window.__gxConfirm(kalk.map(s=>s.slot).join(", ")+" — "+__T("bu panellerin linkleri yapı değişikliği nedeniyle silinecek; yeni linkler oluşturulacak. Devam edilsin mi?")))return;
+  const upd={[`panelGruplari/${gid}/yapi`]:y,[`panelGruplari/${gid}/guncelleme`]:Date.now()};linkEsitle(gid,g,yeniG,upd);await yaz(upd,__T("Hakem ekranı yapısı kaydedildi ✓"));setYac(null)};
+ const yapiKaldir=async gid=>{const g=gruplar[gid];if(!g)return;if(!await window.__gxConfirm(g.ad+" — "+__T("bu grup eski hakem ekranlarına dönsün mü? DA/DB linkleri DA1-DA2 / DB1-DB2 olur.")))return;
+  const yeniG={...g,yapi:null},upd={[`panelGruplari/${gid}/yapi`]:null};linkEsitle(gid,g,yeniG,upd);await yaz(upd,__T("Grup eski hakem ekranlarına döndü."));setYac(null)};
  const grupSil=async gid=>{const g=gruplar[gid];if(!g)return;
   if(!await window.__gxConfirm(g.ad+" — "+__T("grup ve tüm panel linkleri silinsin mi? Açık olan bu paneller çalışmaz hâle gelir.")))return;
   const upd={[`panelGruplari/${gid}`]:null};slotlar(g).forEach(s=>{upd[`hakemLinkleri/${pidOf(gid,s.slot)}`]=null});
@@ -107,12 +156,16 @@ function Paneller(){
    e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[
     e.jsx("button",{style:{...S.ghost,padding:".3rem .55rem"},onClick:()=>setAcik(o=>({...o,[gid]:!op})),children:op?"▲":"▼"}),
     e.jsxs("div",{style:{flex:1,minWidth:200},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:g.ad}),
-     e.jsxs("div",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:700},children:[TIP_SIRA.filter(t=>g.tipler?.[t]).map(t=>t+(TIP[t].coklu?"×"+(g.adet?.[t]||4):"")).join(" · ")," · ",ss.length," ",__T("panel")," · ",gk.length," ",__T("kategori"),
+     e.jsxs("div",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:700},children:[TIP_SIRA.filter(t=>g.tipler?.[t]).map(t=>(t==="DA"||t==="DB")&&g.yapi?t+"·"+({tek:__T("tek not"),sorumlu:__T("2 aşama"),ortalama:__T("ortalama"),bashakem:__T("başhakem")})[yapiNorm(g.yapi)[t].yapi]:t+(TIP[t].coklu?"×"+(g.adet?.[t]||4):"")).join(" · "),g.yapi?e.jsx("span",{style:{marginLeft:".4rem",padding:".05rem .45rem",borderRadius:999,background:"#EDE9FE",color:"#6D28D9",fontWeight:900},children:__T("yeni ekran")}):null," · ",ss.length," ",__T("panel")," · ",gk.length," ",__T("kategori"),
       ak?e.jsxs("span",{style:{color:"#15803D"},children:["  ● ",__T("şu an")," ",katAd(ak)]}):null]})]}),
     e.jsx("button",{style:S.ghost,onClick:()=>kopyala(ss.map(s=>`${s.slot}: ${link(gid,s)}`).join("\n")),children:__T("Tüm linkleri kopyala")}),
     e.jsx("button",{style:S.ghost,onClick:()=>qrSayfasi(gid),children:__T("QR sayfası")}),
+    e.jsx("button",{style:{...S.ghost,borderColor:g.yapi?"#C4B5FD":"#E5E7EB",color:g.yapi?"#7C3AED":"#334155"},onClick:()=>setYac(yac===gid?null:gid),children:g.yapi?"⚙ "+__T("Hakem ekranı yapısı"):"✨ "+__T("Yeni hakem ekranları")}),
     e.jsx("button",{style:S.ghost,onClick:()=>formAc(gid),children:__T("Düzenle")}),
     e.jsx("button",{style:{...S.ghost,borderColor:"#FECACA",color:"#DC2626"},onClick:()=>grupSil(gid),children:__T("Sil")})]}),
+   yac===gid?e.jsxs("div",{children:[g.yapi?null:e.jsx("div",{style:{marginTop:".8rem",fontSize:".8rem",fontWeight:700,color:"#7C3AED"},children:__T("Bu grup şu an eski hakem ekranlarını kullanıyor. Yapıyı kaydedince bu grubun DA/DB/A/E linkleri yeni ekranlarla açılır; QR & Linkler sayfasındaki eski linkler değişmez.")}),
+    e.jsx(YapiEditor,{y0:g.yapi,tipler:g.tipler,busy,onCancel:()=>setYac(null),onSave:y=>yapiKaydet(gid,y)}),
+    g.yapi?e.jsx("div",{style:{textAlign:"right",marginTop:".4rem"},children:e.jsx("button",{style:{...S.ghost,color:"#B45309",borderColor:"#FCD34D"},onClick:()=>yapiKaldir(gid),children:__T("Eski hakem ekranlarına dön")})}):null]}):null,
    op?e.jsxs(e.Fragment,{children:[
     eksik.length?e.jsxs("div",{style:{marginTop:".7rem",fontSize:".8rem",color:"#B45309",fontWeight:700},children:[eksik.map(s=>s.slot).join(", ")," — ",__T("panel kaydı eksik. "),e.jsx("button",{style:{...S.ghost,padding:".2rem .5rem"},onClick:()=>eksikOnar(gid),children:__T("Oluştur")})]}):null,
     e.jsxs("div",{style:{marginTop:".8rem",padding:".7rem .8rem",background:"#F8FAFC",border:"1px solid #E5E7EB",borderRadius:12},children:[

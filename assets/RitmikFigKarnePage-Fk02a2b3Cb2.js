@@ -32,7 +32,9 @@ const dPct=(err,tab)=>{const x=r1(Math.abs(err));for(const[m,p]of tab)if(x<=m+1e
 const GRADE=(p,comp)=>{const t=comp==="D"?[80,70,60,50]:[90,80,65,50],n=["Excellent","Very Good","Good","Pass","Fail"],i=t.findIndex(x=>p>=x-1e-9);return n[i<0?4:i]};
 const GRENK={Excellent:["#15803D","#DCFCE7"],"Very Good":["#1D4ED8","#DBEAFE"],Good:["#0E7490","#CFFAFE"],Pass:["#B45309","#FEF3C7"],Fail:["#B91C1C","#FEE2E2"]};
 const aeTol=ref=>ref<=1.2+1e-9?.399:.699;
-const POZ=[["DA","DA1","da1","sjda","da"],["DA","DA2","da2","sjda","da"],["DB","DB1","db1","sjdb","db"],["DB","DB2","db2","sjdb","db"],...[1,2,3,4].map(i=>["A","A"+i,"j"+i,"sja","aPanel"]),...[1,2,3,4].map(i=>["E","E"+i,"j"+i,"sje","ePanel"])];
+// D pozisyonları: DA1/DA2/DB1/DB2 her zaman; DA/DB (tek not), DA3/DA4/DB3/DB4 yalnız verisi olan yarışmada görünür (Paneller › hakem ekranı yapısı)
+const POZ_D_TEMEL=["DA1","DA2","DB1","DB2"];
+const POZ=[["DA","DA","da","sjda","da"],["DA","DA1","da1","sjda","da"],["DA","DA2","da2","sjda","da"],["DA","DA3","da3","sjda","da"],["DA","DA4","da4","sjda","da"],["DB","DB","db","sjdb","db"],["DB","DB1","db1","sjdb","db"],["DB","DB2","db2","sjdb","db"],["DB","DB3","db3","sjdb","db"],["DB","DB4","db4","sjdb","db"],...[1,2,3,4].map(i=>["A","A"+i,"j"+i,"sja","aPanel"]),...[1,2,3,4].map(i=>["E","E"+i,"j"+i,"sje","ePanel"])];
 const PANEL={DA:{ad:"Zorluk · Alet (DA)",renk:"#6366F1",tip:"D"},DB:{ad:"Zorluk · Beden (DB)",renk:"#7C3AED",tip:"D"},A:{ad:"Artistik (A)",renk:"#DB2777",tip:"AE"},E:{ad:"Uygulama (E)",renk:"#0891B2",tip:"AE"}};
 const trimmed=a=>{const s=[...a].sort((x,y)=>x-y);if(s.length>=4){const o=s.slice(1,s.length-1);return o.reduce((p,q)=>p+q,0)/o.length}return s.reduce((p,q)=>p+q,0)/s.length};
 
@@ -49,9 +51,12 @@ function analiz({pun,spor,cats,secKat,refTip}){
     (ozel[P]||(ozel[P]={n:0,mud:0,blok:0,sjYok:0})).n++;if(blok)ozel[P].blok++;if(sj==null)ozel[P].sjYok++;else if(Math.abs(sj-fin)>aeTol(sj)+1e-9)ozel[P].mud++;
     vals.forEach((v,i)=>{if(v==null)return;const dev=v-refv,tol=aeTol(refv);rows.push({...base,panel:P,poz:P+(i+1),val:v,ref:refv,refKaynak:useSj?"SJ":"Panel",fin,dev,tol,dis:Math.abs(dev)>tol+1e-9,pct:aePct(refv,dev,grp),atildi:var_.length>=4&&(i===mnI||i===mxI),blok})})});
    // DA / DB
-   [["DA","da1","da2","da","sjda"],["DB","db1","db2","db","sjdb"]].forEach(([P,k1,k2,kc,ks])=>{const v1=num(sc[k1]),v2=num(sc[k2]);if(v1==null&&v2==null)return;const ort=num(sc[kc])??num(sc[P==="DA"?"daScore":"dbScore"]),sj=num(sc[ks]),useSj=refTip==="sj"&&sj!=null,refv=useSj?sj:(ort??[v1,v2].filter(v=>v!=null).reduce((a,b,_,x)=>a+b/x.length,0));
+   [["DA","da","sjda"],["DB","db","sjdb"]].forEach(([P,kc,ks])=>{const p=P.toLowerCase(),vs=[1,2,3,4].map(i=>[P+i,num(sc[p+i])]).filter(x=>x[1]!=null),tek=!vs.length&&sc.hakemZaman&&sc.hakemZaman[P]!=null&&num(sc[kc])!=null;if(!vs.length&&!tek)return;
+    const L=tek?[[P,num(sc[kc])]]:vs,ort=num(sc[kc])??num(sc[P==="DA"?"daScore":"dbScore"]),sj=num(sc[ks]),useSj=refTip==="sj"&&sj!=null,refv=useSj?sj:(ort??L.reduce((a,x)=>a+x[1]/L.length,0));
     (ozel[P]||(ozel[P]={n:0,mud:0,blok:0,sjYok:0})).n++;if(sj==null)ozel[P].sjYok++;else if(ort!=null&&Math.abs(sj-ort)>.5+1e-9)ozel[P].mud++;
-    [[1,v1],[2,v2]].forEach(([i,v])=>{if(v==null)return;const dev=v-refv;rows.push({...base,panel:P,poz:P+i,val:v,ref:refv,refKaynak:useSj?"SJ":"Ortak",fin:ort,dev,tol:.5,dis:Math.abs(dev)>.5+1e-9,pct:dPct(dev,P==="DA"&&!grp?D_RGI_DA:D_STD),atildi:!1,blok:!1})})})})})});
+    // tek not: hakemin notu kesin nottur; yalnız SJ referansı varsa değerlendirilir
+    if(tek&&sj==null)return;const rf=tek?sj:refv,rk=tek||useSj?"SJ":"Ortak";
+    L.forEach(([poz,v])=>{const dev=v-rf;rows.push({...base,panel:P,poz,val:v,ref:rf,refKaynak:rk,fin:ort,dev,tol:.5,dis:Math.abs(dev)>.5+1e-9,pct:dPct(dev,P==="DA"&&!grp?D_RGI_DA:D_STD),atildi:!1,blok:!1})})})})})});
  return{rows,ozel}}
 const ozetle=(rs,comp)=>{const n=rs.length;if(!n)return null;const pct=rs.reduce((a,x)=>a+x.pct,0)/n,ort=rs.reduce((a,x)=>a+x.dev,0)/n,abs=rs.reduce((a,x)=>a+Math.abs(x.dev),0)/n,rms=Math.sqrt(rs.reduce((a,x)=>a+x.dev*x.dev,0)/n),mx=Math.max(...rs.map(x=>Math.abs(x.dev))),dis=rs.filter(x=>x.dis).length,at=rs.filter(x=>x.atildi).length;return{n,pct,grade:GRADE(pct,comp),ort,abs,rms,mx,dis,at}};
 
@@ -85,7 +90,8 @@ function RitmikFigKarne(){usInit();const{toast}=usToast();
  const puanliKat=Object.keys(pun).filter(c=>finDahil||!isFinal(c)).sort((a,b)=>(isFinal(a)-isFinal(b))||katAd(a).localeCompare(katAd(b),"tr"));
  const etkin=new Set(secKat.size?[...secKat]:puanliKat);
  const{rows,ozel}=R.useMemo(()=>analiz({pun,spor,cats,secKat:etkin,refTip}),[comp,comps,secKat,refTip,finDahil]);
- const pozOzet=POZ.map(([P,poz])=>{const rs=rows.filter(r=>r.poz===poz),o=ozetle(rs,PANEL[P].tip==="D"?"D":"AE"),a=atama[poz]||{};let bias=null;if(a.kulup&&rs.length){const ku=UP(a.kulup).replace(/\s+/g," "),k=rs.filter(r=>UP(r.kulup).replace(/\s+/g," ")===ku),d=rs.filter(r=>UP(r.kulup).replace(/\s+/g," ")!==ku);if(k.length&&d.length)bias={n:k.length,fark:k.reduce((s,r)=>s+r.dev,0)/k.length-d.reduce((s,r)=>s+r.dev,0)/d.length}}return{P,poz,o,a,bias}});
+ const POZ2=POZ.filter(([P,poz])=>PANEL[P].tip!=="D"||rows.some(x=>x.poz===poz)||POZ_D_TEMEL.includes(poz)&&!rows.some(x=>x.poz===P));
+ const pozOzet=POZ2.map(([P,poz])=>{const rs=rows.filter(r=>r.poz===poz),o=ozetle(rs,PANEL[P].tip==="D"?"D":"AE"),a=atama[poz]||{};let bias=null;if(a.kulup&&rs.length){const ku=UP(a.kulup).replace(/\s+/g," "),k=rs.filter(r=>UP(r.kulup).replace(/\s+/g," ")===ku),d=rs.filter(r=>UP(r.kulup).replace(/\s+/g," ")!==ku);if(k.length&&d.length)bias={n:k.length,fark:k.reduce((s,r)=>s+r.dev,0)/k.length-d.reduce((s,r)=>s+r.dev,0)/d.length}}return{P,poz,o,a,bias}});
  const rutinSay=new Set(rows.map(r=>r.cat+"|"+r.aid+"|"+r.al)).size,sjOran=rows.length?rows.filter(r=>r.refKaynak==="SJ").length/rows.length:0;
  const yonu=(P,v)=>PANEL[P].tip==="D"?(v>0?__T("yüksek veriyor"):__T("düşük veriyor")):(v>0?__T("sert (fazla kesinti)"):__T("yumuşak (az kesinti)"));
 
@@ -135,7 +141,7 @@ function RitmikFigKarne(){usInit();const{toast}=usToast();
  const atamaModal=atamaAc&&e.jsx("div",{style:S.ov,onClick:ev=>{ev.target===ev.currentTarget&&setAtamaAc(!1)},children:e.jsxs("div",{style:{...S.modal,maxWidth:720},children:[
   e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",fontSize:"1.1rem",fontWeight:900},children:[MI("badge",{color:C.p}),__T("Hakem İsimleri")]}),
   e.jsx("div",{style:{fontSize:".8rem",fontWeight:700,color:C.muted,margin:".3rem 0 .8rem"},children:__T("Panel pozisyonlarına hakem adını ve kulübünü/ilini yazın. Kulüp girilirse “kulüp yanlılığı” (kendi kulübünün sporcularına farklı not verme) hesaplanır.")}),
-  e.jsx("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(310px,1fr))",gap:".5rem"},children:POZ.map(([P,poz])=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".4rem"},children:[e.jsx("span",{style:{...S.chip("#fff",PANEL[P].renk),minWidth:40,textAlign:"center"},children:poz}),e.jsx("input",{style:S.inp,placeholder:__T("Ad Soyad"),value:atamaForm[poz]?.ad||"",onChange:ev=>setAtamaForm(o=>({...o,[poz]:{...(o[poz]||{}),ad:ev.target.value}}))}),e.jsx("input",{style:{...S.inp,maxWidth:120},placeholder:__T("Kulüp / İl"),value:atamaForm[poz]?.kulup||"",onChange:ev=>setAtamaForm(o=>({...o,[poz]:{...(o[poz]||{}),kulup:ev.target.value}}))})]},poz))}),
+  e.jsx("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(310px,1fr))",gap:".5rem"},children:POZ2.map(([P,poz])=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".4rem"},children:[e.jsx("span",{style:{...S.chip("#fff",PANEL[P].renk),minWidth:40,textAlign:"center"},children:poz}),e.jsx("input",{style:S.inp,placeholder:__T("Ad Soyad"),value:atamaForm[poz]?.ad||"",onChange:ev=>setAtamaForm(o=>({...o,[poz]:{...(o[poz]||{}),ad:ev.target.value}}))}),e.jsx("input",{style:{...S.inp,maxWidth:120},placeholder:__T("Kulüp / İl"),value:atamaForm[poz]?.kulup||"",onChange:ev=>setAtamaForm(o=>({...o,[poz]:{...(o[poz]||{}),kulup:ev.target.value}}))})]},poz))}),
   e.jsxs("div",{style:{display:"flex",gap:".6rem",marginTop:"1rem",justifyContent:"flex-end"},children:[e.jsx("button",{type:"button",style:S.ghost,onClick:()=>setAtamaAc(!1),children:__T("Vazgeç")}),e.jsxs("button",{type:"button",style:S.btn(C.p),onClick:atamaKaydet,children:[MI("save"),__T("Kaydet")]})]})]})});
 
  const genel=["DA","DB","A","E"].map(P=>{const rs=rows.filter(r=>r.panel===P);return{P,o:ozetle(rs,PANEL[P].tip==="D"?"D":"AE")}}).filter(x=>x.o);
