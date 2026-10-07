@@ -396,3 +396,9 @@
 .sfk-fin .sfk-l{color:rgba(255,255,255,.9)!important}.sfk-fin .sfk-v{color:#fff!important}
 .sfk-fin.sfk-on{animation:sfkUp .7s cubic-bezier(.22,1.4,.36,1) forwards,sfkGlow 2.4s ease-in-out 1s infinite}
 @keyframes sfkGlow{50%{box-shadow:0 30px 90px -6px color-mix(in srgb,var(--pk,#EC4899) 85%,transparent),inset 0 1px 0 rgba(255,255,255,.3)}}
+
+/* sporcu fotoğrafı (varsa) — flaş kart başlığının solunda; yoksa düzen değişmez */
+.sf-header.has-foto{padding-left:calc(clamp(1.2rem,3vw,3rem) + clamp(96px,17vh,200px) + 1.2rem);padding-right:calc(clamp(1.2rem,3vw,3rem) + clamp(96px,17vh,200px) + 1.2rem);min-height:calc(clamp(96px,17vh,200px) + 2rem)}
+.sf-foto{position:absolute;left:clamp(1.2rem,3vw,3rem);top:50%;transform:translateY(-50%);width:clamp(96px,17vh,200px);aspect-ratio:1;border-radius:50%;object-fit:cover;object-position:50% 20%;box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 9px rgba(236,72,153,.45),0 10px 34px rgba(0,0,0,.55);animation:sfFotoIn .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes sfFotoIn{from{opacity:0;transform:translateY(-50%) scale(.6)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+@media (max-width:700px){.sf-header.has-foto{padding-left:1rem;padding-right:1rem;padding-top:calc(84px + 1.4rem)}.sf-foto{width:84px;left:50%;top:.8rem;transform:translateX(-50%)}@keyframes sfFotoIn{from{opacity:0}to{opacity:1}}}

@@ -1,4 +1,6 @@
 import"./i18n-Tr01a2b3Cb2.js";import{u as useAuth,a as usDisc,j as e,d as db,b as usToast,l as logAction}from"./main-C2LpyYUGCb2.js";import{u as useNav,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{f as filterComps}from"./useFilteredCompetitions-B7FB6qIvCb2.js";import{GXP_CSS}from"./ArtistikNotSilmePage-Ns01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+// Kısa link kodu (tvscore.vercel.app/<kod> · gymscore.vercel.app/<kod>) — criteria/kisaLink/<kod> {t,b,c,p,kapali}
+const __gsKod=()=>{const a="abcdefghijkmnpqrstuvwxyz23456789",b=new Uint8Array(9);crypto.getRandomValues(b);return Array.from(b,x=>a[x%a.length]).join("")};
 
 // YAYIN OVERLAY — KURULUM (eski /yayin-overlay.html kurulum ekranının uygulama içi sürümü)
 // Üretilen OBS/vMix linki yine şeffaf /yayin-overlay.html?comp=… sayfasını açar (overlay HTML olarak kalır).
@@ -106,7 +108,7 @@ export default function YayinOverlayPage(){
  const kopyalaDis=async()=>{const sec=kpProfs.filter(x=>kpSec.includes(x.k));if(!sec.length)return;if(kirli&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;
   const adlar=new Set(Object.values(profs).map(p=>String(p?.ad||"").trim()));const U={};let son=null,katDus=0;
   sec.forEach((x,i)=>{const n=norm(x.p),k="p"+(Date.now()+i).toString(36);let ad=String(n.ad||__T("Profil")).trim(),j=2;while(adlar.has(ad))ad=String(n.ad).trim()+" ("+(j++)+")";adlar.add(ad);
-   const kk=n.kat.filter(c=>kats[c]);if(n.kat.length&&kk.length<n.kat.length)katDus++;const o={};ALANLAR.forEach(a=>o[a]=n[a]);o.ad=ad;o.kat=kk;o.olusturma=Date.now();o.guncelleme=Date.now();o.guncelleyen=usr;o.kaynak={yarisma:kpKay,profil:x.k};
+   const kk=n.kat.filter(c=>kats[c]);if(n.kat.length&&kk.length<n.kat.length)katDus++;const o={};ALANLAR.forEach(a=>o[a]=n[a]);o.ad=ad;o.kat=kk;o.olusturma=Date.now();o.guncelleme=Date.now();o.guncelleyen=usr;o.kaynak={yarisma:kpKay,profil:x.k};delete o.tvKod;
    U[`${FB}/${comp}/yayinProfilleri/${k}`]=o;son=[k,o]});
   try{await update(ref(db),U);toast(sec.length+" "+__T("profil kopyalandı.")+(katDus?" "+__T("Bu yarışmada olmayan kategoriler filtreden çıkarıldı."):""),"success");
    try{logAction("broadcast_profile",`Yayın profili kopyalandı (${sec.length}): ${sec.map(x=>x.ad).join(", ")} ← ${comps?.[kpKay]?.isim||kpKay}`,{user:usr,competitionId:comp,discipline:br})}catch{}
@@ -194,6 +196,11 @@ export default function YayinOverlayPage(){
    e.jsx("button",{type:"button",className:"yo-btn g",disabled:!kirli,onClick:()=>setTas(kayitli),children:__T("Geri al")}),
    e.jsxs("button",{type:"button",className:"yo-btn",disabled:!kirli,onClick:kaydet,children:[I("save"),__T("Kaydet")]})]})]}):null;
 
+ // TV veri linki: kısa kodlu tvscore.vercel.app adresi — kanal kaynağı (sistem/veritabanı/yarışma kimliği) görmez
+ const tvK=P.tvKod||"",tvQ=[veri!=="hepsi"?"veri="+veri:"",fmt!=="json"?"format="+fmt:""].filter(Boolean).join("&"),tvUrl=tvK?`https://tvscore.vercel.app/${tvK}${tvQ?"?"+tvQ:""}`:"";
+ const tvOlustur=async()=>{if(tvK&&!await window.__gxConfirm(__T("Yeni TV linki oluşturulursa kanaldaki eski link çalışmaz. Devam edilsin mi?")))return;
+  const k=__gsKod(),U={[`criteria/kisaLink/${k}`]:{t:"tv",b:br,c:comp,p:pid,ts:Date.now(),kim:usr}};if(tvK)U[`criteria/kisaLink/${tvK}/iptal`]=!0;U[`${FB}/${comp}/yayinProfilleri/${pid}/tvKod`]=k;
+  try{await update(ref(db),U);toast(__T("TV linki hazır"),"success")}catch{toast(__T("Hata oluştu."),"error")}};
  const linkler=pid?e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"link",renk:"#DB2777",t:__T("Kanala verilecek linkler")}),
   e.jsxs("label",{className:"yo-f",style:{marginTop:0},children:[__T("Overlay linki")," ",e.jsx("span",{children:__T("· OBS / vMix / Tricaster tarayıcı kaynağı, 1920×1080, şeffaf")})]}),
   e.jsx("div",{className:"yo-url",children:ovUrl}),
@@ -201,8 +208,10 @@ export default function YayinOverlayPage(){
   e.jsxs("label",{className:"yo-f",children:[__T("TV veri linki")," ",e.jsx("span",{children:__T("· kanalın kendi grafik sistemi için (vMix Data Source, CasparCG, Vizrt, Ross)")})]}),
   e.jsxs("div",{className:"yo-row",style:{marginBottom:8},children:[e.jsx("select",{className:"yo-sel",value:veri,onChange:ev=>setVeri(ev.target.value),children:[["hepsi",__T("Hepsi (tek paket)")],["canli",__T("Çağrılan sporcu")],["son",__T("Son yayınlanan puan")],["siralama",__T("Anlık sıralama")],["sirada",__T("Sıradaki sporcular")],["podyum",__T("Podyum")]].map(([k,t])=>e.jsx("option",{value:k,children:t},k))}),
    e.jsx(Seg,{v:fmt,on:setFmt,ops:[["json","JSON"],["xml","XML"],["csv","CSV"]]})]}),
-  e.jsx("div",{className:"yo-url",children:apiUrl}),
-  e.jsxs("div",{className:"yo-btns",children:[e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>kopyala(apiUrl),children:[I("content_copy"),__T("Kopyala")]}),e.jsxs("button",{type:"button",className:"yo-btn g",onClick:()=>window.open(apiUrl,"_blank"),children:[I("open_in_new"),__T("Veriyi gör")]}),ok?e.jsx("span",{className:"yo-ok",children:ok}):null]}),
+  tvK?e.jsx("div",{className:"yo-url",children:tvUrl}):e.jsx("div",{className:"yo-url",style:{fontFamily:"inherit",color:"#64748B"},children:__T("Bu profil için henüz TV linki yok. Kanal yalnız tvscore.vercel.app/<kod> adresini görür; sistem ve veri kaynağı görünmez.")}),
+  e.jsxs("div",{className:"yo-btns",children:[tvK?e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>kopyala(tvUrl),children:[I("content_copy"),__T("Kopyala")]}):null,
+   tvK?e.jsxs("a",{href:tvUrl,target:"_blank",rel:"noopener noreferrer",className:"yo-btn g",style:{textDecoration:"none"},children:[I("open_in_new"),__T("Veriyi gör")]}):null,
+   e.jsxs("button",{type:"button",className:"yo-btn"+(tvK?" g":""),onClick:tvOlustur,children:[I(tvK?"autorenew":"add_link"),tvK?__T("Yeni link"):__T("TV linki oluştur")]}),ok?e.jsx("span",{className:"yo-ok",children:ok}):null]}),
   e.jsx("p",{className:"yo-note",children:__T("Veri linki profilin kategori filtresine, diline ve satır sayısına uyar; 1–2 saniyede bir okunabilir. Alanlar: name, club, noc, flag, bib, total, d/da/db, a, e, pen, rank. Logolar logos alanında görsel linki olarak gelir.")})]}):null;
 
  const canli=pid?e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"settings_remote",renk:"#EA580C",t:__T("Canlı kontrol"),sag:P.kapali?e.jsx("span",{className:"yo-kirli",children:__T("YAYIN DIŞI")}):kAktif?e.jsx("span",{className:"yo-live",children:durumG[kc.g]||kc.g}):__T("Otomatik")}),

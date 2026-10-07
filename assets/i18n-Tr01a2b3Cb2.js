@@ -126,3 +126,7 @@ if(typeof document!=="undefined"&&cur()==="en"){try{
  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",bas):bas();
 }catch{}}
 export{T,cur as getLang,set as setLang,DICT};
+
+// Sayısal alanlarda fare tekerleği puanı DEĞİŞTİRMESİN (başhakem/hakem ekranları, 2026-10-08):
+// odaklı number input üzerinde tekerlek çevrilince alan odaktan çıkar → değer değişmez, sayfa kaymaya devam eder.
+try{if(typeof document!=="undefined"&&!globalThis.__gxWheel){globalThis.__gxWheel=1;document.addEventListener("wheel",ev=>{const t=ev.target;if(t&&t.tagName==="INPUT"&&t.type==="number"&&document.activeElement===t)t.blur()},{passive:!0,capture:!0})}}catch{}

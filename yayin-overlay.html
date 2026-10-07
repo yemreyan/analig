@@ -314,6 +314,8 @@ function profilUygula(p){P=p||{};C=birlestir(VARS(),{...P,kontrol:undefined,kapa
 if(!demo&&comp){
  db=getDatabase(initializeApp(firebaseConfig));
  ayarUygula();
+ // arşive çekilmiş yarışma yayında görünmez
+ onValue(ref(db,`${base}/${comp}/arsivli`),s=>{const v=s.val();document.body.style.visibility=(v===true||v==="true")?"hidden":""});
  onValue(ref(db,`${base}/${comp}/kategoriler`),s=>{D.kats=s.val()||{};katGuncelle();ciz()});
  onValue(ref(db,`${base}/${comp}/etkinlikLogo`),s=>{const u=s.val();D.evLogo=typeof u==="string"&&u?u:null;ayarUygula()});
  if(pid)onValue(ref(db,`${base}/${comp}/yayinProfilleri/${pid}`),s=>profilUygula(s.val()||{}));

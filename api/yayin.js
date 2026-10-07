@@ -33,14 +33,19 @@ module.exports = async (req, res) => {
     }
     const [isim, kats, aktif, flash, aktifAlet, prof] = await Promise.all([al("isim"), al("kategoriler"), al("aktifSporcu"), al("flashTrigger"), al("aktifAlet"), pid ? al(`yayinProfilleri/${pid}`) : null]);
     if (kats == null && isim == null) return gonder(res, 404, "application/json; charset=utf-8", JSON.stringify({ error: "yarisma bulunamadi" }));
+    // arşive çekilmiş yarışma yayına veri vermez
+    const ars = await al("arsivli");
+    if (ars === true || ars === "true") return gonder(res, 404, "application/json; charset=utf-8", JSON.stringify({ error: "yarisma arsivde" }));
     const P = prof || {}, tb = P.tablo || {};
     const k0 = P.kontrol, kAktif = !!(k0 && k0.g && k0.g !== "gizle" && !(+k0.sure > 0 && Date.now() > (+k0.ts || 0) + k0.sure * 1000));
     const filtre = Array.isArray(P.kat) ? P.kat : [];
     const dil = q.get("dil") === "en" || q.get("dil") === "tr" ? q.get("dil") : P.dil || "tr";
     const kat = V.guncelKat({ kats: kats || {}, aktif, flash, filtre, kat: q.get("kat") || (kAktif && P.kontrol.kat) || null });
-    const [spor, puan] = kat ? await Promise.all([al(`sporcular/${encodeURIComponent(kat)}`), al(`puanlar/${encodeURIComponent(kat)}`)]) : [null, null];
+    // henüz çağrı/puan yoksa boş dönmesin: profilin (yoksa yarışmanın) ilk kategorisi
+    const katY = kat || Object.keys(kats || {}).filter(k => V.katUygun(filtre, k) && !V.isFinal(kats, k)).concat(Object.keys(kats || {}).filter(k => V.katUygun(filtre, k)))[0] || null;
+    const [spor, puan] = katY ? await Promise.all([al(`sporcular/${encodeURIComponent(katY)}`), al(`puanlar/${encodeURIComponent(katY)}`)]) : [null, null];
     const n = Math.min(50, Math.max(1, parseInt(q.get("n")) || tb.n || 10));
-    const pk = V.paket({ comp, isim, brans, kats: kats || {}, kat, spor, puan, aktif, flash, aktifAlet, filtre, dil, n, tur: tb.tur, nSirada: (P.sirada && P.sirada.n) || 3 });
+    const pk = V.paket({ comp, isim, brans, kats: kats || {}, kat: katY, spor, puan, aktif, flash, aktifAlet, filtre, dil, n, tur: tb.tur, nSirada: (P.sirada && P.sirada.n) || 3 });
     const o = new URL(`https://${req.headers.host || "tcfsystem.vercel.app"}/api/yayin`);
     o.searchParams.set("comp", comp); o.searchParams.set("brans", brans); if (pid) o.searchParams.set("profil", pid);
     const lgU = t => { const x = new URL(o); x.searchParams.set("logo", t); return x.toString(); };

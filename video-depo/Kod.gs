@@ -29,6 +29,7 @@ function doPost(e) {
     if (q.act === 'init') return cikti(baslat(q));
     if (q.act === 'chunk') return cikti(parca(q));
     if (q.act === 'finish') return cikti(bitir(q));
+    if (q.act === 'kopyala') return cikti(kopyala(q));
     return cikti({ ok: false, hata: 'bilinmeyen işlem' });
   } catch (err) {
     return cikti({ ok: false, hata: String((err && err.message) || err) });
@@ -59,6 +60,43 @@ function fbOku(yol) {
   return r.getResponseCode() === 200 ? JSON.parse(r.getContentText()) : null;
 }
 
+// Branş / Yarışma / Kategori klasörü (yarışma Firebase'de gerçekten var mı kontrol edilir)
+function hedefKlasor(q) {
+  const yarisma = fbOku(q.base + '/' + q.comp + '/isim');
+  if (!yarisma) throw new Error('yarışma bulunamadı');
+  let katAd = '';
+  if (q.kat && /^[-A-Za-z0-9_]{1,80}$/.test(String(q.kat))) {
+    const k = fbOku(q.base + '/' + q.comp + '/kategoriler/' + q.kat);
+    katAd = (k && (k.name || k.ad)) || q.kat;
+  }
+  let f = klasor(anaKlasor(), BRANS[q.base]);
+  f = klasor(f, temiz(yarisma) || q.comp);
+  if (katAd) f = klasor(f, temiz(String(katAd).replace(/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+/, '')) || q.kat);
+  return f;
+}
+
+// ESKİ CLOUDINARY VİDEOLARINI TAŞIMA (2026-10-08): video Google tarafında indirilir, aynı klasör düzeniyle Drive'a yazılır.
+// Yalnız bu sistemin Cloudinary hesabındaki dosyalar kabul edilir. Aynı adlı dosya klasörde varsa yeniden kopyalanmaz.
+// (UrlFetchApp sınırı: dosya başına 50 MB.)
+function kopyala(q) {
+  if (!BRANS[q.base]) throw new Error('geçersiz branş');
+  if (!/^[-A-Za-z0-9_]{3,64}$/.test(String(q.comp || ''))) throw new Error('geçersiz yarışma');
+  const kaynak = String(q.kaynak || '');
+  if (kaynak.indexOf('https://res.cloudinary.com/spythzo3/') !== 0) throw new Error('geçersiz kaynak');
+  const f = hedefKlasor(q);
+  const ad = temiz(q.name) || 'video.mp4';
+  const var0 = f.getFilesByName(ad);
+  let dosya = var0.hasNext() ? var0.next() : null;
+  if (!dosya) {
+    const r = UrlFetchApp.fetch(kaynak, { muteHttpExceptions: true, followRedirects: true });
+    if (r.getResponseCode() !== 200) throw new Error('kaynak indirilemedi (' + r.getResponseCode() + ')');
+    const blob = r.getBlob().setName(ad);
+    dosya = f.createFile(blob);
+  }
+  dosya.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return { ok: true, id: dosya.getId(), url: 'https://drive.google.com/file/d/' + dosya.getId() + '/view', boyut: dosya.getSize() };
+}
+
 // Yükleme oturumu aç: yarışma Firebase'de gerçekten var mı kontrol edilir, klasörler hazırlanır.
 function baslat(q) {
   if (!BRANS[q.base]) throw new Error('geçersiz branş');
@@ -67,17 +105,7 @@ function baslat(q) {
   if (boyut <= 0 || boyut > MAX_BOYUT) throw new Error('geçersiz dosya boyutu');
   const mime = /^video\/[a-z0-9.+-]+/i.test(String(q.mime || '')) ? String(q.mime).split(';')[0] : 'video/webm';
 
-  const yarisma = fbOku(q.base + '/' + q.comp + '/isim');
-  if (!yarisma) throw new Error('yarışma bulunamadı');
-  let katAd = '';
-  if (q.kat && /^[-A-Za-z0-9_]{1,80}$/.test(String(q.kat))) {
-    const k = fbOku(q.base + '/' + q.comp + '/kategoriler/' + q.kat);
-    katAd = (k && (k.name || k.ad)) || q.kat;
-  }
-
-  let f = klasor(anaKlasor(), BRANS[q.base]);
-  f = klasor(f, temiz(yarisma) || q.comp);
-  if (katAd) f = klasor(f, temiz(String(katAd).replace(/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+/, '')) || q.kat);
+  const f = hedefKlasor(q);
 
   const basliklar = {
     Authorization: 'Bearer ' + ScriptApp.getOAuthToken(),

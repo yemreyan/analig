@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{raImg,raKey,raAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{isIntl,katEN,bayraklarPng}from"./intl-Ul01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,m as update,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";import{fotoKaydet,fotoSil,dosyaSec,eslestir,fotoYol}from"./fotoYukle-Fy01a2b3Cb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{raImg,raKey,raAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{isIntl,katEN,bayraklarPng}from"./intl-Ul01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK FİNAL OLUŞTUR (2026-10-07 v2)
 //  Her final (kategori × alet / genel tasnif) kendi ayarıyla oluşturulur: finalist sayısı (n), yedek sayısı (y) ve çıkış sırası
@@ -17,7 +17,7 @@ const aletTr=a=>RA[a]?.labelTr||RA[a]?.label||a;
 const aletLabel=a=>__T(aletTr(a));
 const num=v=>v==null||v===""||isNaN(v)?null:Number(v);
 const clamp=(v,a,b,d)=>{const n=parseInt(v);return isNaN(n)?d:Math.max(a,Math.min(b,n))};
-const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (FIG)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"]];
+const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (FIG)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"],["elle","edit_note","Elle","Bu final için sıra eşlemesini elle seç (ör. 1. → 3. çıkar)"]];
 
 function RitmikFinals(){
  const{toast}=usToast();usInit();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
@@ -25,7 +25,9 @@ function RitmikFinals(){
        [log,setLog]=R.useState(null),[loading,setLoading]=R.useState(!0),
        [tmpl,setTmpl]=R.useState({}),[texp,setTexp]=R.useState(!1),[acik,setAcik]=R.useState({}),
        [sel,setSel]=R.useState({}),[limit,setLimit]=R.useState(2),[useAA,setUseAA]=R.useState(!0),[fill,setFill]=R.useState(!1),
-       [birim,setBirim]=R.useState({}),[kayit,setKayit]=R.useState(""),[pdfBusy,setPdfBusy]=R.useState(!1),[toplu,setToplu]=R.useState({n:8,y:2,sira:"ters"});
+       [birim,setBirim]=R.useState({}),[kayit,setKayit]=R.useState(""),[pdfBusy,setPdfBusy]=R.useState(!1),[toplu,setToplu]=R.useState({n:8,y:2,sira:"ters"}),[fotolar,setFotolar]=R.useState({}),[fotoBusy,setFotoBusy]=R.useState("");
+ // sporcu fotoğrafları (yalnız link) — finalist satırında küçük resim; sporcu kartı / canlı skor bunları gösterir
+ R.useEffect(()=>{if(!comp){setFotolar({});return}return onValue(ref(db,fotoYol(BASE,comp)),s=>setFotolar(s.val()||{}))},[comp]);
 
  const reload=()=>get(ref(db,BASE)).then(s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]=c)});setComps(o)}).finally(()=>setLoading(!1));
  R.useEffect(()=>{reload()},[]);
@@ -65,7 +67,7 @@ function RitmikFinals(){
  const nameOf=(cat,id)=>{const m=partOf(cat)[id]||{};return[m.ad,m.soyad].filter(Boolean).join(" ")||m.adSoyad||id};
 
  const key=(cat,alet)=>cat+"|"+alet;
- const bOf=(cat,alet)=>{const b={...DEF,...(birim[key(cat,alet)]||{})};return{n:clamp(b.n,1,12,8),y:clamp(b.y,0,4,2),sira:["ters","duz","sablon"].includes(b.sira)?b.sira:"sablon"}};
+ const bOf=(cat,alet)=>{const b={...DEF,...(birim[key(cat,alet)]||{})};return{n:clamp(b.n,1,12,8),y:clamp(b.y,0,4,2),sira:["ters","duz","sablon","elle"].includes(b.sira)?b.sira:"sablon",m:b.m&&typeof b.m==="object"?b.m:{}}};
  const bSet=(cat,alet,f,v)=>setBirim(o=>({...o,[key(cat,alet)]:{...bOf(cat,alet),...(o[key(cat,alet)]||{}),[f]:v}}));
 
  // Bir final için sıralama + kulüp kotası (ilk n + y yedek)
@@ -83,7 +85,7 @@ function RitmikFinals(){
   return{list:pick,excluded:over.filter(r=>!pick.includes(r)),b};
  };
  const tmplCs=r=>{const v=tmpl[r];return v!=null&&v!==""?Number(v):r};
- const csOf=(b,rk)=>{if(rk>b.n)return rk;if(b.sira==="ters")return b.n-rk+1;if(b.sira==="duz")return rk;const v=tmplCs(rk);return v>=1&&v<=b.n?v:rk};
+ const csOf=(b,rk)=>{if(rk>b.n)return rk;if(b.sira==="elle"){const v=Number(b.m?.["q"+rk]);return v>=1&&v<=b.n?v:b.n-rk+1}if(b.sira==="ters")return b.n-rk+1;if(b.sira==="duz")return rk;const v=tmplCs(rk);return v>=1&&v<=b.n?v:rk};
  const usedVals=Array.from({length:TOP},(_,i)=>tmplCs(i+1));
  const dupWarn=new Set(usedVals).size!==usedVals.length;
  // plan: çıkış sırasına dizili satırlar
@@ -97,7 +99,7 @@ function RitmikFinals(){
  const katTumu=(cat,on)=>setSel(o=>{const n={...o};[...(useAA?[AA]:[]),...aletsOf(cat)].forEach(a=>{n[key(cat,a)]=on});return n});
  const topluUygula=async kapsam=>{const hedef=kapsam?units.filter(([c])=>c===kapsam):units;
   if(!await window.__gxConfirm((kapsam?catLabel(kapsam):__T("Tüm finaller"))+": "+__T("finalist")+" "+toplu.n+" · "+__T("yedek")+" "+toplu.y+" · "+__T(SIRA.find(s=>s[0]===toplu.sira)[2])+"\n\n"+__T("Bu ayar seçili finallere uygulansın mı?")))return;
-  setBirim(o=>{const n={...o};hedef.forEach(([c,a])=>{n[key(c,a)]={n:toplu.n,y:toplu.y,sira:toplu.sira}});return n})};
+  setBirim(o=>{const n={...o};hedef.forEach(([c,a])=>{n[key(c,a)]={...(o[key(c,a)]||{}),n:toplu.n,y:toplu.y,sira:toplu.sira}});return n})};
 
  const generate=async()=>{
   if(busy||!comp)return;
@@ -223,6 +225,37 @@ function RitmikFinals(){
  const tmplOzet=Array.from({length:TOP},(_,i)=>i+1).filter(rk=>tmplCs(rk)!==rk).map(rk=>rk+"→"+tmplCs(rk)).join(" · ");
  const stepper=(v,set,a,b)=>e.jsxs("span",{style:S.step,children:[e.jsx("button",{type:"button",style:S.stb,onClick:()=>set(Math.max(a,v-1)),children:"−"}),e.jsx("b",{style:{minWidth:26,textAlign:"center",fontSize:".88rem"},children:v}),e.jsx("button",{type:"button",style:S.stb,onClick:()=>set(Math.min(b,v+1)),children:"+"})]});
 
+ // Elle eşleme: eleme sırası (Q) → çıkış sırası; finalAyar.birim["kat|alet"].m {q1:3,q3:5,…} (sayısal anahtar dizi olmasın diye "q")
+ const elleSet=(cat,alet,rk,v)=>setBirim(o=>{const k=key(cat,alet),b=bOf(cat,alet),m={...(o[k]?.m||{})};
+   // eski numara başka sıradaysa yer değiştir
+   const eski=csOf(b,rk),cak=Array.from({length:b.n},(_,i)=>i+1).find(q=>q!==rk&&csOf({...b,m},q)===v);
+   m["q"+rk]=v;if(cak)m["q"+cak]=eski;return{...o,[k]:{...b,...(o[k]||{}),m}}});
+ const elleDoldur=(cat,alet,tip)=>setBirim(o=>{const k=key(cat,alet),b=bOf(cat,alet),m={};for(let q=1;q<=b.n;q++)m["q"+q]=tip==="duz"?q:b.n-q+1;return{...o,[k]:{...b,...(o[k]||{}),m}}});
+ const elleGrid=(cat,alet,b)=>e.jsxs("div",{style:{background:"#FDF2F8",border:"1px dashed #F9A8D4",borderRadius:12,padding:".5rem .6rem",display:"grid",gap:".4rem"},children:[
+   e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".4rem",flexWrap:"wrap",fontSize:".72rem",fontWeight:800,color:"#9D174D"},children:[MI("edit_note",{fontSize:15}),__T("Eleme sırası → çıkış sırası"),
+     e.jsx("span",{style:{flex:1}}),
+     e.jsx("button",{type:"button",style:{...S.ghost,padding:".15rem .45rem",fontSize:".7rem"},onClick:()=>elleDoldur(cat,alet,"ters"),children:__T("Ters ile doldur")}),
+     e.jsx("button",{type:"button",style:{...S.ghost,padding:".15rem .45rem",fontSize:".7rem"},onClick:()=>elleDoldur(cat,alet,"duz"),children:__T("Düz ile doldur")})]}),
+   e.jsx("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(92px,1fr))",gap:".3rem"},children:Array.from({length:b.n},(_,i)=>i+1).map(q=>
+     e.jsxs("label",{style:{display:"flex",alignItems:"center",gap:".25rem",background:"#fff",border:"1px solid #FBCFE8",borderRadius:9,padding:".2rem .35rem",fontSize:".76rem",fontWeight:800},children:[
+       e.jsx("span",{style:{color:"#64748B",minWidth:26},children:q+"."}),"→",
+       e.jsx("select",{value:csOf(b,q),onChange:ev=>elleSet(cat,alet,q,Number(ev.target.value)),style:{flex:1,minWidth:0,border:"none",background:"transparent",fontWeight:900,color:"#BE185D",fontSize:".82rem",cursor:"pointer"},
+         children:Array.from({length:b.n},(_,j)=>j+1).map(v=>e.jsx("option",{value:v,children:v+"."},v))})]},q))}),
+   e.jsx("div",{style:{fontSize:".68rem",color:"#9D174D",fontWeight:600},children:__T("Ör. 1. → 3.: elemede birinci olan sporcu finalde 3. sırada çıkar. Seçim yarışmaya kaydedilir.")})]});
+ const fotoTek=async(cat,id)=>{const[f]=await dosyaSec(!1);if(!f)return;setFotoBusy(id);
+   try{await fotoKaydet(BASE,comp,id,f,nameOf(cat,id));toast(__T("Fotoğraf kaydedildi ✓"),"success")}catch(er){toast(__T("Fotoğraf yüklenemedi")+": "+(er?.message||""),"error")}finally{setFotoBusy("")}};
+ const fotoKaldir=async(cat,id)=>{if(!await window.__gxConfirm(nameOf(cat,id)+"\n\n"+__T("Sporcunun fotoğrafı kaldırılsın mı?")))return;try{await fotoSil(BASE,comp,id)}catch{toast(__T("Hata oluştu."),"error")}};
+ const fotoToplu=async()=>{const fs=await dosyaSec(!0);if(!fs.length)return;const hepsi=[];realCats.forEach(c=>{Object.entries(partOf(c)).forEach(([id,m])=>{m&&!m.isTeam&&!hepsi.some(h=>h.id===id)&&hepsi.push({id,ad:m.ad,soyad:m.soyad,bib:m.bib,cat:c})})});
+   const es=eslestir(fs,hepsi),ok=es.filter(x=>x.sp),yok=es.filter(x=>!x.sp);
+   if(!ok.length){await window.__gxConfirm(__T("Dosya adları hiçbir sporcuyla eşleşmedi. Dosya adı sporcunun adı soyadı (ör. Ana_KUK.jpg) ya da BIB numarası olmalı.")+"\n\n"+yok.map(x=>x.file.name).slice(0,12).join("\n"));return}
+   if(!await window.__gxConfirm(ok.length+" "+__T("fotoğraf eşleşti")+(yok.length?" · "+yok.length+" "+__T("eşleşmedi"):"")+"\n\n"+ok.slice(0,14).map(x=>x.file.name+" → "+[x.sp.ad,x.sp.soyad].filter(Boolean).join(" ")).join("\n")+(ok.length>14?"\n…":"")+(yok.length?"\n\n"+__T("Eşleşmeyen")+": "+yok.map(x=>x.file.name).slice(0,8).join(", "):"")+"\n\n"+__T("Yüklensin mi?")))return;
+   let n=0,h=0;for(const x of ok){setFotoBusy(__T("Fotoğraflar yükleniyor")+" "+(n+h+1)+"/"+ok.length);try{await fotoKaydet(BASE,comp,x.sp.id,x.file,[x.sp.ad,x.sp.soyad].filter(Boolean).join(" "));n++}catch{h++}}
+   setFotoBusy("");toast(n+" "+__T("fotoğraf kaydedildi")+(h?" · "+h+" "+__T("hata"):""),h?"warning":"success")};
+ const fotoAv=(cat,id)=>{const md=partOf(cat)[id]||{};if(md.isTeam)return null;const u=fotolar[id]?.url,bz=fotoBusy===id;
+   return e.jsxs("span",{style:{position:"relative",flexShrink:0,display:"inline-flex"},children:[
+     e.jsx("button",{type:"button",title:u?__T("Fotoğrafı değiştir"):__T("Fotoğraf ekle"),onClick:()=>fotoTek(cat,id),disabled:bz,style:{width:30,height:30,borderRadius:"50%",border:u?"2px solid #F9A8D4":"1.5px dashed #CBD5E1",padding:0,background:u?"#fff":"#F8FAFC",cursor:"pointer",overflow:"hidden",display:"grid",placeItems:"center",color:"#94A3B8"},
+       children:bz?MI("hourglass_top",{fontSize:15}):u?e.jsx("img",{src:u,alt:"",style:{width:"100%",height:"100%",objectFit:"cover",objectPosition:"50% 20%"}}):MI("add_a_photo",{fontSize:15})}),
+     u&&!bz?e.jsx("button",{type:"button",title:__T("Fotoğrafı kaldır"),onClick:()=>fotoKaldir(cat,id),style:{position:"absolute",top:-5,right:-6,width:15,height:15,borderRadius:"50%",border:"none",background:"#EF4444",color:"#fff",fontSize:10,lineHeight:"15px",padding:0,cursor:"pointer",fontWeight:900},children:"×"}):null]})};
  const unitCard=(cat,alet)=>{const{rows,excluded,b,dup}=plan(cat,alet),fc=alet===AA?"final_"+cat:"final_"+cat+"__"+alet,
    has=!!cats[fc],k=key(cat,alet),on=isSel(cat,alet),bos=!rows.length,op=acik[k]!==!1&&!bos,nc=rows.filter(x=>!x.reserve).length,nr=rows.length-nc;
   return e.jsxs("div",{style:{border:"1.5px solid "+(on&&!bos?"#F9A8D4":"#EEF0F4"),borderRadius:16,padding:".7rem .8rem",background:on&&!bos?"#FFFBFE":"#fff",opacity:bos?.6:1,display:"flex",flexDirection:"column",gap:".55rem",transition:"all .15s"},children:[
@@ -238,10 +271,12 @@ function RitmikFinals(){
       e.jsxs("span",{style:{display:"inline-flex",alignItems:"center",gap:".3rem",fontSize:".72rem",fontWeight:800,color:"#64748B"},children:[__T("Finalist"),stepper(b.n,v=>bSet(cat,alet,"n",v),1,12)]}),
       e.jsxs("span",{style:{display:"inline-flex",alignItems:"center",gap:".3rem",fontSize:".72rem",fontWeight:800,color:"#64748B"},children:[__T("Yedek"),stepper(b.y,v=>bSet(cat,alet,"y",v),0,4)]}),
       e.jsx("span",{style:S.seg,children:SIRA.map(([v,ic,t,ds])=>e.jsxs("button",{type:"button",title:__T(ds),style:S.segb(b.sira===v),onClick:()=>bSet(cat,alet,"sira",v),children:[MI(ic,{fontSize:14}),__T(t)]},v))})]}),
-    dup?e.jsx("div",{style:{fontSize:".74rem",color:"#DC2626",fontWeight:800},children:"⚠ "+__T("Şablonda aynı çıkış numarası tekrar ediyor.")}):null,
+    b.sira==="elle"?elleGrid(cat,alet,b):null,
+    dup?e.jsx("div",{style:{fontSize:".74rem",color:"#DC2626",fontWeight:800},children:"⚠ "+__T(b.sira==="elle"?"Aynı çıkış numarası birden fazla sıraya verilmiş.":"Şablonda aynı çıkış numarası tekrar ediyor.")}):null,
     op?e.jsxs("div",{style:{borderTop:"1px solid #F1F5F9",paddingTop:".45rem",display:"grid",gap:".1rem"},children:[
       rows.map(it=>e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".5rem",padding:".22rem 0",fontSize:".84rem"},children:[
         it.reserve?e.jsx("span",{style:S.yed,children:it.yed}):e.jsx("span",{style:S.csb,children:it.cs}),
+        fotoAv(cat,it.row.id),
         e.jsxs("span",{style:{flex:1,minWidth:0,fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:[nameOf(cat,it.row.id),
           it.row.club?e.jsxs("span",{style:{color:"#64748B",fontWeight:600,fontSize:".78rem"},children:[" · ",it.row.club]}):null,
           it.row.quotaFill?e.jsx("span",{style:{...S.badge,marginLeft:".35rem",background:"#FEF3C7",color:"#B45309"},children:__T("kota dışı")}):null]}),
@@ -261,7 +296,13 @@ function RitmikFinals(){
      e.jsxs("select",{style:S.sel,value:comp,onChange:x=>{setComp(x.target.value);setLog(null);setAcik({})},children:[
       e.jsx("option",{value:"",children:__T("— Yarışma seçin —")}),
       Object.entries(comps).map(([id,c])=>e.jsx("option",{value:id,children:c.isim||c.ad||id},id))]}),
-     e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700,marginTop:".6rem",lineHeight:1.5},children:__T("Her final kendi finalist ve yedek sayısıyla, kendi çıkış sırası kuralıyla oluşturulur. Seçimler ve ayarlar bu yarışmaya kaydedilir; sayfayı yeniden açtığınızda aynen gelir.")})]}),
+     e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700,marginTop:".6rem",lineHeight:1.5},children:__T("Her final kendi finalist ve yedek sayısıyla, kendi çıkış sırası kuralıyla oluşturulur. Seçimler ve ayarlar bu yarışmaya kaydedilir; sayfayı yeniden açtığınızda aynen gelir.")}),
+     comp?e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap",marginTop:".7rem",padding:".55rem .7rem",borderRadius:12,background:"#FDF2F8",border:"1px solid #FBCFE8"},children:[
+       e.jsx("span",{style:{width:30,height:30,borderRadius:9,display:"grid",placeItems:"center",background:"linear-gradient(135deg,#EC4899,#7C3AED)",color:"#fff",flexShrink:0},children:MI("photo_camera",{fontSize:17})}),
+       e.jsxs("div",{style:{flex:1,minWidth:200},children:[e.jsx("div",{style:{fontWeight:900,fontSize:".86rem"},children:__T("Sporcu fotoğrafları")+" · "+Object.keys(fotolar).length}),
+         e.jsx("div",{style:{fontSize:".72rem",color:"#9D174D",fontWeight:600},children:__T("Sporcu kartında ve canlı skor flaş kartında gösterilir; fotoğrafı olmayan sporcuda kart eski düzende kalır. Tek tek eklemek için finalist satırındaki yuvarlak düğmeyi kullanın; toplu yüklemede dosya adı sporcunun adı soyadı ya da BIB numarası olmalı.")})]}),
+       fotoBusy&&fotoBusy.length>20?e.jsx("span",{style:{fontSize:".74rem",fontWeight:800,color:"#BE185D"},children:fotoBusy}):null,
+       e.jsxs("button",{type:"button",onClick:fotoToplu,disabled:!!fotoBusy,style:{...S.ghost,display:"inline-flex",alignItems:"center",gap:".3rem",fontWeight:800},children:[MI("upload",{fontSize:16}),__T("Toplu fotoğraf yükle")]})]}):null]}),
     comp?e.jsxs(e.Fragment,{children:[
       realCats.length===0?e.jsx("div",{style:S.center,children:__T("Bu yarışmada kategori yok.")}):e.jsxs(e.Fragment,{children:[
         e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:S.h,children:[e.jsx("span",{style:S.hi,children:MI("tune",{fontSize:17})}),__T("Genel ayarlar")]}),

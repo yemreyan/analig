@@ -100,6 +100,8 @@ function satir(g,s,en,o){o=o||{};var r={rank:s&&s.sira!=null?s.sira:null,name:g.
  return r}
 
 // TV veri paketi (veri linki tek çağrıda bunu döndürür)
+// Son puanın cezası: ritmik pen (toplam) · aerobik başhakem (p) + çizgi (l) + süre (t) · artistik tarafsız kesinti (pen / p)
+function penF(ft){if(ft.isRitmik)return num(ft.pen);if(ft.isAerobik||ft.l!=null||ft.t!=null)return num(ft.p)+num(ft.l)+num(ft.t);return num(ft.p!=null?ft.p:ft.pen)}
 function paket(o){var en=o.dil==="en",kats=o.kats||{},kat=o.kat,kd=kats[kat]||{},rit=o.brans==="ritmik";
  var al=rit?((o.tur==="alet"&&o.flash&&o.flash.kategori===kat&&o.flash.alet)||null):null;
  var S=kat?siralama({brans:o.brans,kats:kats,kat:kat,spor:o.spor,puan:o.puan,alet:al}):{satirlar:[],tamamlandi:false,girisSayisi:0};
@@ -113,7 +115,7 @@ function paket(o){var en=o.dil==="en",kats=o.kats||{},kat=o.kat,kd=kats[kat]||{}
   category:kat?{id:kat,name:katAd(kats,kat,en),final:isFinal(kats,kat),apparatus:al?aletAd(al,en):(rit&&aktifAlet?aletAd(aktifAlet,en):""),ranking:al?"apparatus":"overall",entries:S.girisSayisi,complete:S.tamamlandi}:null,
   current:ak?{name:[ak.ad,ak.soyad].filter(Boolean).join(" "),club:ak.okul||ak.kulup||"",city:ak.il||"",noc:ak.ulke||"",flag:ak.ulke?bayrakUrl(ak.ulke):null,bib:ak.bib||"",category:katAd(kats,ak._kat,en),categoryId:ak._kat,apparatus:aletAd(ak.alet||"",en),calledAt:ak.ts?new Date(ak.ts).toISOString():""}:null,
   lastScore:ft?{name:ft.adSoyad||"",club:ft.kulup||"",noc:ft.ulke||"",flag:ft.ulke?bayrakUrl(ft.ulke):null,bib:ft.bib||"",category:ft.kategori?katAd(kats,ft.kategori,en):(en?katEN(temiz(ft.aletAd)):temiz(ft.aletAd)),categoryId:ft.kategori||"",apparatus:ft.alet?aletAd(ft.alet,en):"",
-   total:f3(ft.total),d:ft.isRitmik?f3(num(ft.da)+num(ft.db)):f3(ft.d),da:ft.isRitmik?f3(ft.da):"",db:ft.isRitmik?f3(ft.db):"",a:f3(ft.a),e:f3(ft.e),pen:num(ft.isRitmik?ft.pen:(ft.p!=null?ft.p:ft.pen))>0?f3(ft.isRitmik?ft.pen:(ft.p!=null?ft.p:ft.pen)):"",rank:num(ft.sira)>0?num(ft.sira):null,inquiry:ft.itiraz||"",previousTotal:ft.oncekiTotal!=null?f3(ft.oncekiTotal):"",publishedAt:ft.timestamp?new Date(ft.timestamp).toISOString():""}:null,
+   total:f3(ft.total),d:ft.isRitmik?f3(num(ft.da)+num(ft.db)):f3(ft.d),da:ft.isRitmik?f3(ft.da):"",db:ft.isRitmik?f3(ft.db):"",a:f3(ft.a),e:f3(ft.e),pen:penF(ft)>0?f3(penF(ft)):"",penCJP:ft.isAerobik?f3(ft.p):"",penLine:ft.isAerobik?f3(ft.l):"",penTime:ft.isAerobik?f3(ft.t):"",rank:num(ft.sira)>0?num(ft.sira):null,inquiry:ft.itiraz||"",previousTotal:ft.oncekiTotal!=null?f3(ft.oncekiTotal):"",publishedAt:ft.timestamp?new Date(ft.timestamp).toISOString():""}:null,
   standings:S.satirlar.slice(0,n).map(function(s){return satir(s.giris,s,en,{ritmik:rit})}),
   upNext:(N.sonraki||[]).map(function(g,i){var r=satir(g,null,en);r.order=i+1;return r}),
   podium:S.tamamlandi?S.satirlar.filter(function(s){return s.sira&&s.sira<=3}).map(function(s){return satir(s.giris,s,en,{ritmik:rit})}):[],
