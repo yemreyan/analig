@@ -4435,6 +4435,21 @@ const DICT={
   "Şablon": "Template",
   "Elemenin sonuncusu ilk çıkar (FIG)": "Last qualifier starts first (FIG)",
   "Eleme sırası = çıkış sırası": "Qualification rank = start order",
-  "Puanlama & Hakem": "Scoring & Judging"
+  "Puanlama & Hakem": "Scoring & Judging",
+  "Bu aletin puanı kilitli — yeniden çağırmak için önce kilidi açın.": "This apparatus score is locked — unlock it first to call again.",
+  "Sıradaki sporcu": "Next gymnast",
+  "Yayındaki ekranlar": "Screens on air",
+  "Yayını kapatmadan bir ekranın ayarlarını değiştirip o ekrana gönderebilirsiniz.": "Change a screen's settings and send them to it without stopping the broadcast.",
+  "Şu an bu yarışmada yayında ekran yok. Yayın başlatılan ekranlar burada görünür.": "No screen is on air for this competition. Screens appear here once their broadcast starts.",
+  "Ekran adı (değiştirmek için yazın)": "Screen name (type to change)",
+  "yayında": "on air since",
+  "Gönderiliyor…": "Sending…",
+  "Uygulandı": "Applied",
+  "Ayarları düzenle": "Edit settings",
+  "Bu sayfada seçili kategori ve ayarları bu ekrana gönder": "Send the categories and settings selected on this page to this screen",
+  "Buradaki seçimi gönder": "Send this page's selection",
+  "sporcu/sayfa": "gymnasts/page",
+  "sn": "s",
+  "Ekrana gönder": "Send to screen"
 };
 export{DICT};
