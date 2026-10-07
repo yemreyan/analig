@@ -146,6 +146,8 @@ function HakemV2({kind,yapi,grup}){
  if(!comp||!slot)return kap(tam("link_off",__T("Geçersiz link"),__T("Bu link eksik; Paneller sayfasından yeniden alın.")));
  if(tokS==="bad")return kap(tam("lock",__T("Geçersiz anahtar"),__T("Linkin hakem anahtarı geçerli değil. Paneller sayfasından güncel linki alın.")));
  if(durum==="bekliyor")return kap(tam("hourglass_top",__T("Sporcu bekleniyor"),__T("Başhakem sporcuyu çağırdığında ekran otomatik açılır.")));
+ // Aletsiz seri (WA): FIG — alet zorluğu (DA) yok, D = DB
+ if(kind==="d"&&P==="DA"&&alet==="serbest")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("block",__T("Aletsiz seri (WA)"),__T("Bu seride alet zorluğu (DA) puanı verilmez. Sıradaki sporcu çağrılınca ekran açılır."))]}));
  const benimF=f2(kind==="ae"?mine:tek?finV??mine:mine);
  if(durum==="kilitli")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("lock",__T("Puan kilitlendi"),__T("Başhakem puanı kaydetti. Sıradaki sporcu çağrılınca ekran açılır."),{ust:has(mine)||has(finV)?e.jsx("div",{className:"sent mono",children:(kind==="ae"?"−":"")+benimF}):null})]}));
  if(durum==="bashakem")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("gavel",__T("Başhakem kararı"),__T("Notun başhakem tarafından düzeltildi; yeniden gönderilemez."),{ust:e.jsx("div",{className:"sent mono",children:"−"+f2(mine)})})]}));

@@ -1318,10 +1318,10 @@ const DICT={
  "Kurdele":"Ribbon",
  "KURDELE":"RIBBON",
  "Küçük Aerobik Dans":"Junior Aerobic Dance",
- "Küçük Erkek":"Junior Boys",
+ "Küçük Erkek":"Children Boys",
  "Küçük Grup":"Junior Group",
  "Küçük Karışık İkili":"Junior Mixed Pair",
- "Küçük Kız":"Junior Girls",
+ "Küçük Kız":"Children Girls",
  "Küçük süre ihlali":"Minor time violation",
  "Küçük Trio":"Junior Trio",
  "Küçükler Aerobik Dans":"Juniors Aerobic Dance",
@@ -1679,7 +1679,7 @@ const DICT={
  "Seçiniz...":"Select...",
  "Sekreter / Baş Hakem Paneli · A + E + D − Ceza":"Secretary / Head Judge panel · A + E + D - penalty",
  "Senkronizasyon başarısız oldu.":"Synchronisation failed.",
- "Serbest":"Free",
+ "Serbest":"Without Apparatus",
  "SERBEST":"FREE",
  "Sertifika Oluşturucu":"Certificate generator",
  "Sertifika önizleme":"Certificate preview",
@@ -4342,6 +4342,9 @@ const DICT={
 "geçersiz değer!":"invalid value!",
 "Senkronize ediliyor...":"Syncing...",
 "puan kaydedildi":"scores saved",
-"Çevrimdışı mod":"Offline mode"
+"Çevrimdışı mod":"Offline mode",
+"Aletsiz seri (WA)":"Without apparatus (WA)",
+"Bu seride alet zorluğu (DA) puanı verilmez. Sıradaki sporcu çağrılınca ekran açılır.":"No apparatus difficulty (DA) score in this routine. The screen opens when the next gymnast is called.",
+"Aletsiz seri (WA): alet zorluğu (DA) yok — D = DB (FIG)":"Without apparatus (WA): no apparatus difficulty (DA) — D = DB (FIG)"
 };
 export{DICT};

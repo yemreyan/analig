@@ -2,7 +2,7 @@
 // raKey(x): alet id'si veya adı (TR/EN) → cember|top|labut|kurdele|ip|serbest|grup_seri1|grup_seri2
 // raSvg(k,{boyut,acik}): SVG metni · raAd(k,en): okunur ad · RaIkon: React (jsx fonksiyonu e ile)
 let _n=0;
-const AD={cember:["Çember","Hoop"],top:["Top","Ball"],labut:["Labut","Clubs"],kurdele:["Kurdele","Ribbon"],ip:["İp","Rope"],serbest:["Serbest","Free Hands"],grup_seri1:["1. Seri","Routine 1"],grup_seri2:["2. Seri","Routine 2"]};
+const AD={cember:["Çember","Hoop"],top:["Top","Ball"],labut:["Labut","Clubs"],kurdele:["Kurdele","Ribbon"],ip:["İp","Rope"],serbest:["Serbest","Without Apparatus"],grup_seri1:["1. Seri","Routine 1"],grup_seri2:["2. Seri","Routine 2"]};
 export const raKey=t=>{if(!t)return"";const s=String(t).toLocaleLowerCase("tr-TR").trim();if(AD[s])return s;
  if(/grup_seri1|1\.?\s*seri|routine\s*1|seri\s*1/.test(s))return"grup_seri1";if(/grup_seri2|2\.?\s*seri|routine\s*2|seri\s*2/.test(s))return"grup_seri2";
  if(/çember|cember|hoop/.test(s))return"cember";if(/kurdele|ribbon/.test(s))return"kurdele";if(/labut|lobut|club/.test(s))return"labut";if(/^top\b|\btop$|ball/.test(s))return"top";if(/^ip\b|\bip$|rope|^i̇p/.test(s))return"ip";if(/serbest|free/.test(s))return"serbest";return""};
