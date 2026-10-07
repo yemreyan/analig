@@ -48,7 +48,7 @@ const HAZIR=[
  {id:"_izle",ad:"Gözlemci (salt okunur)",renk:"#64748B",aciklama:"Tüm sayfaları yalnız görüntüler",f:(i,a)=>a.key==="goruntule"}].map(t=>({...t,izinler:doldur(t.f),hazir:!0}));
 
 // Yarışma hakemi (geçici) hesapları — panel kodları main __hgKod ile aynı olmalı.
-const HK_PANEL={artistik:["E1","E2","E3","E4","T","L"],ritmik:["A1","A2","A3","A4","E1","E2","E3","E4","DA","DA1","DA2","DA3","DA4","DB","DB1","DB2","DB3","DB4","SJA","SJE","SJDA","SJDB","T","L1","L2"],aerobik:["A1","A2","A3","A4","E1","E2","E3","E4","D","T","L","SJ","UJ","TK","IT"],parkur:["E1","E2","E3","E4","E5","E6"],trampolin:["E1","E2","E3","E4","E5","E6"]};
+const HK_PANEL={artistik:["E1","E2","E3","E4","T","L"],ritmik:["A1","A2","A3","A4","E1","E2","E3","E4","DA","DA1","DA2","DA3","DA4","DB","DB1","DB2","DB3","DB4","SJA","SJE","SJDA","SJDB","T","L1","L2","IT"],aerobik:["A1","A2","A3","A4","E1","E2","E3","E4","D","T","L","SJ","UJ","TK","IT"],parkur:["E1","E2","E3","E4","E5","E6"],trampolin:["E1","E2","E3","E4","E5","E6"]};
 const HK_AD={T:"Zaman",L:"Çizgi",L1:"Çizgi 1",L2:"Çizgi 2",D:"Zorluk",SJ:"Başhakem (CJP)",UJ:"Üst Jüri",TK:"Teknik Kurul",IT:"İtiraz",SJA:"Üst Jüri A",SJE:"Üst Jüri E",SJDA:"Üst Jüri DA",SJDB:"Üst Jüri DB"};
 const hkEt=k=>HK_AD[k]?k+" · "+HK_AD[k]:k;
 const slug=t=>String(t||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ş/g,"s").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ö/g,"o").replace(/ç/g,"c").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
