@@ -102,7 +102,8 @@ if(typeof document!=="undefined"&&cur()==="en"){try{
   const buyuk=k===UP(k)&&/[A-ZÇĞİÖŞÜ]/.test(k);let t=k.replace(/(\d)\. ?Seri/g,"Routine $1").replace(/(\d)\. ?SERİ/g,"ROUTINE $1");KR.forEach(([r,e])=>{t=t.replace(r,buyuk?e.toUpperCase():e)});t=t.replace(/(Children|Mini) Women/g,"$1 Girls").replace(/(Children|Mini) Men/g,"$1 Boys").replace(/(CHILDREN|MINI) WOMEN/g,"$1 GIRLS").replace(/(CHILDREN|MINI) MEN/g,"$1 BOYS");return t===k?null:t};
  let UPM=null;const upm=()=>{if(UPM)return UPM;UPM=new Map;for(const k in DICT){const u=UP(k);if(u!==k&&!UPM.has(u))UPM.set(u,String(DICT[k]).toUpperCase())}return UPM};
  const TRC=/[çğıöşüÇĞİÖŞÜ]/;
- const cev=t=>{const k=t.trim();if(!k||k.length>400)return null;let v=k.length<=120?katCev(k)??undefined:undefined;if(v===undefined)v=DICT[k];
+ const NOC=/^(TUR|AZE|BUL|ITA|ISR|UKR|GEO|KAZ|UZB|ESP|GER|FRA|GBR|USA|RUS|BLR|JPN|CHN|KOR|BRA|CAN|AUS|EGY|GRE|ROU|HUN|POL|CZE|SVK|SLO|CRO|SRB|MKD|ALB|KOS|BIH|MNE|CYP|MDA|ARM|EST|LAT|LTU|FIN|SWE|NOR|DEN|NED|BEL|SUI|AUT|POR|IRL|MEX|ARG|CHI|COL|IND|IRI|INA|THA|PHI|VIE|MAS|SGP|RSA|ALG|TUN|MAR|LBA|KSA|UAE|QAT|KUW|JOR|LIB|SYR|IRQ|TKM|KGZ|TJK|MGL|PRK|TPE|HKG|NZL)$/;
+ const cev=t=>{const k=t.trim();if(!k||k.length>400||NOC.test(k))return null;let v=k.length<=120?katCev(k)??undefined:undefined;if(v===undefined)v=DICT[k];
   if(v===undefined&&/[A-ZÇĞİÖŞÜ]/.test(k)&&k===UP(k))v=upm().get(k);
   if(v===undefined){for(const[r,x]of PAT)if(r.test(k)){v=k.replace(r,x);break}}
   if(v===undefined&&TRC.test(k)){const d=k.replace(AYR,(m,g,a,y)=>g+" "+ayE(a)+(y||"")).replace(GNR,(m,p,g)=>p+" "+gnE(g));if(d!==k)v=d}
