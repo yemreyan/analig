@@ -4345,6 +4345,14 @@ const DICT={
 "Çevrimdışı mod":"Offline mode",
 "Aletsiz seri (WA)":"Without apparatus (WA)",
 "Bu seride alet zorluğu (DA) puanı verilmez. Sıradaki sporcu çağrılınca ekran açılır.":"No apparatus difficulty (DA) score in this routine. The screen opens when the next gymnast is called.",
-"Aletsiz seri (WA): alet zorluğu (DA) yok — D = DB (FIG)":"Without apparatus (WA): no apparatus difficulty (DA) — D = DB (FIG)"
+"Aletsiz seri (WA): alet zorluğu (DA) yok — D = DB (FIG)":"Without apparatus (WA): no apparatus difficulty (DA) — D = DB (FIG)",
+"Hakemler arası fark eşiği":"Judges gap threshold",
+"Puanı girilmiş alet kaldırılamaz / taşınamaz.":"An apparatus with a score cannot be removed or moved.",
+"puanlı, değiştirilemez":"scored, cannot change",
+"başka günde; tıklayınca bu güne taşınır":"on another day; click to move it to this day",
+"bu gün bu alet için rotasyon yok; eklenirse yeni rotasyon açılır":"no rotation for this apparatus on this day; adding it opens a new rotation",
+"Gün bazlı: kaydedince çıkış listesine, puanlama sırasına ve hakem ekranlarına anında yansır.":"Day-based: when saved, applies instantly to the start list, scoring order and judge screens.",
+"Çıkış listesi ve puanlama sırası anında güncellenir (eklenen alet o günün o alet rotasyonunun sonuna eklenir).":"The start list and scoring order are updated instantly (an added apparatus goes to the end of that day's rotation for it).",
+"Yeni rotasyon açılacak:":"New rotation will be opened:"
 };
 export{DICT};
