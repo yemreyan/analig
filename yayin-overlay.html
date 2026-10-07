@@ -35,6 +35,11 @@ body.ov{background:transparent!important;overflow:hidden}
 .logo{width:calc(160*var(--s));background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(8*var(--s));padding:calc(10*var(--s)) 0;border-radius:calc(14*var(--s)) 0 0 calc(14*var(--s))}
 .logo img{width:62%;height:auto}
 .logo img.gx{width:86%}
+/* etkinlik logosu (ör. Balkan Cimnastik Birliği) — TCF logosunun solunda ayrı beyaz hücre */
+.evlogo{display:none;width:calc(170*var(--s));background:#fff;align-items:center;justify-content:center;padding:calc(12*var(--s));border-radius:calc(14*var(--s)) 0 0 calc(14*var(--s));border-right:calc(2*var(--s)) solid #e2e8f0}
+.evlogo img{max-width:100%;max-height:calc(130*var(--s));object-fit:contain}
+.lt.ev .evlogo{display:flex}
+.lt.ev .logo{border-radius:0}
 .body{background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--txt);padding:calc(16*var(--s)) calc(34*var(--s)) calc(18*var(--s)) calc(30*var(--s));
  border-left:calc(8*var(--s)) solid var(--red);min-width:calc(720*var(--s));max-width:calc(1180*var(--s));display:flex;flex-direction:column;justify-content:center}
 .cat{font-size:calc(22*var(--s));font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:calc(4*var(--s));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -163,6 +168,7 @@ function overlay(){
  const olcek=Math.min(200,Math.max(40,parseInt(Q.get("olcek"))||100))/100;
 
  document.getElementById("app").innerHTML=`<div class="stage pos-${pos}" style="--s:calc(100vw/1920*${olcek})"><div class="lt" id="lt">
+  <div class="evlogo"><img id="evl" alt=""></div>
   <div class="logo"><img src="/logo.png" alt=""><img class="gx" src="/brand/gymnaxis-logo.svg" alt="Gymexa Score"></div>
   <div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
   <div class="score"><div class="slbl">${L.puan}</div><div class="stot" id="tot"></div><div class="rank" id="rk"></div></div></div></div>`;
@@ -216,6 +222,9 @@ function overlay(){
 
  const db=getDatabase(initializeApp(firebaseConfig));
  onValue(ref(db,`${base}/${comp}/kategoriler`),s=>{kats=s.val()||{}});
+ // etkinlik logosu (yarışma formunda yüklenir) — yoksa yalnız TCF + Gymexa
+ const evl=$("evl");evl.onerror=()=>lt.classList.remove("ev");
+ onValue(ref(db,`${base}/${comp}/etkinlikLogo`),s=>{const u=s.val();if(typeof u==="string"&&u){evl.src=u;lt.classList.add("ev")}else{lt.classList.remove("ev");evl.removeAttribute("src")}});
 
  // aktifSporcu: düz (aerobik/ritmik) veya alet bazında iç içe (artistik). En yeni çağrı gösterilir.
  const imza={},gorulme={};let ilk=!0;
@@ -254,6 +263,7 @@ function demoCalistir(isimGoster,puanGoster){
  const isim=a=>{isimGoster(a);document.getElementById("cat").textContent=UP(kat[a._kat])};
  const adim=[()=>isim(A[0]),()=>puanGoster(P),()=>isim(A[1])];let i=0;
  const tur=()=>{adim[i%adim.length]();i++};tur();setInterval(tur,6000);
+ const ev=Q.get("evlogo");if(ev&&/^(\/|https:|data:image\/)/.test(ev)){const im=document.getElementById("evl");im.src=ev;document.getElementById("lt").classList.add("ev")} // önizleme/test
 }
 
 /* =========================== KURULUM =========================== */
