@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{YAPI_VARS,yapiNorm,dSlotlari}from"./RitmikHakemV2-Hv01a2b3Cb2.js";import{raAd,raImg}from"./ritmikAlet-Ra01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update,l as get}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{YAPI_VARS,yapiNorm,dSlotlari}from"./RitmikHakemV2-Hv01a2b3Cb2.js";import{raAd,raImg}from"./ritmikAlet-Ra01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK PANELLER (aerobik Paneller sayfasıyla aynı yapı; ritmik DA/DB/A/E/T/L/SJ panelleri)
 //  <yarışma>/panelGruplari/<gid> : {ad, tipler{A,E,D,T,L,SJ}, adet{A,E}, kategoriler{kat:true}, paneller{SLOT:{ozel}}}
@@ -66,6 +66,15 @@ function YapiEditor({y0,onSave,onCancel,busy,tipler}){const[y,setY]=R.useState((
   e.jsxs("div",{className:"pyx-foot",children:[e.jsx("button",{type:"button",style:{padding:".5rem .8rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",fontWeight:800,cursor:"pointer"},onClick:()=>setY(yapiNorm(YAPI_VARS)),children:__T("Varsayılanlar")}),e.jsx("button",{type:"button",style:{padding:".5rem .8rem",borderRadius:10,border:"1px solid #E5E7EB",background:"#fff",fontWeight:800,cursor:"pointer"},onClick:onCancel,children:__T("Vazgeç")}),
    e.jsx("button",{type:"button",disabled:busy,style:{padding:".55rem 1.1rem",borderRadius:10,border:0,color:"#fff",fontWeight:900,cursor:"pointer",background:"linear-gradient(135deg,#EC4899,#8B5CF6)"},onClick:()=>onSave(y),children:__T("Yapıyı kaydet")})]})]})}
 
+// ---- Hakem atama (2026-10-08): havuz = kök referees (disiplin ritmik); atama panelGruplari/<gid>/hakemler/<SLOT>, yarışma düzeyi hakemAtama/<ROL> ----
+function HakemSec({val,onSec,havuz,yukle,dis,ph}){const[q,setQ]=R.useState(""),[ac,setAc]=R.useState(!1);const I=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem",...st},children:n});
+ if(val&&val.ad)return e.jsxs("span",{style:{display:"inline-flex",alignItems:"center",gap:".35rem",padding:".22rem .35rem .22rem .55rem",borderRadius:999,background:"#EEF2FF",border:"1px solid #C7D2FE",fontSize:".78rem",fontWeight:800,color:"#3730A3",maxWidth:"100%"},children:[I("person"),e.jsx("span",{style:{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},children:val.ad}),val.ulke||val.il?e.jsx("span",{style:{color:"#6366F1",fontWeight:700},children:"· "+(val.ulke||val.il)}):null,e.jsx("button",{type:"button",disabled:dis,title:__T("Atamayı kaldır"),onClick:()=>onSec(null),style:{border:0,background:"transparent",cursor:"pointer",color:"#6366F1",display:"grid",padding:0},children:I("close")})]});
+ const n=t=>String(t||"").toLocaleLowerCase("tr-TR").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ı/g,"i"),qq=n(q.trim()),L=qq.length>=2&&havuz?havuz.filter(h=>n(h.adSoyad).includes(qq)||n(h.ulke)===qq||n(h.il).includes(qq)).slice(0,8):[];
+ return e.jsxs("span",{style:{position:"relative",display:"inline-block"},children:[e.jsx("input",{value:q,disabled:dis,placeholder:ph||__T("Hakem ata…"),onFocus:()=>{setAc(!0);yukle()},onBlur:()=>setTimeout(()=>setAc(!1),180),onChange:ev=>{setQ(ev.target.value);setAc(!0)},style:{width:200,padding:".3rem .6rem",borderRadius:999,border:"1px dashed #A5B4FC",background:"#F8FAFF",fontWeight:700,fontSize:".78rem",fontFamily:"inherit"}}),
+  ac&&qq.length>=2?e.jsxs("div",{style:{position:"absolute",zIndex:30,top:"110%",left:0,minWidth:300,background:"#fff",border:"1px solid #E2E8F0",borderRadius:12,boxShadow:"0 12px 32px rgba(15,23,42,.18)",padding:4},children:[havuz===null?e.jsx("div",{style:{padding:".5rem",fontSize:".78rem",color:"#64748B"},children:__T("Hakem listesi yükleniyor…")}):havuz&&!L.length?e.jsx("div",{style:{padding:".5rem",fontSize:".78rem",color:"#64748B"},children:__T("Havuzda eşleşen hakem yok.")}):null,
+   ...L.map(h=>e.jsxs("button",{type:"button",onMouseDown:ev=>ev.preventDefault(),onClick:()=>{onSec({refId:h.id,ad:h.adSoyad,ulke:h.ulke||"",il:h.il||"",brove:h.brove||""});setQ("");setAc(!1)},style:{display:"flex",width:"100%",gap:".5rem",alignItems:"center",border:0,background:"transparent",padding:".4rem .5rem",borderRadius:8,cursor:"pointer",textAlign:"left",fontFamily:"inherit"},children:[e.jsx("b",{style:{fontSize:".82rem",flex:1},children:h.adSoyad}),e.jsx("span",{style:{fontSize:".72rem",color:"#64748B",fontWeight:700},children:[h.ulke,h.il,h.brove].filter(Boolean).join(" · ")})]},h.id)),
+   e.jsxs("button",{type:"button",onMouseDown:ev=>ev.preventDefault(),onClick:()=>{onSec({yeni:!0,ad:q.trim()});setQ("");setAc(!1)},style:{display:"flex",width:"100%",gap:".4rem",alignItems:"center",border:0,borderTop:"1px solid #F1F5F9",background:"transparent",padding:".45rem .5rem",cursor:"pointer",fontFamily:"inherit",color:"#16A34A",fontWeight:800,fontSize:".78rem"},children:[I("person_add"),__T("Havuza yeni hakem ekle:")+" "+q.trim()]})]}):null]})}
+
 function Paneller(){
  const{toast}=usToast();usDisc();const[bolSay,setBolSay]=R.useState(2);const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[C,setC]=R.useState(null),[busy,setBusy]=R.useState(!1),[form,setForm]=R.useState(null),[acik,setAcik]=R.useState({}),[qr,setQr]=R.useState(null),[yac,setYac]=R.useState(null);
@@ -73,7 +82,7 @@ function Paneller(){
  R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.isim&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim,t:c.baslangicTarihi||""})});setComps(o)});return()=>u()},[]);
  // seçili yarışmanın yalnızca gereken düğümleri dinlenir
  R.useEffect(()=>{if(!comp){setC(null);return}const st={};const set=(k,v)=>{st[k]=v;setC({...st})};
-  const ul=[["isim","isim"],["kategoriler","kategoriler"],["panelGruplari","panelGruplari"],["hakemLinkleri","hakemLinkleri"],["epanelToken","epanelToken"],["aktifSporcu","aktifSporcu"]].map(([k,p])=>onValue(ref(db,`${BASE}/${comp}/${p}`),s=>set(k,s.val())));
+  const ul=[["isim","isim"],["kategoriler","kategoriler"],["panelGruplari","panelGruplari"],["hakemLinkleri","hakemLinkleri"],["epanelToken","epanelToken"],["aktifSporcu","aktifSporcu"],["itirazYetki","itirazYetki"],["hakemAtama","hakemAtama"]].map(([k,p])=>onValue(ref(db,`${BASE}/${comp}/${p}`),s=>set(k,s.val())));
   return()=>ul.forEach(u=>u())},[comp]);
  R.useEffect(()=>{if(comp&&C&&"isim"in C&&!C.isim){toast(__T("Seçili yarışma silinmiş; seçim kaldırıldı."),"warning");setComp("");setForm(null)}},[comp,C?.isim]);
  const cats=C?.kategoriler||{},gruplar=C?.panelGruplari||{},linkler=C?.hakemLinkleri||{},token=C?.epanelToken||"";
@@ -127,13 +136,13 @@ function Paneller(){
   await yaz(upd,__T("Panel grubu silindi."))};
 
  // kategori ekle / çıkar (anında, canlı)
- const grupKatTik=(gid,k)=>{const g=gruplar[gid],on=!g?.kategoriler?.[k],upd={[`panelGruplari/${gid}/kategoriler/${k}`]:on?!0:null};if(!on)upd[`panelGruplari/${gid}/aletler/${k}`]=null;
+ const grupKatTik=(gid,k)=>{const g=gruplar[gid],on=!g?.kategoriler?.[k],upd={[`panelGruplari/${gid}/kategoriler/${k}`]:on?!0:null};on&&adlariYaz(g,[k],upd,"");if(!on)upd[`panelGruplari/${gid}/aletler/${k}`]=null;
   slotlar(g).forEach(s=>{if(!g.paneller?.[s.slot]?.ozel){upd[`hakemLinkleri/${pidOf(gid,s.slot)}/kategoriler/${k}`]=on?!0:null;if(!on)upd[`hakemLinkleri/${pidOf(gid,s.slot)}/aletler/${k}`]=null}});
   yaz(upd,(on?"＋ ":"－ ")+katAd(k)+" · "+g.ad)};
  const panelKatTik=(gid,s,k)=>{const pid=pidOf(gid,s.slot),on=!linkler[pid]?.kategoriler?.[k];
   yaz({[`hakemLinkleri/${pid}/kategoriler/${k}`]:on?!0:null,...(on?{}:{[`hakemLinkleri/${pid}/aletler/${k}`]:null})},(on?"＋ ":"－ ")+katAd(k)+" · "+s.slot)};
  // alet yetkisi: grup (özel listesi olmayan tüm panellere) ve panel (özel)
- const grupAlTik=(gid,k,al)=>{const g=gruplar[gid],m=alTikla(g.aletler,k,al);if(m===void 0)return;const upd={[`panelGruplari/${gid}/aletler/${k}`]:m};
+ const grupAlTik=(gid,k,al)=>{const g=gruplar[gid],m=alTikla(g.aletler,k,al);if(m===void 0)return;const upd={[`panelGruplari/${gid}/aletler/${k}`]:m};adlariYaz({...g,aletler:{...(g.aletler||{}),[k]:m}},[k],upd,"");
   slotlar(g).forEach(s=>{if(!g.paneller?.[s.slot]?.ozel)upd[`hakemLinkleri/${pidOf(gid,s.slot)}/aletler/${k}`]=m});yaz(upd,katAd(k)+" · "+__T("alet yetkisi güncellendi")+" · "+g.ad)};
  const panelAlTik=(gid,s,k,al)=>{const pid=pidOf(gid,s.slot),m=alTikla(linkler[pid]?.aletler,k,al);if(m===void 0)return;yaz({[`hakemLinkleri/${pid}/aletler/${k}`]:m},katAd(k)+" · "+__T("alet yetkisi güncellendi")+" · "+s.slot)};
  const bolmeDegis=(gid,s,n)=>yaz({[`panelGruplari/${gid}/paneller/${s.slot}/bolme`]:n||null},s.slot+" — "+(n?__T("bölünmüş ekran")+" ×"+n:__T("tek ekran")));
@@ -171,6 +180,33 @@ function Paneller(){
    e.jsx("span",{style:{minWidth:120,fontSize:".78rem",fontWeight:800,color:"#334155"},children:katAd(k)}),
    ...katAletleri(k).map(al=>{const on=alIzinli(m,k,al);return e.jsxs("span",{style:{...S.chip(on,renk),display:"inline-flex",alignItems:"center",gap:".25rem",opacity:devre?.45:1,pointerEvents:devre?"none":"auto",textDecoration:on?"none":"line-through"},onClick:()=>!busy&&onTik(k,al),children:[raImg(al)?e.jsx("img",{src:raImg(al),alt:"",style:{width:16,height:16,objectFit:"contain",opacity:on?1:.4}}):null,raAd(al,_en())]},al)}),
    e.jsx("span",{style:{fontSize:".7rem",fontWeight:800,color:kis?"#7C3AED":"#94A3B8"},children:kis?__T("yalnız seçili aletler"):__T("tüm aletler")})]},k)})});
+ // ---- hakem atama ----
+ const[havuz,setHavuz]=R.useState(null),_hy=R.useRef(!1);
+ const havuzYukle=()=>{if(_hy.current)return;_hy.current=!0;get(ref(db,"referees")).then(sn=>{const v=sn.val()||{};setHavuz(Object.entries(v).filter(([,h])=>h&&h.disiplin==="ritmik"&&h.adSoyad).map(([id,h])=>({id,adSoyad:h.adSoyad,ulke:h.ulke||"",il:h.il||"",brove:h.brove||""})).sort((a,b)=>a.adSoyad.localeCompare(b.adSoyad,"tr")))}).catch(()=>{_hy.current=!1;setHavuz([])})};
+ R.useEffect(()=>{comp&&havuzYukle()},[comp]);// eslint-disable-line
+ const HKEY={T:"zaman",L1:"cizgi1",L2:"cizgi2",BH:"bashakem"},hkey=sl=>HKEY[sl]||String(sl).toLowerCase(),FIGPOZ=new Set(["DA","DA1","DA2","DA3","DA4","DB","DB1","DB2","DB3","DB4","A1","A2","A3","A4","E1","E2","E3","E4"]);
+ const tumAl=k=>{const a=cats[k]?.aletler;return(Array.isArray(a)?a:a&&typeof a==="object"?Object.keys(a).filter(x=>a[x]):[]).map(z=>typeof z==="object"?z.id||z.value:z).filter(Boolean)};
+ const hObj=h=>h?{name:h.ad,refId:h.refId||null,ulke:h.ulke||null}:null;
+ // grubun hakem adları hakem ekranlarının okuduğu yere: hakemler/<kat>/<alet>/<koltuk> (grubun kategori + alet yetkisine göre)
+ const adlariYaz=(g,ks,upd,pre,yalniz)=>{Object.entries(g?.hakemler||{}).forEach(([sl,h])=>{if(yalniz&&sl!==yalniz)return;ks.forEach(k=>tumAl(k).forEach(al=>{alIzinli(g.aletler,k,al)&&(upd[`${pre}hakemler/${k}/${al}/${hkey(sl)}`]=hObj(h))}))})};
+ const rolAdi=(gid,sl)=>gid?(gruplar[gid]?.ad||"")+" · "+(sl==="BH"?__T("Başhakem"):sl):sl==="ITIRAZ"?__T("İtiraz hakemi"):sl;
+ const hakemAta=async(gid,sl,val)=>{if(!C||!C.isim){toast(__T("Bu yarışma artık mevcut değil; değişiklik yazılmadı."),"error");return}
+  const P=`${BASE}/${comp}/`,U={},g=gid?gruplar[gid]:null,onc=(gid?g?.hakemler?.[sl]:C?.hakemAtama?.[sl])||null;let v=val,yeniId=null;
+  if(v&&v.yeni){const ad=String(v.ad||"").trim().toLocaleUpperCase("tr-TR");if(!ad)return;if(!await window.__gxConfirm(__T("Hakem havuzuna eklensin mi?")+"\n\n"+ad))return;yeniId="rf"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);U[`referees/${yeniId}`]={adSoyad:ad,disiplin:"ritmik",brans:"Ritmik",createdAt:new Date().toISOString(),importSource:"Paneller",gorevSayisi:0};v={refId:yeniId,ad,ulke:"",il:""};setHavuz(h=>h?[...h,{id:yeniId,adSoyad:ad,ulke:"",il:"",brove:""}]:h)}
+  const kayit=v?{refId:v.refId||null,ad:v.ad,ulke:v.ulke||null,il:v.il||null,brove:v.brove||null}:null;
+  if(gid){U[`${P}panelGruplari/${gid}/hakemler/${sl}`]=kayit;adlariYaz({...g,hakemler:{[sl]:kayit}},kListe(g.kategoriler),U,P,sl);if(!kayit)kListe(g.kategoriler).forEach(k=>tumAl(k).forEach(al=>{alIzinli(g.aletler,k,al)&&(U[`${P}hakemler/${k}/${al}/${hkey(sl)}`]=null)}));
+   if(FIGPOZ.has(sl))U[`${P}hakemKarnesi/atama/${sl}`]=kayit?{ad:kayit.ad,kulup:kayit.ulke||kayit.il||""}:null}
+  else U[`${P}hakemAtama/${sl}`]=kayit;
+  // görev geçmişi: yarışma başına tek kayıt (oto_<yarışma>), rol = atandığı koltuklar
+  const gk="oto_"+String(comp).replace(/[.#$[\]/]/g,"_");
+  const roller=rid=>{const o=[];Object.entries(gruplar).forEach(([g2,gg])=>Object.entries(gg?.hakemler||{}).forEach(([s2,h])=>{h&&h.refId===rid&&!(g2===gid&&s2===sl)&&o.push(rolAdi(g2,s2))}));Object.entries(C?.hakemAtama||{}).forEach(([s2,h])=>{h&&h.refId===rid&&!(!gid&&s2===sl)&&o.push(rolAdi(null,s2))});return o};
+  const gorev=async(rid,ekRol)=>{const r=(await get(ref(db,`referees/${rid}`))).val()||(rid===yeniId?{}:null);if(!r)return;const rl=[...roller(rid),...(ekRol?[ekRol]:[])],var_=r.gecmisYarismalar&&r.gecmisYarismalar[gk];
+   if(rl.length){U[`referees/${rid}/gecmisYarismalar/${gk}`]={compName:C.isim,compId:comp,date:comps[comp]?.t||"",role:rl.join(", "),addedAt:var_?.addedAt||new Date().toISOString(),oto:!0};var_||(U[`referees/${rid}/gorevSayisi`]=(+r.gorevSayisi||0)+1)}
+   else if(var_){U[`referees/${rid}/gecmisYarismalar/${gk}`]=null;U[`referees/${rid}/gorevSayisi`]=Math.max(0,(+r.gorevSayisi||0)-1)}};
+  const ra=rolAdi(gid,sl);
+  setBusy(!0);try{if(onc&&onc.refId&&(!kayit||onc.refId!==kayit.refId))await gorev(onc.refId,null);if(kayit&&kayit.refId&&(!onc||onc.refId!==kayit.refId))await gorev(kayit.refId,ra);
+   await update(ref(db),U);try{logAction("panel_group_update",`[Ritmik] Hakem ataması: ${ra} → ${kayit?kayit.ad:"(kaldırıldı)"}`,{user:_un,competitionId:comp,discipline:"ritmik",data:{koltuk:sl,grup:gid||null,hakem:kayit,onceki:onc}})}catch{}toast(ra+" · "+(kayit?kayit.ad:__T("atama kaldırıldı")),"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
+ const hSec=(gid,sl)=>e.jsx(HakemSec,{val:gid?gruplar[gid]?.hakemler?.[sl]:C?.hakemAtama?.[sl],onSec:v=>hakemAta(gid,sl,v),havuz,yukle:havuzYukle,dis:busy});
  const grupKarti=gid=>{const g=gruplar[gid],ss=slotlar(g),op=acik[gid]!==!1,gk=kListe(g.kategoriler),ak=aktifKat(gk),eksik=ss.filter(s=>!linkler[pidOf(gid,s.slot)]);
   return e.jsxs("div",{style:{...S.card,borderColor:"#C7D2FE"},children:[
    e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[
@@ -193,12 +229,13 @@ function Paneller(){
      katChips(g.kategoriler,k=>grupKatTik(gid,k),"#22c55e"),
      gk.some(k=>katAletleri(k).length)?e.jsxs("div",{style:{marginTop:".7rem",paddingTop:".6rem",borderTop:"1px dashed #E2E8F0"},children:[e.jsxs("div",{style:{...S.lbl,marginBottom:".45rem"},children:[__T("Alet yetkisi")," ",e.jsx("span",{style:{textTransform:"none",letterSpacing:0,fontWeight:600},children:__T("(hakemler yalnız işaretli aletlerin çağrılarını görür; hepsi seçiliyse tüm aletler)")})]}),
       alSatir(gk,g.aletler,(k,al)=>grupAlTik(gid,k,al),"#7c3aed")]}):null]}),
+    e.jsxs("div",{style:{marginTop:".8rem",display:"grid",gridTemplateColumns:"64px 1fr",gap:".6rem",alignItems:"center",padding:".5rem 0",borderBottom:"1px solid #EEF2F7"},children:[e.jsx("div",{style:S.slot("#DB2777"),children:"BH"}),e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[e.jsx("b",{style:{fontSize:".86rem"},children:__T("Başhakem")}),hSec(gid,"BH"),e.jsx("span",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:600},children:__T("Puanlama ekranını kullanan başhakem (raporlarda ve hakem karnesinde görünür)")})]})]}),
     TIP_SIRA.filter(t=>g.tipler?.[t]).map(t=>e.jsxs("div",{style:{marginTop:".8rem"},children:[
      e.jsx("div",{style:{...S.lbl,color:TIP[t].renk,marginBottom:".35rem"},children:__T(TIP[t].ad)}),
      ss.filter(s=>s.tip===t).map(s=>{const pid=pidOf(gid,s.slot),rec=linkler[pid],oz=!!g.paneller?.[s.slot]?.ozel,pk=kListe(rec?.kategoriler),u=linkS(gid,s),bn=sjBolme(g,s),alOz=rec?.aletler?Object.entries(rec.aletler).filter(([,m])=>m).map(([k,m])=>katAd(k)+": "+Object.keys(m).filter(a=>m[a]).map(a=>raAd(a,_en())).join("/")).join(" · "):"";
       return e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"64px 1fr auto",gap:".6rem",alignItems:"start",padding:".5rem 0",borderBottom:"1px solid #EEF2F7"},children:[
        e.jsx("div",{style:S.slot(TIP[t].renk),children:s.slot}),
-       e.jsxs("div",{style:{minWidth:0},children:[
+       e.jsxs("div",{style:{minWidth:0},children:[e.jsx("div",{style:{marginBottom:".35rem"},children:hSec(gid,s.slot)}),
         e.jsxs("div",{style:{display:"flex",gap:".5rem",alignItems:"center",flexWrap:"wrap",marginBottom:oz?".4rem":0},children:[
          e.jsxs("label",{style:{display:"flex",alignItems:"center",gap:".35rem",fontSize:".76rem",fontWeight:700,color:oz?"#B45309":"#6B7280",cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:oz,disabled:busy,onChange:ev=>ozelDegis(gid,s,ev.target.checked)}),__T("Özel kategori listesi")]}),
          !oz?e.jsx("span",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:600},children:pk.length?pk.map(katAd).join(", "):__T("— kategori yok —")}):null,
@@ -259,7 +296,12 @@ function Paneller(){
         e.jsx("a",{href:u,target:"_blank",rel:"noreferrer",style:{flex:1,minWidth:0,fontWeight:800,fontSize:".86rem",color:"#1A1D26",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},title:u,children:t}),
         e.jsx("button",{type:"button",style:ib,title:__T("Linki kopyala"),onClick:()=>{kopyala(u)},children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"content_copy"})}),
         e.jsx("button",{type:"button",style:ib,title:__T("QR göster"),onClick:()=>qrGoster(t,u),children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"qr_code_2"})}),
-        e.jsx("a",{href:u,target:"_blank",rel:"noreferrer",style:{...ib,textDecoration:"none"},title:__T("Aç"),children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"open_in_new"})})]},t))})]})})(),
+        e.jsx("a",{href:u,target:"_blank",rel:"noreferrer",style:{...ib,textDecoration:"none"},title:__T("Aç"),children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:"open_in_new"})})]},t))}),
+      (()=>{const YT={kayit:!0,karar:!1,video:!1,detay:!1,...(C?.itirazYetki||{})},YL=[["kayit","post_add",__T("İtiraz kaydedebilir"),__T("Yayındaki puana DA/DB itirazı ve diğer itirazları kaydeder")],["karar","balance",__T("Karar verebilir"),__T("Kabul / red / geri çekildi ve yeni not girişi")],["video","smart_display",__T("Videoyu görebilir"),__T("Rutin kamera kaydını izler")],["detay","analytics",__T("Puan ayrıntılarını görebilir"),__T("Hakem notları, SJ, panel verisi ve kabulde puan değişimi")]];
+       return e.jsxs("div",{style:{marginTop:".8rem",padding:".7rem .8rem",borderRadius:12,background:"#fff",border:"1px solid #FECACA"},children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".45rem",marginBottom:".5rem"},children:[e.jsx("span",{className:"material-icons-round",style:{color:"#DC2626",fontSize:"1.1rem"},children:"gavel"}),e.jsx("b",{style:{fontSize:".88rem"},children:__T("İtiraz Paneli yetkileri")}),e.jsx("span",{style:{fontSize:".74rem",color:"#6B7280",fontWeight:600},children:__T("İtiraz hakeminin ekranında neler yapılabilsin? Kapalı olanlar yalnız başhakem ekranında yapılır.")})]}),
+        e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap",marginBottom:".55rem"},children:[e.jsx("b",{style:{fontSize:".82rem"},children:__T("İtiraz hakemi")}),hSec(null,"ITIRAZ")]}),
+        e.jsx("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))",gap:".45rem"},children:YL.map(([k,ic,t,ds])=>e.jsxs("label",{style:{display:"flex",alignItems:"flex-start",gap:".5rem",padding:".5rem .6rem",borderRadius:10,cursor:"pointer",border:"1px solid "+(YT[k]?"#86EFAC":"#E5E7EB"),background:YT[k]?"#F0FDF4":"#F8FAFC"},children:[e.jsx("input",{type:"checkbox",checked:!!YT[k],disabled:busy,onChange:ev=>yaz({[`itirazYetki/${k}`]:ev.target.checked},__T("İtiraz Paneli yetkileri güncellendi")),style:{marginTop:2,width:16,height:16,accentColor:"#16A34A"}}),
+         e.jsxs("span",{children:[e.jsxs("b",{style:{display:"flex",alignItems:"center",gap:".3rem",fontSize:".82rem"},children:[e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem",color:YT[k]?"#16A34A":"#94A3B8"},children:ic}),t,e.jsx("span",{style:{fontSize:".66rem",fontWeight:900,color:YT[k]?"#15803D":"#94A3B8"},children:YT[k]?__T("AÇIK"):__T("KAPALI")})]}),e.jsx("small",{style:{display:"block",fontSize:".72rem",color:"#6B7280",fontWeight:600,marginTop:2},children:ds})]})]},k))})]})})()]})})(),
     !token?e.jsx("div",{style:{...S.card,borderColor:"#f59e0b",color:"#B45309",fontWeight:700,fontSize:".84rem"},children:__T("Bu yarışmanın hakem anahtarı (epanelToken) yok; linkler anahtarsız üretilir.")}):null,
     form?formKarti():null,
     gl.length?gl.map(grupKarti):!form?e.jsx("div",{style:{...S.card,textAlign:"center",color:"#6B7280",fontWeight:700},children:__T("Henüz panel grubu yok.")}):null

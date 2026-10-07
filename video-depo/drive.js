@@ -21,12 +21,21 @@
     for (var i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
     return btoa(s);
   }
-  async function dogrudan(url, blob, mime) {
-    var r = await fetch(url, { method: 'PUT', headers: { 'Content-Type': mime }, body: blob });
-    if (!r.ok) throw new Error('Drive yükleme ' + r.status);
-    var j = await r.json();
-    if (!j || !j.id) throw new Error('Drive dosya kimliği yok');
-    return j.id;
+  // XHR: yükleme ilerlemesi (ilerle(0..1)) raporlanır — Video Arşivi'nde "yükleniyor %" için
+  function dogrudan(url, blob, mime, ilerle) {
+    return new Promise(function (res, rej) {
+      var x = new XMLHttpRequest();
+      x.open('PUT', url);
+      x.setRequestHeader('Content-Type', mime);
+      if (ilerle && x.upload) x.upload.onprogress = function (e) { if (e.lengthComputable) ilerle(e.loaded / e.total); };
+      x.onload = function () {
+        if (x.status < 200 || x.status >= 300) return rej(new Error('Drive yükleme ' + x.status));
+        try { var j = JSON.parse(x.responseText); if (!j || !j.id) return rej(new Error('Drive dosya kimliği yok')); res(j.id); }
+        catch (e) { rej(new Error('Drive yanıtı okunamadı')); }
+      };
+      x.onerror = function () { rej(new Error('ağ hatası')); };
+      x.send(blob);
+    });
   }
   async function parcali(svc, url, blob, mime, ilerle) {
     var PARCA = 16 * 256 * 1024; // 4 MB (256 KB katı olmalı)
@@ -47,7 +56,7 @@
     var id = null;
     try {
       var s = await servis(a.drive, Object.assign({ origin: location.origin }, temel));
-      id = await dogrudan(s.url, blob, mime);
+      id = await dogrudan(s.url, blob, mime, ilerle);
     } catch (e) {
       if (e && /geçersiz|bulunamadı|izin/.test(e.message || '')) throw e;
       var s2 = await servis(a.drive, temel);
