@@ -29,7 +29,8 @@ const KATALOG=[
   {key:"finals",label:"Finaller ve Sonuçlar",icon:"military_tech",ekran:["Finaller / Sonuçlar","Kulüp Takım Puanı"],actions:[A("goruntule","Görüntüle"),A("duzenle","Ceza ekle / sil")]},
   {key:"yayin",label:"Yayın Overlay ve TV Verisi",icon:"cast",ekran:["Yayın Overlay","Yayın profilleri","TV veri linki"],actions:[A("goruntule","Görüntüle"),A("duzenle","Profil düzenle")]},
   {key:"certificates",label:"Sertifikalar",icon:"workspace_premium",ekran:["Sertifikalar"],actions:[A("goruntule","Görüntüle"),A("olustur","PDF oluştur")]},
-  {key:"official_report",label:"Yarışma Raporu",icon:"description",ekran:["Yarışma Raporu"],actions:[A("goruntule","Görüntüle"),A("duzenle","Düzenle"),A("sil","Sil")]}]},
+  {key:"official_report",label:"Yarışma Raporu",icon:"description",ekran:["Yarışma Raporu"],actions:[A("goruntule","Görüntüle"),A("duzenle","Düzenle"),A("sil","Sil")]},
+  {key:"raporlar",label:"Raporlar",icon:"summarize",ekran:["Raporlar (resmi sonuçlar, madalya tablosu)"],actions:[A("goruntule","Görüntüle"),A("indir","PDF / Excel indir")]}]},
  {grup:"Rapor ve Denetim",ic:"fact_check",renk:"#0891B2",izinler:[
   {key:"analytics",label:"Raporlar",icon:"analytics",ekran:["Raporlar","Hakem Fark Analizi"],actions:[A("goruntule","Görüntüle")]},
   {key:"videolar",label:"Video Arşivi",icon:"video_library",ekran:["Video Arşivi","Kamera yükleme durumu"],actions:[A("goruntule","Görüntüle"),A("sil","Sil")]},
@@ -46,9 +47,9 @@ const say=x=>{let g=0,t=0;IZ.forEach(i=>i.actions.forEach(a=>{t++;x?.[i.key]?.[a
 const SADECE=(...ks)=>(i,a)=>ks.includes(i.key+".*")||ks.includes(i.key+"."+a.key)||a.key==="goruntule"&&ks.some(k=>k===i.key||k.startsWith(i.key+"."));
 const HAZIR=[
  {id:"_yonetici",ad:"Branş Yöneticisi",renk:"#4F46E5",aciklama:"Tüm sayfa ve işlemler (rol yönetimi hariç)",f:()=>!0},
- {id:"_bashakem",ad:"Başhakem",renk:"#DB2777",aciklama:"Puanlama, paneller, sonuçlar ve hakem denetimi",f:SADECE("competitions","athletes","scoring.*","links","paneller.*","finaller.*","videolar","sporcu_aletleri","criteria","referees","scoreboard","finals.*","start_order","start_order.pdf","audit","official_report","official_report.duzenle","certificates")},
+ {id:"_bashakem",ad:"Başhakem",renk:"#DB2777",aciklama:"Puanlama, paneller, sonuçlar ve hakem denetimi",f:SADECE("competitions","athletes","scoring.*","links","paneller.*","finaller.*","videolar","sporcu_aletleri","criteria","referees","scoreboard","finals.*","start_order","start_order.pdf","audit","official_report","official_report.duzenle","raporlar.*","certificates")},
  {id:"_puanlama",ad:"Puanlama Görevlisi",renk:"#E11D48",aciklama:"Puan girişi, paneller ve canlı skor",f:SADECE("scoring.*","links","paneller","scoreboard","finals","athletes","start_order")},
- {id:"_sekreterya",ad:"Sekreterya / Kayıt",renk:"#059669",aciklama:"Başvuru, sporcu, antrenör, program, çıkış sırası, sertifika",f:SADECE("competitions","kategoriler","applications.*","athletes.*","sporcu_aletleri.*","coaches.*","start_order.*","schedule.*","certificates.*","announcements")},
+ {id:"_sekreterya",ad:"Sekreterya / Kayıt",renk:"#059669",aciklama:"Başvuru, sporcu, antrenör, program, çıkış sırası, sertifika",f:SADECE("competitions","kategoriler","raporlar.*","applications.*","athletes.*","sporcu_aletleri.*","coaches.*","start_order.*","schedule.*","certificates.*","announcements")},
  {id:"_yayin",ad:"Yayın / Spiker",renk:"#D97706",aciklama:"Canlı skor, sonuçlar, yayın overlay, program",f:SADECE("scoreboard","finals","yayin.*","videolar","start_order","schedule","links")},
  {id:"_il",ad:"İl Temsilcisi",renk:"#0891B2",aciklama:"İl yarışmaları: oluşturma, başvuru onayı, sporcu, sertifika",f:SADECE("competitions","competitions.olustur","competitions.duzenle","applications","applications.onayla","applications.reddet","athletes","athletes.ekle","athletes.duzenle","schedule","start_order","scoreboard","finals","certificates.*","announcements","announcements.olustur")},
  {id:"_izle",ad:"Gözlemci (salt okunur)",renk:"#64748B",aciklama:"Tüm sayfaları yalnız görüntüler",f:(i,a)=>a.key==="goruntule"}].map(t=>({...t,izinler:doldur(t.f),hazir:!0}));
