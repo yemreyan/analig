@@ -4092,6 +4092,11 @@ const DICT={
  "Kamera B · yedek (cihaza indirir)":"Camera B · backup (downloads to device)",
  "Video Arşivi — Ritmik":"Video Archive — Rhythmic",
  "Kaydedilen performans videolarını kategori ve alet bazında izleyin, indirin veya silin":"Watch, download or delete recorded performance videos by category and apparatus",
- "Sporcu, kulüp, kategori, alet ara...":"Search gymnast, club, category, apparatus..."
+ "Sporcu, kulüp, kategori, alet ara...":"Search gymnast, club, category, apparatus...",
+ "Etkinlik logosu (isteğe bağlı)":"Event logo (optional)",
+ "Örn. Balkan Cimnastik Birliği logosu. Canlı skor, Sporcu Kartı, sonuç ekranı ve sonuç PDF'lerinde TCF logosuyla birlikte görünür.":"E.g. the Balkan Gymnastics Union logo. Shown together with the TCF logo on live scores, the Athlete Card, the results screen and result PDFs.",
+ "PNG/JPG/SVG — otomatik küçültülür.":"PNG/JPG/SVG — resized automatically.",
+ "Logo yükle":"Upload logo",
+ "Logo okunamadı.":"Could not read the logo."
 };
 export{DICT};
