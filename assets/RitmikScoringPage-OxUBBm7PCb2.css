@@ -235,3 +235,224 @@
 .rtm-it-mh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .rtm-it-mh b{font-size:17px;font-weight:900}
 .rtm-it-mh span{flex:1;font-size:12px;font-weight:700;color:#64748B}
+
+/* ==== Masaüstü tek ekran (2026-10-07): sol sporcu listesi ayrı kayar, puan alanı ekrana sığar (≥1100px) ==== */
+@media (min-width:1100px){
+.rtm-page{height:100vh;min-height:0;overflow:hidden;flex-direction:row}
+.rtm-sidebar{height:100vh;min-height:0;max-height:none}
+.rtm-sidebar-inner{height:100%;overflow-y:auto;overscroll-behavior:contain}
+.rtm-main{height:100vh;overflow-y:auto;overscroll-behavior:contain;padding:12px 18px 10px}
+.rtm-page--collapsed .rtm-main{padding-left:68px}
+.rtm-layout-switch{top:auto;bottom:12px;right:108px}
+.rtm-scoring-wrap{gap:8px}
+.rtm-athlete-header{padding:7px 14px}
+.rtm-athlete-name{font-size:20px}
+.rtm-alet-tab{padding:6px 12px}
+.rtm-pd{padding:6px 12px}.rtm-pd-head{margin-bottom:4px}.rtm-pd-body{gap:6px}
+.rtm-card-header{padding:6px 14px}
+.rtm-card-label{width:28px;height:28px}
+.rtm-da-input-row{padding:7px 14px}
+.rtm-sub-row{padding:2px 14px 8px}
+.rtm-judges-row{padding:7px 14px;gap:6px}
+.rtm-judge-cell input{font-size:17px;padding:5px 4px}
+.rtm-penalties-grid{gap:8px}
+.rtm-final-bar{padding:8px 16px;bottom:0;gap:8px 16px}
+.rtm-final-score{font-size:30px}
+.rtm-final-bar .rtm-btn--submit{padding:10px 24px}
+}
+/* kısa ekranlı dizüstüler: puan alanı ekran yüksekliğine göre küçülür (kaydırmasız) */
+@media (min-width:1100px) and (max-height:880px){.rtm-main>.rtm-scoring-wrap{zoom:.93}}
+@media (min-width:1100px) and (max-height:820px){.rtm-main>.rtm-scoring-wrap{zoom:.86}}
+@media (min-width:1100px) and (max-height:740px){.rtm-main>.rtm-scoring-wrap{zoom:.8}}
+
+.rtm-theme-switch{right:112px}
+@media (min-width:1100px){.rtm-theme-switch{top:auto;bottom:12px;right:204px}}
+
+/* Başhakem not işlemi (değiştir / hakeme gönder) */
+.rtm-judge-cell input.rtm-hk,.rtm-sub-cell input.rtm-hk{cursor:pointer;background:#F8FAFC;border-style:dashed}
+.rtm-judge-cell input.rtm-hk:hover,.rtm-sub-cell input.rtm-hk:hover{border-color:var(--rtm-primary);background:#FDF2F8}
+.rtm-judge-cell input.rtm-hk--bek,.rtm-sub-cell input.rtm-hk--bek{border-color:#F59E0B;background:#FFFBEB;color:#92400E}
+.rtm-modal.rtm-ni{max-width:440px;width:94%;display:flex;flex-direction:column;gap:10px;text-align:left}
+.rtm-ni-h{display:flex;align-items:center;gap:10px}.rtm-ni-h b{font-size:15px;font-weight:900;color:#fff;background:var(--rtm-primary);border-radius:8px;padding:3px 10px}.rtm-ni-h span{font-weight:800;color:var(--rtm-text)}
+.rtm-ni-eski{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:10px;background:#F8FAFC;border:1px solid #E5E7EB;font-size:12px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.04em}.rtm-ni-eski strong{font-size:22px;color:#1A1D26;font-variant-numeric:tabular-nums}
+.rtm-ni-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.rtm-ni-seg button{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font:inherit;font-weight:800;font-size:13px;color:#475569;cursor:pointer}.rtm-ni-seg button .material-icons-round{font-size:18px}.rtm-ni-seg button.on{border-color:var(--rtm-primary);background:#FDF2F8;color:#BE185D}
+.rtm-ni-f{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.04em}
+.rtm-ni-f input{padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font:inherit;font-size:15px;font-weight:700;color:var(--rtm-text);background:#fff;text-transform:none;letter-spacing:0}
+.rtm-ni-f input:focus{outline:none;border-color:var(--rtm-primary)}
+.rtm-ni-bilgi{margin:0;font-size:12.5px;font-weight:600;color:#475569;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:8px 10px}
+.rtm-ni-not{margin:0;font-size:11.5px;font-weight:700;color:#94A3B8}
+
+/* ==== KOYU TEMA (2026-10-07) — html.rtm-koyu; dark_gen.py ile üretildi (açık renkler → koyu eşdeğerleri) ==== */
+html.rtm-koyu .rtm-page{--rtm-bg:#0f1117;--rtm-surface:#161b27;--rtm-surface2:#1e2535;--rtm-border:rgba(255,255,255,.09);--rtm-text:#F1F5F9;--rtm-text-sec:#94A3B8;--rtm-primary-light:#3a1530;--rtm-primary-muted:rgba(236,72,153,.18);--rtm-green:#22C55E;--rtm-red:#F87171;--rtm-amber:#FBBF24;--rtm-blue:#60A5FA;color-scheme:dark}
+html.rtm-koyu body{background:#0f1117}
+html.rtm-koyu .rtm-page input,html.rtm-koyu .rtm-page select,html.rtm-koyu .rtm-page textarea,html.rtm-koyu .rtm-modal input,html.rtm-koyu .rtm-modal textarea,html.rtm-koyu .rtm-modal select{background:#0f1420!important;color:#F1F5F9!important;border-color:rgba(255,255,255,.14)!important}
+html.rtm-koyu .rtm-page input:disabled{opacity:.55}
+html.rtm-koyu .rtm-modal{background:#161b27;color:#F1F5F9;border-color:rgba(255,255,255,.1)}
+html.rtm-koyu .rtm-athlete-item--active{background:#3a1530!important}
+html.rtm-koyu .rtm-sidebar-toggle,html.rtm-koyu .rtm-layout-switch,html.rtm-koyu .rtm-theme-switch{box-shadow:none}
+html.rtm-koyu .rtm-page img[src*="/brans/alet/"]{filter:brightness(1.15)}
+html.rtm-koyu .rtm-btn--unlock{background:#3b3011!important}
+html.rtm-koyu .rtm-locked-banner{background:#3b3011!important}
+html.rtm-koyu .rtm-card-header{background:#161b27!important}
+html.rtm-koyu .rtm-card-label--a{color:#7884f7!important}
+html.rtm-koyu .rtm-score-chip--a{color:#7884f7!important}
+html.rtm-koyu .rtm-family-limit-badge{background:#3b3011!important}
+html.rtm-koyu .rtm-alet-tab--kilitli{border-color:#836721!important}
+html.rtm-koyu .rtm-alet-dot--kilitli{background:#3b3011!important}
+html.rtm-koyu .cl-alet-bar{background:#1e2535!important}
+html.rtm-koyu .cl-alet-tab{background:#1e2535!important}
+html.rtm-koyu .cl-alet-tab:hover{background:#1e2535!important}
+html.rtm-koyu .cl-athlete-bar{background:#161b27!important}
+html.rtm-koyu .cl-btn{background:#1e2535!important;color:#cbd5e1!important}
+html.rtm-koyu .cl-btn:hover{background:#1e2535!important}
+html.rtm-koyu .cl-called-badge{background:#17361e!important;color:#8ce3a0!important;border:1px solid #30733f!important}
+html.rtm-koyu .cl-sil-section{background:#1e2535!important}
+html.rtm-koyu .cl-panels-col::-webkit-scrollbar-thumb{background:#1c2531!important}
+html.rtm-koyu .cl-d-separator{border-top:1px dashed rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-d-cell input:disabled{background:#1e2535!important;color:#94a3b8!important}
+html.rtm-koyu .cl-d-totals{border-top:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-ae-cell input:disabled{background:#1e2535!important;color:#94a3b8!important}
+html.rtm-koyu .cl-ae-cell .cl-ae-result{color:#cbd5e1!important}
+html.rtm-koyu .cl-ae-cell.sj label{color:#e68989!important}
+html.rtm-koyu .cl-ae-separator{background:#1e2535!important}
+html.rtm-koyu .cl-ae-stats{border-top:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-k-cell input:disabled{background:#1e2535!important;color:#94a3b8!important}
+html.rtm-koyu .cl-k-total{border-top:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-athlete-table th{background:#1e2535!important}
+html.rtm-koyu .cl-athlete-table td{border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-athlete-name-cell{color:#a0b2cf!important}
+html.rtm-koyu .cl-athlete-school-cell{color:#94a3b8!important}
+html.rtm-koyu .cl-athlete-table tr.active td{background:#11233b!important}
+html.rtm-koyu .cl-athlete-table tr:hover td{background:#1e2535!important}
+html.rtm-koyu .cl-athlete-table tr.done td{color:#89e689!important}
+html.rtm-koyu .cl-athlete-table tr.locked td{color:#94a3b8!important}
+html.rtm-koyu .cl-locked-banner{background:#3b3311!important;border:1px solid #836721!important;color:#f3a97d!important}
+html.rtm-koyu .cl-summary-grid{background:#161b27!important}
+html.rtm-koyu .cl-modal{background:#161b27!important}
+html.rtm-koyu .cl-modal-athlete{color:#cbd5e1!important}
+html.rtm-koyu .cl-modal-breakdown div{border-bottom:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-modal input[type=password]{border:1.5px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-modal-error{color:#ff7070!important}
+html.rtm-koyu .cl-modal-icon{color:#89e689!important}
+html.rtm-koyu /* Klasik görünüm: standart beyaz üst bar */
+.cl-page .cl-topbar{background:#161b27!important;color:#f1f5f9!important;border-bottom:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-page .cl-topbar-title{color:#f1f5f9!important}
+html.rtm-koyu .cl-page .cl-topbar-filters select{background:#172636!important;color:#f1f5f9!important;border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-page .cl-back-btn{background:#161b27!important;color:#f1f5f9!important;border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .cl-page .cl-back-btn:hover{background:#172636!important}
+html.rtm-koyu /* ==== Modern görünüm revizyonu (2026-10): açık standart tema + tek ekranda iki sütunlu düzen ==== */
+.rtm-page{--rtm-border:rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-card-header{background:#1d2630!important}
+html.rtm-koyu .rtm-layout-switch{background:#161b27!important}
+html.rtm-koyu .rtm-alet-tab{background:#161b27!important}
+html.rtm-koyu .rtm-da-input,html.rtm-koyu .rtm-sub-cell input[type=number],html.rtm-koyu .rtm-judge-cell input{background:#161b27!important;border:1.5px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-judge-cell--sj{border-left:2px dashed #836c21!important}
+html.rtm-koyu .rtm-final-bar{border:1.5px solid #832156!important}
+html.rtm-koyu .rtm-locked-banner{background:#3b3311!important;border-color:#836c21!important;color:#f3a97d!important}
+html.rtm-koyu .rtm-athlete-item--active{background:#3b1128!important}
+html.rtm-koyu .rtm-fig-chip--info{background:#172636!important;color:#a6b4c9!important}
+html.rtm-koyu .rtm-fig-chip--ok{background:#113b20!important;color:#84ebab!important}
+html.rtm-koyu .rtm-fig-chip--blok{background:#3b1111!important;color:#ec8383!important}
+html.rtm-koyu .rtm-fig-chip--bos{background:#3b2911!important;color:#f79d79!important}
+html.rtm-koyu .rtm-judge-cell--drop input{background:#172636!important}
+html.rtm-koyu .rtm-fig-ozet--ok{background:#113b1e!important;color:#84ebab!important;border:1px solid #218343!important}
+html.rtm-koyu .rtm-fig-ozet--blok{background:#3b1111!important;color:#ec8383!important;border:1px solid #832121!important}
+html.rtm-koyu /* Panel durum ekranı */
+.rtm-pd{background:#161b27!important;border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-pd--tam{border-color:#218344!important;background:linear-gradient(0deg,#113b1e,#161b27)!important}
+html.rtm-koyu .rtm-pd--tam .rtm-pd-head .material-icons-round{color:#81eea9!important}
+html.rtm-koyu .rtm-pd-say{color:#cbd5e1!important}
+html.rtm-koyu .rtm-pd-bar{background:#172636!important}
+html.rtm-koyu .rtm-pd-grup{background:#172636!important;border:1px solid #344e6f!important}
+html.rtm-koyu .rtm-pd-chip--ok{background:#113b20!important;border-color:#218344!important;color:#8ae5ad!important}
+html.rtm-koyu .rtm-pd-chip--bek{background:#3b2911!important;border-color:#835321!important;color:#f09b7f!important}
+html.rtm-koyu .rtm-pd-chip--ops{background:#161b27!important;border-color:#3c5067!important}
+html.rtm-koyu /* Süre cezası */
+.rtm-sure{border-top:1px dashed rgba(255,255,255,.12)!important;background:#161b27!important}
+html.rtm-koyu .rtm-sure-lb{color:#ec8383!important}
+html.rtm-koyu .rtm-sure input{border:1.5px solid rgba(255,255,255,.12)!important;background:#161b27!important}
+html.rtm-koyu .rtm-sure-sonuc{color:#94a3b8!important}
+html.rtm-koyu .rtm-sure-sonuc b{color:#94a3b8!important}
+html.rtm-koyu .rtm-sure-sonuc--var b{color:#eb8484!important}
+html.rtm-koyu .rtm-pen-step button{border:1px solid #832121!important;background:#3b1111!important;color:#ec8383!important}
+html.rtm-koyu .rtm-pen-step button:hover:not(:disabled){background:#3b1111!important}
+html.rtm-koyu .rtm-pen-step span{color:#94a3b8!important}
+html.rtm-koyu .rtm-sure-gec{color:#cbd5e1!important}
+html.rtm-koyu .rtm-sure-gec b{color:#ec8383!important}
+html.rtm-koyu .rtm-sira{color:#cbd5e1!important;background:#172636!important;border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-sira .material-icons-round{color:#9f78f8!important}
+html.rtm-koyu .rtm-sira b{color:#f1f5f9!important}
+html.rtm-koyu .rtm-itiraz{color:#f3a97d!important;background:#3b3311!important;border:1px solid #836c21!important}
+html.rtm-koyu .rtm-yayin-ayar{color:#cbd5e1!important}
+html.rtm-koyu .rtm-yayin--sayac{background:#3b2911!important;border:1.5px solid #835321!important}
+html.rtm-koyu .rtm-yayin--stop{background:#3b1111!important;border:1.5px solid #832121!important}
+html.rtm-koyu .rtm-yayin-iz{stroke:#3b2811!important}
+html.rtm-koyu .rtm-yayin-sayac b{color:#f09b7f!important}
+html.rtm-koyu .rtm-yayin-metin b{color:#f1f5f9!important}
+html.rtm-koyu .rtm-yayin--stop .rtm-yayin-metin b{color:#ec8383!important}
+html.rtm-koyu .rtm-yayin-metin span{color:#94a3b8!important}
+html.rtm-koyu .rtm-irm-btn{background:#161b27!important;color:#cbd5e1!important;border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-irm-btn:hover{border-color:#832121!important;color:#ec8383!important}
+html.rtm-koyu .rtm-irm-menu{background:#161b27!important;border:1px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-irm-opt{border:1px solid #315272!important;background:#172636!important}
+html.rtm-koyu .rtm-irm-opt:hover:not(:disabled){border-color:#832121!important;background:#3b1111!important}
+html.rtm-koyu .rtm-irm-opt strong{color:#f1f5f9!important}
+html.rtm-koyu .rtm-irm-opt small{color:#94a3b8!important}
+html.rtm-koyu .rtm-irm-ned{border:1.5px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-irm-tum{color:#cbd5e1!important}
+html.rtm-koyu .rtm-irm-cur{background:#3b1111!important;border:1px solid #832121!important}
+html.rtm-koyu .rtm-irm-cur b{color:#ec8383!important}
+html.rtm-koyu .rtm-irm-cur span{color:#e48b8b!important}
+html.rtm-koyu .rtm-irm-cur button{background:#161b27!important;color:#ec8383!important}
+html.rtm-koyu .rtm-irm-banner{background:#3b1111!important;border:1.5px solid #832121!important;color:#e48b8b!important}
+html.rtm-koyu .rtm-irm-banner em{color:#ec8383!important}
+html.rtm-koyu .rtm-final-score--irm{color:#eb8484!important}
+html.rtm-koyu /* FIG itiraz akışı */
+.rtm-it{background:#161b27!important;border:1px solid #322183!important}
+html.rtm-koyu .rtm-it-head .material-icons-round{color:#a87cf3!important}
+html.rtm-koyu .rtm-it-head>b{color:#f1f5f9!important}
+html.rtm-koyu .rtm-it-sure{color:#f3a97d!important;background:#3b3311!important;border:1px solid #836c21!important}
+html.rtm-koyu .rtm-it-sure--bitti{color:#94a3b8!important;background:#172636!important;border-color:rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-it-fin{color:#f8af77!important}
+html.rtm-koyu .rtm-it-b{border:1px solid rgba(255,255,255,.12)!important;background:#161b27!important;color:#a6b4c9!important}
+html.rtm-koyu .rtm-it-b:hover:not(:disabled){background:#172636!important}
+html.rtm-koyu .rtm-it-form{background:#18113b!important;border:1px solid #322183!important}
+html.rtm-koyu .rtm-it-tb{border:1px solid #322183!important;background:#161b27!important;color:#ad87e8!important}
+html.rtm-koyu .rtm-it-tb small{color:#a87cf3!important}
+html.rtm-koyu .rtm-it-bilgi{color:#ad87e8!important}
+html.rtm-koyu .rtm-it-kn{border:1.5px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-it-ger{color:#f3a97d!important}
+html.rtm-koyu .rtm-it-row{border:1px solid rgba(255,255,255,.12)!important;border-left:4px solid #3c5067!important;background:#161b27!important}
+html.rtm-koyu .rtm-it-row--bek{background:#3b3311!important}
+html.rtm-koyu .rtm-it-kim{color:#a6b4c9!important}
+html.rtm-koyu .rtm-it-chip--bek{color:#f3a97d!important;background:#3b3311!important;border-color:#836c21!important}
+html.rtm-koyu .rtm-it-chip--ok{color:#8ae5ad!important;background:#113b20!important;border-color:#218344!important}
+html.rtm-koyu .rtm-it-chip--red{color:#ea8686!important;background:#3b1111!important;border-color:#832121!important}
+html.rtm-koyu .rtm-it-chip--ops{color:#94a3b8!important;background:#172636!important;border-color:#384e6c!important}
+html.rtm-koyu .rtm-it-meta{color:#94a3b8!important}
+html.rtm-koyu .rtm-it-meta b{color:#f1f5f9!important}
+html.rtm-koyu .rtm-it-gec{color:#f8af77!important}
+html.rtm-koyu .rtm-it-karar{border-top:1px dashed #836c21!important}
+html.rtm-koyu .rtm-it-karar label{color:#94a3b8!important}
+html.rtm-koyu .rtm-it-karar input[type=number]{border:1.5px solid rgba(255,255,255,.12)!important}
+html.rtm-koyu .rtm-it-lb{background:#161b27!important;color:#ad86e9!important;border:1px solid #322183!important}
+html.rtm-koyu .rtm-it-lb:hover{background:#18113b!important}
+html.rtm-koyu .rtm-it-mh span{color:#94a3b8!important}
+html.rtm-koyu /* Başhakem not işlemi (değiştir / hakeme gönder) */
+.rtm-judge-cell input.rtm-hk,html.rtm-koyu .rtm-sub-cell input.rtm-hk{background:#172636!important}
+html.rtm-koyu .rtm-judge-cell input.rtm-hk:hover,html.rtm-koyu .rtm-sub-cell input.rtm-hk:hover{background:#3b1128!important}
+html.rtm-koyu .rtm-judge-cell input.rtm-hk--bek,html.rtm-koyu .rtm-sub-cell input.rtm-hk--bek{background:#3b3311!important;color:#f3a97d!important}
+html.rtm-koyu .rtm-ni-eski{background:#172636!important;border:1px solid rgba(255,255,255,.12)!important;color:#94a3b8!important}
+html.rtm-koyu .rtm-ni-eski strong{color:#f1f5f9!important}
+html.rtm-koyu .rtm-ni-seg button{border:1.5px solid rgba(255,255,255,.12)!important;background:#161b27!important;color:#cbd5e1!important}
+html.rtm-koyu .rtm-ni-seg button.on{background:#3b1128!important;color:#ef80ae!important}
+html.rtm-koyu .rtm-ni-f{color:#94a3b8!important}
+html.rtm-koyu .rtm-ni-f input{border:1.5px solid rgba(255,255,255,.12)!important;background:#161b27!important}
+html.rtm-koyu .rtm-ni-bilgi{color:#cbd5e1!important;background:#18113b!important;border:1px solid #322183!important}
+html.rtm-koyu .rtm-page [style*="solid rgb(249, 168, 212)"],html.rtm-koyu .rtm-page [style*="dashed rgb(249, 168, 212)"]{border-color:#832156!important}
+html.rtm-koyu .rtm-page [style*="background: rgb(253, 242, 248)"],html.rtm-koyu .rtm-page [style*="background-color: rgb(253, 242, 248)"],html.rtm-koyu .rtm-modal-overlay [style*="background: rgb(253, 242, 248)"]{background:#3b1128!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(190, 24, 93)"],html.rtm-koyu .rtm-page [style*="; color: rgb(190, 24, 93)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(190, 24, 93)"]{color:#ef80ae!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(124, 58, 237)"],html.rtm-koyu .rtm-page [style*="; color: rgb(124, 58, 237)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(124, 58, 237)"]{color:#a87cf3!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(26, 122, 26)"],html.rtm-koyu .rtm-page [style*="; color: rgb(26, 122, 26)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(26, 122, 26)"]{color:#89e689!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(85, 85, 85)"],html.rtm-koyu .rtm-page [style*="; color: rgb(85, 85, 85)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(85, 85, 85)"]{color:#cbd5e1!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(136, 136, 136)"],html.rtm-koyu .rtm-page [style*="; color: rgb(136, 136, 136)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(136, 136, 136)"]{color:#94a3b8!important}

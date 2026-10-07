@@ -43,6 +43,7 @@ const CSS=GXP_CSS+`
 .yo-save{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid #F1F5F9}.yo-save .yo-note{margin-right:auto!important}
 .yo-profs{display:flex;flex-wrap:wrap;gap:8px}.yo-prof{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E5E7EB;background:#fff;border-radius:12px;padding:9px 14px;font:inherit;font-weight:800;font-size:.88rem;color:#334155;cursor:pointer}.yo-prof i{font-size:18px;color:#94A3B8}.yo-prof small{font-size:.7rem;color:#B91C1C;font-weight:800}.yo-prof.on{border-color:var(--gxp-c);background:color-mix(in srgb,var(--gxp-c) 8%,#fff);color:#0F172A}.yo-prof.on i{color:var(--gxp-c)}
 .yo-ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.yo-ctl button{display:flex;align-items:center;gap:8px;border:1.5px solid #E5E7EB;background:#fff;border-radius:12px;padding:11px 12px;font:inherit;font-weight:800;font-size:.84rem;color:#1E293B;cursor:pointer;text-align:left}.yo-ctl button i{font-size:20px;color:var(--gxp-c)}.yo-ctl button.on{border-color:#16A34A;background:#F0FDF4}.yo-ctl button.gz{grid-column:1/-1;justify-content:center;color:#475569}.yo-ctl button:disabled{opacity:.45;cursor:default}
+.yo-kp{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding:12px;border:1.5px dashed #CBD5E1;border-radius:12px;background:#F8FAFC}.yo-kp>b{font-size:.88rem;font-weight:800}.yo-btn.g.on{background:color-mix(in srgb,var(--gxp-c) 10%,#fff)}
 .yo-btn.kr{background:#DC2626}.yo-btn.g.kr{background:#fff;color:#DC2626;border-color:#FCA5A5}
 @media(max-width:640px){.yo-ctl{grid-template-columns:1fr}}`;
 
@@ -72,7 +73,7 @@ export default function YayinOverlayPage(){
  const[renk,ikon]=RENK[br]||RENK.aerobik;
  const[comps,setComps]=R.useState(null),[comp,setComp]=R.useState("");
  const[profs,setProfs]=R.useState({}),[pid,setPid]=R.useState(""),[tas,setTas]=R.useState(null),[sekme,setSekme]=R.useState("genel");
- const[veri,setVeri]=R.useState("hepsi"),[fmt,setFmt]=R.useState("json"),[ok,setOk]=R.useState(""),[kKat,setKKat]=R.useState(""),[kSure,setKSure]=R.useState(0),[pvG,setPvG]=R.useState("oto");
+ const[veri,setVeri]=R.useState("hepsi"),[fmt,setFmt]=R.useState("json"),[ok,setOk]=R.useState(""),[kKat,setKKat]=R.useState(""),[kSure,setKSure]=R.useState(0),[pvG,setPvG]=R.useState("oto"),[kpAc,setKpAc]=R.useState(!1),[kpKay,setKpKay]=R.useState(""),[kpSec,setKpSec]=R.useState([]);
  const frame=R.useRef(null);
  R.useEffect(()=>onValue(ref(db,FB),s=>setComps(filterComps(s.val()||{},user)||{})),[FB,user]);
  const list=R.useMemo(()=>Object.entries(comps||{}).filter(([,c])=>c&&c.arsivli!==!0&&c.arsivli!=="true").map(([k,c])=>({k,ad:c.isim||c.name||k,t:c.baslangicTarihi||c.tarih||""})).sort((a,b)=>String(b.t).localeCompare(String(a.t))),[comps]);
@@ -97,6 +98,19 @@ export default function YayinOverlayPage(){
  const sil=async()=>{if(!pid)return;if(!await window.__gxConfirm(__T("Bu profil silinsin mi? Bu profille verilen overlay ve veri linkleri çalışmayı bırakır (varsayılan görünüme döner).")))return;
   const ad=P.ad||pid;if(await yaz(pid,null,__T("Profil silindi."))){try{logAction("broadcast_profile",`Yayın profili silindi: ${ad}`,{user:usr,competitionId:comp,discipline:br})}catch{}setPid("");setTas(null)}};
  const adDegis=async()=>{const ad=await window.__gxPrompt(__T("Yeni profil adı:"),tas?.ad||"");if(ad&&String(ad).trim()){degis(null,"ad",String(ad).trim());await yaz(pid+"/ad",String(ad).trim())}};
+ // başka yarışmadan profil kopyalama — kategori filtresi yalnız bu yarışmada olan kategorilerle kalır; canlı kontrol / yayın dışı kopyalanmaz
+ const kaynaklar=list.filter(x=>x.k!==comp&&comps?.[x.k]?.yayinProfilleri&&Object.keys(comps[x.k].yayinProfilleri).length);
+ const kpProfs=kpKay?Object.entries(comps?.[kpKay]?.yayinProfilleri||{}).filter(([,p])=>p&&typeof p==="object").map(([k,p])=>({k,p,ad:p.ad||k})).sort((a,b)=>String(a.ad).localeCompare(String(b.ad),"tr")):[];
+ R.useEffect(()=>{setKpSec(kpProfs.map(x=>x.k))},[kpKay]);
+ R.useEffect(()=>{setKpAc(!1);setKpKay("")},[comp]);
+ const kopyalaDis=async()=>{const sec=kpProfs.filter(x=>kpSec.includes(x.k));if(!sec.length)return;if(kirli&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;
+  const adlar=new Set(Object.values(profs).map(p=>String(p?.ad||"").trim()));const U={};let son=null,katDus=0;
+  sec.forEach((x,i)=>{const n=norm(x.p),k="p"+(Date.now()+i).toString(36);let ad=String(n.ad||__T("Profil")).trim(),j=2;while(adlar.has(ad))ad=String(n.ad).trim()+" ("+(j++)+")";adlar.add(ad);
+   const kk=n.kat.filter(c=>kats[c]);if(n.kat.length&&kk.length<n.kat.length)katDus++;const o={};ALANLAR.forEach(a=>o[a]=n[a]);o.ad=ad;o.kat=kk;o.olusturma=Date.now();o.guncelleme=Date.now();o.guncelleyen=usr;o.kaynak={yarisma:kpKay,profil:x.k};
+   U[`${FB}/${comp}/yayinProfilleri/${k}`]=o;son=[k,o]});
+  try{await update(ref(db),U);toast(sec.length+" "+__T("profil kopyalandı.")+(katDus?" "+__T("Bu yarışmada olmayan kategoriler filtreden çıkarıldı."):""),"success");
+   try{logAction("broadcast_profile",`Yayın profili kopyalandı (${sec.length}): ${sec.map(x=>x.ad).join(", ")} ← ${comps?.[kpKay]?.isim||kpKay}`,{user:usr,competitionId:comp,discipline:br})}catch{}
+   setKpAc(!1);setKpKay("");if(son){setPid(son[0]);setTas(norm(son[1]));setSekme("genel")}}catch{toast(__T("Kaydedilemedi."),"error")}};
  // canlı kontrol (anında yazılır)
  const kontrol=async g=>{const o=g==="gizle"?{g:"gizle",ts:Date.now(),kim:usr}:{g,kat:kKat||null,sure:+kSure||0,ts:Date.now(),kim:usr};
   if(await yaz(pid+"/kontrol",o)){setOk(g==="gizle"?__T("Elle gösterim kapatıldı"):__T("Kanala gönderildi ✓"));setTimeout(()=>setOk(""),2500)}};
@@ -210,7 +224,13 @@ export default function YayinOverlayPage(){
    e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"tv",renk:"#2563EB",t:__T("Yayın profilleri"),sag:plist.length?String(plist.length):null}),
     plist.length?e.jsx("div",{className:"yo-profs",children:plist.map(p=>e.jsxs("button",{type:"button",className:"yo-prof"+(p.k===pid?" on":""),onClick:()=>sec(p.k),children:[I(profs[p.k]?.kapali?"tv_off":"tv"),e.jsx("span",{children:p.ad}),profs[p.k]?.kapali?e.jsx("small",{children:__T("yayın dışı")}):null]},p.k))}):
      e.jsx("p",{className:"yo-note",style:{marginTop:0},children:__T("Her kanal ya da ekran için ayrı profil oluşturun (ör. TRT Spor, YouTube, Salon ekranı). Her profilin kendi logoları, grafikleri ve linki olur.")}),
-    e.jsxs("div",{className:"yo-btns",children:[e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>yeni(!1),children:[I("add"),__T("Yeni profil")]}),pid?e.jsxs(e.Fragment,{children:[e.jsxs("button",{type:"button",className:"yo-btn g",onClick:()=>yeni(!0),children:[I("content_copy"),__T("Kopyala")]}),e.jsxs("button",{type:"button",className:"yo-btn g",onClick:adDegis,children:[I("edit"),__T("Adını değiştir")]}),e.jsxs("button",{type:"button",className:"yo-btn g kr",onClick:sil,children:[I("delete"),__T("Sil")]})]}):null]}),
+    e.jsxs("div",{className:"yo-btns",children:[e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>yeni(!1),children:[I("add"),__T("Yeni profil")]}),e.jsxs("button",{type:"button",className:"yo-btn g"+(kpAc?" on":""),onClick:()=>setKpAc(v=>!v),children:[I("move_down"),__T("Başka yarışmadan")]}),pid?e.jsxs(e.Fragment,{children:[e.jsxs("button",{type:"button",className:"yo-btn g",onClick:()=>yeni(!0),children:[I("content_copy"),__T("Kopyala")]}),e.jsxs("button",{type:"button",className:"yo-btn g",onClick:adDegis,children:[I("edit"),__T("Adını değiştir")]}),e.jsxs("button",{type:"button",className:"yo-btn g kr",onClick:sil,children:[I("delete"),__T("Sil")]})]}):null]}),
+    kpAc?e.jsxs("div",{className:"yo-kp",children:[e.jsx("b",{children:__T("Başka yarışmadan profil kopyala")}),
+     !kaynaklar.length?e.jsx("p",{className:"yo-note",style:{margin:0},children:__T("Profili olan başka yarışma yok.")}):e.jsxs(e.Fragment,{children:[
+      e.jsxs("select",{className:"yo-sel",value:kpKay,onChange:ev=>setKpKay(ev.target.value),children:[e.jsx("option",{value:"",children:__T("— Kaynak yarışma seçin —")}),kaynaklar.map(x=>e.jsx("option",{value:x.k,children:x.ad+" ("+Object.keys(comps[x.k].yayinProfilleri).length+")"},x.k))]}),
+      kpProfs.length?e.jsx("div",{className:"yo-cats",children:kpProfs.map(x=>e.jsxs("label",{className:"yo-cat"+(kpSec.includes(x.k)?" on":""),children:[e.jsx("input",{type:"checkbox",checked:kpSec.includes(x.k),onChange:()=>setKpSec(s=>s.includes(x.k)?s.filter(y=>y!==x.k):[...s,x.k])}),x.ad]},x.k))}):null,
+      kpKay?e.jsxs("div",{className:"yo-btns",style:{marginTop:0},children:[e.jsxs("button",{type:"button",className:"yo-btn",disabled:!kpSec.length,onClick:kopyalaDis,children:[I("content_copy"),__T("Kopyala")+" ("+kpSec.length+")"]}),e.jsx("button",{type:"button",className:"yo-btn g",onClick:()=>setKpAc(!1),children:__T("İptal")})]}):null,
+      e.jsx("p",{className:"yo-note",style:{margin:0},children:__T("Logolar, grafikler ve tüm ayarlar kopyalanır; yeni yarışma için yeni link oluşur. Kategori filtresinde yalnız bu yarışmada da olan kategoriler kalır. Etkinlik logosu yarışmanın kendi logosudur.")})]})]}):null,
     e.jsx("p",{className:"yo-note",children:__T("Daha önce verilmiş profilsiz overlay linkleri aynen çalışmaya devam eder.")})]}),
    editor]}),
   e.jsxs("div",{className:"yo-col",children:[
