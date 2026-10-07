@@ -53,7 +53,7 @@ function analiz({pun,spor,cats,secKat,refTip}){
     vals.forEach((v,i)=>{if(v==null)return;const dev=v-refv,tol=aeTol(refv);rows.push({...base,panel:P,poz:P+(i+1),val:v,ref:refv,refKaynak:useSj?"SJ":"Panel",fin,dev,tol,dis:Math.abs(dev)>tol+1e-9,pct:aePct(refv,dev,grp),atildi:var_.length>=4&&(i===mnI||i===mxI),blok})})});
    // DA / DB
    [["DA","da","sjda"],["DB","db","sjdb"]].forEach(([P,kc,ks])=>{const p=P.toLowerCase(),vs=[1,2,3,4].map(i=>[P+i,num(sc[p+i])]).filter(x=>x[1]!=null),tek=!vs.length&&sc.hakemZaman&&sc.hakemZaman[P]!=null&&num(sc[kc])!=null;if(!vs.length&&!tek)return;
-    const L=tek?[[P,num(sc[kc])]]:vs,ort=num(sc[kc])??num(sc[P==="DA"?"daScore":"dbScore"]),sj=num(sc[ks]),useSj=refTip==="sj"&&sj!=null,refv=useSj?sj:(ort??L.reduce((a,x)=>a+x[1]/L.length,0));
+    const L=tek?[[P,num(sc[kc])]]:vs,ort=num(sc[kc])??num(sc[P==="DA"?"daScore":"dbScore"]),sj=(v=>v===0?null:v)(num(sc[ks])),useSj=refTip==="sj"&&sj!=null,refv=useSj?sj:(ort??L.reduce((a,x)=>a+x[1]/L.length,0));
     (ozel[P]||(ozel[P]={n:0,mud:0,blok:0,sjYok:0})).n++;if(sj==null)ozel[P].sjYok++;else if(ort!=null&&Math.abs(sj-ort)>.5+1e-9)ozel[P].mud++;
     // tek not: hakemin notu kesin nottur; yalnız SJ referansı varsa değerlendirilir
     if(tek&&sj==null)return;const rf=tek?sj:refv,rk=tek||useSj?"SJ":"Ortak";

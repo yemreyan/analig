@@ -288,6 +288,22 @@
 .rtm-card--wa .rtm-score-chip{opacity:.4}
 .rtm-gun-filtre{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px}.rtm-gun-filtre button{border:1px solid var(--rtm-border);background:var(--rtm-surface2);color:var(--rtm-text-sec);border-radius:999px;padding:4px 10px;font:inherit;font-size:11.5px;font-weight:800;cursor:pointer}.rtm-gun-filtre button.on{background:var(--rtm-primary);border-color:var(--rtm-primary);color:#fff}
 .rtm-gun-label{margin:10px 0 2px;padding:4px 8px;border-radius:8px;background:var(--rtm-primary-muted);color:var(--rtm-primary);font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.rtm-akis-al{margin-left:auto;flex-shrink:0;font-size:10.5px;font-weight:900;letter-spacing:.03em;padding:2px 8px;border-radius:999px;background:var(--rtm-surface2);border:1px solid var(--rtm-border);color:var(--rtm-text-sec)}.rtm-athlete-item--active .rtm-akis-al{background:var(--rtm-primary);border-color:var(--rtm-primary);color:#fff}.rtm-akis-al--tamamlandi{background:#DCFCE7;border-color:#86EFAC;color:#166534}.rtm-akis-al--kilitli{background:#DCFCE7;border-color:#86EFAC;color:#166534}
+/* Araç düğmeleri (tema + klasik) ve TR/EN: alt puan çubuğunun üstüne binmesin — kenar çubuğu üst şeridine (2026-10-07) */
+.rtm-tools{position:fixed;z-index:210;display:flex;gap:6px;top:16px;left:calc(var(--rtm-sidebar-w) - 16px);transform:translate(-100%)}
+.rtm-tools .rtm-layout-switch{position:static!important;top:auto!important;right:auto!important;bottom:auto!important;width:38px;height:38px;padding:0;justify-content:center;border-radius:50%}
+.rtm-tools .rtm-layout-switch span{display:none}
+.rtm-tools .rtm-layout-switch .material-icons-round{font-size:18px}
+.rtm-page--collapsed .rtm-tools{left:16px;top:64px;transform:none;flex-direction:column;gap:6px}
+.rtm-page--collapsed .rtm-tools .rtm-layout-switch{width:40px;height:40px}
+body:has(.rtm-page) #tcf-lang-sw{right:auto!important;bottom:auto!important;left:64px!important;top:23px!important}
+@media(min-width:769px){body:has(.rtm-page.rtm-page--collapsed) #tcf-lang-sw{left:16px!important;top:156px!important;flex-direction:column!important;width:40px;border-radius:14px!important}
+.rtm-page--collapsed .rtm-final-bar{margin-left:84px}
+body:has(.rtm-page.rtm-page--collapsed) #tcf-lang-sw button{padding:7px 0!important;width:100%}}
+.rtm-sidebar-inner{padding-bottom:76px}
+@media(max-width:768px){.rtm-tools,.rtm-page--collapsed .rtm-tools{left:auto;right:16px;top:16px;transform:none;flex-direction:row}
+body:has(.rtm-page) #tcf-lang-sw{left:auto!important;right:104px!important;top:23px!important}}
+
 /* ==== KOYU TEMA (2026-10-07) — html.rtm-koyu; dark_gen.py ile üretildi (açık renkler → koyu eşdeğerleri) ==== */
 html.rtm-koyu .rtm-page{--rtm-bg:#0f1117;--rtm-surface:#161b27;--rtm-surface2:#1e2535;--rtm-border:rgba(255,255,255,.09);--rtm-text:#F1F5F9;--rtm-text-sec:#94A3B8;--rtm-primary-light:#3a1530;--rtm-primary-muted:rgba(236,72,153,.18);--rtm-green:#22C55E;--rtm-red:#F87171;--rtm-amber:#FBBF24;--rtm-blue:#60A5FA;color-scheme:dark}
 html.rtm-koyu body{background:#0f1117}
@@ -462,3 +478,39 @@ html.rtm-koyu .rtm-page [style^="color: rgb(124, 58, 237)"],html.rtm-koyu .rtm-p
 html.rtm-koyu .rtm-page [style^="color: rgb(26, 122, 26)"],html.rtm-koyu .rtm-page [style*="; color: rgb(26, 122, 26)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(26, 122, 26)"]{color:#89e689!important}
 html.rtm-koyu .rtm-page [style^="color: rgb(85, 85, 85)"],html.rtm-koyu .rtm-page [style*="; color: rgb(85, 85, 85)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(85, 85, 85)"]{color:#cbd5e1!important}
 html.rtm-koyu .rtm-page [style^="color: rgb(136, 136, 136)"],html.rtm-koyu .rtm-page [style*="; color: rgb(136, 136, 136)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(136, 136, 136)"]{color:#94a3b8!important}
+/* koyu tema: script ile eklenen stiller (rtm-v2, düzeltme, onay…) */
+html.rtm-koyu .rtm-modal{background:#161b27;color:#F1F5F9;border-color:rgba(255,255,255,.1)}
+html.rtm-koyu .rtm-athlete-item--active{background:#3a1530!important}
+html.rtm-koyu .rtm-sidebar-toggle,html.rtm-koyu .rtm-layout-switch,html.rtm-koyu .rtm-theme-switch{box-shadow:none}
+html.rtm-koyu .rtm-page img[src*="/brans/alet/"]{filter:brightness(1.15)}
+html.rtm-koyu .rtm-v2-info{background:#18113b!important;border:1px solid #322183!important;color:#ad86e9!important}
+html.rtm-koyu .rtm-v2-info small{color:#ad86ea!important}
+html.rtm-koyu .rtm-v2-el{color:#94a3b8!important}
+html.rtm-koyu .rtm-v2-el b{color:#8882ed!important}
+html.rtm-koyu .rtm-v2-uyari{background:#3b3311!important;border:1.5px solid #836c21!important;color:#f3a97d!important}
+html.rtm-koyu .rtm-v2-uyari .h i{color:#fbbc74!important}
+html.rtm-koyu .rtm-v2-uyari em.y{color:#f8af77!important}
+html.rtm-koyu .rtm-v2-uyari button{border:1px solid #836c21!important;background:#161b27!important;color:#f3a97d!important}
+html.rtm-koyu .rtm-onay{background:#111b3b!important;color:#9591df!important}
+html.rtm-koyu .rtm-onay .h .k{background:#161b27!important;border:1px solid #213483!important}
+html.rtm-koyu .rtm-onay .r b.w{color:#f8af77!important}
+html.rtm-koyu .rtm-onay .r .j{color:#94a3b8!important}
+html.rtm-koyu .rtm-onay button{border:1px solid #213483!important;background:#161b27!important;color:#9591df!important}
+html.rtm-koyu .rtm-onay button.red{background:#161b27!important;border-color:#832121!important;color:#ec8383!important}
+html.rtm-koyu .rtm-onay input{border:1px solid #213483!important}
+html.rtm-koyu .rtm-duz{border:1px solid #322183!important;background:linear-gradient(135deg,#26113b,#161b27 60%)!important}
+html.rtm-koyu .rtm-duz-h{color:#ad86e9!important}
+html.rtm-koyu .rtm-duz-h button{border:1px solid #322183!important;background:#161b27!important;color:#ad86e9!important}
+html.rtm-koyu .rtm-duz-c button{border:1.5px solid #384e6c!important;background:#161b27!important}
+html.rtm-koyu .rtm-duz-c button.on{color:#81eea9!important;background:#113b1e!important}
+html.rtm-koyu .rtm-duz-c button.tm{color:#fbbc74!important;background:#3b3311!important}
+html.rtm-koyu .rtm-duz-c button em{background:#1c2531!important}
+html.rtm-koyu .rtm-duz small{color:#94a3b8!important}
+html.rtm-koyu .rtm-page [style*="solid rgb(249, 168, 212)"],html.rtm-koyu .rtm-page [style*="dashed rgb(249, 168, 212)"]{border-color:#832156!important}
+html.rtm-koyu .rtm-page [style*="background: rgb(253, 242, 248)"],html.rtm-koyu .rtm-page [style*="background-color: rgb(253, 242, 248)"],html.rtm-koyu .rtm-modal-overlay [style*="background: rgb(253, 242, 248)"]{background:#3b1128!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(190, 24, 93)"],html.rtm-koyu .rtm-page [style*="; color: rgb(190, 24, 93)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(190, 24, 93)"]{color:#ef80ae!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(124, 58, 237)"],html.rtm-koyu .rtm-page [style*="; color: rgb(124, 58, 237)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(124, 58, 237)"]{color:#a87cf3!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(26, 122, 26)"],html.rtm-koyu .rtm-page [style*="; color: rgb(26, 122, 26)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(26, 122, 26)"]{color:#89e689!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(85, 85, 85)"],html.rtm-koyu .rtm-page [style*="; color: rgb(85, 85, 85)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(85, 85, 85)"]{color:#cbd5e1!important}
+html.rtm-koyu .rtm-page [style^="color: rgb(136, 136, 136)"],html.rtm-koyu .rtm-page [style*="; color: rgb(136, 136, 136)"],html.rtm-koyu .rtm-modal-overlay [style*="; color: rgb(136, 136, 136)"]{color:#94a3b8!important}
+html.rtm-koyu .rtm-akis-al--tamamlandi,html.rtm-koyu .rtm-akis-al--kilitli{background:#14532d;border-color:#166534;color:#bbf7d0}

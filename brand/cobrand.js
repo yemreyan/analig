@@ -2,6 +2,7 @@
 // Gizlendiği yerler: giriş sayfası (büyük ortak logo var), canlı skor yayın modu, yazdırma.
 (function () {
   if (window.__gxCobrand) return; window.__gxCobrand = 1;
+  try { if (window.self !== window.top) return; } catch (e) { return; } // bölünmüş ekran bölmesi: rozet üst sayfada
   var css = '#gx-cobrand{position:fixed;left:12px;bottom:12px;z-index:900;display:flex;align-items:center;gap:8px;padding:5px 11px 5px 9px;' +
     'background:rgba(255,255,255,.94);border:1px solid #E2E8F0;border-radius:999px;box-shadow:0 2px 10px rgba(15,23,42,.08);pointer-events:none;' +
     'transition:opacity .2s ease}#gx-cobrand img{display:block;width:auto}#gx-cobrand .gx-l{height:19px}#gx-cobrand .gx-t{height:22px}' +

@@ -30,9 +30,10 @@ function SplitPanel(){
   if(elle||!comp)return;
   atRef.current=Array.from({length:adet},(z,i)=>atRef.current[i]||null);
   // linkId verilirse (ör. Paneller sayfasındaki SJ paneli) yalnızca o kaydın kategorileri gösterilir
-  let izin=null,sonV=null;const ciz=()=>{if(sonV)isle(sonV)};
+  let izin=null,aIzin=null,sonV=null;const ciz=()=>{if(sonV)isle(sonV)};
   const isle=v=>{sonV=v;const aktif=[];
    Object.keys(v).forEach(k=>{if(izin&&!izin.has(k))return;const m=v[k]||{};Object.keys(m).forEach(al=>{
+    if(aIzin&&aIzin[k]&&!aIzin[k][al])return;
     if(m[al])aktif.push({anahtar:k+"|"+al,ts:Number(m[al].ts)||0})})});
    // En yeni cagrilar oncelikli: bolme sayisi kadar en guncel cagri gosterilir,
    // fazlasi (bitmis/eski cagrilar) bolmeden dusurulur.
@@ -44,7 +45,7 @@ function SplitPanel(){
     const bos=cur.findIndex(x=>!x);if(bos>=0){cur[bos]=z.anahtar;var_.add(z.anahtar)}});
    atRef.current=cur;setOto(cur.slice(0,adet));
   };
-  const u2=link?onValue(ref(db,`${fp}/${comp}/hakemLinkleri/${link}`),s=>{const r=s.val()||{};izin=r.tumKategoriler||!r.kategoriler?null:new Set(Object.keys(r.kategoriler));ciz()}):null;
+  const u2=link?onValue(ref(db,`${fp}/${comp}/hakemLinkleri/${link}`),s=>{const r=s.val()||{};izin=r.tumKategoriler||!r.kategoriler?null:new Set(Object.keys(r.kategoriler));aIzin=r.aletler&&typeof r.aletler==="object"?r.aletler:null;ciz()}):null;
   const u1=onValue(ref(db,`${fp}/${comp}/aktifSporcuAlet`),s=>isle(s.val()||{}));
   return()=>{u1();u2&&u2()};
  },[elle,comp,fp,adet,link]);
@@ -55,7 +56,7 @@ function SplitPanel(){
 
  const url=b=>{const p=new URLSearchParams();
   p.set("competitionId",comp);
-  if(String(b.kat).charAt(0)==="@")p.set("linkId",String(b.kat).slice(1));else if(b.kat)p.set("catId",b.kat);
+  if(String(b.kat).charAt(0)==="@")p.set("linkId",String(b.kat).slice(1));else if(b.kat){p.set("catId",b.kat);link&&p.set("v2link",link)}
   if(b.alet)p.set("aletId",b.alet);
   if(pid)p.set("panelId",pid);
   if(pt)p.set("panelType",pt);
@@ -78,7 +79,8 @@ function SplitPanel(){
    e.jsx("span",{style:{fontWeight:800,fontSize:".82rem",letterSpacing:".04em"},children:__T("BÖLÜNMÜŞ EKRAN")}),
    rozet?e.jsx("span",{style:{background:"#7c3aed",color:"#fff",borderRadius:"999px",padding:"2px 10px",fontWeight:800,fontSize:".74rem"},children:rozet}):null,
    elle?null:e.jsx("span",{style:{background:"#1f6feb33",color:"#79c0ff",border:"1px solid #1f6feb66",borderRadius:"999px",padding:"1px 9px",fontWeight:700,fontSize:".7rem"},children:__T("OTOMATİK")}),
-   e.jsx("span",{style:{marginLeft:"auto",opacity:.7,fontSize:".76rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"55%"},children:bolmeler.map(bslk).join("  |  ")})]}),
+   e.jsx("span",{style:{marginLeft:"auto",opacity:.7,fontSize:".76rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"50%"},children:bolmeler.map(bslk).join("  |  ")}),
+   e.jsx("span",{style:{display:"inline-flex",border:"1px solid #30363d",borderRadius:999,overflow:"hidden",flexShrink:0},children:["tr","en"].map(l=>e.jsx("button",{type:"button",onClick:()=>typeof __SETLANG=="function"&&__SETLANG(l),style:{border:0,padding:"3px 9px",fontWeight:800,fontSize:".7rem",cursor:"pointer",fontFamily:"inherit",background:(typeof __LANG=="function"&&__LANG()===l)?"#e6edf3":"transparent",color:(typeof __LANG=="function"&&__LANG()===l)?"#0d1117":"#8b949e"},children:l.toUpperCase()},l))})]}),
   e.jsx("div",{style:{flex:1,minHeight:0,display:"grid",gridTemplateColumns:`repeat(auto-fit,minmax(min(100%,300px),1fr))`,gap:"2px",background:"#30363d"},
    children:bolmeler.map((b,ix)=>e.jsxs("div",{style:{display:"flex",flexDirection:"column",minWidth:0,minHeight:0,background:"#0d1117"},children:[
     e.jsxs("div",{style:{padding:".22rem .6rem",background:b?"#1f2937":"#161b22",color:b?"#a5b4fc":"#6e7681",fontWeight:800,fontSize:".72rem",letterSpacing:".06em",textTransform:"uppercase",flexShrink:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"},children:[ix+1,". ",__T("BÖLME")," — ",bslk(b)]}),

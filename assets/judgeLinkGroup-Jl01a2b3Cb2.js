@@ -16,6 +16,9 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
  const [tumu,setTumu]=R.useState(!linkId&&raw==="__ALL__");
  const [grupAd,setGrupAd]=R.useState("");
  const [yok,setYok]=R.useState(!1);
+ // Alet yetkisi (Paneller): kayit.aletler = {kat:{alet:true}} — kategori anahtari varsa o kategoride YALNIZ isaretli aletler,
+ // yoksa tum aletler. Kisit varsa aktif cagri aktifSporcuAlet'ten izinli (kategori, alet) ciftleri arasindan secilir.
+ const [kisit,setKisit]=R.useState(null);
 
  R.useEffect(()=>{
   if(tek){setKume([raw]);setTumu(!1);setGrupAd("");setYok(!1);return}
@@ -23,8 +26,10 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
    if(!comp)return;
    return onValue(ref(db,`${base}/${comp}/${NODE}/${linkId}`),s=>{
     const v=s.val();
-    if(!v){setYok(!0);setKume([]);setTumu(!1);setGrupAd("");return}
+    if(!v){setYok(!0);setKume([]);setTumu(!1);setGrupAd("");setKisit(null);return}
     setYok(!1);setGrupAd(v.ad||"");
+    const ka=v.aletler&&typeof v.aletler==="object"?Object.fromEntries(Object.entries(v.aletler).filter(([k,m])=>m&&typeof m==="object"&&Object.keys(m).some(a=>m[a]))):null;
+    setKisit(ka&&Object.keys(ka).length?ka:null);
     if(v.tumKategoriler===!0){setTumu(!0);setKume([])}
     else{setTumu(!1);setKume(Object.keys(v.kategoriler||{}).filter(k=>v.kategoriler[k]))}
    });
@@ -33,15 +38,30 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
   setTumu(!1);setKume(raw?raw.split(",").map(z=>z.trim()).filter(Boolean):[]);
  },[base,comp,raw,linkId,tek]);
 
- const anahtar=kume.join("|");
+ const anahtar=kume.join("|"),kAnahtar=kisit?JSON.stringify(kisit):"";
  const [aktif,setAktif]=R.useState(tek?raw:"");
+ const [aktifAl,setAktifAl]=R.useState("");
  const _al=String(alet||"").trim();
+ const izinAl=(k,al)=>{if(!kisit)return!0;const m=kisit[k]||kisit[norm(k)];return!m||!!m[al]};
+ const kisitli=!!kisit&&!_al;
  R.useEffect(()=>{
   if(tek){setAktif(raw);return}
   if(!comp)return;
   // Alet sabitse (alet bazli link/QR) aktif kategori O ALETE gore secilir;
   // aksi halde baska bir alette yapilan daha yeni cagri paneli yanlis
   // kategoriye kaydiriyordu.
+  if(!_al&&kisit){
+   return onValue(ref(db,`${base}/${comp}/aktifSporcuAlet`),s=>{
+    const v=s.val()||{},izin=k=>tumu||kume.indexOf(k)>=0||kume.indexOf(norm(k))>=0;
+    let en=null,enAl="",zaman=-1;
+    Object.keys(v).forEach(k=>{
+     if(!izin(k)||!v[k]||typeof v[k]!=="object")return;
+     Object.keys(v[k]).forEach(al=>{const c=v[k][al];if(!c||!izinAl(k,al))return;const t=Number(c.ts)||1;if(t>=zaman){zaman=t;en=k;enAl=al}});
+    });
+    if(en){setAktif(en);setAktifAl(enAl)}
+    else{setAktif(o=>o||kume[0]||"");setAktifAl("")}
+   });
+  }
   if(_al){
    return onValue(ref(db,`${base}/${comp}/aktifSporcuAlet`),s=>{
     const v=s.val()||{},izin=k=>tumu||kume.indexOf(k)>=0||kume.indexOf(norm(k))>=0;
@@ -67,16 +87,17 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
    });
    setAktif(en||kume[0]||"");
   });
- },[base,comp,tek,raw,tumu,anahtar,_al]);
+ },[base,comp,tek,raw,tumu,anahtar,_al,kAnahtar]);
 
- return{aktif,kume,tumu,grupAd,yok,coklu:!tek};
+ return{aktif,kume,tumu,grupAd,yok,coklu:!tek,kisitli,alet:kisitli?aktifAl:"",kisit,izinAl};
 }
 // "final_genc_kiz__cember" -> "Genc Kiz — Cember Finali"
 function katAdi(c){
  if(!c)return"";
  const f=/^final_/.test(c),g=norm(c).split("__"),b=g[0],al=g[1];
- const l=(RC[b]&&RC[b].label)||b;
+ const T=typeof __T=="function"?__T:x=>x,l=T((RC[b]&&(RC[b].labelTr||RC[b].label))||b);
  if(!f)return l;
- return al?`${l} — ${(RA[al]&&RA[al].label)||al} Finali`:`${l} — Final`;
+ const aa=T((RA[al]&&(RA[al].labelTr||RA[al].label))||al);
+ return al?(typeof __LANG=="function"&&__LANG()==="en"?`${l} — ${aa} Final`:`${l} — ${aa} Finali`):`${l} — Final`;
 }
 export{useAktifKategori,katAdi,NODE as GRUP_YOLU};

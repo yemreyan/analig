@@ -37,6 +37,13 @@ function T(s){
  return v;
 }
 
+// Kullanici tanimli ceviriler (Kategori Yonetimi'nde kaydedilen adlarin EN karsiliklari vb.):
+// Firebase i18nEk/<id> = {tr,en}. localStorage onbellegiyle senkron yuklenir, EN modunda arka planda tazelenir.
+try{const EK="tcf_i18n_ek",uyg=o=>{if(o&&typeof o==="object")Object.values(o).forEach(x=>{if(x&&typeof x.tr==="string"&&typeof x.en==="string"&&x.tr&&x.en)DICT[x.tr]=x.en})};
+ uyg(JSON.parse(localStorage.getItem(EK)||"null"));
+ if(cur()==="en"&&typeof fetch==="function")fetch("https://analig-default-rtdb.firebaseio.com/criteria/i18nEk.json").then(r=>r.json()).then(o=>{const j=JSON.stringify(o||{});if(j!==localStorage.getItem(EK)){localStorage.setItem(EK,j);uyg(o)}}).catch(()=>{});
+ globalThis.__I18N_EK=(tr,en)=>{if(tr&&en)DICT[tr]=en};}catch{}
+
 // Sayfalar import etmeden kullanabilsin diye global.
 globalThis.__T=T;
 globalThis.__LANG=cur;
@@ -49,6 +56,8 @@ try{if(typeof document!=="undefined"&&document.documentElement)document.document
 // --- yuzen TR | EN dugmesi ------------------------------------------------
 function gizliMi(){
  const p=location.pathname;
+ // bölünmüş ekranın bölmeleri (iframe): dil düğmesi üst sayfadadır
+ try{if(window.self!==window.top)return!0}catch{return!0}
  return /\/scoreboard|\/split|\/overlay/.test(p);
 }
 function ciz(){
