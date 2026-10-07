@@ -216,6 +216,8 @@ function Paneller(){
     (()=>{const o=location.origin,tk=token?"&token="+token:"",cid=encodeURIComponent(comp),L=[
       ["sports_score","#DB2777",__T("Başhakem"),o+"/ritmik/scoring?competitionId="+cid],
       ["gavel","#DC2626",__T("İtiraz Paneli"),o+"/ritmik/itiraz?competitionId="+cid+tk],
+      ["videocam","#0EA5E9",__T("Kamera A · video kaydı (itiraz)"),o+"/ritmik/kamera?compId="+cid+"&cam=a"],
+      ["videocam","#64748B",__T("Kamera B · yedek (cihaza indirir)"),o+"/ritmik/kamera?compId="+cid+"&cam=b"],
       ...["sjda","sjdb","sja","sje"].map(p=>["vertical_split","#f59e0b",__T("Bölünmüş · ")+p.toUpperCase(),o+"/ritmik/split?competitionId="+cid+"&hedef=dpanel&panelType="+p+"&bolme="+bolSay+tk]),
       ["live_tv","#D97706",__T("Canlı Skor"),o+"/ritmik/scoreboard?compId="+cid],
       ["cast","#E30613",__T("Yayın Overlay"),o+"/yayin-overlay.html?comp="+cid+"&brans=ritmik"],

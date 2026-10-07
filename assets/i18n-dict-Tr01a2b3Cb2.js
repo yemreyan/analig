@@ -4084,6 +4084,11 @@ const DICT={
  "Önerilen":"Proposed",
  "Değiştirip onayla":"Change and approve",
  "Geri gönderme notu (isteğe bağlı)":"Send-back note (optional)",
- "Geri gönder":"Send back"
+ "Geri gönder":"Send back",
+ "Rutin videosu":"Routine video",
+ "Yeni sekmede":"New tab",
+ "Bu rutin için video yok. Kamera A açıksa çağrıda otomatik kaydedilir (Paneller › Kamera A).":"No video for this routine. If Camera A is open, it records automatically on each call (Panels › Camera A).",
+ "Kamera A · video kaydı (itiraz)":"Camera A · video recording (inquiry)",
+ "Kamera B · yedek (cihaza indirir)":"Camera B · backup (downloads to device)"
 };
 export{DICT};

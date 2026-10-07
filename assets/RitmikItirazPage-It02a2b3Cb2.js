@@ -50,6 +50,11 @@ const CSS=`.itp{--c1:#EC4899;--c2:#8B5CF6;--ok:#16A34A;--warn:#D97706;--bad:#DC2
 .it-err{color:var(--bad);font-weight:800;font-size:13px}
 .it-note{font-size:12px;color:var(--mut);font-weight:600;line-height:1.5}`;
 
+// Rutin videosu: Google Drive (iframe önizleme) ya da doğrudan video dosyası; A/B kamera seçimi, yeni sekmede aç
+const gdId=u=>{const m=/drive\.google\.com\/file\/d\/([-\w]+)/.exec(String(u||""));return m?m[1]:null};
+function Oynat({v}){const[i,setI]=R.useState(0),[u0,u]=[v[Math.min(i,v.length-1)][0],v[Math.min(i,v.length-1)][1]],id=gdId(u);
+ return e.jsxs("div",{style:{display:"flex",flexDirection:"column",gap:8},children:[e.jsxs("div",{className:"it-acts",style:{alignItems:"center"},children:[e.jsxs("span",{className:"it-note",style:{fontWeight:900,color:"var(--tx)"},children:[MI("smart_display",{fontSize:18})," ",__T("Rutin videosu")]}),e.jsx("span",{className:"it-sp"}),v.length>1?v.map(([k],j)=>e.jsx("button",{type:"button",className:"it-q",style:j===i?{background:"var(--c2)",color:"#fff",borderColor:"var(--c2)"}:null,onClick:()=>setI(j),children:"KAM "+k},k)):null,e.jsxs("a",{href:u,target:"_blank",rel:"noreferrer",className:"it-q",style:{display:"inline-flex",alignItems:"center",gap:4,textDecoration:"none"},children:[MI("open_in_new",{fontSize:16})," ",__T("Yeni sekmede")]})]}),
+  e.jsx("div",{style:{position:"relative",width:"100%",aspectRatio:"16/9",borderRadius:14,overflow:"hidden",background:"#000"},children:id?e.jsx("iframe",{src:"https://drive.google.com/file/d/"+id+"/preview",allow:"autoplay; fullscreen",allowFullScreen:!0,style:{position:"absolute",inset:0,width:"100%",height:"100%",border:0}},u):e.jsx("video",{src:u,controls:!0,playsInline:!0,preload:"metadata",style:{position:"absolute",inset:0,width:"100%",height:"100%",background:"#000"}},u)})]})}
 function RitmikItiraz(){
  const q=new URLSearchParams(location.search),comp=q.get("competitionId")||q.get("comp")||"",tok=q.get("token")||"";
  const{currentUser:cu}=useAuth()||{},usr=cu?.adSoyad||cu?.kullaniciAdi||__T("İtiraz Hakemi");
@@ -124,7 +129,7 @@ function RitmikItiraz(){
   if(tur==="ZAMAN")return e.jsx("div",{className:"it-grid",style:{"--tc":TRENK.ZAMAN},children:[[__T("Zaman cezası"),r.penaltyZaman,1],[__T("Zaman hakemi"),r.tPanel?.zaman],[__T("Ölçülen süre"),r.tPanel?.zaman_meta?.sure??r.tPanel?.zaman_meta?.sn]].map(([t,v,hl])=>e.jsxs("div",{className:hl?"hl":"",children:[e.jsx("small",{children:t}),e.jsx("b",{className:"mono",children:f2(v)})]},t))});
   return e.jsx("div",{className:"it-grid",style:{"--tc":TRENK.CIZGI},children:[[__T("Çizgi cezası"),num(r.penaltyCizgi1)+num(r.penaltyCizgi2),1],[__T("Çizgi 1"),r.lPanel?.cizgi1??r.penaltyCizgi1],[__T("Çizgi 2"),r.lPanel?.cizgi2??r.penaltyCizgi2]].map(([t,v,hl])=>e.jsxs("div",{className:hl?"hl":"",children:[e.jsx("small",{children:t}),e.jsx("b",{className:"mono",children:f2(v)})]},t))})};
  const toplam=r=>e.jsx("div",{className:"it-grid",children:[["D",r?.dScore],["A",r?.aScore],["E",r?.eScore],[__T("Ceza"),r?.penaltyTotal],[__T("Sonuç"),r?.sonuc,1]].map(([t,v,hl])=>e.jsxs("div",{className:hl?"hl":"",children:[e.jsx("small",{children:t}),e.jsx("b",{className:"mono",children:f3(v)})]},t))});
- const video=r=>{const v=[r?.videoUrlA,r?.videoUrlB].filter(Boolean);return v.length?e.jsx("div",{className:"it-acts",children:v.map((u,i)=>e.jsxs("a",{href:u,target:"_blank",rel:"noreferrer",className:"it-btn",style:{textDecoration:"none"},children:[MI("play_circle")," ",__T("Video")+" "+(i?"B":"A")]},u))}):null};
+ const video=r=>{const v=[["A",r?.videoUrlA],["B",r?.videoUrlB]].filter(x=>x[1]);return v.length?e.jsx(Oynat,{v}):e.jsx("div",{className:"it-note",children:__T("Bu rutin için video yok. Kamera A açıksa çağrıda otomatik kaydedilir (Paneller › Kamera A).")})};
  let sag;
  if(it){const d=itDurum[it.durum]||[it.durum,"ops"],D=it.tur==="DA"||it.tur==="DB",sj=rec?rec["sj"+it.tur.toLowerCase()]:null,eskiS=num(rec?.sonuc),fk=has(yeni)?num(yeni)-num(it.eskiDeger):0,onS=D?eskiS+fk:eskiS-fk,fin=/^final_/.test(it.kategori||"");
   sag=e.jsxs("div",{className:"it-col",children:[e.jsx("div",{className:"it-card it-sec",children:athKart(it.kategori,it.sporcuId,it.alet)}),
@@ -133,7 +138,7 @@ function RitmikItiraz(){
     !it.sureIcinde?e.jsxs("div",{className:"it-sonuc bek",children:[MI("schedule"),__T("2 dk sonrası kaydedildi (süresi içinde sözlü bildirim)")]}):null,
     fin&&it.durum==="beklemede"?e.jsxs("div",{className:"it-sonuc bek",children:[MI("emoji_events"),__T("Final: sonraki puan gösterilmeden çözülmeli")]}):null,
     it.not?e.jsxs("div",{className:"it-note",children:["“",it.not,"”"]}):null]}),
-   e.jsxs("div",{className:"it-card it-sec",children:[e.jsxs("h4",{children:[MI("analytics")," ",__T("Panel verisi (canlı)")]}),rec===null?e.jsx("div",{className:"it-note",children:__T("Yükleniyor…")}):panelVeri(it.tur,rec),toplam(rec),video(rec)]}),
+   rec?e.jsx("div",{className:"it-card it-sec",children:video(rec)}):null,e.jsxs("div",{className:"it-card it-sec",children:[e.jsxs("h4",{children:[MI("analytics")," ",__T("Panel verisi (canlı)")]}),rec===null?e.jsx("div",{className:"it-note",children:__T("Yükleniyor…")}):panelVeri(it.tur,rec),toplam(rec)]}),
    e.jsx("div",{className:"it-card it-sec",children:it.durum==="beklemede"?e.jsxs("div",{className:"it-karar",children:[e.jsxs("h4",{children:[MI("balance")," ",__T("Karar")]}),
      e.jsxs("div",{className:"it-yeni",children:[e.jsx("span",{style:{fontWeight:800},children:D?__T("Yeni")+" "+it.tur:__T("Yeni ceza")}),e.jsx("input",{type:"number",step:D?"0.1":"0.05",min:"0",value:yeni,disabled:busy,onChange:u=>setYeni(u.target.value)}),
       [[-.1,"−0.1"],[.1,"+0.1"]].map(([d,t])=>e.jsx("button",{type:"button",className:"it-q",onClick:()=>setYeni(v=>String(+(Math.max(0,num(v)+d)).toFixed(3))),children:t},t)),
