@@ -4070,6 +4070,20 @@ const DICT={
  "itirazı":"inquiry",
  "Kabul edilince puanı yeniden yayınla (Sporcu Kartı · Canlı Skor)":"Re-publish the score when accepted (Athlete Card · Live Scores)",
  "Kabul edildi":"Accepted",
- "İTİRAZ SONRASI PUAN":"SCORE AFTER INQUIRY"
+ "İTİRAZ SONRASI PUAN":"SCORE AFTER INQUIRY",
+ "Başhakem onayı bekleniyor":"Waiting for chief judge approval",
+ "Kesin not başhakem onaylayınca kaydedilir.":"The final score is saved once the chief judge approves.",
+ "Geri çek / kesin notu değiştir":"Withdraw / change final score",
+ "başhakem onayında":"awaiting chief judge approval",
+ "Başhakem kesin notu geri gönderdi":"The chief judge sent the final score back",
+ "kesin not başhakem onayına gidecek.":"the final score will go to the chief judge for approval.",
+ "BAŞHAKEM ONAYINA GÖNDER":"SEND FOR CHIEF JUDGE APPROVAL",
+ "Fark eşiği aşılınca kesin not (iki aşamalı / ortalama) başhakeme onaya gider; başhakem onaylayana, değiştirip onaylayana ya da geri gönderene kadar hakem bekler.":"When the gap threshold is exceeded, the final score (two-stage / average) goes to the chief judge for approval; the judge waits until the chief judge approves, changes and approves, or sends it back.",
+ "Fark eşiği aşılınca hakem ekranında uyarı gösterilir; kesin not doğrudan kaydedilir.":"When the gap threshold is exceeded, a warning is shown on the judge screen; the final score is saved directly.",
+ "kesin not onay bekliyor":"final score awaiting approval",
+ "Önerilen":"Proposed",
+ "Değiştirip onayla":"Change and approve",
+ "Geri gönderme notu (isteğe bağlı)":"Send-back note (optional)",
+ "Geri gönder":"Send back"
 };
 export{DICT};

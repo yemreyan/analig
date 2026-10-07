@@ -109,10 +109,11 @@ function HakemV2({kind,yapi,grup}){
 
  const r=rec||{},mine=kind==="d"?r[own]:r[pan]?.[jk],finV=kind==="d"?r[fin]:null,kilit=r.kilitli===!0,bhk=kind==="ae"&&r.lockedFields?.[`${pan}__${jk}`]===!0;
  const peers=kind==="d"&&!tek?[...Array(C.n)].map((_,i)=>[P+(i+1),r[(P+(i+1)).toLowerCase()]]):[];
+ const onayP=kind==="d"?((r.onay||{})[P]||null):null;
  const gonderildi=kind==="d"?(resp?has(mine)&&has(finV):has(mine)):has(mine);
  const duzKural=izin===!0?"bashakem":izin===!1?"kapali":yapi.duz[P]||"acik",gTs=+(r.hakemZaman?.[slot]||0),kalan=duzKural==="sureli"&&gTs?Math.max(0,Math.ceil((yapi.duz.sure||30)-(now-gTs)/1e3)):null;
  const duzAcik=duzKural==="acik"||duzKural==="bashakem"||duzKural==="sureli"&&kalan>0;
- const durum=!ath?"bekliyor":kilit?"kilitli":bhk?"bashakem":edit?"puanlama":resp&&has(mine)&&(stage2||!has(finV))?"asama2":gonderildi?"gonderildi":"puanlama";
+ const durum=!ath?"bekliyor":kilit?"kilitli":bhk?"bashakem":edit?"puanlama":resp&&onayP?.durum==="bekliyor"?"onaybek":resp&&has(mine)&&(stage2||!has(finV))?"asama2":gonderildi?"gonderildi":"puanlama";
  const yol=`${B}/${comp}/puanlar/${cat}/${aid}/${alet}`,athAd=[ath?.ad,ath?.soyad].filter(Boolean).join(" ")||spr?.adSoyad||"";
  const elSum=r3(el.reduce((a,x)=>a+x.v,0)),apeSum=r3(tape.reduce((a,b)=>a+b,0));
  const deger=kind==="ae"?(tape.length&&val===""?apeSum:parseFloat(val)||0):mode==="toplam"||stage2||durum==="asama2"?parseFloat(val)||0:val!==""&&mode==="ikisi"?parseFloat(val)||0:elSum;
@@ -122,13 +123,15 @@ function HakemV2({kind,yapi,grup}){
     await update(ref(db,yol),{[`${pan}/${jk}`]:v,[`hakemZaman/${slot}`]:z});log(v)}
    else{const u={[`hakemZaman/${slot}`]:z};if(tek){u[fin]=v;u[fin+"Score"]=v}else u[own]=v;if(mode!=="toplam")u[own+"Elem"]=el.length?el.map(x=>P==="DB"?{v:x.v,g:x.g}:x.v):null;
     await update(ref(db,yol),u);log(v);
-    if(C.yapi==="ortalama"){const s=(await get(ref(db,yol))).val()||{},vs=[...Array(C.n)].map((_,i)=>s[(P+(i+1)).toLowerCase()]);if(vs.every(has)){const a=r3(vs.reduce((x,y)=>x+ +y,0)/vs.length);await update(ref(db,yol),{[fin]:a,[fin+"Score"]:a})}}
+    if(C.yapi==="ortalama"){const s=(await get(ref(db,yol))).val()||{},vs=[...Array(C.n)].map((_,i)=>s[(P+(i+1)).toLowerCase()]);if(vs.every(has)){const a=r3(vs.reduce((x,y)=>x+ +y,0)/vs.length),nv=vs.map(Number),fk=Math.max(...nv)-Math.min(...nv);if(yapi.esikDavranis==="onay"&&fk>yapi.esik+1e-9)await update(ref(db,yol),{[`onay/${P}`]:{durum:"bekliyor",deger:a,kaynak:"ORT",fark:r3(fk),esik:yapi.esik,ts:Date.now(),degerler:Object.fromEntries(vs.map((x,i)=>[P+(i+1),+x]))}});else await update(ref(db,yol),{[fin]:a,[fin+"Score"]:a,[`onay/${P}`]:null})}}
     if(resp){setStage2(!0);setVal("")}}
    setEdit(!1)}catch(x){setErr(__T("Gönderilemedi: ")+(x?.message||x))}setBusy(!1)};
  const kesinGonder=async()=>{setErr("");const v=r3(parseFloat(val));if(!(v>=0)){setErr(__T("Kesin notu girin."));return}
   const vs=peers.map(x=>x[1]).filter(has).map(Number),sp=vs.length>1?Math.max(...vs)-Math.min(...vs):0;
-  if(yapi.esikDavranis==="onay"&&sp>yapi.esik+1e-9&&!await window.__gxConfirm(__T("Hakemler arası fark eşiği aşıldı")+` (${f2(sp)} > ${f2(yapi.esik)}). `+__T("Başhakem onayı alındı mı? Kesin not gönderilsin mi?")))return;
-  setBusy(!0);try{await update(ref(db,yol),{[fin]:v,[fin+"Score"]:v,[`hakemZaman/${slot}`]:Date.now()});log(v," kesin");setStage2(!1);setEdit(!1);setVal("")}catch(x){setErr(__T("Gönderilemedi: ")+(x?.message||x))}setBusy(!1)};
+  const onayGerek=yapi.esikDavranis==="onay"&&sp>yapi.esik+1e-9,z=Date.now();
+  setBusy(!0);try{if(onayGerek){await update(ref(db,yol),{[`onay/${P}`]:{durum:"bekliyor",deger:v,kaynak:slot,fark:r3(sp),esik:yapi.esik,ts:z,degerler:Object.fromEntries(peers.filter(x=>has(x[1])).map(([k,x])=>[k,+x]))},[`hakemZaman/${slot}`]:z});log(v," kesin → başhakem onayına")}
+   else{await update(ref(db,yol),{[fin]:v,[fin+"Score"]:v,[`onay/${P}`]:null,[`hakemZaman/${slot}`]:z});log(v," kesin")}setStage2(!1);setEdit(!1);setVal("")}catch(x){setErr(__T("Gönderilemedi: ")+(x?.message||x))}setBusy(!1)};
+ const onayGeriCek=async()=>{setBusy(!0);try{await update(ref(db,yol),{[`onay/${P}`]:null});setStage2(!0);setVal(String(onayP?.deger??""))}catch{}setBusy(!1)};
 
  // ---- parçalar ----
  const kat=kats[cat]||{},katAd=kat.name||katAdi(cat),ulke=ath?.ulke||spr?.ulke||"",bib=ath?.bib||spr?.bib||"",bf=ulke?bayrakUrl(ulke):null,img=raImg(alet);
@@ -146,22 +149,24 @@ function HakemV2({kind,yapi,grup}){
  const benimF=f2(kind==="ae"?mine:tek?finV??mine:mine);
  if(durum==="kilitli")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("lock",__T("Puan kilitlendi"),__T("Başhakem puanı kaydetti. Sıradaki sporcu çağrılınca ekran açılır."),{ust:has(mine)||has(finV)?e.jsx("div",{className:"sent mono",children:(kind==="ae"?"−":"")+benimF}):null})]}));
  if(durum==="bashakem")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("gavel",__T("Başhakem kararı"),__T("Notun başhakem tarafından düzeltildi; yeniden gönderilemez."),{ust:e.jsx("div",{className:"sent mono",children:"−"+f2(mine)})})]}));
+ if(durum==="onaybek")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("hourglass_top",__T("Başhakem onayı bekleniyor"),__T("Hakemler arası fark eşiği aşıldı")+` (${f2(onayP.fark)} > ${f2(onayP.esik)}). `+__T("Kesin not başhakem onaylayınca kaydedilir."),{ust:e.jsx("div",{className:"sent mono",children:f2(onayP.deger)}),alt:e.jsxs("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:10},children:[e.jsx("div",{className:"hv-peer",style:{minWidth:280},children:Object.entries(onayP.degerler||{}).map(([k,x])=>e.jsxs("div",{children:[e.jsx("small",{children:k}),e.jsx("b",{className:"mono",children:f2(x)})]},k))}),e.jsxs("button",{type:"button",className:"hv-btn",disabled:busy,onClick:onayGeriCek,children:[MI("undo")," ",__T("Geri çek / kesin notu değiştir")]})]})})]}));
  if(durum==="gonderildi"){const duzBtn=e.jsxs("button",{type:"button",className:"hv-btn",onClick:()=>{setEdit(!0);setStage2(!1);setVal(kind==="ae"?String(mine??""):tek?String(finV??""):String(mine??""));setTape([]);const ee=r[own+"Elem"];setEl(Array.isArray(ee)?ee.map(x=>typeof x=="object"?x:{v:+x,g:""}):[])},children:[MI("edit")," ",__T("Düzelt")]});
   const alt=duzKural==="kapali"||duzKural==="sureli"&&!duzAcik?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--mut)"},children:[MI("lock"),__T("Düzeltme kapalı — gerekirse başhakem açar.")]}):e.jsxs("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:10},children:[duzKural==="bashakem"?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--ok)"},children:[MI("lock_open"),__T("Başhakem düzeltme izni verdi")]}):duzKural==="sureli"?e.jsxs("div",{className:"mono",style:{fontSize:26,fontWeight:700,color:rc},children:["0:",String(kalan).padStart(2,"0")]}):e.jsx("p",{children:__T("Başhakem kilitleyene kadar düzeltebilirsin.")}),duzBtn]});
-  return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("check_circle",__T("Gönderildi"),resp&&has(finV)?__T("Kendi notun")+" "+f2(mine)+" · "+__T("Kesin")+" "+P+" "+f2(finV):null,{ust:e.jsx("div",{className:"sent mono",children:(kind==="ae"?"−":"")+(resp&&has(finV)?f2(finV):benimF)}),alt})]}))}
+  return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("check_circle",__T("Gönderildi"),onayP?.durum==="bekliyor"?__T("Kesin")+" "+P+" "+f2(onayP.deger)+" — "+__T("başhakem onayında"):resp&&has(finV)?__T("Kendi notun")+" "+f2(mine)+" · "+__T("Kesin")+" "+P+" "+f2(finV):null,{ust:e.jsx("div",{className:"sent mono",children:(kind==="ae"?"−":"")+(resp&&has(finV)?f2(finV):benimF)}),alt})]}))}
 
  // ---- AŞAMA 2 (sorumlu hakem kesin not) ----
  if(kind==="d"&&durum==="asama2"){const vs=peers.filter(x=>has(x[1])).map(x=>+x[1]),avg=vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0,sp=vs.length>1?Math.max(...vs)-Math.min(...vs):0,cls=sp<=yapi.esik+1e-9?"ok":sp<=yapi.esik*1.7?"w":"b";
   const sol=e.jsxs("div",{className:"hv-col",children:[athKart,e.jsxs("div",{className:"hv-step",children:[__T("Aşama"),e.jsx("i",{className:"on"}),e.jsx("i",{className:"on"}),e.jsx("span",{style:{color:"var(--tx)"},children:"2/2 · "+__T("kesin not")})]}),
    e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("groups")," ",__T("Panel notları"),e.jsx("span",{className:"hv-sp"}),vs.length>1?e.jsx("span",{className:"hv-gap "+cls,children:__T("fark")+" "+f2(sp)}):null]}),
     e.jsx("div",{className:"hv-peer",children:[...peers.map(([s,v])=>e.jsxs("div",{children:[e.jsx("small",{children:s+(s===slot?" ("+__T("sen")+")":"")}),e.jsx("b",{className:"mono",children:f2(v)})]},s)),e.jsxs("div",{children:[e.jsx("small",{children:__T("ORTALAMA")}),e.jsx("b",{className:"mono",children:vs.length?f2(avg):"—"})]},"ort")]})]}),
-   cls!=="ok"?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--warn)"},children:[MI("warning"),__T("Hakemler arası fark eşiği aşıldı")+` (${f2(yapi.esik)}) — `+(yapi.esikDavranis==="onay"?__T("göndermeden önce başhakem onayı istenecek."):__T("kesin notu dikkatle kontrol et."))]}):null,
+   onayP?.durum==="reddedildi"?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--bad)"},children:[MI("reply"),__T("Başhakem kesin notu geri gönderdi")+` (${f2(onayP.deger)})`+(onayP.not?": “"+onayP.not+"”":"")]}):null,
+   cls!=="ok"?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--warn)"},children:[MI("warning"),__T("Hakemler arası fark eşiği aşıldı")+` (${f2(yapi.esik)}) — `+(yapi.esikDavranis==="onay"?__T("kesin not başhakem onayına gidecek."):__T("kesin notu dikkatle kontrol et."))]}):null,
    vs.length<C.n?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--mut)"},children:[MI("hourglass_empty"),__T("Diğer hakemlerin notu bekleniyor")+` (${vs.length}/${C.n})`]}):null,
    e.jsxs("button",{type:"button",className:"hv-btn",onClick:()=>{setStage2(!1);setEdit(!0);setVal(mode==="toplam"?String(mine??""):"");const ee=r[own+"Elem"];setEl(Array.isArray(ee)?ee.map(x=>typeof x=="object"?x:{v:+x,g:""}):[])},children:[MI("arrow_back")," ",__T("Kendi notumu düzelt")]})]});
   const sag=e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("verified")," ",__T("Kesin")+" "+P+" "+__T("notu")]}),e.jsxs("div",{className:"hv-disp",children:[e.jsx("span",{className:"v mono",children:val||"0.00"}),e.jsx("span",{className:"u",children:__T("kesin")})]}),
    e.jsx("div",{className:"hv-qs",children:[[__T("Ortalama"),avg],[__T("En düşük"),vs.length?Math.min(...vs):0],[__T("En yüksek"),vs.length?Math.max(...vs):0],[__T("Benim"),+mine||0]].map(([t,v])=>e.jsx("button",{type:"button",className:"hv-q",style:{fontSize:12.5},onClick:()=>setVal(String(r3(v))),children:t},t)).concat(e.jsx("button",{type:"button",className:"hv-q",onClick:()=>setVal(""),children:MI("backspace")},"c"))}),
    e.jsx(Numpad,{val,set:setVal,max:30}),err?e.jsx("div",{className:"hv-err",children:err}):null,
-   e.jsx("div",{className:"hv-row",children:e.jsxs("button",{type:"button",className:"hv-btn send",disabled:busy||val==="",onClick:kesinGonder,children:[MI("verified")," ",__T("KESİN NOTU GÖNDER")]})})]});
+   e.jsx("div",{className:"hv-row",children:e.jsxs("button",{type:"button",className:"hv-btn send",disabled:busy||val==="",onClick:kesinGonder,children:yapi.esikDavranis==="onay"&&sp>yapi.esik+1e-9?[MI("how_to_reg")," ",__T("BAŞHAKEM ONAYINA GÖNDER")]:[MI("verified")," ",__T("KESİN NOTU GÖNDER")]})})]});
   return kap(e.jsxs("div",{className:"hv-b",children:[sol,sag]}))}
 
  // ---- PUANLAMA ----
