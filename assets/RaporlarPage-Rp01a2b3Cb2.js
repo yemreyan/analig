@@ -20,29 +20,36 @@ const aletTr=a=>RA[a]?.labelTr||RA[a]?.label||a;
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:18,...st},children:n});
 const tarihStr=c=>[c.baslangicTarihi,c.bitisTarihi].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).map(t=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(t);return m?m[3]+"."+m[2]+"."+m[1]:t}).join(" – ");
 const katAletleri=(kats,k)=>{const d=kats?.[k]||{};const a=Array.isArray(d.aletler)&&d.aletler.length?d.aletler:d.alet?[d.alet]:Array.isArray(RC[k]?.aletler)?RC[k].aletler:[];return a.filter(Boolean)};
-const isGrp=(kats,k)=>{const b=String(k).replace(/^final_/,"").split("__")[0],d=kats?.[k]||kats?.[b]||{};return d.grupMu===!0||d.tip==="takim"||/grup|trio|pair|cift|ikili|uclu/.test(b)};
+const isGrp=(kats,k)=>{const b=String(k).replace(/^final_/,"").split("__")[0],d=kats?.[k]||kats?.[b]||{};return d.grupMu===!0||d.tip==="takim"||d.tip==="karma"||/grup|trio|pair|cift|ikili|uclu|dans|step/.test(b)};
+const BRN=C=>C&&C._br==="aerobik"?"aerobik":"ritmik";
+// çift / trio / grup girişi (anahtar <kat>::<kulüp>::<grupNo>) → sporcu adları (aerobik WC Karne kim() ile aynı eşleme)
+const uyeAd=(C,k,key)=>{const cm=C.sporcular?.[k]||C.sporcular?.[String(k).replace(/^final_/,"")]||{},san=x=>String(x||"").trim().replace(/[.#$[\]/]/g,"-"),p=String(key).split("::"),gn=p[p.length-1],ok=p.length>=3?p.slice(1,-1).join("::"):"";
+ let m=Object.values(cm).filter(a=>a&&san(k+"::"+String(a.okul||a.kulup||"").trim()+"::"+(a.grupNo||1)).slice(0,60)===String(key));
+ if(!m.length)m=Object.values(cm).filter(a=>a&&String(a.grupNo??"")===String(gn)&&(ok===""||String(a.okul||a.kulup||"")===ok||san(a.okul||a.kulup)===ok));
+ return{uyeler:[...new Set(m.map(a=>[a.ad,a.soyad].filter(Boolean).join(" ")))],il:m[0]?.il||"",ulke:m[0]?.ulke||"",kulup:String(m[0]?.okul||m[0]?.kulup||"").trim()}};
 
 // ---------------- HESAP ----------------
 // Bir yarışmanın resmi sonuç bölümleri
-function sonucHesapla(C,opt){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},intl=isIntl(C);
+function sonucHesapla(C,opt){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},intl=isIntl(C),br=BRN(C),rit=br==="ritmik";
  const out=[];const ids=Object.keys(kats).filter(k=>kats[k]&&typeof kats[k]==="object"&&(!opt.kats||!opt.kats.length||opt.kats.includes(String(k).replace(/^final_/,"").split("__")[0])))
   .sort((a,b)=>(isFin(kats,a)-isFin(kats,b))||(yasI(a)-yasI(b))||String(a).localeCompare(String(b)));
- const satirlar=(k,alet)=>{const S=Y.siralama({brans:"ritmik",kats,kat:k,spor:spor[k],puan:pun[k],alet});
+ const satirlar=(k,alet)=>{const S=Y.siralama({brans:br,kats,kat:k,spor:spor[k],puan:pun[k],alet});
   return{tamam:S.tamamlandi,giris:S.girisSayisi,rows:S.satirlar.map(s=>{const g=s.giris,x=s.s||{},r={rank:s.sira,ad:g.ad,soyad:g.soyad||"",kulup:g.kulup||"",ulke:g.ulke||"",il:g.il||"",bib:g.bib||"",takim:g.takim,uyeler:g.uyeler||[],key:g.key,
    total:x.irm&&x.yalnizIrm?null:x.total,e:x.e,a:x.a,d:x.d,da:x.da,db:x.db,pen:x.pen,irm:x.irm||"",tamam:!!x.tamam,done:x.say+"/"+x.adet};
-   if(intl)r.ulke=sporcuUlke({ulke:g.ulke},C)||"";
-   if(!alet){const p=(pun[k]||{})[g.key];r.apps={};katAletleri(kats,k).forEach(a=>{const z=Y.sonuc("ritmik",kats[k],p,a);r.apps[a]=z?(z.irm&&z.yalnizIrm?z.irm:z.total):null})}
+   if(r.takim&&(!r.uyeler||!r.uyeler.length)){const u=uyeAd(C,k,g.key);r.uyeler=u.uyeler;r.il=r.il||u.il;r.ulke=r.ulke||u.ulke;if(u.kulup){r.ad=r.ad===r.kulup?u.kulup:r.ad;r.kulup=u.kulup}}
+   if(intl)r.ulke=sporcuUlke({ulke:r.ulke||g.ulke},C)||"";
+   if(!alet&&rit){const p=(pun[k]||{})[g.key];r.apps={};katAletleri(kats,k).forEach(a=>{const z=Y.sonuc("ritmik",kats[k],p,a);r.apps[a]=z?(z.irm&&z.yalnizIrm?z.irm:z.total):null})}
    return r})}};
  // genel tasnifte IRM'li sporcu sırasız → en alta; kalanlar toplam → E → A → D ile yeniden sıralanır
  const genelSira=S=>{const ok=S.rows.filter(r=>!r.irm),irm=S.rows.filter(r=>r.irm),K=r=>[r.total,r.e,r.a,r.d].map(v=>Math.round(num(v)*1e3));
   ok.sort((a,b)=>{const p=K(a),q=K(b);for(let i=0;i<4;i++)if(p[i]!==q[i])return q[i]-p[i];return 0});ok.forEach((r,i)=>{r.rank=i&&K(ok[i-1]).join()===K(r).join()?ok[i-1].rank:i+1});irm.forEach(r=>{r.rank=null});
   return{...S,rows:ok.concat(irm)}};
- ids.forEach(k=>{const fin=isFin(kats,k),al=katAletleri(kats,k),bk=String(k).replace(/^final_/,"").split("__")[0],ad=fin&&kats[bk]?katAdi(kats,bk):katAdi(kats,k).replace(/\s*[—–-]\s*(Genel Tasnif Finali|[^—–-]*Finali)\s*$/i,""),grp=isGrp(kats,k);
+ ids.forEach(k=>{const fin=isFin(kats,k),al=rit?katAletleri(kats,k):[],bk=String(k).replace(/^final_/,"").split("__")[0],ad=fin&&kats[bk]?katAdi(kats,bk):katAdi(kats,k).replace(/\s*[—–-]\s*(Genel Tasnif Finali|[^—–-]*Finali)\s*$/i,""),grp=isGrp(kats,k);
   if(fin){const fa=kats[k].alet||String(k).split("__")[1]||null;if(!opt.final)return;
    let S=satirlar(k,fa||null);if(!fa)S=genelSira(S);if(S.rows.length)out.push({tip:fa?"final_alet":"final_aa",kat:k,katAd:ad,alet:fa,grp,aletler:fa?[fa]:al,...S});return}
   if(opt.genel){const S=genelSira(satirlar(k,null));if(S.rows.length)out.push({tip:"aa",kat:k,katAd:ad,grp,aletler:al,...S})}
   if(opt.alet&&al.length>1)al.forEach(a=>{const S=satirlar(k,a);if(S.rows.length)out.push({tip:"alet",kat:k,katAd:ad,alet:a,grp,aletler:[a],...S})});
-  if(opt.takim&&!grp&&C.takimSonuclari!==!1){const T=takimHesapla(C,k,intl);if(T.rows.length)out.push({tip:"takim",kat:k,katAd:ad,grp,aletler:al,...T})}});
+  if(rit&&opt.takim&&!grp&&C.takimSonuclari!==!1){const T=takimHesapla(C,k,intl);if(T.rows.length)out.push({tip:"takim",kat:k,katAd:ad,grp,aletler:al,...T})}});
  return out}
 
 // Takım sıralaması (Sonuçlar sayfasındaki hesapla aynı)
@@ -122,15 +129,32 @@ function hakemAnaliz(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},spor=
     if(tek&&sj==null)return;const rf=tek?sj:refv,rk=tek||useSj?"SJ":"Ortak";
     L.forEach(([poz,v])=>{const dev=v-rf;rows.push({...base,panel:P,poz,val:v,ref:rf,refKaynak:rk,dev,tol:.5,dis:Math.abs(dev)>.5+1e-9,pct:dPct(dev,P==="DA"&&!grp?D_RGI_DA:D_STD),atildi:!1,blok:!1,kim:kimOf(cat,al,poz)})})})})})});
  return{rows,ozel,dfark}}
+// AEROBİK hakem sapması — AerobikFigKarnePage (WC AER CoP 2025–2028) ile aynı: A = puan, E = 10 − kesinti; panel sonucu §8.1.1
+// (4 hakemde uçlar atılır, 6'da 2+2; ortadaki fark §8.1.2 toleransı aşarsa tüm notların ortalaması), referans SJ (sjPanel.a/e.value) ya da panel;
+// tolerans son puana göre 8+ 0.3 · 7+ 0.4 · 6+ 0.5 · altı 0.6; §8.1.6 uç fark ≥ 1.0. Derece / yüzde yok. Hakem: hakemler/<kat>/<a1|e2…>.
+const AER_TOL=v=>v>=8-1e-9?.3:v>=7-1e-9?.4:v>=6-1e-9?.5:.6;
+const aerPanel=sc=>{const s=[...sc].sort((a,b)=>a-b),n=s.length,ort=s.reduce((a,b)=>a+b,0)/n;if(n<4)return ort;const k=n>=6?2:1,o=s.slice(k,n-k),m=o.reduce((a,b)=>a+b,0)/o.length;return o[o.length-1]-o[0]>AER_TOL(m)+1e-9?ort:m};
+function hakemAnalizAer(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},HK=C.hakemler||{},rows=[],ozel={},bk=k=>String(k).replace(/^final_/,"");
+ const kim=(cat,pos)=>{const h=(HK[cat]||HK[bk(cat)]||{})[pos];if(!h)return null;const o=typeof h==="object"?h:{name:String(h)};const ad=String(o.name||o.ad||"").replace(/\s*\([A-Z]{3}\)\s*$/,"");return ad?{ad:nrmAd(ad),ulke:o.ulke||"",refId:o.id||null}:null};
+ Object.entries(pun).forEach(([cat,ents])=>{if(!kats[cat])return;if(isFin(kats,cat)&&!opt.hFin)return;if(opt.kats&&opt.kats.length&&!opt.kats.includes(bk(cat)))return;const katAd=katAdi(kats,cat),grp=isGrp(kats,cat);
+  Object.entries(ents||{}).forEach(([aid,x])=>{if(!x||typeof x!=="object"||x.durum!=="tamamlandi")return;
+   const a=C.sporcular?.[cat]?.[aid];let sp;if(a)sp={ad:[a.ad,a.soyad].filter(Boolean).join(" "),ulke:a.ulke||"",kulup:String(a.okul||a.kulup||"").trim(),il:a.il||""};else{const u=uyeAd(C,cat,aid),p=String(aid).split("::");sp={ad:u.uyeler.join(", ")||aid,ulke:u.ulke,kulup:p.length>=3?p.slice(1,-1).join("::"):"",il:u.il}}
+   [["A","a","aPanel"],["E","e","ePanel"]].forEach(([P,pn,alan])=>{if(!opt.hPanel.includes(P))return;const PP=x[alan];if(!PP||typeof PP!=="object")return;
+    const js=Object.keys(PP).filter(k=>/^j\d+$/.test(k)&&hnum(PP[k])!=null).sort((u,w)=>parseInt(u.slice(1))-parseInt(w.slice(1)));if(js.length<2)return;
+    const sc=js.map(k=>P==="A"?hnum(PP[k]):10-hnum(PP[k])),pf=aerPanel(sc),sjv=hnum(x.sjPanel?.[pn]?.value),sjN=sjv!=null?(P==="A"?sjv:10-sjv):null,useSj=opt.hRef==="sj"&&sjN!=null,refv=useSj?sjN:pf,tol=AER_TOL(refv);
+    const mx=Math.max(...sc),mn=Math.min(...sc),k=sc.length>=6?2:sc.length>=4?1:0,sir=sc.map((v,i)=>[v,i]).sort((u,w)=>u[0]-w[0]),at=new Set([...sir.slice(0,k),...sir.slice(sc.length-k)].map(z=>z[1]));
+    const oz=ozel[P]||(ozel[P]={n:0,mud:0,blok:0,sjYok:0});oz.n++;if(mx-mn>=1-1e-9)oz.blok++;if(sjN==null)oz.sjYok++;else if(Math.abs(sjN-pf)>AER_TOL(sjN)+1e-9)oz.mud++;
+    js.forEach((j,i)=>{const poz=P+j.slice(1),dev=sc[i]-refv;rows.push({C,cat,katAd,al:"",grp,sp,panel:P,poz,val:sc[i],ref:refv,refKaynak:useSj?"SJ":"Panel",dev,tol,dis:Math.abs(dev)>tol+1e-9,pct:null,atildi:at.has(i),blok:mx-mn>=1-1e-9,kim:kim(cat,pn+j.slice(1))})})})})});
+ return{rows,ozel,dfark:[]}}
 // hakem bazında özet (isimli hakem yarışmalar arası birleşir; isimsiz → yarışma · pozisyon)
 function hakemOzet(rows){const M=new Map();
  rows.forEach(r=>{const isimli=!!(r.kim&&r.kim.ad),k=isimli?(r.kim.refId||r.kim.ad):r.C._id+"|"+r.poz;
   const o=M.get(k)||{k,isimli,ad:isimli?r.kim.ad:r.poz,ulke:isimli?(r.kim.ulke||""):"",yar:new Set(),poz:new Set(),pan:new Set(),rs:[],C:r.C};M.set(k,o);o.yar.add(r.C._id);o.poz.add(r.poz);o.pan.add(r.panel);o.rs.push(r)});
- return[...M.values()].map(o=>{const rs=o.rs,n=rs.length,tip=[...o.pan].every(p=>p==="DA"||p==="DB")?"D":"AE",pct=rs.reduce((a,x)=>a+x.pct,0)/n,ort=rs.reduce((a,x)=>a+x.dev,0)/n,abs=rs.reduce((a,x)=>a+Math.abs(x.dev),0)/n,mx=rs.reduce((a,x)=>Math.abs(x.dev)>Math.abs(a)?x.dev:a,0),dis=rs.filter(x=>x.dis).length;
+ return[...M.values()].map(o=>{const rs=o.rs,n=rs.length,tip=[...o.pan].every(p=>p==="DA"||p==="DB")?"D":"AE",yp=rs.every(x=>x.pct!=null),pct=yp?rs.reduce((a,x)=>a+x.pct,0)/n:null,ort=rs.reduce((a,x)=>a+x.dev,0)/n,abs=rs.reduce((a,x)=>a+Math.abs(x.dev),0)/n,mx=rs.reduce((a,x)=>Math.abs(x.dev)>Math.abs(a)?x.dev:a,0),dis=rs.filter(x=>x.dis).length;
   // kendi ülkesi / kulübü / ili sporcusu lehine fark (A/E kesinti: az kesinti lehte; D: yüksek not lehte)
   let leh=null;if(o.ulke){const u=nrmAd(o.ulke),bu=x=>[x.sp.ulke,x.sp.kulup,x.sp.il].some(v=>v&&nrmAd(v)===u),ken=rs.filter(bu),dig=rs.filter(x=>!bu(x));
    if(ken.length&&dig.length){const sg=x=>x.panel==="A"||x.panel==="E"?-x.dev:x.dev;leh={n:ken.length,fark:ken.reduce((a,x)=>a+sg(x),0)/ken.length-dig.reduce((a,x)=>a+sg(x),0)/dig.length}}}
-  return{...o,yar:o.yar.size,poz:[...o.poz].sort().join(", "),pan:[...o.pan].sort().join(", "),n,pct,grade:GRADE(pct,tip),ort,abs,mx,dis,leh}}).sort((a,b)=>{const O=x=>["DA","DB","A","E"].indexOf(x.pan.split(", ")[0]);return O(a)-O(b)||a.pan.localeCompare(b.pan)||b.pct-a.pct||a.ad.localeCompare(b.ad,"tr")})}
+  return{...o,yar:o.yar.size,poz:[...o.poz].sort().join(", "),pan:[...o.pan].sort().join(", "),n,pct,grade:pct==null?"—":GRADE(pct,tip),ort,abs,mx,dis,leh}}).sort((a,b)=>{const O=x=>["DA","DB","A","E"].indexOf(x.pan.split(", ")[0]);return O(a)-O(b)||a.pan.localeCompare(b.pan)||b.pct-a.pct||a.ad.localeCompare(b.ad,"tr")})}
 
 
 // ---------------- NOT DEĞİŞİKLİKLERİ VE İTİRAZLAR ----------------
@@ -139,21 +163,27 @@ function hakemOzet(rows){const M=new Map();
 // score_irm(_clear), judge_score_submit (hakem kendi notunu düzeltti), score_submitted (aynı rutin birden çok kayıt → sonuç değişimi).
 // score_correction / score_send_back logları yalnız duzeltmeler kaydı yoksa (eski kayıtlar) sayılır.
 const DG_TUR={bh_degistir:["Başhakem notu değiştirdi","#DB2777","Chief judge changed score"],geri_gonder:["Hakeme geri gönderildi","#7C3AED","Sent back to judge"],hakem_yeniden:["Hakem yeniden girdi","#0891B2","Judge re-entered"],bh_alan:["Başhakem hakem alanını değiştirdi","#E11D48","Chief judge edited judge field"],
- bh_bos:["Başhakem boş hakem notunu girdi","#F59E0B","Chief judge entered missing score"],alan_sil:["Alan silindi","#64748B","Field cleared"],kilit:["Kilit kaldırıldı","#B45309","Unlocked"],irm:["IRM (DNS/DNF/DSQ)","#475569","IRM (DNS/DNF/DSQ)"],hakem_duzelt:["Hakem kendi notunu düzeltti","#0E7490","Judge corrected own score"]};
+ bh_bos:["Başhakem boş hakem notunu girdi","#F59E0B","Chief judge entered missing score"],alan_sil:["Alan silindi","#64748B","Field cleared"],kilit:["Kilit kaldırıldı","#B45309","Unlocked"],irm:["IRM (DNS/DNF/DSQ)","#475569","IRM (DNS/DNF/DSQ)"],uj_red:["Üst jüri reddetti","#9333EA","Superior jury rejected"],hakem_duzelt:["Hakem kendi notunu düzeltti","#0E7490","Judge corrected own score"]};
 const IT_TUR={DB:"DB",DA:"DA",ZAMAN:"Zaman",CIZGI:"Çizgi"},IT_DUR={beklemede:"İncelemede",kabul:"Kabul",red:"Red",iptal:"Geri çekildi"};
 const alanPoz=a=>{const s=String(a||"");let m=/^(a|e)Panel\.j(\d)$/i.exec(s);if(m)return m[1].toUpperCase()+m[2];m=/^(da|db)(\d)$/i.exec(s);if(m)return m[1].toUpperCase()+m[2];
  m=/^sj(a|e|da|db)$/i.exec(s);if(m)return"SJ"+m[1].toUpperCase();if(/zaman/i.test(s))return"T";m=/cizgi(\d)/i.exec(s);if(m)return"L"+m[1];return s};
-function degisiklikHesapla(C,logs,opt){const kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},ev=[],bk=k=>String(k).replace(/^final_/,"").split("__")[0];
- const katOk=k=>k&&(!opt.kats||!opt.kats.length||opt.kats.includes(bk(k)))&&(opt.dFin||!isFin(kats,k));
- const spAd=(k,id,yed)=>{const a=spor[k]?.[id];if(a)return[a.ad,a.soyad].filter(Boolean).join(" ");const p=String(id||"").split("::");return yed||(p.length>=3?p.slice(1,-1).join(" "):id||"")};
+function degisiklikHesapla(C,logs,opt){const kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},ev=[],bk=k=>String(k).replace(/^final_/,"").split("__")[0],aer=BRN(C)==="aerobik";
+ const katOk=k=>(!k&&aer)||k&&(!opt.kats||!opt.kats.length||opt.kats.includes(bk(k)))&&(opt.dFin||!isFin(kats,k));
+ const spAd=(k,id,yed)=>{const a=spor[k]?.[id];if(a)return[a.ad,a.soyad].filter(Boolean).join(" ");if(aer&&String(id||"").includes("::")){const u=uyeAd(C,k,id);if(u.uyeler.length)return u.uyeler.join(", ")}const p=String(id||"").split("::");return yed&&!String(yed).includes("::")?yed:(p.length>=3?p.slice(1,-1).join(" "):yed||id||"")};
  const spUlke=(k,id)=>{const a=spor[k]?.[id];return a?(a.ulke||a.okul||a.kulup||a.il||""):""};
- const push=(o)=>{if(!katOk(o.kat))return;const poz=alanPoz(o.alan);ev.push({...o,C,katAd:katAdi(kats,o.kat),sp:spAd(o.kat,o.aid,o.sp),temsil:spUlke(o.kat,o.aid),poz,hakem:/^(A|E|DA|DB)\d$/.test(poz)?hakemKimi(C,o.kat,o.al,poz):null})};
+ const push=(o)=>{if(!katOk(o.kat))return;const poz=alanPoz(o.alan);ev.push({...o,C,katAd:katAdi(kats,o.kat),sp:spAd(o.kat,o.aid,o.sp),temsil:spUlke(o.kat,o.aid),poz,hakem:/^(A|E|DA|DB)\d$/.test(poz)?(aer?(h=>h?{ad:nrmAd(typeof h==="object"?h.name||h.ad||"":String(h))}:null)((C.hakemler?.[o.kat]||C.hakemler?.[bk(o.kat)]||{})[poz.toLowerCase()]):hakemKimi(C,o.kat,o.al,poz)):null})};
  // puan kayıtlarındaki düzeltmeler
  Object.entries(pun).forEach(([k,aths])=>Object.entries(aths||{}).forEach(([id,als])=>Object.entries(als||{}).forEach(([al,rec])=>{const dz=rec&&typeof rec==="object"&&rec.duzeltmeler;if(!dz||typeof dz!=="object")return;
   Object.values(dz).forEach(x=>{if(!x||typeof x!=="object")return;push({ts:+x.ts||0,kat:k,aid:id,al,tur:x.tip==="bashakem"?"bh_degistir":x.tip==="geri_gonder"?"geri_gonder":"hakem_yeniden",alan:x.alan||"",eski:x.eski,yeni:x.yeni,kim:x.kim||"",not:x.not||(x.istek?"istek üzerine":"")})})})));
+ // üst jüri reddi (aerobik puan kaydında ustJuriRed / ustJuriRedNote)
+ if(aer)Object.entries(pun).forEach(([k,ents])=>Object.entries(ents||{}).forEach(([id,x])=>{if(x&&typeof x==="object"&&x.ustJuriRed)push({ts:+x.ustJuriRed||0,kat:k,aid:id,al:"",tur:"uj_red",alan:"",eski:null,yeni:null,kim:"",not:x.ustJuriRedNote||""})}));
  // işlem kaydı
  const sub={};
  Object.values(logs||{}).forEach(v=>{if(!v||typeof v!=="object")return;const t=v.type,base={ts:+v.timestamp||0,kat:v.category,aid:v.athleteId,al:v.alet,sp:v.athleteName,kim:v.user||""};
+  const msj=String(v.message||v.mesaj||"");
+  if(aer&&t==="score_modify"){const m=/^\[Aerobik\]\s*(.+?)\s+—\s+([^:]+):\s*başhakem hakem notlarını değiştirdi\s*\((.+)\)\s*$/.exec(msj);if(m){m[3].split(/,\s*/).forEach(p=>{const q=/^([A-Z]+\d*)\s*:\s*([^→]*)→\s*(.*)$/.exec(p.trim());if(q)push({...base,kat:m[2].trim(),sp:m[1].trim(),tur:"bh_alan",alan:q[1],eski:q[2].trim()===""||q[2].trim()==="—"?null:q[2].trim(),yeni:q[3].trim()})})}return}
+  if(aer&&t==="score_create"){const m=/^\[Aerobik\]\s*(.+?)\s+—\s+([^:]+):\s*([\d.]+)/.exec(msj);if(m){const key=m[2].trim()+"|N:"+m[1].trim()+"|";(sub[key]||(sub[key]=[])).push({ts:base.ts,so:parseFloat(m[3]),kim:v.user||""})}return}
+  if(aer&&t==="score_unlock"&&!v.athleteId){const m=/^\[Aerobik\]\s*(.+?)\s+—\s+puan kilidi kaldırıldı/.exec(msj);push({...base,kat:base.kat||"",sp:m?m[1].trim():"",tur:"kilit",alan:"",eski:null,yeni:null,not:""});return}
   if(t==="sj_field_override")push({...base,tur:v.oldValue!=null&&v.oldValue!==""?"bh_alan":"bh_bos",alan:v.field,eski:v.oldValue,yeni:v.newValue});
   else if(t==="score_correction"||t==="score_send_back"){let d={};try{d=JSON.parse(v.data||"{}")}catch{}const tur=t==="score_correction"?"bh_degistir":"geri_gonder",al2=d.alan||"";
    // duzeltmeler kaydı varsa (aynı rutin, alan, ±10 sn) sayılmaz
@@ -164,11 +194,13 @@ function degisiklikHesapla(C,logs,opt){const kats=C.kategoriler||{},spor=C.sporc
   else if(t==="score_irm"||t==="score_irm_clear"){let d={};try{d=JSON.parse(v.data||"{}")}catch{}push({...base,tur:"irm",alan:"",eski:t==="score_irm_clear"?(d.irm||v.oldValue||"IRM"):null,yeni:t==="score_irm"?(d.irm||v.newValue||"IRM"):null,not:d.neden||d.irmNeden||""})}
   else if(t==="judge_score_submit"&&opt.dHakem&&v.oldValue!=null&&v.oldValue!==""&&String(v.oldValue)!==String(v.newValue))push({...base,tur:"hakem_duzelt",alan:v.field,eski:v.oldValue,yeni:v.newValue});
   else if(t==="score_submitted"){let so=null;try{so=JSON.parse(v.data||"{}").sonuc}catch{}const key=v.category+"|"+v.athleteId+"|"+v.alet;(sub[key]||(sub[key]=[])).push({ts:base.ts,so,kim:v.user||""})}});
- const tekrar=Object.entries(sub).filter(([,l])=>l.length>1).map(([key,l])=>{l.sort((a,b)=>a.ts-b.ts);const[k,id,al]=key.split("|");const u=l.filter(x=>x.so!=null);
-  return{C,kat:k,katAd:katAdi(kats,k),aid:id,al,sp:spAd(k,id),temsil:spUlke(k,id),n:l.length,ilk:u.length?u[0].so:null,son:u.length?u[u.length-1].so:null,ts1:l[0].ts,ts2:l[l.length-1].ts,kilit:ev.filter(e=>e.tur==="kilit"&&e.kat===k&&e.aid===id&&e.al===al).length}})
+ const tekrar=Object.entries(sub).filter(([,l])=>l.length>1).map(([key,l])=>{l.sort((a,b)=>a.ts-b.ts);let[k,id,al]=key.split("|");const adN=String(id).startsWith("N:")?id.slice(2):null;if(adN)id="";const u=l.filter(x=>x.so!=null);
+  return{C,kat:k,katAd:katAdi(kats,k),aid:id,al,sp:adN||spAd(k,id),temsil:adN?"":spUlke(k,id),n:l.length,ilk:u.length?u[0].so:null,son:u.length?u[u.length-1].so:null,ts1:l[0].ts,ts2:l[l.length-1].ts,kilit:ev.filter(e=>e.tur==="kilit"&&e.kat===k&&e.aid===id&&e.al===al).length}})
   .filter(x=>katOk(x.kat)).sort((a,b)=>Math.abs((b.son??0)-(b.ilk??0))-Math.abs((a.son??0)-(a.ilk??0))||b.n-a.n);
  // itirazlar
- const it=Object.entries(C.itirazlar||{}).map(([id,x])=>({id,...x,C,katAd:katAdi(kats,x.kategori),temsil:spUlke(x.kategori,x.sporcuId)||x.kulup||x.il||""})).filter(x=>katOk(x.kategori)).sort((a,b)=>(+a.talepZamani||0)-(+b.talepZamani||0));
+ const nrmIt=x=>x&&x.catId?{kategori:x.catId,sporcuId:x.athId,sporcuAd:[x.ad,x.soyad].filter(Boolean).join(" ")||spAd(x.catId,x.athId,x.athName),tur:x.scoreType||"",eskiDeger:x.eski??null,yeniDeger:x.status==="accepted"?x.value:null,eskiSonuc:x.eskiToplam??null,yeniSonuc:x.status==="accepted"?x.total:null,
+   durum:({accepted:"kabul",rejected:"red",pending:"beklemede",withdrawn:"iptal"})[x.status]||x.status||"beklemede",talepZamani:x.ts,kararZamani:x.resolvedAt||null,ucret:0,paraBirimi:"",kararVeren:x.resolvedBy||"",not:x.not||""}:x;
+ const it=Object.entries(C.itirazlar||{}).map(([id,x0])=>{const x=nrmIt(x0);return{id,...x,C,katAd:katAdi(kats,x.kategori),temsil:spUlke(x.kategori,x.sporcuId)||x.kulup||x.il||(aer&&String(x.sporcuId||"").includes("::")?String(x.sporcuId).split("::").slice(1,-1).join("::"):"")}}).filter(x=>katOk(x.kategori)).sort((a,b)=>(+a.talepZamani||0)-(+b.talepZamani||0));
  return{ev:ev.filter(e=>opt.dTur.includes(e.tur)).sort((a,b)=>a.ts-b.ts),tumEv:ev,tekrar,it}}
 
 
@@ -180,7 +212,7 @@ const dYil=v=>{const m=/(\d{4})/.exec(String(v||""));return m?+m[1]:null};
 function katilimHesapla(C,opt){const kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},intl=isIntl(C),y0=dYil(C.baslangicTarihi)||new Date().getFullYear();
  const kOk=k=>kats[k]&&!isFin(kats,k)&&(!opt.kats||!opt.kats.length||opt.kats.includes(k));
  const sp=[],grp={},kat={};
- Object.keys(spor).filter(kOk).sort((a,b)=>yasI(a)-yasI(b)||a.localeCompare(b)).forEach(k=>{const G=isGrp(kats,k),al=katAletleri(kats,k);
+ Object.keys(spor).filter(kOk).sort((a,b)=>yasI(a)-yasI(b)||a.localeCompare(b)).forEach(k=>{const G=isGrp(kats,k),al=BRN(C)==="ritmik"?katAletleri(kats,k):[];
   const K=kat[k]={k,ad:katAdi(kats,k),grp:G,sporcu:0,giris:0,cikis:0,yarisan:0,yarismayan:0,kulup:new Set(),bolge:new Set(),yas:[],finalist:new Set()};
   Object.entries(spor[k]||{}).forEach(([id,a])=>{if(!a||typeof a!=="object")return;
    const kul0=String(a.okul||a.kulup||"").trim(),il=String(a.il||"").trim(),kul=kul0||il,ul=intl?(sporcuUlke(a,C)||""):"",ad=[a.ad,a.soyad].filter(Boolean).join(" ")||a.adSoyad||"";
@@ -188,10 +220,10 @@ function katilimHesapla(C,opt){const kats=C.kategoriler||{},spor=C.sporcular||{}
    const yil=dYil(a.dob),yas=yil?y0-yil:null,bolge=intl?ul:il;K.sporcu++;K.kulup.add(kul||"—");bolge&&K.bolge.add(bolge);yas!=null&&yas>3&&yas<60&&K.yas.push(yas);
    let gkey=null;if(G){gkey=k+"::"+String(kul0).replace(/[.#$\[\]\/]/g,"-")+"::"+(a.grupNo!=null?a.grupNo:1);grp[gkey]=grp[gkey]||{k,kul,bolge};}
    const pk=G?gkey:id,p=pun[k]?.[pk]||pun[k]?.[id]||{},alL=G?al:(Array.isArray(a.aletler)&&a.aletler.length?a.aletler:al);
-   const pu=alL.filter(x=>{const q=p[x];return q&&typeof q==="object"&&(q.durum==="tamamlandi"||q.sonuc!=null||q.irm)}).length;
-   if(!G){K.giris++;K.cikis+=alL.length;pu?K.yarisan++:K.yarismayan++}
-   sp.push({k,id,kimlik,ad,kul,il,ilce:String(a.ilce||"").trim(),ul,bolge,yil,yas,G,gkey,cikis:G?0:alL.length,puan:pu,fin:!1})});
-  if(G){const gs=Object.entries(grp).filter(([g,v])=>v.k===k);K.giris=gs.length;gs.forEach(([g])=>{const p=pun[k]?.[g]||{},pu=al.filter(x=>{const q=p[x];return q&&typeof q==="object"&&(q.durum==="tamamlandi"||q.sonuc!=null||q.irm)}).length;K.cikis+=al.length;pu?K.yarisan++:K.yarismayan++})}});
+   const pu=alL.length?alL.filter(x=>{const q=p[x];return q&&typeof q==="object"&&(q.durum==="tamamlandi"||q.sonuc!=null||q.irm)}).length:(p&&(p.durum==="tamamlandi"||p.sonuc!=null||p.irm)?1:0);
+   if(!G){K.giris++;K.cikis+=alL.length||1;pu?K.yarisan++:K.yarismayan++}
+   sp.push({k,id,kimlik,ad,kul,il,ilce:String(a.ilce||"").trim(),ul,bolge,yil,yas,G,gkey,cikis:G?0:(alL.length||1),puan:pu,fin:!1})});
+  if(G){const gs=Object.entries(grp).filter(([g,v])=>v.k===k);K.giris=gs.length;gs.forEach(([g])=>{const p=pun[k]?.[g]||{},pu=al.length?al.filter(x=>{const q=p[x];return q&&typeof q==="object"&&(q.durum==="tamamlandi"||q.sonuc!=null||q.irm)}).length:(p.durum==="tamamlandi"||p.sonuc!=null||p.irm?1:0);K.cikis+=al.length||1;pu?K.yarisan++:K.yarismayan++})}});
  // finalistler
  Object.keys(kats).filter(k=>isFin(kats,k)).forEach(fk=>{const b=String(fk).replace(/^final_/,"").split("__")[0];if(!kat[b])return;Object.entries(spor[fk]||{}).forEach(([id,a])=>{if(!a||typeof a!=="object"||a._yedek)return;kat[b].finalist.add(id);const x=sp.find(s0=>s0.k===b&&s0.id===id);x&&(x.fin=!0)})});
  return{C,intl,sp,kat:Object.values(kat).map(K=>({...K,kulup:K.kulup.size,bolge:K.bolge.size,finalist:K.finalist.size,yasOrt:K.yas.length?K.yas.reduce((a,b)=>a+b,0)/K.yas.length:null,yasMin:K.yas.length?Math.min(...K.yas):null,yasMax:K.yas.length?Math.max(...K.yas):null})),gruplar:Object.keys(grp).length}}
@@ -201,28 +233,34 @@ function katilimHesapla(C,opt){const kats=C.kategoriler||{},spor=C.sporcular||{}
 // Plan: cikisListesi.gunler[].bloklar[] (tarih + saat, satırlar = rutinler). Gerçekleşen: ilk çağrı (logs athlete_call) ya da ilk puan,
 // son puan (puanlar/../timestamp = kayıt anı). Çıkış listesi yoksa puan zamanlarından gün × kategori × alet blokları kurulur.
 const gunStr=t=>{const d=new Date(t);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
-function zamanHesapla(C,logs,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},cl=C.cikisListesi,bk=k=>String(k).replace(/^final_/,"").split("__")[0];
+const TRAY={ocak:1,şubat:2,subat:2,mart:3,nisan:4,mayıs:5,mayis:5,haziran:6,temmuz:7,ağustos:8,agustos:8,eylül:9,eylul:9,ekim:10,kasım:11,kasim:11,aralık:12,aralik:12};
+const gunCoz=t=>{const s0=String(t||"").trim();let m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s0);if(m)return m[1]+"-"+m[2]+"-"+m[3];m=/(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(\d{4})/.exec(s0);if(m){const a=TRAY[m[2].toLocaleLowerCase("tr-TR")];if(a)return m[3]+"-"+String(a).padStart(2,"0")+"-"+m[1].padStart(2,"0")}m=/^(\d{2})\.(\d{2})\.(\d{4})/.exec(s0);return m?m[3]+"-"+m[2]+"-"+m[1]:""};
+const tsCoz=v=>{const n=+v;if(n>0)return n;const p=Date.parse(v);return isNaN(p)?null:p};
+function zamanHesapla(C,logs,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},cl=C.cikisListesi,bk=k=>String(k).replace(/^final_/,"").split("__")[0],aer=BRN(C)==="aerobik";
  const katOk=k=>k&&(!opt.kats||!opt.kats.length||opt.kats.includes(bk(k)));
- const pts=(k,id,al)=>{const x=pun[k]?.[id]?.[al];return x&&typeof x==="object"&&(x.durum==="tamamlandi"||x.sonuc!=null)?(+x.timestamp||null):null};
- const cagri={};Object.values(logs||{}).forEach(v=>{if(v&&v.type==="athlete_call"&&v.timestamp){const key=v.category+"|"+v.athleteId+"|"+v.alet,t=+v.timestamp;if(!cagri[key]||t<cagri[key])cagri[key]=t}});
- const olc=(r)=>{const sc=r.map(x=>pts(x.k,x.id,x.al)).filter(Boolean),ca=r.map(x=>cagri[x.k+"|"+x.id+"|"+x.al]).filter(Boolean),bas=[...sc,...ca].length?Math.min(...sc,...ca):null,son=sc.length?Math.max(...sc):null;
-  const cp=r.map(x=>{const a=cagri[x.k+"|"+x.id+"|"+x.al],b=pts(x.k,x.id,x.al);return a&&b&&b>a?b-a:null}).filter(v=>v!=null&&v<36e5);
+ const pts=(k,id,al)=>{const x=aer?pun[k]?.[id]:pun[k]?.[id]?.[al];return x&&typeof x==="object"&&(x.durum==="tamamlandi"||x.sonuc!=null)?tsCoz(x.timestamp):null};
+ const cagri={};Object.values(logs||{}).forEach(v=>{if(v&&v.type==="athlete_call"&&v.timestamp){const key=v.category+"|"+v.athleteId+"|"+(aer?"":v.alet),t=+v.timestamp;if(!cagri[key]||t<cagri[key])cagri[key]=t}});
+ const olc=(r)=>{const sc=r.map(x=>pts(x.k,x.id,x.al)).filter(Boolean),ca=r.map(x=>cagri[x.k+"|"+x.id+"|"+(aer?"":x.al)]).filter(Boolean),bas=[...sc,...ca].length?Math.min(...sc,...ca):null,son=sc.length?Math.max(...sc):null;
+  const cp=r.map(x=>{const a=cagri[x.k+"|"+x.id+"|"+(aer?"":x.al)],b=pts(x.k,x.id,x.al);return a&&b&&b>a?b-a:null}).filter(v=>v!=null&&v<36e5);
   return{n:r.length,puanli:sc.length,bas,son,sure:bas&&son?son-bas:null,rutin:bas&&son&&sc.length>1?(son-bas)/(sc.length-1):null,cagriPuan:cp.length?cp.reduce((a,b)=>a+b,0)/cp.length:null}};
  const bl=[];
  if(cl&&Array.isArray(cl.gunler)&&cl.gunler.length){cl.gunler.forEach(g=>{const L0=(g.bloklar||[]).filter(Boolean);L0.forEach((b,i)=>{const r=[];(b.rows||[]).forEach(row=>(row&&row.r||[]).forEach(x=>{if(!x||!x.a)return;r.push({k:x.kat||x.k||row.kat||b.kat,id:x.a,al:x.al||(b.aletler||[])[0]})}));
    const ks=[...new Set(r.map(x=>x.k).filter(Boolean))];if(!ks.some(katOk))return;
    const plan=g.tarih&&b.saat?new Date(g.tarih+"T"+b.saat+":00").getTime():null,nx=L0[i+1],planSon=nx&&nx.saat&&g.tarih?new Date(g.tarih+"T"+nx.saat+":00").getTime():null;
    bl.push({C,idx:bl.length,gun:g.tarih||"",saat:b.saat||"",plan,planSure:plan&&planSon&&planSon>plan?planSon-plan:null,kat:ks.map(k=>katAdi(kats,k)).join(" + "),al:[...new Set(r.map(x=>x.al).filter(Boolean))],...olc(r),gecikme:null})})})}
+ else if(aer){const G={};Object.entries(pun).forEach(([k,a])=>{if(!katOk(k)||!kats[k])return;Object.entries(a||{}).forEach(([id,x])=>{const t=pts(k,id,"");if(!t)return;const sp0=C.sporcular?.[k]?.[id]||Object.values(C.sporcular?.[k]||{}).find(z=>z&&String(id).includes("::")&&String(z.grupNo??"")===String(id).split("::").pop())||{};
+   const gP=gunCoz(sp0.gun),gun=gP||gunStr(t),key=gun+"|"+k,o=G[key]||(G[key]={gun,k,r:[],saat:[]});o.r.push({k,id,al:""});/^\d{1,2}:\d{2}$/.test(String(sp0.baslangicSaati||""))&&gP&&o.saat.push(String(sp0.baslangicSaati).padStart(5,"0"))})});
+  Object.values(G).forEach(x=>{const ss=x.saat.sort(),st=ss[0]||"",plan=st?new Date(x.gun+"T"+st+":00").getTime():null,son=ss[ss.length-1];bl.push({C,idx:0,gun:x.gun,saat:st,plan,planSure:plan&&son&&son!==st?new Date(x.gun+"T"+son+":00").getTime()-plan:null,kat:katAdi(kats,x.k),al:[],...olc(x.r),gecikme:null})})}
  else{const G={};Object.entries(pun).forEach(([k,a])=>{if(!katOk(k)||!kats[k])return;Object.entries(a||{}).forEach(([id,als])=>Object.entries(als||{}).forEach(([al])=>{const t=pts(k,id,al);if(!t)return;const key=gunStr(t)+"|"+k+"|"+al;(G[key]||(G[key]={gun:gunStr(t),k,al,r:[]})).r.push({k,id,al})}))});
   Object.values(G).forEach(x=>bl.push({C,idx:0,gun:x.gun,saat:"",plan:null,planSure:null,kat:katAdi(kats,x.k),al:[x.al],...olc(x.r),gecikme:null}))}
  // puan plan gününden başka bir günde girildiyse (deneme / erteleme) gecikme hesaplanmaz
  bl.forEach(b=>{b.farkliGun=!!(b.plan&&b.bas&&gunStr(b.bas)!==b.gun);b.gecikme=b.plan&&b.bas&&!b.farkliGun?b.bas-b.plan:null});
- const planli=bl.some(b=>b.plan);bl.sort((a,b)=>(a.gun.localeCompare(b.gun))||(planli?a.idx-b.idx:((a.bas||0)-(b.bas||0))));
+ const planli=bl.some(b=>b.plan)&&!!(cl&&Array.isArray(cl.gunler)&&cl.gunler.length);bl.sort((a,b)=>(a.gun.localeCompare(b.gun))||(planli?a.idx-b.idx:((a.plan||a.bas||0)-(b.plan||b.bas||0))));
  const gunler=[...new Set(bl.map(b=>b.gun))].map(g=>{const B=bl.filter(b=>b.gun===g),P=B.filter(b=>b.plan),A=B.filter(b=>b.bas);
   return{C,gun:g,blok:B.length,rutin:B.reduce((a,b)=>a+b.n,0),puanli:B.reduce((a,b)=>a+b.puanli,0),planBas:P.length?Math.min(...P.map(b=>b.plan)):null,bas:A.length?Math.min(...A.map(b=>b.bas)):null,son:B.some(b=>b.son)?Math.max(...B.filter(b=>b.son).map(b=>b.son)):null,
    ortGec:B.filter(b=>b.gecikme!=null).length?B.filter(b=>b.gecikme!=null).reduce((a,b)=>a+b.gecikme,0)/B.filter(b=>b.gecikme!=null).length:null,maxGec:B.filter(b=>b.gecikme!=null).length?Math.max(...B.filter(b=>b.gecikme!=null).map(b=>b.gecikme)):null}});
  gunler.forEach(g=>{g.gecikme=g.planBas&&g.bas&&gunStr(g.bas)===g.gun?g.bas-g.planBas:null;g.farkliGun=!!(g.planBas&&g.bas&&gunStr(g.bas)!==g.gun);g.sure=g.bas&&g.son?g.son-g.bas:null});
- return{bl,gunler,planVar:!!(cl&&Array.isArray(cl.gunler)&&cl.gunler.length),cagriVar:Object.keys(cagri).length>0}}
+ return{bl,gunler,planVar:!!(cl&&Array.isArray(cl.gunler)&&cl.gunler.length)||bl.some(b=>b.plan),cagriVar:Object.keys(cagri).length>0}}
 
 // ---------------- SPORCU KARŞILAŞTIRMA ----------------
 // Her yarışmada genel tasnif (Sonuçlar kurallarıyla) + final sonuçları; sporcu kimliği lisans | ad + soyad + doğum tarihi.
@@ -249,11 +287,11 @@ const satirAd0=r=>r.soyad?String(r.soyad).toLocaleUpperCase("tr-TR")+" "+String(
 const vKaynak=u=>!u?"":/drive\.google|googleusercontent/.test(u)?"drive":/cloudinary/.test(u)?"cloudinary":"diger";
 function videoHesapla(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},spor=C.sporcular||{},bk=k=>String(k).replace(/^final_/,"").split("__")[0],G={},eksik=[];let mb=0,sure=0,yuk=[],src={drive:0,cloudinary:0,diger:0};
  Object.entries(pun).forEach(([k,a])=>{if(!kats[k]||opt.kats&&opt.kats.length&&!opt.kats.includes(bk(k)))return;
-  Object.entries(a||{}).forEach(([id,als])=>Object.entries(als||{}).forEach(([al,x])=>{if(!x||typeof x!=="object"||!(x.durum==="tamamlandi"||x.sonuc!=null))return;
+  Object.entries(a||{}).forEach(([id,als])=>(BRN(C)==="aerobik"?[["",als]]:Object.entries(als||{})).forEach(([al,x])=>{if(!x||typeof x!=="object"||!(x.durum==="tamamlandi"||x.sonuc!=null))return;
    const key=k+"|"+al,g=G[key]||(G[key]={C,kat:katAdi(kats,k),al,rutin:0,a:0,b:0,biri:0,cl:0});g.rutin++;const ua=x.videoUrlA,ub=x.videoUrlB;ua&&g.a++;ub&&g.b++;(ua||ub)&&g.biri++;
    [ua,ub].forEach(u=>{const s0=vKaynak(u);if(s0){src[s0]++;s0==="cloudinary"&&g.cl++}});
    const vb=x.videoBilgi;if((ua||ub)&&vb&&typeof vb==="object"){mb+=+vb.boyutMB||0;sure+=+vb.sureSn||0;vb.yuklemeSn&&yuk.push(+vb.yuklemeSn)}
-   if(!ua&&!ub){const sp=spor[k]?.[id],p=String(id).split("::");eksik.push({C,kat:katAdi(kats,k),al,ad:sp?[sp.ad,sp.soyad].filter(Boolean).join(" "):(p.length>=3?p.slice(1,-1).join(" "):id),temsil:sp?(sp.ulke||sp.okul||sp.kulup||sp.il||""):"",ts:+x.timestamp||0})}}))});
+   if(!ua&&!ub){const sp=spor[k]?.[id],p=String(id).split("::");eksik.push({C,kat:katAdi(kats,k),al,ad:sp?[sp.ad,sp.soyad].filter(Boolean).join(" "):(uyeAd(C,k,id).uyeler.join(", ")||(p.length>=3?p.slice(1,-1).join(" "):id)),temsil:sp?(sp.ulke||sp.okul||sp.kulup||sp.il||""):(p.length>=3?p.slice(1,-1).join("::"):""),ts:tsCoz(x.timestamp)||0})}}))});
  const hata=Object.values(C.kameraYukleme||{}).filter(x=>x&&typeof x==="object"&&(x.durum==="hata"||(x.durum==="yukleniyor"||x.durum==="kayitta")&&Date.now()-(+x.guncel||0)>6e5)).map(x=>({C,ad:x.ad||"",kat:katAdi(kats,x.kat),al:x.alet||"",cam:x.cam||"",durum:x.durum,mesaj:x.mesaj||"",ts:+x.guncel||+x.basla||0}));
  return{G:Object.values(G).sort((a,b)=>a.kat.localeCompare(b.kat,"tr")||a.al.localeCompare(b.al)),eksik:eksik.sort((a,b)=>a.kat.localeCompare(b.kat,"tr")||a.ts-b.ts),mb,sure,yukOrt:yuk.length?yuk.reduce((a,b)=>a+b,0)/yuk.length:null,src,hata}}
 
@@ -261,9 +299,9 @@ function videoHesapla(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},spor
 const LOG_TUR={athlete_call:"Sporcu çağrıldı",call_cancelled:"Çağrı iptal",score_submitted:"Puan kaydedildi",judge_score_submit:"Hakem notu girdi",sj_field_override:"Başhakem hakem alanını değiştirdi",
  score_field_cleared:"Alan silindi",score_unlock:"Kilit kaldırıldı",score_correction:"Başhakem notu değiştirdi",score_send_back:"Hakeme geri gönderildi",score_approval:"Puan onayı",score_irm:"IRM verildi",score_irm_clear:"IRM kaldırıldı",
  score_inquiry:"İtiraz açıldı",score_inquiry_decision:"İtiraz kararı",score_stop:"Yayın STOP",score_stop_release:"STOP kaldırıldı",final_create:"Final oluşturuldu",final_delete:"Final silindi",start_order_save:"Çıkış sırası kaydı",
- athlete_apparatus:"Sporcu aleti değişti",alet_transfer:"Alet aktarımı",panel_group_update:"Panel güncellendi",broadcast_profile:"Yayın profili",report_export:"Rapor indirildi",competition_update:"Yarışma güncellendi",competition_create:"Yarışma oluşturuldu"};
+ athlete_apparatus:"Sporcu aleti değişti",alet_transfer:"Alet aktarımı",panel_group_update:"Panel güncellendi",broadcast_profile:"Yayın profili",report_export:"Rapor indirildi",competition_update:"Yarışma güncellendi",competition_create:"Yarışma oluşturuldu",score_create:"Puan kaydedildi (Üst Jüri onayına)",score_modify:"Başhakem hakem notlarını değiştirdi",athlete_update:"Sporcu güncellendi"};
 function logHesapla(C,logs,opt){const L0=[];Object.values(logs||{}).forEach(v=>{if(!v||typeof v!=="object")return;const t=v.type||"";if(t==="judge_score_submit"&&!opt.lHakem)return;if(opt.lTur&&opt.lTur.length&&!opt.lTur.includes(t))return;
-  if(opt.lKul&&String(v.user||"")!==opt.lKul)return;L0.push({C,ts:+v.timestamp||0,t,kim:v.user||"",msj:String(v.message||v.mesaj||"").replace(/^\[Ritmik\]\s*/,""),sp:v.athleteName||"",al:v.alet||"",kat:v.category?katAdi(C.kategoriler||{},v.category):""})});
+  if(opt.lKul&&String(v.user||"")!==opt.lKul)return;L0.push({C,ts:+v.timestamp||0,t,kim:v.user||"",msj:String(v.message||v.mesaj||"").replace(/^\[(Ritmik|Aerobik)\]\s*/,""),sp:v.athleteName||"",al:v.alet||"",kat:v.category?katAdi(C.kategoriler||{},v.category):""})});
  return L0.sort((a,b)=>a.ts-b.ts)}
 
 // ---------------- SAYFA ----------------
@@ -279,7 +317,7 @@ const RAPORLAR=[
  {id:"log",ic:"history",t:"İşlem Kaydı",d:"Kim, ne zaman, neyi değiştirdi"}];
 
 function Raporlar(){
- const{toast}=usToast();usInit();const{currentUser:U}=usAuth()||{};const kim=U?.adSoyad||U?.kullaniciAdi||"";
+ const{toast}=usToast();const _D=usInit()||{},BR=_D.id==="aerobik"?"aerobik":"ritmik",BASE=BR==="aerobik"?"aerobik_yarismalar":"ritmik_yarismalar",RP=_D.routePrefix||(BR==="aerobik"?"/aerobic":"/rhythmic"),BRAD=BR==="aerobik"?"Aerobik":"Ritmik";const{currentUser:U}=usAuth()||{};const kim=U?.adSoyad||U?.kullaniciAdi||"";
  const[liste,setListe]=R.useState(null),[secili,setSecili]=R.useState([]),[ara,setAra]=R.useState(""),[arsiv,setArsiv]=R.useState(!0),
        [rapor,setRapor]=R.useState("sonuc"),[veri,setVeri]=R.useState({}),[yuk,setYuk]=R.useState(!1),[busy,setBusy]=R.useState(""),
        [opt,setOpt]=R.useState({genel:!0,alet:!0,takim:!1,final:!0,kats:[],dil:"oto",grup:"oto",mGenel:!0,mAlet:!0,mAletElem:!1,mTakim:!0,mSira:"altin",hRef:"sj",hFin:!0,hPanel:["DA","DB","A","E"],hMin:1,dFin:!0,dHakem:!1,dTur:["bh_degistir","geri_gonder","hakem_yeniden","bh_alan","bh_bos","alan_sil","kilit","irm","hakem_duzelt"],sMin:1,sAra:"",sSira:"ad",lTur:[],lKul:"",lHakem:!1});
@@ -292,7 +330,7 @@ function Raporlar(){
    setListe(L.filter(c=>c.isim&&(!Y||Y[c._id])&&(!il||String(c.il||"").toLocaleUpperCase("tr-TR")===String(il).toLocaleUpperCase("tr-TR"))).sort((a,b)=>String(b.baslangicTarihi||"").localeCompare(String(a.baslangicTarihi||""))))}catch(er){console.error(er);setListe([])}})()},[]);
  // seçilen yarışmaların tam verisi
  R.useEffect(()=>{const eksik=secili.filter(k=>!veri[k]);if(!eksik.length)return;setYuk(!0);
-  Promise.all(eksik.map(async k=>[k,{...((await get(ref(db,BASE+"/"+k))).val()||{}),_id:k}])).then(L=>setVeri(v=>{const n={...v};L.forEach(([k,c])=>n[k]=c);return n})).catch(()=>toast(__T("Hata oluştu."),"error")).finally(()=>setYuk(!1))},[secili]);
+  Promise.all(eksik.map(async k=>[k,{...((await get(ref(db,BASE+"/"+k))).val()||{}),_id:k,_br:BR}])).then(L=>setVeri(v=>{const n={...v};L.forEach(([k,c])=>n[k]=c);return n})).catch(()=>toast(__T("Hata oluştu."),"error")).finally(()=>setYuk(!1))},[secili]);
  // işlem kaydı (yalnız bu rapor için, yarışma başına bir kez; sunucu tarafı süzme)
  const[logV,setLogV]=R.useState({}),[logYuk,setLogYuk]=R.useState(!1);
  R.useEffect(()=>{if(!["itiraz","zaman","log"].includes(rapor))return;const eksik=secili.filter(k=>logV[k]===void 0);if(!eksik.length)return;setLogYuk(!0);
@@ -305,11 +343,11 @@ function Raporlar(){
  // kategori seçenekleri (seçili yarışmaların temel kategorileri)
  const katSec=R.useMemo(()=>{const m=new Map();comps.forEach(C=>Object.keys(C.kategoriler||{}).forEach(k=>{if(isFin(C.kategoriler,k))return;m.has(k)||m.set(k,katAdi(C.kategoriler,k))}));return[...m.entries()].sort((a,b)=>yasI(a[0])-yasI(b[0])||a[1].localeCompare(b[1],"tr"))},[comps.map(c=>c._id).join()]);
  const sonuc=R.useMemo(()=>{if(!V())return[];return comps.map(C=>({C,bol:sonucHesapla(C,rapor==="madalya"?{genel:!0,alet:!0,takim:opt.mTakim,final:!0,kats:opt.kats}:opt)}))},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
- const hakem=R.useMemo(()=>{if(rapor!=="hakem")return null;const all=comps.map(C=>({C,...hakemAnaliz(C,opt)}));const rows=all.flatMap(x=>x.rows),dfark=all.flatMap(x=>x.dfark);
+ const hakem=R.useMemo(()=>{if(rapor!=="hakem")return null;const all=comps.map(C=>({C,...(BRN(C)==="aerobik"?hakemAnalizAer(C,opt):hakemAnaliz(C,opt))}));const rows=all.flatMap(x=>x.rows),dfark=all.flatMap(x=>x.dfark);
   const oz={};all.forEach(x=>Object.entries(x.ozel).forEach(([P,v])=>{const o=oz[P]||(oz[P]={n:0,mud:0,blok:0,sjYok:0});o.n+=v.n;o.mud+=v.mud;o.blok+=v.blok;o.sjYok+=v.sjYok}));
-  const pan=["DA","DB","A","E"].filter(P=>opt.hPanel.includes(P)).map(P=>{const rs=rows.filter(r=>r.panel===P),n=rs.length;return{P,rut:oz[P]?.n||0,n,abs:n?rs.reduce((a,x)=>a+Math.abs(x.dev),0)/n:0,dis:rs.filter(x=>x.dis).length,pct:n?rs.reduce((a,x)=>a+x.pct,0)/n:0,mud:oz[P]?.mud||0,sjYok:oz[P]?.sjYok||0,blok:oz[P]?.blok||0}});
+  const pan=(BR==="ritmik"?["DA","DB","A","E"]:["A","E"]).filter(P=>opt.hPanel.includes(P)).map(P=>{const rs=rows.filter(r=>r.panel===P),n=rs.length;return{P,rut:oz[P]?.n||0,n,abs:n?rs.reduce((a,x)=>a+Math.abs(x.dev),0)/n:0,dis:rs.filter(x=>x.dis).length,pct:n&&rs.every(x=>x.pct!=null)?rs.reduce((a,x)=>a+x.pct,0)/n:null,mud:oz[P]?.mud||0,sjYok:oz[P]?.sjYok||0,blok:oz[P]?.blok||0}});
   const hk=hakemOzet(rows).filter(h=>h.n>=(opt.hMin||1)),buyuk=[...rows].sort((a,b)=>Math.abs(b.dev)-Math.abs(a.dev)).slice(0,40);
-  const dOz=["DA","DB"].filter(P=>opt.hPanel.includes(P)).map(P=>{const L=dfark.filter(x=>x.panel===P),n=L.length;return{P,n,ort:n?L.reduce((a,x)=>a+x.g,0)/n:0,asti:L.filter(x=>x.asti).length,mx:n?Math.max(...L.map(x=>x.g)):0}});
+  const dOz=(BR==="ritmik"?["DA","DB"]:[]).filter(P=>opt.hPanel.includes(P)).map(P=>{const L=dfark.filter(x=>x.panel===P),n=L.length;return{P,n,ort:n?L.reduce((a,x)=>a+x.g,0)/n:0,asti:L.filter(x=>x.asti).length,mx:n?Math.max(...L.map(x=>x.g)):0}});
   return{rows,hk,pan,buyuk,dfark:[...dfark].sort((a,b)=>b.g-a.g),dOz,isimsiz:hk.filter(h=>!h.isimli).length}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
  const degis=R.useMemo(()=>{if(rapor!=="itiraz")return null;const all=comps.map(C=>({C,...degisiklikHesapla(C,logV[C._id]||{},opt)}));
   const it=all.flatMap(x=>x.it),ev=all.flatMap(x=>x.ev),tekrar=all.flatMap(x=>x.tekrar);
@@ -347,13 +385,13 @@ function Raporlar(){
 
  // ---- dil yardımcıları (çıktı) ----
  const L=(tr,en)=>EN?en:tr,kA=t=>EN?katEN(t):t,aA=a=>EN?(raAd(a,!0)||aletTr(a)):aletTr(a),UP=t=>String(t||"").toLocaleUpperCase(EN?"en":"tr-TR");
- const bolBaslik=b=>{const k=kA(b.katAd);return b.tip==="aa"?k+" — "+L(b.grp?"Grup Genel Tasnif":"Bireysel Genel Tasnif",b.grp?"Group All-Around":"Individual All-Around")
+ const bolBaslik=b=>{const k=kA(b.katAd);if(BR!=="ritmik"&&(b.tip==="aa"||b.tip==="final_aa"))return k+" — "+(b.tip==="aa"?L("Sonuçlar","Results"):L("Final","Final"));return b.tip==="aa"?k+" — "+L(b.grp?"Grup Genel Tasnif":"Bireysel Genel Tasnif",b.grp?"Group All-Around":"Individual All-Around")
    :b.tip==="alet"?k+" — "+aA(b.alet)+L(" (Eleme)"," (Qualification)"):b.tip==="takim"?k+" — "+L("Takım Sıralaması","Team Ranking")
    :b.tip==="final_aa"?k+" — "+L("Genel Tasnif Finali","All-Around Final"):k+" — "+aA(b.alet)+" "+L("Finali","Final")};
  const temsil=r=>intlHepsi?(r.ulke||""):r.kulup||"";
  const adYaz=r=>r.takim?r.ad:[UP(r.soyad),r.soyad?String(r.ad||"").replace(new RegExp("\\s*"+String(r.soyad).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"$"),""):r.ad].filter(Boolean).join(" ");
  const satirAd=r=>r.takim?r.ad:(r.soyad?UP(r.soyad)+" "+String(r.ad||"").replace(r.soyad,"").trim():r.ad);
- const sutunlar=b=>b.tip==="aa"||b.tip==="final_aa"?[...b.aletler.map(a=>({b:aA(a),f:r=>r.apps&&r.apps[a]!=null?(typeof r.apps[a]==="string"?r.apps[a]:f3(r.apps[a])):"—"})),{b:L("TOPLAM","TOTAL"),f:r=>r.irm&&r.total==null?r.irm:f3(r.total),t:1}]
+ const sutunlar=b=>BR!=="ritmik"&&(b.tip==="aa"||b.tip==="final_aa")?[{b:"D",f:r=>f3(r.d)},{b:"A",f:r=>f3(r.a)},{b:"E",f:r=>f3(r.e)},{b:L("CEZA","PEN."),f:r=>r.pen?"−"+f3(r.pen):""},{b:L("TOPLAM","TOTAL"),f:r=>r.irm&&r.total==null?r.irm:f3(r.total),t:1}]:b.tip==="aa"||b.tip==="final_aa"?[...b.aletler.map(a=>({b:aA(a),f:r=>r.apps&&r.apps[a]!=null?(typeof r.apps[a]==="string"?r.apps[a]:f3(r.apps[a])):"—"})),{b:L("TOPLAM","TOTAL"),f:r=>r.irm&&r.total==null?r.irm:f3(r.total),t:1}]
    :b.tip==="takim"?[...b.aletler.map(a=>({b:aA(a),f:r=>r.apps[a]!=null?f3(r.apps[a]):"—"})),...(b.rows.some(r=>r.kesinti)?[{b:L("KESİNTİ","DED."),f:r=>r.kesinti?"−"+f3(r.kesinti):""}]:[]),{b:L("TOPLAM","TOTAL"),f:r=>f3(r.total),t:1}]
    :[{b:"DA",f:r=>f3(r.da)},{b:"DB",f:r=>f3(r.db)},{b:"A",f:r=>f3(r.a)},{b:"E",f:r=>f3(r.e)},{b:L("CEZA","PEN."),f:r=>r.pen?"−"+f3(r.pen):""},{b:L("TOPLAM","TOTAL"),f:r=>r.irm&&r.total==null?r.irm:f3(r.total),t:1}];
 
@@ -362,9 +400,9 @@ function Raporlar(){
  const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2),sg=v=>v==null||isNaN(v)?"—":(v>0.0049?"+":v<-0.0049?"−":"±")+Math.abs(Number(v)).toFixed(2);
  const hkAd=h=>h.isimli?h.ad:h.ad+" · "+(comps.length>1?String(h.C.isim).slice(0,28):L("isim atanmamış","no name assigned"));
  const hkCols=()=>[L("HAKEM","JUDGE"),L("ÜLKE / İL","NOC / PROV."),L("PANEL","PANEL"),L("POZİSYON","POSITION"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("NOT","SCORES"),L("ORT. SAPMA","MEAN DEV."),L("ORT. |SAPMA|","MEAN |DEV.|"),L("EN BÜYÜK","MAX"),L("TOL. DIŞI","OUT OF TOL."),L("WC %","WC %"),L("DERECE","GRADE"),L("KENDİ SPORCUSU LEHİNE","OWN ATHLETES")];
- const hkRow=h=>[hkAd(h),h.ulke||"",h.pan,h.poz,...(comps.length>1?[String(h.yar)]:[]),String(h.n),sg(h.ort),f2(h.abs),sg(h.mx),h.dis+" ("+Math.round(h.dis/h.n*100)+"%)",h.pct.toFixed(1),h.grade,h.leh?sg(h.leh.fark)+" ("+h.leh.n+")":""];
- const panCols=()=>[L("PANEL","PANEL"),L("RUTİN","ROUTINES"),L("HAKEM NOTU","JUDGE SCORES"),L("ORT. |SAPMA|","MEAN |DEV.|"),L("TOL. DIŞI","OUT OF TOL."),L("WC %","WC %"),L("ÜST JÜRİ MÜDAHALESİ","SJ INTERVENTION"),L("SJ NOTU YOK","NO SJ SCORE"),L("BLOK (>2.00)","BLOCK (>2.00)")];
- const panRow=p=>[PAD(p.P),String(p.rut),String(p.n),f2(p.abs),p.n?p.dis+" ("+Math.round(p.dis/p.n*100)+"%)":"0",p.pct.toFixed(1),String(p.mud),String(p.sjYok),p.P==="A"||p.P==="E"?String(p.blok):"—"];
+ const hkRow=h=>[hkAd(h),h.ulke||"",h.pan,h.poz,...(comps.length>1?[String(h.yar)]:[]),String(h.n),sg(h.ort),f2(h.abs),sg(h.mx),h.dis+" ("+Math.round(h.dis/h.n*100)+"%)",(h.pct==null?"—":h.pct.toFixed(1)),h.grade,h.leh?sg(h.leh.fark)+" ("+h.leh.n+")":""];
+ const panCols=()=>[L("PANEL","PANEL"),L("RUTİN","ROUTINES"),L("HAKEM NOTU","JUDGE SCORES"),L("ORT. |SAPMA|","MEAN |DEV.|"),L("TOL. DIŞI","OUT OF TOL."),L("WC %","WC %"),L("ÜST JÜRİ MÜDAHALESİ","SJ INTERVENTION"),L("SJ NOTU YOK","NO SJ SCORE"),BR==="ritmik"?L("BLOK (>2.00)","BLOCK (>2.00)"):L("UÇ FARK ≥ 1.0","SPREAD ≥ 1.0")];
+ const panRow=p=>[PAD(p.P),String(p.rut),String(p.n),f2(p.abs),p.n?p.dis+" ("+Math.round(p.dis/p.n*100)+"%)":"0",(p.pct==null?"—":p.pct.toFixed(1)),String(p.mud),String(p.sjYok),p.P==="A"||p.P==="E"?String(p.blok):"—"];
  const spAd=r=>(r.grp?r.sp.kulup||r.sp.ad:r.sp.ad)+(r.sp.ulke?" ("+r.sp.ulke+")":"");
  const bCols=()=>[L("HAKEM","JUDGE"),L("POZ.","POS."),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("NOT","SCORE"),L("REFERANS","REFERENCE"),L("SAPMA","DEV."),L("TOL.","TOL.")];
  const bRow=r=>[r.kim?r.kim.ad:"—",r.poz,...(comps.length>1?[String(r.C.isim).slice(0,26)]:[]),kA(r.katAd),spAd(r),aA(r.al),f2(r.val),f2(r.ref)+" "+(r.refKaynak==="SJ"?"SJ":r.refKaynak==="Ortak"?L("ortak","common"):L("panel","panel")),sg(r.dev),f2(r.tol)];
@@ -389,9 +427,9 @@ function Raporlar(){
  // ---- katılım yardımcıları ----
  const bAd=t=>t==="karma"?L("İl / Ülke","Province / NOC"):t==="ulke"?L("Ülke","NOC"):L("İl","Province");
  const f1=v=>v==null||isNaN(v)?"—":Number(v).toFixed(1),yz=v=>(v||0).toFixed(1)+"%";
- const kOzCols=()=>[L("YARIŞMA","COMPETITION"),L("KATEGORİ","CATEGORIES"),L("SPORCU","GYMNASTS"),L("GRUP","GROUPS"),L("KULÜP","CLUBS"),L("İL / ÜLKE","PROV. / NOC"),L("ALET ÇIKIŞI","STARTS"),L("PUANLANAN","SCORED"),L("PUANI OLMAYAN","NO SCORE"),L("FİNALİST","FINALISTS"),L("YAŞ ORT.","MEAN AGE")];
+ const kOzCols=()=>[L("YARIŞMA","COMPETITION"),L("KATEGORİ","CATEGORIES"),L("SPORCU","GYMNASTS"),L("GRUP","GROUPS"),L("KULÜP","CLUBS"),L("İL / ÜLKE","PROV. / NOC"),(BR==="ritmik"?L("ALET ÇIKIŞI","STARTS"):L("ÇIKIŞ","STARTS")),L("PUANLANAN","SCORED"),L("PUANI OLMAYAN","NO SCORE"),L("FİNALİST","FINALISTS"),L("YAŞ ORT.","MEAN AGE")];
  const kOzRow=o=>[o.C.isim,String(o.kat),String(o.sporcu),String(o.grup),String(o.kulup),String(o.bolge),String(o.cikis),String(o.yarisan),String(o.yarismayan),String(o.finalist),f1(o.yas)];
- const kKatCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNASTS"),L("GİRİŞ","ENTRIES"),L("KULÜP","CLUBS"),L("İL / ÜLKE","PROV. / NOC"),L("ALET ÇIKIŞI","STARTS"),L("PUANLANAN","SCORED"),L("PUANI OLMAYAN","NO SCORE"),L("FİNALİST","FINALISTS"),L("YAŞ (ORT. · ARALIK)","AGE (MEAN · RANGE)")];
+ const kKatCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNASTS"),L("GİRİŞ","ENTRIES"),L("KULÜP","CLUBS"),L("İL / ÜLKE","PROV. / NOC"),(BR==="ritmik"?L("ALET ÇIKIŞI","STARTS"):L("ÇIKIŞ","STARTS")),L("PUANLANAN","SCORED"),L("PUANI OLMAYAN","NO SCORE"),L("FİNALİST","FINALISTS"),L("YAŞ (ORT. · ARALIK)","AGE (MEAN · RANGE)")];
  const kKatRow=k=>[...(comps.length>1?[String(k.C.isim).slice(0,26)]:[]),kA(k.ad)+(k.grp?" ("+L("grup","group")+")":""),String(k.sporcu),String(k.giris),String(k.kulup),String(k.bolge),String(k.cikis),String(k.yarisan),String(k.yarismayan),String(k.finalist),k.yasOrt!=null?f1(k.yasOrt)+" · "+k.yasMin+"–"+k.yasMax:"—"];
  const kKulCols=()=>[L("KULÜP / TAKIM","CLUB / TEAM"),katilim?bAd(katilim.bolgeTip).toLocaleUpperCase(EN?"en":"tr-TR"):"",L("SPORCU","GYMNASTS"),L("FİNALİST","FINALISTS"),...(comps.length>1?comps.map(c=>String(c.isim).slice(0,18)):[]),L("KATEGORİLER","CATEGORIES")];
  const kKulRow=o=>[o.ad,o.bolge,String(o.sp),String(o.fin),...(comps.length>1?comps.map(c=>String(o.yar[c._id]||"")):[]),o.kat];
@@ -411,7 +449,7 @@ function Raporlar(){
  const vdRow=g=>[...(comps.length>1?[String(g.C.isim).slice(0,26)]:[]),kA(g.kat),aA(g.al),String(g.rutin),String(g.biri),String(g.a),String(g.b),String(g.rutin-g.biri),g.rutin?Math.round(g.biri/g.rutin*100)+"%":"—",String(g.cl)];
  const vOzCols=()=>[L("YARIŞMA","COMPETITION"),L("PUANLANAN RUTİN","SCORED ROUTINES"),L("VİDEOLU","WITH VIDEO"),L("EKSİK","MISSING"),L("KAPSAMA","COVERAGE"),L("DRIVE","DRIVE"),L("CLOUDINARY","CLOUDINARY"),L("TOPLAM BOYUT","TOTAL SIZE"),L("TOPLAM SÜRE","TOTAL LENGTH"),L("ORT. YÜKLEME","MEAN UPLOAD"),L("YÜKLEME HATASI","UPLOAD ERRORS")];
  const vOzRow=x=>{const R0=x.G.reduce((a,g)=>a+g.rutin,0),V0=x.G.reduce((a,g)=>a+g.biri,0);return[x.C.isim,String(R0),String(V0),String(R0-V0),R0?Math.round(V0/R0*100)+"%":"—",String(x.src.drive),String(x.src.cloudinary),x.mb?(x.mb>=1024?(x.mb/1024).toFixed(2)+" GB":x.mb.toFixed(1)+" MB"):"—",x.sure?sureS(x.sure*1e3):"—",x.yukOrt!=null?sureS(x.yukOrt*1e3):"—",String(x.hata.length)]};
- const LT=t=>{const v=LOG_TUR[t];return v?(EN?({athlete_call:"Athlete called",call_cancelled:"Call cancelled",score_submitted:"Score saved",judge_score_submit:"Judge entered score",sj_field_override:"Chief judge edited judge field",score_field_cleared:"Field cleared",score_unlock:"Unlocked",score_correction:"Chief judge changed score",score_send_back:"Sent back to judge",score_approval:"Score approval",score_irm:"IRM given",score_irm_clear:"IRM removed",score_inquiry:"Inquiry opened",score_inquiry_decision:"Inquiry decision",score_stop:"Broadcast STOP",score_stop_release:"STOP released",final_create:"Final created",final_delete:"Final deleted",start_order_save:"Start order saved",athlete_apparatus:"Athlete apparatus changed",alet_transfer:"Apparatus transfer",panel_group_update:"Panel updated",broadcast_profile:"Broadcast profile",report_export:"Report downloaded",competition_update:"Competition updated",competition_create:"Competition created"})[t]||v:v):t};
+ const LT=t=>{const v=LOG_TUR[t];return v?(EN?({athlete_call:"Athlete called",call_cancelled:"Call cancelled",score_submitted:"Score saved",judge_score_submit:"Judge entered score",sj_field_override:"Chief judge edited judge field",score_field_cleared:"Field cleared",score_unlock:"Unlocked",score_correction:"Chief judge changed score",score_send_back:"Sent back to judge",score_approval:"Score approval",score_irm:"IRM given",score_irm_clear:"IRM removed",score_inquiry:"Inquiry opened",score_inquiry_decision:"Inquiry decision",score_stop:"Broadcast STOP",score_stop_release:"STOP released",final_create:"Final created",final_delete:"Final deleted",start_order_save:"Start order saved",athlete_apparatus:"Athlete apparatus changed",alet_transfer:"Apparatus transfer",panel_group_update:"Panel updated",broadcast_profile:"Broadcast profile",report_export:"Report downloaded",competition_update:"Competition updated",competition_create:"Competition created",score_create:"Score saved (to Superior Jury)",score_modify:"Chief judge changed judge scores",athlete_update:"Athlete updated"})[t]||v:v):t};
  const lgCols=()=>[L("ZAMAN","TIME"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("İŞLEM","ACTION"),L("KULLANICI","USER"),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("AYRINTI","DETAILS")];
  const lgRow=x=>[new Date(x.ts).toLocaleString(EN?"en-GB":"tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}),...(comps.length>1?[String(x.C.isim).slice(0,22)]:[]),LT(x.t),x.kim,kA(x.kat),x.sp,x.al?aA(x.al):"",x.msj];
  // ---- PDF ----
@@ -501,7 +539,7 @@ function Raporlar(){
    }else if(rapor==="hakem"){const H0=hakem;
     await ust(comps.length===1?comps[0]:null,L("HAKEM SAPMA ANALİZİ","JUDGE DEVIATION ANALYSIS"));
     d.setFont(FT,"normal");d.setFontSize(7.5);d.setTextColor(...MUT);
-    d.text(L("Referans: ","Reference: ")+(opt.hRef==="sj"?L("Üst Jüri kontrol notu (yoksa panel sonucu)","Superior jury control score (panel result if missing)"):L("panel sonucu (A/E: en yüksek ve en düşük atılmış ortalama; D: ortak not)","panel result (A/E: trimmed mean; D: common score)"))+"  ·  "+L("Tolerans: A/E ≤1.20 → 0.40, üstü 0.70; D 0.50  ·  WC RG Judges' Rules değerlendirme tabloları","Tolerance: A/E ≤1.20 → 0.40, above 0.70; D 0.50  ·  WC RG Judges' Rules evaluation tables")+(comps.length>1?"  ·  "+comps.map(c=>c.isim).join(" · "):""),M,y,{maxWidth:W-2*M});y+=8;
+    d.text(L("Referans: ","Reference: ")+(opt.hRef==="sj"?L("Üst Jüri kontrol notu (yoksa panel sonucu)","Superior jury control score (panel result if missing)"):L("panel sonucu (A/E: en yüksek ve en düşük atılmış ortalama; D: ortak not)","panel result (A/E: trimmed mean; D: common score)"))+"  ·  "+(BR==="ritmik"?L("Tolerans: A/E ≤1.20 → 0.40, üstü 0.70; D 0.50  ·  WC RG Judges' Rules değerlendirme tabloları","Tolerance: A/E ≤1.20 → 0.40, above 0.70; D 0.50  ·  WC RG Judges' Rules evaluation tables"):L("Aerobik WC CoP §8.1: A puan, E = 10 − kesinti; tolerans son puana göre 8+ 0.3 · 7+ 0.4 · 6+ 0.5 · altı 0.6; uç fark ≥ 1.0 (§8.1.6). Yüzde / derece verilmez.","Aerobic WC CoP §8.1: A score, E = 10 − deduction; tolerance by final score 8+ 0.3 · 7+ 0.4 · 6+ 0.5 · below 0.6; spread ≥ 1.0 (§8.1.6). No percentage / grade."))+(comps.length>1?"  ·  "+comps.map(c=>c.isim).join(" · "):""),M,y,{maxWidth:W-2*M});y+=8;
     bolumBas(L("Panel özeti","Panel summary"));tablo(panCols(),H0.pan.map(panRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:58}}});
     bolumBas(L("Hakem bazında","By judge")+(H0.isimsiz?" · "+H0.isimsiz+" "+L("pozisyonda hakem adı atanmamış","positions without judge names"):""));
     const hc=hkCols();tablo(hc,H0.hk.map(hkRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:46}},parse:z=>{const h=H0.hk[z.row.index];if(!h)return;if(z.column.index===hc.length-2){const g=GRENK[h.grade];if(g){z.cell.styles.textColor=g[0].match(/\w\w/g).map(x=>parseInt(x,16));z.cell.styles.fontStyle="bold"}}if(z.column.index===hc.length-5&&h.dis/h.n>.25)z.cell.styles.textColor=[185,28,28];if(z.column.index===hc.length-1&&h.leh&&h.leh.fark>.1)z.cell.styles.textColor=[185,28,28]}});
@@ -530,7 +568,7 @@ function Raporlar(){
    alt();
    const ad=(comps.length===1?comps[0].isim:L("Raporlar","Reports")).replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60);
    d.save(ad+"_"+(({sonuc:L("Resmi_Sonuclar","Official_Results"),hakem:L("Hakem_Sapma_Analizi","Judge_Deviation"),itiraz:L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"),katilim:L("Katilim_Istatistikleri","Participation_Statistics"),zaman:L("Zaman_Cizelgesi","Timetable"),sporcu:L("Sporcu_Karsilastirma","Gymnast_Comparison"),video:L("Video_Arsivi_Durumu","Video_Archive_Status"),log:L("Islem_Kaydi","Audit_Log")})[rapor]||L("Madalya_Tablosu","Medal_Table"))+".pdf");toast(__T("PDF indirildi ✓"),"success");
-   try{logAction("report_export",`[Ritmik] Rapor PDF: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:"ritmik"})}catch{}}
+   try{logAction("report_export",`[${BRAD}] Rapor PDF: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:BR})}catch{}}
   catch(er){console.error(er);toast(__T("PDF oluşturulamadı: ")+(er?.message||er),"error")}setBusy("")};
 
  // ---- Excel ----
@@ -586,7 +624,7 @@ function Raporlar(){
    if(!wb.SheetNames.length){toast(__T("Seçili kapsamda puanı olan sonuç yok."),"warning");setBusy("");return}
    const buf=X.write(wb,{type:"array",bookType:"xlsx"}),u=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})),a=document.createElement("a");
    a.href=u;a.download=(comps.length===1?comps[0].isim:"Raporlar").replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60)+"_"+(({sonuc:L("Resmi_Sonuclar","Official_Results"),hakem:L("Hakem_Sapma_Analizi","Judge_Deviation"),itiraz:L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"),katilim:L("Katilim_Istatistikleri","Participation_Statistics"),zaman:L("Zaman_Cizelgesi","Timetable"),sporcu:L("Sporcu_Karsilastirma","Gymnast_Comparison"),video:L("Video_Arsivi_Durumu","Video_Archive_Status"),log:L("Islem_Kaydi","Audit_Log")})[rapor]||L("Madalya_Tablosu","Medal_Table"))+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4e3);
-   toast(__T("Excel indirildi ✓"),"success");try{logAction("report_export",`[Ritmik] Rapor Excel: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:"ritmik"})}catch{}}
+   toast(__T("Excel indirildi ✓"),"success");try{logAction("report_export",`[${BRAD}] Rapor Excel: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:BR})}catch{}}
   catch(er){console.error(er);toast(__T("Excel oluşturulamadı: ")+(er?.message||er),"error")}setBusy("")};
 
  // ---- görünüm ----
@@ -637,9 +675,9 @@ function Raporlar(){
   e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:".2rem 1rem"},children:[
    rapor==="sonuc"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Bölümler")}),
      e.jsx(Tog,{on:opt.genel,onClick:()=>so("genel",!opt.genel),t:__T("Genel tasnif"),d:__T("Kategori başına; alet puanları ve toplam")}),
-     e.jsx(Tog,{on:opt.alet,onClick:()=>so("alet",!opt.alet),t:__T("Alet sıralamaları"),d:"DA · DB · A · E · "+__T("Ceza")}),
-     e.jsx(Tog,{on:opt.takim,onClick:()=>so("takim",!opt.takim),t:__T("Takım sıralaması"),d:__T("Ülke / kulüp; ilk 3-4 sporcunun her aletteki en iyi 2 puanı")}),
-     e.jsx(Tog,{on:opt.final,onClick:()=>so("final",!opt.final),t:__T("Finaller"),d:__T("Genel tasnif ve alet finalleri")})]})
+     BR==="ritmik"?e.jsx(Tog,{on:opt.alet,onClick:()=>so("alet",!opt.alet),t:__T("Alet sıralamaları"),d:"DA · DB · A · E · "+__T("Ceza")}):null,
+     BR!=="ritmik"?e.jsx("div",{style:{fontSize:".72rem",color:"#64748B",fontWeight:700,margin:".2rem 0 .5rem"},children:__T("Aerobik takım puanı Kulüp Takım Puanı sayfasındadır.")}):e.jsx(Tog,{on:opt.takim,onClick:()=>so("takim",!opt.takim),t:__T("Takım sıralaması"),d:__T("Ülke / kulüp; ilk 3-4 sporcunun her aletteki en iyi 2 puanı")}),
+     e.jsx(Tog,{on:opt.final,onClick:()=>so("final",!opt.final),t:__T("Finaller"),d:BR==="ritmik"?__T("Genel tasnif ve alet finalleri"):__T("Final kategorileri")})]})
    :rapor==="zaman"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Kapsam")}),e.jsx("div",{style:{fontSize:".78rem",color:"#475569",fontWeight:600,lineHeight:1.45},children:__T("Plan: Program / Çıkış Listesi'ndeki gün ve blok saatleri. Gerçekleşen: ilk çağrı (yoksa ilk puan) ve son puan kayıt zamanı. Çıkış listesi olmayan yarışmada yalnız gerçekleşen zamanlar gün × kategori × alet olarak gösterilir.")}),
      logYuk?e.jsx("div",{style:{fontSize:".74rem",color:"#B45309",fontWeight:800,marginTop:".3rem"},children:__T("İşlem kaydı yükleniyor…")}):null]})
    :rapor==="sporcu"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Sporcu ara")}),e.jsx("input",{style:S.inp,placeholder:__T("Ad, soyad, kulüp ya da ülke…"),value:opt.sAra,onChange:ev=>so("sAra",ev.target.value)}),
@@ -660,14 +698,14 @@ function Raporlar(){
    :rapor==="hakem"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Referans not")}),
      e.jsx(Seg,{v:opt.hRef,on:v=>so("hRef",v),ops:[["sj",__T("Üst Jüri (SJ), yoksa panel")],["panel",__T("Panel sonucu")]]}),
      e.jsx("div",{style:S.lbl,children:__T("Paneller")}),
-     e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem"},children:["DA","DB","A","E"].map(P=>e.jsx("button",{type:"button",style:S.chip(opt.hPanel.includes(P)),onClick:()=>so("hPanel",opt.hPanel.includes(P)?opt.hPanel.filter(x=>x!==P):[...opt.hPanel,P]),children:P},P))}),
+     e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem"},children:(BR==="ritmik"?["DA","DB","A","E"]:["A","E"]).map(P=>e.jsx("button",{type:"button",style:S.chip(opt.hPanel.includes(P)),onClick:()=>so("hPanel",opt.hPanel.includes(P)?opt.hPanel.filter(x=>x!==P):[...opt.hPanel,P]),children:P},P))}),
      e.jsx("div",{style:{marginTop:".5rem"},children:e.jsx(Tog,{on:opt.hFin,onClick:()=>so("hFin",!opt.hFin),t:__T("Finaller dahil"),d:__T("Final kategorilerindeki notlar da değerlendirilir")})}),
      e.jsx("div",{style:S.lbl,children:__T("En az not sayısı")}),e.jsx(Seg,{v:String(opt.hMin),on:v=>so("hMin",+v),ops:[["1","1"],["5","5"],["10","10"],["20","20"]]})]})
    :e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Madalya sayılan sonuçlar")}),
-     e.jsx(Tog,{on:opt.mGenel,onClick:()=>so("mGenel",!opt.mGenel),t:__T("Genel tasnif"),d:__T("Genel tasnif finali varsa final sonucu")}),
-     e.jsx(Tog,{on:opt.mAlet,onClick:()=>so("mAlet",!opt.mAlet),t:__T("Alet"),d:__T("Alet finalleri")}),
-     opt.mAlet?e.jsx(Tog,{on:opt.mAletElem,onClick:()=>so("mAletElem",!opt.mAletElem),t:__T("Finali olmayan alet"),d:__T("Alet finali yapılmadıysa eleme alet sıralaması madalya sayılır")}):null,
-     e.jsx(Tog,{on:opt.mTakim,onClick:()=>so("mTakim",!opt.mTakim),t:__T("Takım"),d:__T("Takım sıralamasının ilk üçü")})]}),
+     e.jsx(Tog,{on:opt.mGenel,onClick:()=>so("mGenel",!opt.mGenel),t:BR==="ritmik"?__T("Genel tasnif"):__T("Kategori sonuçları"),d:BR==="ritmik"?__T("Genel tasnif finali varsa final sonucu"):__T("Kategorinin finali yapıldıysa final sonucu")}),
+     BR==="ritmik"?e.jsx(Tog,{on:opt.mAlet,onClick:()=>so("mAlet",!opt.mAlet),t:__T("Alet"),d:__T("Alet finalleri")}):null,
+     BR==="ritmik"&&opt.mAlet?e.jsx(Tog,{on:opt.mAletElem,onClick:()=>so("mAletElem",!opt.mAletElem),t:__T("Finali olmayan alet"),d:__T("Alet finali yapılmadıysa eleme alet sıralaması madalya sayılır")}):null,
+     BR==="ritmik"?e.jsx(Tog,{on:opt.mTakim,onClick:()=>so("mTakim",!opt.mTakim),t:__T("Takım"),d:__T("Takım sıralamasının ilk üçü")}):null]}),
    e.jsxs("div",{children:[
      katSec.length?e.jsxs(e.Fragment,{children:[e.jsx("div",{style:S.lbl,children:__T("Kategoriler")+(opt.kats.length?"":" · "+__T("tümü"))}),
       e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem"},children:katSec.map(([k,ad])=>e.jsx("button",{type:"button",style:S.chip(opt.kats.includes(k)),onClick:()=>so("kats",opt.kats.includes(k)?opt.kats.filter(x=>x!==k):[...opt.kats,k]),children:ad},k))})]}):null,
@@ -719,7 +757,7 @@ function Raporlar(){
   const mxB=Math.max(1,...K0.bolge.map(b=>b.pay)),mxY=Math.max(1,...K0.yillar.map(b=>b.pay)),kart=(v,t,ic)=>e.jsxs("div",{style:{flex:"1 1 130px",background:"#F8FAFC",border:"1px solid #EEF0F4",borderRadius:14,padding:".6rem .75rem"},children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".35rem",color:"#64748B",fontSize:".7rem",fontWeight:800},children:[MI(ic,{fontSize:15,color:P1}),t]}),e.jsx("div",{style:{fontSize:"1.45rem",fontWeight:900,marginTop:".1rem"},children:v})]});
   const T0=K0.ozet.reduce((a,o)=>({cikis:a.cikis+o.cikis,yarisan:a.yarisan+o.yarisan,yarismayan:a.yarismayan+o.yarismayan,grup:a.grup+o.grup}),{cikis:0,yarisan:0,yarismayan:0,grup:0});
   return e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:{...S.h,marginBottom:".5rem"},children:[e.jsx("span",{style:S.hi,children:MI("groups",{fontSize:17})}),L("Katılım İstatistikleri","Participation Statistics")]}),
-   e.jsxs("div",{style:{display:"flex",flexWrap:"wrap",gap:".5rem"},children:[kart(K0.toplam,L("Sporcu","Gymnasts"),"person"),kart(T0.grup,L("Grup","Groups"),"groups_3"),kart(K0.kulup.length,L("Kulüp / takım","Clubs / teams"),"shield"),kart(K0.bolge.filter(b=>b.ad!=="—").length,bAd(K0.bolgeTip),"public"),kart(T0.cikis,L("Alet çıkışı","Starts"),"sports_gymnastics"),kart(T0.yarismayan,L("Puanı olmayan","No score"),"person_off"),
+   e.jsxs("div",{style:{display:"flex",flexWrap:"wrap",gap:".5rem"},children:[kart(K0.toplam,L("Sporcu","Gymnasts"),"person"),kart(T0.grup,L("Grup","Groups"),"groups_3"),kart(K0.kulup.length,L("Kulüp / takım","Clubs / teams"),"shield"),kart(K0.bolge.filter(b=>b.ad!=="—").length,bAd(K0.bolgeTip),"public"),kart(T0.cikis,BR==="ritmik"?L("Alet çıkışı","Starts"):L("Çıkış","Starts"),"sports_gymnastics"),kart(T0.yarismayan,L("Puanı olmayan","No score"),"person_off"),
     K0.tekrar?kart(K0.tekrar.iki,L("Birden çok yarışmada","In 2+ competitions"),"repeat"):null]}),
    bas(L("Özet","Summary")),tab(kOzCols(),K0.ozet.map(kOzRow),{sag:[1,2,3,4,5,6,7,8,9,10]}),
    bas(L("Kategori bazında","By category")),tab(kKatCols(),K0.kats.map(kKatRow),{sag:[1,2,3,4,5,6,7,8].map(x=>x+(comps.length>1?1:0))}),
@@ -766,9 +804,9 @@ function Raporlar(){
      e.jsx("b",{children:(comps.length>1?o.C.isim+" · ":"")+bolBaslik(o.b)}),...[1,2,3].map(n=>e.jsx("span",{style:{color:madalyaRenk(n),fontWeight:700},children:o.m.filter(r=>r.rank===n).map(r=>(n===1?"🥇 ":n===2?"🥈 ":"🥉 ")+(r.takim?r.ad:satirAd(r))+(isIntl(o.C)&&r.ulke&&r.ulke!==r.ad?" ("+r.ulke+")":"")).join(", ")||"—"},n))]},oi))]}):null]});
 
  return e.jsxs("div",{style:S.wrap,children:[e.jsx("style",{children:"@media(max-width:900px){.rp-in{grid-template-columns:1fr!important}}"}),
-  e.jsxs("div",{style:S.top,children:[e.jsx("button",{type:"button",title:__T("Geri"),style:S.back,onClick:()=>{window.history.length>1?history.back():location.assign("/rhythmic")},children:MI("arrow_back",{fontSize:20})}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("button",{type:"button",title:__T("Geri"),style:S.back,onClick:()=>{window.history.length>1?history.back():location.assign(RP)},children:MI("arrow_back",{fontSize:20})}),
    e.jsx("div",{style:S.ico,children:MI("summarize",{color:"#fff",fontSize:22})}),
    e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.1rem",lineHeight:1.15},children:__T("Raporlar")}),
-    e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:__T("Ritmik · yarışma seçin, raporu oluşturun, PDF / Excel indirin")})]})]}),
+    e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:__T(BRAD)+" · "+__T("yarışma seçin, raporu oluşturun, PDF / Excel indirin")})]})]}),
   e.jsxs("div",{className:"rp-in",style:S.in,children:[sol,e.jsxs("div",{style:{minWidth:0},children:[katalog,secenek,yuk?e.jsx("div",{style:{...S.card,color:"#64748B",fontWeight:700},children:__T("Yükleniyor…")}):onizleme]})]})]})}
 export{Raporlar as default};

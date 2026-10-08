@@ -4676,6 +4676,12 @@ const DICT={
   "Yayın profili": "Broadcast profile",
   "Rapor indirildi": "Report downloaded",
   "Yarışma güncellendi": "Competition updated",
-  "Yarışma oluşturuldu": "Competition created"
+  "Yarışma oluşturuldu": "Competition created",
+  "yarışma seçin, raporu oluşturun, PDF / Excel indirin": "select competitions, build the report, download PDF / Excel",
+  "Aerobik takım puanı Kulüp Takım Puanı sayfasındadır.": "Aerobic team score is on the Club Team Score page.",
+  "Final kategorileri": "Final categories",
+  "Kategori sonuçları": "Category results",
+  "Kategorinin finali yapıldıysa final sonucu": "Final result if the category final was held",
+  "Üst jüri reddetti": "Superior jury rejected"
 };
 export{DICT};
