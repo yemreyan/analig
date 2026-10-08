@@ -4564,7 +4564,7 @@ const DICT={
   "Yeni TV linki oluşturulursa kanaldaki eski link çalışmaz. Devam edilsin mi?": "If a new TV link is created, the old link at the channel will stop working. Continue?",
   "TV linki hazır": "TV link ready",
   "TV linki oluştur": "Create TV link",
-  "Bu profil için henüz TV linki yok. Kanal yalnız tvscore.vercel.app/<kod> adresini görür; sistem ve veri kaynağı görünmez.": "No TV link for this profile yet. The channel only sees the tvscore.vercel.app/<code> address; the system and data source stay hidden.",
+  "Bu profil için henüz TV linki yok. Kanal yalnız tv.gymexascore.net/<kod> adresini görür; sistem ve veri kaynağı görünmez.": "No TV link for this profile yet. The channel only sees the tv.gymexascore.net/<code> address; the system and data source stay hidden.",
   "Seçili kapsamda puanı olan sonuç yok.": "No scored results in the selected scope.",
   "Excel indirildi ✓": "Excel downloaded ✓",
   "Excel oluşturulamadı: ": "Excel could not be created: ",

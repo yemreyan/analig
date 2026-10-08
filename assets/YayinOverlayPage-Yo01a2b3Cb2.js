@@ -1,5 +1,5 @@
 import"./i18n-Tr01a2b3Cb2.js";import{u as useAuth,a as usDisc,j as e,d as db,b as usToast,l as logAction}from"./main-C2LpyYUGCb2.js";import{u as useNav,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{f as filterComps}from"./useFilteredCompetitions-B7FB6qIvCb2.js";import{GXP_CSS}from"./ArtistikNotSilmePage-Ns01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
-// Kısa link kodu (tvscore.vercel.app/<kod> · gymscore.vercel.app/<kod>) — criteria/kisaLink/<kod> {t,b,c,p,kapali}
+// Kısa link kodu (tv.gymexascore.net/<kod> · gymexascore.net/<kod>) — criteria/kisaLink/<kod> {t,b,c,p,kapali}
 const __gsKod=()=>{const a="abcdefghijkmnpqrstuvwxyz23456789",b=new Uint8Array(9);crypto.getRandomValues(b);return Array.from(b,x=>a[x%a.length]).join("")};
 
 // YAYIN OVERLAY — KURULUM (eski /yayin-overlay.html kurulum ekranının uygulama içi sürümü)
@@ -199,8 +199,8 @@ export default function YayinOverlayPage(){
    e.jsx("button",{type:"button",className:"yo-btn g",disabled:!kirli,onClick:()=>setTas(kayitli),children:__T("Geri al")}),
    e.jsxs("button",{type:"button",className:"yo-btn",disabled:!kirli,onClick:kaydet,children:[I("save"),__T("Kaydet")]})]})]}):null;
 
- // TV veri linki: kısa kodlu tvscore.vercel.app adresi — kanal kaynağı (sistem/veritabanı/yarışma kimliği) görmez
- const tvK=P.tvKod||"",tvQ=[veri!=="hepsi"?"veri="+veri:"",fmt!=="json"?"format="+fmt:""].filter(Boolean).join("&"),tvUrl=tvK?`https://tvscore.vercel.app/${tvK}${tvQ?"?"+tvQ:""}`:"";
+ // TV veri linki: kısa kodlu tv.gymexascore.net adresi — kanal kaynağı (sistem/veritabanı/yarışma kimliği) görmez
+ const tvK=P.tvKod||"",tvQ=[veri!=="hepsi"?"veri="+veri:"",fmt!=="json"?"format="+fmt:""].filter(Boolean).join("&"),tvUrl=tvK?`https://tv.gymexascore.net/${tvK}${tvQ?"?"+tvQ:""}`:"";
  const tvOlustur=async()=>{if(tvK&&!await window.__gxConfirm(__T("Yeni TV linki oluşturulursa kanaldaki eski link çalışmaz. Devam edilsin mi?")))return;
   const k=__gsKod(),U={[`criteria/kisaLink/${k}`]:{t:"tv",b:br,c:comp,p:pid,ts:Date.now(),kim:usr}};if(tvK)U[`criteria/kisaLink/${tvK}/iptal`]=!0;U[`${FB}/${comp}/yayinProfilleri/${pid}/tvKod`]=k;
   try{await update(ref(db),U);toast(__T("TV linki hazır"),"success")}catch{toast(__T("Hata oluştu."),"error")}};
@@ -224,7 +224,7 @@ export default function YayinOverlayPage(){
   e.jsxs("label",{className:"yo-f",children:[__T("TV veri linki")," ",e.jsx("span",{children:__T("· kanalın kendi grafik sistemi için (vMix Data Source, CasparCG, Vizrt, Ross)")})]}),
   e.jsxs("div",{className:"yo-row",style:{marginBottom:8},children:[e.jsx("select",{className:"yo-sel",value:veri,onChange:ev=>setVeri(ev.target.value),children:[["hepsi",__T("Hepsi (tek paket)")],["canli",__T("Çağrılan sporcu")],["son",__T("Son yayınlanan puan")],["siralama",__T("Anlık sıralama")],["sirada",__T("Sıradaki sporcular")],["podyum",__T("Podyum")]].map(([k,t])=>e.jsx("option",{value:k,children:t},k))}),
    e.jsx(Seg,{v:fmt,on:setFmt,ops:[["json","JSON"],["xml","XML"],["csv","CSV"]]})]}),
-  tvK?e.jsx("div",{className:"yo-url",children:tvUrl}):e.jsx("div",{className:"yo-url",style:{fontFamily:"inherit",color:"#64748B"},children:__T("Bu profil için henüz TV linki yok. Kanal yalnız tvscore.vercel.app/<kod> adresini görür; sistem ve veri kaynağı görünmez.")}),
+  tvK?e.jsx("div",{className:"yo-url",children:tvUrl}):e.jsx("div",{className:"yo-url",style:{fontFamily:"inherit",color:"#64748B"},children:__T("Bu profil için henüz TV linki yok. Kanal yalnız tv.gymexascore.net/<kod> adresini görür; sistem ve veri kaynağı görünmez.")}),
   e.jsxs("div",{className:"yo-btns",children:[tvK?e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>kopyala(tvUrl),children:[I("content_copy"),__T("Kopyala")]}):null,
    tvK?e.jsxs("a",{href:tvUrl,target:"_blank",rel:"noopener noreferrer",className:"yo-btn g",style:{textDecoration:"none"},children:[I("open_in_new"),__T("Veriyi gör")]}):null,
    e.jsxs("button",{type:"button",className:"yo-btn"+(tvK?" g":""),onClick:tvOlustur,children:[I(tvK?"autorenew":"add_link"),tvK?__T("Yeni link"):__T("TV linki oluştur")]}),ok?e.jsx("span",{className:"yo-ok",children:ok}):null]}),
