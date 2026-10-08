@@ -81,6 +81,9 @@ export default function YayinOverlayPage(){
  const list=R.useMemo(()=>Object.entries(comps||{}).filter(([,c])=>c&&c.arsivli!==!0&&c.arsivli!=="true").map(([k,c])=>({k,ad:c.isim||c.name||k,t:c.baslangicTarihi||c.tarih||""})).sort((a,b)=>String(b.t).localeCompare(String(a.t))),[comps]);
  R.useEffect(()=>{if(!comp&&list.length===1)setComp(list[0].k)},[list,comp]);
  R.useEffect(()=>{setProfs({});setPid("");setTas(null);if(!comp)return;return onValue(ref(db,`${FB}/${comp}/yayinProfilleri`),s=>setProfs(s.val()||{}))},[FB,comp]);
+ // linkte şu an ne görünür (2026-10-08): çağrı ve puan durumu canlı okunur
+ const[cagri,setCagri]=R.useState({}),[puanVar,setPuanVar]=R.useState({});
+ R.useEffect(()=>{setCagri({});setPuanVar({});if(!comp)return;const u1=onValue(ref(db,`${FB}/${comp}/aktifSporcu`),s=>setCagri(s.val()||{})),u2=onValue(ref(db,`${FB}/${comp}/puanlar`),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,x])=>{o[k]=!!x&&Object.values(x).some(a=>a&&typeof a==="object"&&(a.sonuc>0||Object.values(a).some(b=>b&&typeof b==="object"&&b.sonuc>0)))});setPuanVar(o)});return()=>{u1();u2()}},[FB,comp]);
  const C0=comps?.[comp]||{},kats=C0.kategoriler||{},evLogo=C0.etkinlikLogo||null,intl=C0.tur==="uluslararasi"||C0.uluslararasi===!0;
  const kayitli=pid&&profs[pid]?norm(profs[pid]):null,P=pid?profs[pid]||{}:{};
  const kirli=!!(tas&&kayitli&&JSON.stringify(tas)!==JSON.stringify(kayitli));
@@ -201,6 +204,19 @@ export default function YayinOverlayPage(){
  const tvOlustur=async()=>{if(tvK&&!await window.__gxConfirm(__T("Yeni TV linki oluşturulursa kanaldaki eski link çalışmaz. Devam edilsin mi?")))return;
   const k=__gsKod(),U={[`criteria/kisaLink/${k}`]:{t:"tv",b:br,c:comp,p:pid,ts:Date.now(),kim:usr}};if(tvK)U[`criteria/kisaLink/${tvK}/iptal`]=!0;U[`${FB}/${comp}/yayinProfilleri/${pid}/tvKod`]=k;
   try{await update(ref(db),U);toast(__T("TV linki hazır"),"success")}catch{toast(__T("Hata oluştu."),"error")}};
+ const durumKart=(()=>{if(!pid)return null;const p=tas||kayitli||{},kf=Array.isArray(p.kat)&&p.kat.length?p.kat:null,ic=k=>!kf||kf.includes(k)||kf.includes(String(k).replace(/^final_/,"").split("__")[0]);
+  const cg=Object.entries(cagri||{}).filter(([k,v])=>ic(k)&&v&&typeof v==="object"&&(v.ad||v.soyad||v.id)),pv=Object.entries(puanVar||{}).some(([k,v])=>v&&ic(k)),ad=v=>[v.ad,v.soyad].filter(Boolean).join(" ");
+  const md=(m,el)=>m==="elle"?__T("yalnız Canlı kontrol'den açılınca"):m==="surekli"?__T("sürekli"):el;
+  const L=[];
+  if(P.kapali)L.push(["block",__T("Profil YAYIN DIŞI — linkte hiçbir şey görünmez."),!1]);
+  L.push(["subtitles",p.alt?.acik===!1?__T("Alt bant kapalı."):cg.length?__T("Alt bant: çağrılı sporcu var")+" ("+cg.slice(0,2).map(([,v])=>ad(v)).join(", ")+") — "+__T("görünür."):__T("Alt bant: şu an çağrılmış sporcu yok — başhakem sporcuyu çağırınca çıkar."),p.alt?.acik!==!1&&cg.length>0]);
+  L.push(["leaderboard",!p.tablo?.acik?__T("Sıralama tablosu kapalı."):__T("Sıralama tablosu")+": "+md(p.tablo?.mod,pv?__T("puan yayınlanınca görünür."):__T("henüz puan yok — ilk puan yayınlanınca görünür.")),!!p.tablo?.acik&&(p.tablo?.mod==="surekli"||pv)]);
+  L.push(["queue_play_next",!p.sirada?.acik?__T("Sıradaki kapalı."):__T("Sıradaki")+": "+md(p.sirada?.mod,cg.length?__T("çağrı varken görünür."):__T("çağrı olunca görünür.")),!!p.sirada?.acik&&(p.sirada?.mod==="surekli"||p.sirada?.mod!=="elle"&&cg.length>0)]);
+  L.push(["emoji_events",!p.podyum?.acik?__T("Podyum kapalı."):__T("Podyum")+": "+md(p.podyum?.mod,__T("kategori tamamlanınca görünür.")),!1]);
+  const bos=!L.some(x=>x[2]);
+  return e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"visibility",renk:bos?"#DC2626":"#16A34A",t:__T("Linkte şu an ne görünür?")}),
+   bos?e.jsx("p",{className:"yo-note",style:{marginTop:0,color:"#B91C1C",fontWeight:700},children:__T("Şu an gösterilecek bir şey yok; link boş (şeffaf) görünür. Bu normaldir — sporcu çağrılınca ya da puan yayınlanınca grafikler kendiliğinden gelir. Hemen görmek için aşağıdaki Canlı kontrol'den Sıralama / Sıradaki / Podyum açabilirsiniz.")}):null,
+   e.jsx("div",{style:{display:"grid",gap:6},children:L.map(([i,t,on],x)=>e.jsxs("div",{style:{display:"flex",alignItems:"flex-start",gap:8,fontSize:13,fontWeight:600,color:on?"#166534":"#475569"},children:[e.jsx("i",{className:"material-icons-round",style:{fontSize:18,color:on?"#16A34A":"#94A3B8"},children:i}),e.jsx("span",{children:t})]},x))})]})})();
  const linkler=pid?e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"link",renk:"#DB2777",t:__T("Kanala verilecek linkler")}),
   e.jsxs("label",{className:"yo-f",style:{marginTop:0},children:[__T("Overlay linki")," ",e.jsx("span",{children:__T("· OBS / vMix / Tricaster tarayıcı kaynağı, 1920×1080, şeffaf")})]}),
   e.jsx("div",{className:"yo-url",children:ovUrl}),
@@ -247,4 +263,4 @@ export default function YayinOverlayPage(){
     e.jsx("div",{className:"yo-prev",children:e.jsx("iframe",{ref:frame,src:prev,title:__T("önizleme"),onLoad:gonder})}),
     e.jsx("div",{className:"yo-tools",style:{marginTop:10},children:[["oto",__T("Döngü")],["isim",__T("İsim")],["puan",__T("Puan")],["tablo",__T("Sıralama")],["sirada",__T("Sıradaki")],["podyum",__T("Podyum")]].map(([k,t])=>e.jsx("button",{type:"button",className:pvG===k?"on":"",onClick:()=>pvGoster(k),children:t},k))}),
     e.jsx("p",{className:"yo-note",children:pid?__T("Önizleme kaydedilmemiş değişiklikleri de gösterir."):__T("Varsayılan görünüm. Profil seçince profilin ayarlarıyla gösterilir.")})]}),
-   linkler,canli]})]})]})}
+   durumKart,linkler,canli]})]})]})}

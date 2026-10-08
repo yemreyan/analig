@@ -4755,6 +4755,23 @@ const DICT={
   "Tören": "Ceremony",
   "Durdur (ekranı karart)": "Stop (black screen)",
   "Devam et": "Resume",
-  "Ekran karartıldı": "Screen blacked out"
+  "Ekran karartıldı": "Screen blacked out",
+  "yalnız Canlı kontrol'den açılınca": "only when opened from Live control",
+  "sürekli": "always",
+  "Profil YAYIN DIŞI — linkte hiçbir şey görünmez.": "Profile is OFF AIR — nothing shows on the link.",
+  "Alt bant kapalı.": "Lower third is off.",
+  "Alt bant: çağrılı sporcu var": "Lower third: athlete called",
+  "görünür.": "visible.",
+  "Alt bant: şu an çağrılmış sporcu yok — başhakem sporcuyu çağırınca çıkar.": "Lower third: no athlete called — appears when the head judge calls an athlete.",
+  "Sıralama tablosu kapalı.": "Standings table is off.",
+  "puan yayınlanınca görünür.": "visible when a score is published.",
+  "henüz puan yok — ilk puan yayınlanınca görünür.": "no scores yet — appears after the first published score.",
+  "Sıradaki kapalı.": "Up next is off.",
+  "çağrı varken görünür.": "visible while a call is active.",
+  "çağrı olunca görünür.": "appears when an athlete is called.",
+  "Podyum kapalı.": "Podium is off.",
+  "kategori tamamlanınca görünür.": "appears when the category is complete.",
+  "Linkte şu an ne görünür?": "What is on the link now?",
+  "Şu an gösterilecek bir şey yok; link boş (şeffaf) görünür. Bu normaldir — sporcu çağrılınca ya da puan yayınlanınca grafikler kendiliğinden gelir. Hemen görmek için aşağıdaki Canlı kontrol'den Sıralama / Sıradaki / Podyum açabilirsiniz.": "Nothing to show right now; the link looks empty (transparent). This is normal — graphics appear automatically when an athlete is called or a score is published. To see something now, open Standings / Up next / Podium from Live control below."
 };
 export{DICT};
