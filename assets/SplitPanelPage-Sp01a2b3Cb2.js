@@ -4,6 +4,7 @@ import{k as ref,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";
 import{a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";
 import{katAdi}from"./judgeLinkGroup-Jl01a2b3Cb2.js";
 import{useHakemKilit}from"./hakemKilit-Hk01a2b3Cb2.js";
+import{bayrakUrl}from"./intl-Ul01a2b3Cb2.js";
 import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // Mevcut hakem panellerini bolmelere ayirip yan yana gosterir.
@@ -52,7 +53,10 @@ function SplitPanel(){
  },[elle,comp,fp,adet,link]);
 
  // ekran kilidi (ritmik v2 bölünmüş ekran): bölmelerin kilidi burada; şifre linkId'ye bağlı (tek ekranla aynı)
- const kl=useHakemKilit({base:fp==="ritmik_yarismalar"&&link?fp:"",comp,lk:link,slot:(pid||pt||"").toUpperCase(),tetik:oto.join(",")});
+ // hakem kimliği (Paneller ataması): kilit / ekran koruyucuda büyük ad + bayrak
+ const[hk,setHk]=R.useState(null),SL=(pid||pt||"").toUpperCase();
+ R.useEffect(()=>{if(!(fp==="ritmik_yarismalar"&&link&&comp))return;let u2=null;const u1=onValue(ref(db,`${fp}/${comp}/hakemLinkleri/${link}/panelGrubu`),s=>{u2&&u2();u2=null;const g=s.val();if(!g){setHk(null);return}u2=onValue(ref(db,`${fp}/${comp}/panelGruplari/${g}/hakemler/${SL}`),t=>setHk(t.val()||null))});return()=>{u1();u2&&u2()}},[fp,comp,link,SL]);
+ const kl=useHakemKilit({base:fp==="ritmik_yarismalar"&&link?fp:"",comp,lk:link,slot:SL,tetik:oto.join(","),kimlik:hk&&hk.ad?{ad:hk.ad,ulke:hk.ulke||"",bayrak:hk.ulke?bayrakUrl(hk.ulke):null}:null});
  const bolmeler=elle?sabit:Array.from({length:adet},(z,i)=>{
   const a=oto[i];if(!a)return null;
   const p=a.split("|");return{kat:p[0],alet:p[1]||""}});

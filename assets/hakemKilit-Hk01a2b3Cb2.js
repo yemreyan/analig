@@ -13,8 +13,17 @@ const LS=(c,l)=>"gxKilit:"+c+":"+l,lsAl=k=>{try{return localStorage.getItem(k)}c
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:20,...st},children:n});
 const LOGO="/brand/gymnaxis-tam-logo-beyaz.svg";
 
-const CSS=`.gxk-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(900px 520px at 10% -10%,rgba(236,72,153,.22),transparent 60%),radial-gradient(900px 560px at 110% 0%,rgba(139,92,246,.22),transparent 60%),#070A14;color:#E8ECF7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-.gxk-in{width:min(380px,100%);display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+const CSS=`.gxk-kim{display:flex;align-items:center;gap:16px;padding:14px 22px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);text-align:left;max-width:100%;margin:4px 0 6px}
+.gxk-kart .gxk-kim{margin:0 0 14px;background:#141B2D;border-color:#26304A}
+.gxk-kim>div{min-width:0}
+.gxk-kim b{overflow-wrap:break-word}
+.gxk-kart .gxk-kim b{font-size:clamp(22px,4.2vw,34px)}
+.gxk-kart .gxk-kim img{width:60px;height:45px}
+.gxk-kim img{width:76px;height:57px;object-fit:cover;border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.25);flex-shrink:0}
+.gxk-kim b{display:block;font-size:clamp(26px,5.5vw,46px);font-weight:900;line-height:1.08;color:#fff}
+.gxk-kim span{display:block;margin-top:4px;font-size:15px;font-weight:800;letter-spacing:.1em;color:#C4B5FD}
+.gxk-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(900px 520px at 10% -10%,rgba(236,72,153,.22),transparent 60%),radial-gradient(900px 560px at 110% 0%,rgba(139,92,246,.22),transparent 60%),#070A14;color:#E8ECF7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.gxk-in{width:min(640px,100%);display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
 .gxk-logo{width:min(300px,72vw);height:auto;margin-bottom:6px;filter:drop-shadow(0 10px 30px rgba(139,92,246,.35))}
 .gxk-saat{font:800 clamp(40px,9vw,64px)/1 "JetBrains Mono",ui-monospace,Menlo,monospace;letter-spacing:.02em}
 .gxk-alt{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8E9AB8;display:flex;gap:8px;align-items:center;justify-content:center}
@@ -24,7 +33,7 @@ const CSS=`.gxk-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-
 .gxk-dots i.on{background:linear-gradient(135deg,#EC4899,#8B5CF6);border-color:transparent}
 .gxk-dots.sal{animation:gxkSal .4s}
 @keyframes gxkSal{0%,100%{transform:none}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
-.gxk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.gxk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:380px}
 .gxk-pad button{height:62px;border-radius:16px;border:1px solid #26304A;background:#141B2D;color:#E8ECF7;font:800 24px "JetBrains Mono",ui-monospace,Menlo,monospace;cursor:pointer;display:grid;place-items:center}
 .gxk-pad button:active{background:#25304F}
 .gxk-pad button.fn{font-size:14px;color:#8E9AB8}
@@ -56,7 +65,7 @@ function Pad({uz,onBitti,hata,setHata,ust}){
 function Saat(){const[t,setT]=R.useState(Date.now());R.useEffect(()=>{const i=setInterval(()=>setT(Date.now()),1e3);return()=>clearInterval(i)},[]);const d=new Date(t);return e.jsx("div",{className:"gxk-saat",children:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")})}
 
 // useHakemKilit({base, comp, lk, slot, tetik}) → {dugme, ortu}; iframe içinde (bölünmüş ekranın bölmesi) devre dışı — kilidi üst sayfa yönetir.
-export function useHakemKilit({base,comp,lk,slot,tetik}){
+export function useHakemKilit({base,comp,lk,slot,tetik,kimlik}){
  const ifr=(()=>{try{return window.self!==window.top}catch{return!0}})(),on=!ifr&&!!(base&&comp&&lk);
  const[rec,setRec]=R.useState(void 0),[kilit,setKilit]=R.useState(()=>on&&lsAl(LS(comp,lk))==="1"),[saver,setSaver]=R.useState(!1),[kur,setKur]=R.useState(0),[ilk,setIlk]=R.useState(""),[hata,setHata]=R.useState(""),[yeni,setYeni]=R.useState(!1);
  const son=R.useRef(Date.now()),yol=`${base}/${comp}/hakemKilit/${lk}`;
@@ -79,12 +88,14 @@ export function useHakemKilit({base,comp,lk,slot,tetik}){
  const kaydet=async pin=>{const h=await ozet("gx|"+comp+"|"+lk+"|"+pin),z=Date.now();await update(ref(db),{[yol]:{h,ts:z},[`${base}/${comp}/hakemKilitPin/${lk}`]:{pin,ts:z}});setKur(0);setIlk("");son.current=Date.now()};
  const istemiyorum=async()=>{await update(ref(db),{[yol]:{yok:!0,ts:Date.now()},[`${base}/${comp}/hakemKilitPin/${lk}`]:null});setKur(0);son.current=Date.now()};
  let ortu=null;
+ // hakem adı + bayrak (büyük) — koltuk bulma: ilk giriş, kilit ve ekran koruyucuda
+ const kim=kimlik&&kimlik.ad?e.jsxs("div",{className:"gxk-kim",children:[kimlik.bayrak?e.jsx("img",{src:kimlik.bayrak,alt:kimlik.ulke||""}):null,e.jsxs("div",{children:[e.jsx("b",{children:kimlik.ad}),e.jsx("span",{children:[slot,kimlik.ulke].filter(Boolean).join(" · ")})]})]}):null;
  const alt=e.jsxs("div",{className:"gxk-alt",children:[slot?e.jsx("b",{children:slot}):null,kilit?[MI("lock",{fontSize:16}),__T("Ekran kilitli")]:__T("Ekran koruyucu")]});
  if(kilit&&rec===void 0){
   ortu=e.jsxs("div",{className:"gxk-ov",children:[css,e.jsxs("div",{className:"gxk-in",children:[e.jsx("img",{className:"gxk-logo",src:LOGO,alt:"Gymexa Score"}),e.jsx(Saat,{})]})]});
  }else if(rec===null||kur){
   // kurulum: 1) şifre 2) tekrar
-  ortu=e.jsxs("div",{className:"gxk-ov",children:[css,e.jsxs("div",{className:"gxk-kart",children:[
+  ortu=e.jsxs("div",{className:"gxk-ov",children:[css,e.jsxs("div",{className:"gxk-kart",children:[kim,
    e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:10},children:[e.jsx("div",{style:{width:42,height:42,borderRadius:12,display:"grid",placeItems:"center",background:"linear-gradient(135deg,#EC4899,#8B5CF6)"},children:MI("lock",{color:"#fff"})}),e.jsx("h2",{children:kur===2?__T("Şifreyi tekrar girin"):__T("Ekran şifresi")})]}),
    e.jsx("p",{children:kur===2?__T("Aynı şifreyi bir kez daha girin."):__T("Yarışma boyunca kullanacağınız 4 haneli bir şifre belirleyin. Ekranınızdan kalktığınızda kilitleyin; 2 dakika işlem yapılmazsa ekran kendiliğinden kilitlenir. Açmak için bu şifre gerekir.")}),
    e.jsx("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:10,marginTop:8},children:e.jsx(Pad,{uz:4,hata,setHata,onBitti:(v,temizle)=>{if(kur!==2){setIlk(v);setKur(2);temizle();return}if(v!==ilk){setHata(__T("Şifreler aynı değil, yeniden deneyin."));setKur(1);setIlk("");return}kaydet(v)}},kur)}),
@@ -92,11 +103,11 @@ export function useHakemKilit({base,comp,lk,slot,tetik}){
    e.jsx("button",{type:"button",className:"gxk-bt s",style:{marginTop:6},onClick:()=>{if(kur===2){setKur(1);setIlk("");setHata("");return}istemiyorum()},children:kur===2?__T("Geri"):__T("Şifre oluşturmak istemiyorum")}),
    kur!==2?e.jsx("p",{style:{fontSize:12,color:"#64748B",marginTop:10,textAlign:"center"},children:__T("Şifre oluşturmazsanız 2 dakika işlem yapılmadığında ekran koruyucu açılır.")}):null]})]});
  }else if(kilit&&rec&&rec.h){
-  ortu=e.jsxs("div",{className:"gxk-ov",children:[css,e.jsxs("div",{className:"gxk-in",children:[e.jsx("img",{className:"gxk-logo",src:LOGO,alt:"Gymexa Score"}),e.jsx(Saat,{}),alt,yeni?e.jsx("span",{className:"gxk-yeni",children:__T("Yeni sporcu çağrıldı")}):null,
+  ortu=e.jsxs("div",{className:"gxk-ov",children:[css,e.jsxs("div",{className:"gxk-in",children:[e.jsx("img",{className:"gxk-logo",src:LOGO,alt:"Gymexa Score"}),kim,e.jsx(Saat,{}),alt,yeni?e.jsx("span",{className:"gxk-yeni",children:__T("Yeni sporcu çağrıldı")}):null,
    e.jsx(Pad,{uz:4,hata,setHata,onBitti:async(v)=>{const h=await ozet("gx|"+comp+"|"+lk+"|"+v);if(h===rec.h){setKilit(!1);setHata("");setYeni(!1);lsYaz(LS(comp,lk),null);son.current=Date.now()}else setHata(__T("Şifre yanlış"))}}),
    e.jsx("div",{className:"gxk-err",children:hata}),e.jsx("div",{className:"gxk-ipucu",children:__T("Şifrenizi unuttuysanız organizasyon Paneller sayfasından sıfırlayabilir.")})]})]});
  }else if(saver){
-  ortu=e.jsxs("div",{className:"gxk-ov",style:{cursor:"pointer"},onPointerDown:ev=>{ev.preventDefault();setSaver(!1);setYeni(!1);son.current=Date.now()},children:[css,e.jsxs("div",{className:"gxk-in",children:[e.jsx("img",{className:"gxk-logo",src:LOGO,alt:"Gymexa Score"}),e.jsx(Saat,{}),alt,yeni?e.jsx("span",{className:"gxk-yeni",children:__T("Yeni sporcu çağrıldı")}):null,e.jsx("div",{className:"gxk-dok",children:__T("Devam etmek için ekrana dokunun")})]})]});
+  ortu=e.jsxs("div",{className:"gxk-ov",style:{cursor:"pointer"},onPointerDown:ev=>{ev.preventDefault();setSaver(!1);setYeni(!1);son.current=Date.now()},children:[css,e.jsxs("div",{className:"gxk-in",children:[e.jsx("img",{className:"gxk-logo",src:LOGO,alt:"Gymexa Score"}),kim,e.jsx(Saat,{}),alt,yeni?e.jsx("span",{className:"gxk-yeni",children:__T("Yeni sporcu çağrıldı")}):null,e.jsx("div",{className:"gxk-dok",children:__T("Devam etmek için ekrana dokunun")})]})]});
  }
  const dugme=rec&&rec.h?e.jsxs("button",{type:"button",className:"gxk-btn",title:__T("Ekranı kilitle"),onClick:kilitle,children:[css,MI("lock",{fontSize:16}),__T("Kilitle")]}):rec&&rec.yok?e.jsxs("button",{type:"button",className:"gxk-btn",title:__T("Ekran şifresi oluştur"),onClick:()=>{setKur(1);setIlk("");setHata("")},children:[css,MI("lock_open",{fontSize:16}),__T("Şifre")]}):null;
  return{dugme,ortu};
