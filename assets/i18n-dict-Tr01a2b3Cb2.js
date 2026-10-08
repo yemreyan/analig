@@ -4772,6 +4772,18 @@ const DICT={
   "Podyum kapalı.": "Podium is off.",
   "kategori tamamlanınca görünür.": "appears when the category is complete.",
   "Linkte şu an ne görünür?": "What is on the link now?",
-  "Şu an gösterilecek bir şey yok; link boş (şeffaf) görünür. Bu normaldir — sporcu çağrılınca ya da puan yayınlanınca grafikler kendiliğinden gelir. Hemen görmek için aşağıdaki Canlı kontrol'den Sıralama / Sıradaki / Podyum açabilirsiniz.": "Nothing to show right now; the link looks empty (transparent). This is normal — graphics appear automatically when an athlete is called or a score is published. To see something now, open Standings / Up next / Podium from Live control below."
+  "Şu an gösterilecek bir şey yok; link boş (şeffaf) görünür. Bu normaldir — sporcu çağrılınca ya da puan yayınlanınca grafikler kendiliğinden gelir. Hemen görmek için aşağıdaki Canlı kontrol'den Sıralama / Sıradaki / Podyum açabilirsiniz.": "Nothing to show right now; the link looks empty (transparent). This is normal — graphics appear automatically when an athlete is called or a score is published. To see something now, open Standings / Up next / Podium from Live control below.",
+  "Başlangıç listesi (döngü)": "Start list (loop)",
+  "Başlangıç listesi": "Start list",
+  "Kategorinin sporcuları çıkış sırasıyla 12'şerli sayfalar hâlinde döner; Elle gösterimi bitir diyene kadar sürer.": "Athletes of the category in start order, 12 per page, rotating until you end manual display.",
+  "Puanı süre hakemi BİTİR deyince yansıt": "Reveal score when the time judge presses STOP",
+  "Açıkken: bu sporcudan sonra çağrılmış sporcu yarışıyorsa puan bekletilir; süre hakemi o sporcunun süresini BİTİR'e basınca ekranlara yansır (yarışma geneli)": "When on: if a later-called athlete is performing, the score is held and revealed on screens when the time judge stops that athlete's timer (competition-wide)",
+  "Yayın bekliyor": "Reveal pending",
+  "Süre hakemi şu sporcunun süresini bitirince yansıyacak": "Will be revealed when the time judge stops the timer of",
+  "Şimdi yansıt": "Reveal now",
+  "Canlı yayın (YouTube)": "Live stream (YouTube)",
+  "seyirci sayfasında görünüyor": "visible on the spectator page",
+  "Link eklenince seyirci sayfasında \"Canlı yayını izle\" düğmesi çıkar; isteyen açar, sayfada küçük oynatıcıda izler. Boş bırakılırsa düğme görünmez.": "When a link is set, a \"Watch live stream\" button appears on the spectator page; viewers can open it in a small player. Leave empty to hide the button.",
+  "Yalnız YouTube linki eklenebilir (youtube.com ya da youtu.be).": "Only YouTube links can be added (youtube.com or youtu.be)."
 };
 export{DICT};

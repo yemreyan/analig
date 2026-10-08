@@ -64,7 +64,7 @@ function girisler(kat,spor,puan){var S=spor||{},E={},sira=0;
 function sonuc(brans,katDef,p,alet){if(!obj(p))return null;
  if(brans==="ritmik"){var al=alet?[alet]:(katDef&&Array.isArray(katDef.aletler)&&katDef.aletler.length?katDef.aletler:Object.keys(p).filter(function(k){return obj(p[k])&&("sonuc" in p[k]||"durum" in p[k])}));
   var R={total:0,e:0,a:0,d:0,da:0,db:0,pen:0,say:0,adet:al.length,irm:null};
-  al.forEach(function(k){var x=p[k];if(!obj(x))return;if(x.irm){R.irm=R.irm||x.irm;R.say++;return}if(x.durum!=="tamamlandi")return;R.say++;
+  al.forEach(function(k){var x=p[k];if(!obj(x)||x.yayinBekliyor)return;if(x.irm){R.irm=R.irm||x.irm;R.say++;return}if(x.durum!=="tamamlandi")return;R.say++;
    R.total+=num(x.sonuc);R.e+=num(x.eScore);R.a+=num(x.aScore);R.da+=num(x.daScore!=null?x.daScore:x.da);R.db+=num(x.dbScore!=null?x.dbScore:x.db);R.pen+=num(x.penaltyTotal)});
   if(!R.say)return null;R.d=R.da+R.db;["total","e","a","d","da","db","pen"].forEach(function(k){R[k]=r3(R[k])});R.tamam=R.say>=R.adet;
   if(R.irm&&R.total===0)R.yalnizIrm=true;return R}
@@ -84,9 +84,27 @@ function siralama(o){var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat
  var tumu=G.length>0&&G.every(function(g){var s=sonuc(brans,kd,(o.puan||{})[g.key],o.alet);return s&&s.tamam});
  return {satirlar:rows.concat(irm),girisSayisi:G.length,tamamlandi:tumu}}
 
+// Takım sıralaması (ritmik ferdi kategori; canlı skor / Sonuçlar / Raporlar ile aynı kural, 2026-10-08):
+//  takım = uluslararasıda ülke içindeki takım ("TUR Team 1" ≠ "TUR Team 2"), değilse kulüp; her takımdan toplamı en iyi N sporcu
+//  (genç 3, diğerleri 4), her alette bu sporcuların en iyi 2 notu; en az 2 puanlı sporcusu olmayan takım girmez; takım kesintisi düşülür.
+function takimAdi(a,intl){if(!intl)return String(a.okul||a.kulup||a.il||"").trim();var u=String(a.ulke||"").trim().toUpperCase();if(!u)return String(a.okul||a.kulup||"").trim();
+ var h=String(a.takim||"").trim()||((String(a.kulup||a.okul||"").match(/\b(team|tak[ıi]m)\s*\d+\b/i)||[])[0]||"");if(!h)return u;var n=(h.match(/\d+/)||[""])[0];return n?u+" Team "+n:u+" "+h}
+function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletler)?kd.aletler:[],N=/genc/i.test(String(o.kat))?3:4,T={},ded={};
+ Object.keys(o.spor||{}).forEach(function(id){var a=o.spor[id];if(!obj(a))return;var ad=takimAdi(a,o.intl);if(!ad)return;
+  var t=T[ad]||(T[ad]={ad:ad,ulke:a.ulke?String(a.ulke).trim().toUpperCase():null,uyeler:[]}),p=(o.puan||{})[id],m={ad:[a.ad,a.soyad].filter(Boolean).join(" "),soyad:a.soyad||"",total:0,ap:{}};
+  al.forEach(function(x){var r=sonuc("ritmik",kd,p,x),v=r&&!r.yalnizIrm?num(r.total):0;m.ap[x]=v;m.total+=v});t.uyeler.push(m)});
+ Object.keys(o.kesintiler||{}).forEach(function(k){var x=o.kesintiler[k];if(obj(x)&&(!x.categoryId||x.categoryId===o.kat)){var n=String(x.teamName||"").trim().toUpperCase();ded[n]=(ded[n]||0)+num(x.amount)}});
+ var rows=Object.keys(T).map(function(k){return T[k]}).filter(function(t){return t.uyeler.filter(function(m){return m.total>0}).length>=2}).map(function(t){
+  var sec=t.uyeler.slice().sort(function(p,q){return q.total-p.total}).slice(0,N),apps={},top=0;
+  al.forEach(function(x){var v=sec.map(function(m){return m.ap[x]||0}).sort(function(p,q){return q-p}).slice(0,2).reduce(function(p,q){return p+q},0);apps[x]=r3(v);top+=v});
+  var d=ded[t.ad.toUpperCase()]||0;return {ad:t.ad,ulke:t.ulke,uyeler:sec.filter(function(m){return m.total>0}).map(function(m){return m.soyad||m.ad}),apps:apps,toplam:r3(top),kesinti:r3(d),total:r3(top-d)}})
+  .sort(function(a,b){return b.total-a.total});
+ rows.forEach(function(r,i){r.sira=i&&Math.round(rows[i-1].total*1e3)===Math.round(r.total*1e3)?rows[i-1].sira:i+1});
+ return rows}
+
 // Sıradaki sporcular: çıkış sırasına göre, çağrılan sporcudan sonra, henüz puanı olmayanlar
 function siradakiler(o){var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat,o.spor,o.puan),al=o.alet||null;
- var bitti=function(g){var p=(o.puan||{})[g.key];if(brans==="ritmik"){if(!al)return !!(sonuc(brans,kd,p)||{}).tamam;var x=p&&p[al];return obj(x)&&(x.durum==="tamamlandi"||!!x.irm)}return !!sonuc(brans,kd,p)};
+ var bitti=function(g){var p=(o.puan||{})[g.key];if(brans==="ritmik"){if(obj(p)&&Object.keys(p).some(function(k){return obj(p[k])&&p[k].yayinBekliyor}))return true;if(!al)return !!(sonuc(brans,kd,p)||{}).tamam;var x=p&&p[al];return obj(x)&&(x.durum==="tamamlandi"||!!x.irm)}return !!sonuc(brans,kd,p)};
  var cagri=o.cagrilan&&o.cagrilan._kat===o.kat?String(o.cagrilan.id||""):"";
  var i=cagri?G.findIndex(function(g){return g.key===cagri||g.id===cagri}):-1;
  var sonra=(i>=0?G.slice(i+1).concat(G.slice(0,i)):G).filter(function(g){return !bitti(g)&&g.key!==cagri});
@@ -130,6 +148,6 @@ function csv(rows){rows=(rows||[]).filter(obj);if(!rows.length)return "";var col
  return cols.join(",")+"\n"+rows.map(function(r){return cols.map(function(c){return q(r[c])}).join(",")}).join("\n")+"\n"}
 
 var X={BRANS:BRANS,ALET:ALET,ALET_EN:ALET_EN,bayrakUrl:bayrakUrl,katEN:katEN,katAd:katAd,aletAd:aletAd,katUygun:katUygun,isFinal:isFinal,aktifListe:aktifListe,guncelKat:guncelKat,
- girisler:girisler,sonuc:sonuc,siralama:siralama,siradakiler:siradakiler,satir:satir,paket:paket,xml:xml,csv:csv,f3:f3,num:num,anahtar:anahtar};
+ girisler:girisler,sonuc:sonuc,siralama:siralama,siradakiler:siradakiler,takimlar:takimlar,takimAdi:takimAdi,bayrakUrl:bayrakUrl,satir:satir,paket:paket,xml:xml,csv:csv,f3:f3,num:num,anahtar:anahtar};
 if(typeof module!=="undefined"&&module.exports)module.exports=X;else (typeof self!=="undefined"?self:this).GXYV=X;
 })();

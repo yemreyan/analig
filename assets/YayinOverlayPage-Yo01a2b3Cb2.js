@@ -138,7 +138,7 @@ export default function YayinOverlayPage(){
  const T=tas;
  const Pos=({v,on,ops})=>e.jsx("div",{className:"yo-pos",style:{gridTemplateColumns:`repeat(${Math.min(ops.length,4)},1fr)`},children:ops.map(([k,t])=>e.jsxs("button",{type:"button","data-v":k,className:v===k?"on":"",onClick:()=>on(k),children:[e.jsx("i",{}),t]},k))});
  const SEK=[["genel",__T("Genel"),"tune"],["logo",__T("Logolar"),"image"],["alt",__T("Alt bant"),"subtitles"],["tablo",__T("Sıralama"),"leaderboard"],["sirada",__T("Sıradaki"),"queue"],["podyum",__T("Podyum"),"emoji_events"]];
- const durumG={siralama:__T("Sıralama tablosu"),sirada:__T("Sıradaki sporcular"),podyum:__T("Podyum"),"alt-gizle":__T("Alt bant gizli")};
+ const durumG={siralama:__T("Sıralama tablosu"),sirada:__T("Sıradaki sporcular"),podyum:__T("Podyum"),liste:__T("Başlangıç listesi"),"alt-gizle":__T("Alt bant gizli")};
  const kc=P.kontrol,kAktif=kc&&kc.g&&kc.g!=="gizle"&&!(+kc.sure>0&&Date.now()>(+kc.ts||0)+kc.sure*1000);
 
  const editor=T?e.jsxs("div",{className:"gxp-card",children:[
@@ -237,6 +237,7 @@ export default function YayinOverlayPage(){
   e.jsxs("div",{className:"yo-ctl",children:[e.jsxs("button",{type:"button",onClick:()=>kontrol("siralama"),className:kAktif&&kc.g==="siralama"?"on":"",children:[I("leaderboard"),__T("Sıralamayı göster")]}),
    e.jsxs("button",{type:"button",onClick:()=>kontrol("sirada"),className:kAktif&&kc.g==="sirada"?"on":"",children:[I("queue"),__T("Sıradakileri göster")]}),
    e.jsxs("button",{type:"button",onClick:()=>kontrol("podyum"),className:kAktif&&kc.g==="podyum"?"on":"",children:[I("emoji_events"),__T("Podyumu göster")]}),
+   e.jsxs("button",{type:"button",onClick:()=>kontrol("liste"),className:kAktif&&kc.g==="liste"?"on":"",title:__T("Kategorinin sporcuları çıkış sırasıyla 12'şerli sayfalar hâlinde döner; Elle gösterimi bitir diyene kadar sürer."),children:[I("format_list_numbered"),__T("Başlangıç listesi (döngü)")]}),
    e.jsxs("button",{type:"button",onClick:()=>kontrol("alt-gizle"),className:kAktif&&kc.g==="alt-gizle"?"on":"",children:[I("subtitles_off"),__T("Alt bandı gizle")]}),
    e.jsxs("button",{type:"button",className:"gz",onClick:()=>kontrol("gizle"),disabled:!kAktif,children:[I("close"),__T("Elle gösterimi bitir")]})]}),
   e.jsxs("div",{className:"yo-btns",children:[P.kapali?e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>kapat(!1),children:[I("play_arrow"),__T("Yayına geri al")]}):e.jsxs("button",{type:"button",className:"yo-btn kr",onClick:()=>kapat(!0),children:[I("block"),__T("Yayın dışı (tümünü gizle)")]}),ok?e.jsx("span",{className:"yo-ok",children:ok}):null]})]}):null;

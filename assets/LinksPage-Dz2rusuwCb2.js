@@ -1,7 +1,7 @@
 import"./i18n-Tr01a2b3Cb2.js";import{u as ha,a as ua,j as e,d as ae}from"./main-C2LpyYUGCb2.js";import{R as RtK,a as RtA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{a as Qe,g as _a,u as ga,r as B}from"./vendor-react-Cxw6bqwhCb2.js";import{k as re,o as Ee,l as xa,m as ja}from"./vendor-firebase-940mxgRVCb2.js";import{a as fa}from"./useFilteredCompetitions-B7FB6qIvCb2.js";import{g as va}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 // BAĞIMSIZ SEYİRCİ SİTESİ (GS_HOST/<kod>, kaynak: ~/Desktop/gymexa-izle) — ayrı Vercel projesi; veri sunucu tarafında aktarılır, tarayıcı kaynağı görmez.
 // criteria/kisaLink/<kod> = {t:"izle", b, c, ts, kapali? (durduruldu), iptal? (yenilendi)} · <yarışma>/kisaLinkler/izle = <kod>
-const GS_HOST="gymexascore.vercel.app";
+const GS_HOST="gymexascore.net";
 const __gsKod=()=>{const a="abcdefghijkmnpqrstuvwxyz23456789",b=new Uint8Array(9);crypto.getRandomValues(b);return Array.from(b,x=>a[x%a.length]).join("")};
 const GsKart=({comp,pre,Q,kim})=>{const br=pre==="/rhythmic"?"ritmik":pre==="/aerobic"?"aerobik":null,FBb=br==="ritmik"?"ritmik_yarismalar":"aerobik_yarismalar";
  const[kod,setKod]=B.useState(null),[kap,setKap]=B.useState(!1),[ok,setOk]=B.useState("");

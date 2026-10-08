@@ -1,11 +1,11 @@
 import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,l as get,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{isIntl,bayrakUrl,ulkeAd}from"./intl-Ul01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // GÖRSEL ONAYLARI (2026-10-08) — /rhythmic/photo-approvals · /aerobic/photo-approvals · yetki "gorsel_onay" (yoksa athletes)
-//  Ülke (uluslararası) / kulüp (yurtiçi) sorumlusu QR ile gymexascore.vercel.app/u/<kod> sayfasını açar, sporcularının fotoğrafını çeker / yükler.
+//  Ülke (uluslararası) / kulüp (yurtiçi) sorumlusu QR ile gymexascore.net/u/<kod> sayfasını açar, sporcularının fotoğrafını çeker / yükler.
 //  Yüklenenler criteria/sporcuFotoBekleyen/<base>/<yarışma>/<id> {url,ts,ad,kat,grup,gt,kod} — burada onaylanınca
 //  criteria/sporcuFoto/<base>/<yarışma>/<id> olur (Final Oluştur'dan yüklenenlerle aynı yer) ve sporcu kartı / canlı skorda hemen görünür.
 //  Linkler: criteria/kisaLink/<kod> {t:"foto",b,c,g,gt,ts,kapali?,iptal?} · <yarışma>/fotoLinkleri/<grup anahtarı> = <kod>
-const GS="gymexascore.vercel.app";
+const GS="gymexascore.net";
 const kodUret=()=>{const a="abcdefghijkmnpqrstuvwxyz23456789",b=new Uint8Array(9);crypto.getRandomValues(b);return Array.from(b,x=>a[x%a.length]).join("")};
 let _qr=null;const qrAl=async t=>{try{_qr=_qr||(await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm")).default;return await _qr.toDataURL(t,{margin:1,width:360})}catch{return null}};
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:18,...st},children:n});

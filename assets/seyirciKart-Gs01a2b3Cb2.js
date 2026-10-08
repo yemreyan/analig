@@ -2,7 +2,7 @@ import{j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-re
 // BAĞIMSIZ SEYİRCİ SİTESİ KARTI (2026-10-08, Paneller sayfası) — GS_HOST/<kod>, ayrı Vercel projesi (~/Desktop/gymexa-izle).
 // criteria/kisaLink/<kod> = {t:"izle", b, c, ts, kapali? (durduruldu), iptal? (yenilendi)} · <yarışma>/kisaLinkler/izle = <kod>
 // (Önceden QR ve Linkler sayfasındaydı — LinksPage GsKart; o kart kodda duruyor.)
-export const GS_HOST="gymexascore.vercel.app";
+export const GS_HOST="gymexascore.net";
 const kodUret=()=>{const a="abcdefghijkmnpqrstuvwxyz23456789",b=new Uint8Array(9);crypto.getRandomValues(b);return Array.from(b,x=>a[x%a.length]).join("")};
 let _qr=null;const qrAl=async t=>{try{_qr=_qr||(await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm")).default;return await _qr.toDataURL(t,{margin:1,width:360})}catch{return null}};
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:16,...st},children:n});
@@ -11,6 +11,11 @@ export function SeyirciKart({comp,br,kim}){
  const[kod,setKod]=R.useState(null),[kap,setKap]=R.useState(!1),[ok,setOk]=R.useState(""),[qr,setQr]=R.useState(null);
  R.useEffect(()=>{setKod(null);if(!FBb||!comp)return;return onValue(ref(db,`${FBb}/${comp}/kisaLinkler/izle`),s=>setKod(s.val()||null))},[FBb,comp]);
  R.useEffect(()=>{setKap(!1);if(!kod)return;return onValue(ref(db,`criteria/kisaLink/${kod}/kapali`),s=>setKap(!!s.val()))},[kod]);
+ // canlı yayın linki (YouTube) — seyirci sayfasında "Canlı yayını izle" düğmesi: <yarışma>/seyirciYayin {url, ts}
+ const[yy,setYy]=R.useState(null),[yyG,setYyG]=R.useState("");
+ R.useEffect(()=>{setYy(null);if(!FBb||!comp)return;return onValue(ref(db,`${FBb}/${comp}/seyirciYayin`),s=>{const v=s.val();setYy(v);setYyG(v&&v.url||"")})},[FBb,comp]);
+ const ytOk=u=>/^https?:\/\/([a-z0-9-]+\.)?(youtube\.com|youtu\.be)\//i.test(String(u||"").trim());
+ const yyKaydet=async()=>{const u=yyG.trim();if(u&&!ytOk(u)){await window.__gxConfirm(__T("Yalnız YouTube linki eklenebilir (youtube.com ya da youtu.be)."));return}await yaz({[`${FBb}/${comp}/seyirciYayin`]:u?{url:u,ts:Date.now(),kim:kim||null}:null})};
  const url=kod?"https://"+GS_HOST+"/"+kod:"";
  R.useEffect(()=>{let ip=!1;setQr(null);url&&qrAl(url).then(d=>{ip||setQr(d)});return()=>{ip=!0}},[url]);
  if(!FBb||!comp)return null;
@@ -27,6 +32,10 @@ export function SeyirciKart({comp,br,kim}){
    e.jsx("div",{style:{fontSize:12.5,color:"#E9D5FF",fontWeight:600,lineHeight:1.45},children:__T("Yeni tasarım canlı sonuç sitesi: şimdi sahnedeki sporcu, son puan, kategori ve alet sıralamaları, sıradakiler. Yalnız bu kısa link çalışır; yönetim sistemi, veritabanı ve yarışma kimliği görünmez. Arşive alınan yarışmada veri gösterilmez.")}),
    kod?e.jsx("div",{style:{margin:"10px 0 4px",background:"#fff",borderRadius:10,padding:"8px 10px",fontFamily:"ui-monospace,Menlo,monospace",fontSize:13,fontWeight:800,color:"#6D28D9",wordBreak:"break-all",textDecoration:kap?"line-through":"none"},children:url}):null,
    kap?e.jsx("div",{style:{fontSize:12,fontWeight:800,color:"#FDE68A",margin:"4px 0"},children:"⏸ "+__T("Yayın durduruldu — link şu an veri göstermiyor")}):null,
+   e.jsxs("div",{style:{marginTop:10,padding:"10px 12px",borderRadius:12,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.15)"},children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:6,fontSize:12,fontWeight:900,letterSpacing:".06em",textTransform:"uppercase",color:"#FECACA"},children:[MI("smart_display",{fontSize:16,color:"#F87171"}),__T("Canlı yayın (YouTube)"),yy&&yy.url?e.jsx("span",{style:{marginLeft:"auto",color:"#86EFAC",letterSpacing:0,textTransform:"none"},children:"● "+__T("seyirci sayfasında görünüyor")}):null]}),
+    e.jsx("div",{style:{fontSize:11.5,color:"#E9D5FF",fontWeight:600,margin:"4px 0 8px"},children:__T("Link eklenince seyirci sayfasında \"Canlı yayını izle\" düğmesi çıkar; isteyen açar, sayfada küçük oynatıcıda izler. Boş bırakılırsa düğme görünmez.")}),
+    e.jsxs("div",{style:{display:"flex",gap:6,flexWrap:"wrap"},children:[e.jsx("input",{value:yyG,onChange:ev=>setYyG(ev.target.value),placeholder:"https://www.youtube.com/watch?v=…  /  https://youtube.com/live/…",style:{flex:"1 1 260px",minWidth:0,padding:"8px 10px",borderRadius:10,border:"1px solid rgba(255,255,255,.3)",background:"#fff",color:"#1E1B4B",fontWeight:700,fontSize:12.5,fontFamily:"inherit"}}),
+     e.jsxs("button",{type:"button",style:bt,onClick:yyKaydet,disabled:(yy&&yy.url||"")===yyG.trim(),children:[MI("save"),__T("Kaydet")]}),yy&&yy.url?e.jsxs("button",{type:"button",style:bt,onClick:()=>{setYyG("");yaz({[`${FBb}/${comp}/seyirciYayin`]:null})},children:[MI("link_off"),__T("Kaldır")]}):null]})]}),
    e.jsxs("div",{style:{display:"flex",gap:8,flexWrap:"wrap",marginTop:8},children:[
     kod?e.jsxs("button",{type:"button",style:bt,onClick:kopya,children:[MI(ok?"check":"content_copy"),ok?__T("Kopyalandı!"):__T("Kopyala")]}):null,
     kod?e.jsxs("a",{href:url,target:"_blank",rel:"noopener noreferrer",style:bt,children:[MI("open_in_new"),__T("Aç")]}):null,

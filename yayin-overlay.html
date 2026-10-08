@@ -92,6 +92,10 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:transparent
 .lb.on{transform:translate(0,-50%)}
 .lb.sag{right:var(--mm)}.lb.sol{left:var(--mm);transform:translate(calc(-60*var(--s)),-50%)}.lb.sol.on{transform:translate(0,-50%)}
 .lb.orta{left:50%;width:calc(1240*var(--s));transform:translate(-50%,calc(-50% + 40*var(--s)))}.lb.orta.on{transform:translate(-50%,-50%)}
+/* başlangıç listesi (elle, 12'şerli sayfa, döngü) */
+.sl{left:50%;top:50%;width:calc(980*var(--s));transform:translate(-50%,calc(-50% + 40*var(--s)))}.sl.on{transform:translate(-50%,-50%)}
+.sl .rws{transition:opacity .5s ease,transform .5s ease}.sl.gec .rws{opacity:0;transform:translateY(calc(10*var(--s)))}
+.sl .rw .rk{opacity:.85}
 /* sıradaki */
 .nx{width:calc(560*var(--s))}
 .nx.sag-ust{right:var(--mm);top:calc(var(--mm) - 20*var(--s));transform:translateY(calc(-30*var(--s)))}
@@ -159,8 +163,8 @@ const urlAyar=()=>{const c=VARS();
 let C=urlAyar(),P={}; // C: geçerli ayarlar, P: ham profil (kontrol, kapali)
 const taze=Math.max(0,parseInt(Q.get("taze"))||15)*60000;
 const EN=()=>C.dil==="en";
-const L=()=>EN()?{puan:"SCORE",sira:r=>"RANK "+r,ksn:"Ded.",siralama:"Standings",sonuc:"Results",sirada:"Up next",simdi:"NOW",podyum:"Medalists",rk:"RK",top:"TOTAL",pen:"PEN"}
- :{puan:"PUAN",sira:r=>r+". SIRA",ksn:"Kesinti",siralama:"Anlık sıralama",sonuc:"Sonuçlar",sirada:"Sıradaki sporcular",simdi:"ŞİMDİ",podyum:"Madalyalar",rk:"SIRA",top:"TOPLAM",pen:"CEZA"};
+const L=()=>EN()?{puan:"SCORE",sira:r=>"RANK "+r,ksn:"Ded.",siralama:"Standings",sonuc:"Results",sirada:"Up next",simdi:"NOW",podyum:"Medalists",rk:"RK",top:"TOTAL",pen:"PEN",liste:"Start list"}
+ :{puan:"PUAN",sira:r=>r+". SIRA",ksn:"Kesinti",siralama:"Anlık sıralama",sonuc:"Sonuçlar",sirada:"Sıradaki sporcular",simdi:"ŞİMDİ",podyum:"Madalyalar",rk:"SIRA",top:"TOPLAM",pen:"CEZA",liste:"Başlangıç listesi"};
 const UP=(s,u)=>String(s??"").toLocaleUpperCase(u?(u!=="TUR"?"en":"tr-TR"):(EN()?"en":"tr-TR")); // u: sporcunun ülkesi (TUR adları Türkçe büyük harf); u yoksa (başlıklar) yayın dili
 const fl=k=>{const u=k&&V.bayrakUrl(k);return u?`<img class="fl" src="${u}" alt="">`:""};
 
@@ -174,6 +178,7 @@ document.getElementById("app").innerHTML=`<div class="stage M" id="st">
  <div class="gfx nx" id="nx"></div>
  <div class="gfx lb" id="lb"></div>
  <div class="gfx pd" id="pd"></div>
+ <div class="gfx sl" id="sl"></div>
  <div class="gfx lt" id="lt"><div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
   <div class="score"><div class="slbl" id="sl"></div><div class="stot" id="tot"></div><div class="rank" id="rk"></div></div></div></div>`;
 const $=id=>document.getElementById(id),st=$("st"),lt=$("lt");
@@ -264,21 +269,31 @@ function cizPodyum(){const e=elle(),k=(e&&e.g==="podyum"?gKat():podKat)||gKat();
  const pods=`<div class="pods">${ust.slice().sort((a,b)=>ord[a.sira]-ord[b.sira]).map(kol).join("")}</div>`;
  const liste=n>3?S.satirlar.filter(r=>r.sira>3&&r.sira<=n).map(r=>satirHtml(r,{})).join(""):"";
  $("pd").innerHTML=ust.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(L().podyum)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())))}</div></div></div>${pods}${liste?`<div class="pdl">${liste}</div>`:""}</div>`:""}
-function ciz(){cizTablo();cizSirada();cizPodyum()}
+// Başlangıç listesi (2026-10-08): Canlı kontrol › "Başlangıç listesi" — kategorinin sporcuları çıkış sırasıyla, 12'şerli sayfalar,
+// 9 sn'de bir yumuşak geçişle sonraki sayfa, sona gelince başa döner; "Elle gösterimi bitir" diyene kadar sürer. Açıkken diğer grafikler gizlenir.
+let slSayfa=0,slNext=0,slKat=null,slGec=!1;const SL_N=12,SL_SURE=9000;
+function cizListe(){const e=elle();if(!(e&&e.g==="liste")){$("sl").innerHTML="";slKat=null;return}const k=gKat();if(!k){$("sl").innerHTML="";return}
+ if(slKat!==k){slKat=k;slSayfa=0;slNext=Date.now()+SL_SURE}
+ const G=V.girisler(k,D.spor[k],D.puan[k]),sayfa=Math.max(1,Math.ceil(G.length/SL_N)),p=slSayfa%sayfa,parca=G.slice(p*SL_N,p*SL_N+SL_N);
+ const rows=parca.map((g,i)=>{const u=g.ulke,ul=u&&C.alt.ulke;return `<div class="rw"><span class="rk">${p*SL_N+i+1}</span><span class="nm"><div class="n1">${ul?fl(u):""}${esc(UP(adK(g),u))}</div><div class="n2">${esc(UP(altK(g),u))}</div></span>${C.alt.bib&&g.bib?`<span class="dt">#${esc(g.bib)}</span>`:""}</div>`}).join("");
+ $("sl").innerHTML=G.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(L().liste)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())))}${sayfa>1?` · ${p+1}/${sayfa}`:""}</div></div></div><div class="rws">${rows}</div></div>`:""}
+function ciz(){cizTablo();cizSirada();cizPodyum();cizListe()}
 
 /* ---------------- GÖRÜNÜRLÜK (400 ms'de bir) ---------------- */
 function tick(){const now=Date.now(),e=elle(),kap=!!P.kapali;
  if(nameUntil&&now>nameUntil&&!ltPuan){ltOn=!1;nameUntil=0}
- const pod=!kap&&((e&&e.g==="podyum")||(C.podyum.acik&&now<podyumUntil))&&$("pd").innerHTML!=="";
- const tab=!kap&&!pod&&((e&&e.g==="siralama")||(C.tablo.acik&&(C.tablo.mod==="surekli"||now<tabloUntil)))&&$("lb").innerHTML!=="";
+ const lst=!kap&&!!e&&e.g==="liste"&&$("sl").innerHTML!=="";
+ if(lst&&!slGec&&now>slNext){slGec=!0;slNext=now+SL_SURE;const el=$("sl");el.classList.add("gec");setTimeout(()=>{slSayfa++;cizListe();el.classList.remove("gec");slGec=!1},560)}
+ const pod=!kap&&!lst&&((e&&e.g==="podyum")||(C.podyum.acik&&now<podyumUntil))&&$("pd").innerHTML!=="";
+ const tab=!kap&&!lst&&!pod&&((e&&e.g==="siralama")||(C.tablo.acik&&(C.tablo.mod==="surekli"||now<tabloUntil)))&&$("lb").innerHTML!=="";
  const orta=tab&&C.tablo.konum==="orta";
- const ltV=!kap&&!pod&&!orta&&ltOn&&C.alt.acik&&!(e&&e.g==="alt-gizle");
+ const ltV=!kap&&!lst&&!pod&&!orta&&ltOn&&C.alt.acik&&!(e&&e.g==="alt-gizle");
  const yan=tab&&((C.tablo.konum==="sag"&&/^sag/.test(C.sirada.konum))||(C.tablo.konum==="sol"&&/^sol/.test(C.sirada.konum)));
- const nx=!kap&&!pod&&!orta&&!yan&&((e&&e.g==="sirada")||(C.sirada.acik&&(C.sirada.mod==="surekli"||(C.sirada.mod==="cagri"&&ltV&&!ltPuan))))&&$("nx").innerHTML!=="";
+ const nx=!kap&&!lst&&!pod&&!orta&&!yan&&((e&&e.g==="sirada")||(C.sirada.acik&&(C.sirada.mod==="surekli"||(C.sirada.mod==="cagri"&&ltV&&!ltPuan))))&&$("nx").innerHTML!=="";
  const set=(el,v)=>{if(el.classList.contains("on")!==v)el.classList.toggle("on",v)};
  const lc="gfx lb "+(["sag","sol","orta"].includes(C.tablo.konum)?C.tablo.konum:"sag")+(tab?" on":"");if($("lb").className!==lc)$("lb").className=lc;
  const nc="gfx nx "+(["sag-ust","sol-ust","sag-alt"].includes(C.sirada.konum)?C.sirada.konum:"sag-ust")+(nx?" on":"");if($("nx").className!==nc)$("nx").className=nc;
- set($("pd"),pod);set(lt,ltV);set($("kose"),!kap&&!!C.logo.kose&&C.logo.kose!=="yok"&&!pod)}
+ set($("pd"),pod);set($("sl"),lst);set(lt,ltV);set($("kose"),!kap&&!!C.logo.kose&&C.logo.kose!=="yok"&&!pod)}
 setInterval(tick,400);
 
 /* ---------------- OLAYLAR ---------------- */
