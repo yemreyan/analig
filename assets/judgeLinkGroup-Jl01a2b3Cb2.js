@@ -99,7 +99,7 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
   });
  },[base,comp,tek,raw,tumu,anahtar,_al,kAnahtar]);
 
- return{aktif,kume,tumu,grupAd,yok,coklu:!tek,kisitli,alet:kisitli?aktifAl:"",kisit,izinAl};
+ return{aktif,kume,tumu,grupAd,yok,coklu:!tek,kisitli,alet:kisitli?aktifAl:"",kisit,izinAl,son:enYeni.current};
 }
 // "final_genc_kiz__cember" -> "Genc Kiz — Cember Finali"
 function katAdi(c){

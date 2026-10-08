@@ -165,6 +165,12 @@ function HakemV2({kind,yapi,grup}){
  const izinK=(k,al)=>(hk.tumu||(hk.kume||[]).includes(k)||(hk.kume||[]).includes(String(k).replace(/^final_/,"")))&&(!al||!hk.izinAl||hk.izinAl(k,al));
  const sira=(()=>{const cTs=+(ath&&ath.ts)||0;
   if(gecis&&gecis.kat&&+gecis.ts>cTs&&izinK(gecis.kat,gecis.alet))return{kat:gecis.kat,alet:gecis.alet||"",kaynak:"elle"};
+  // gün başı (2026-10-08): çağrı yoksa ya da mevcut çağrı önceki günden kaldıysa → bugünün çıkış listesindeki ilk (izinli) kategori/alet
+  const _gl=clG?(Array.isArray(clG)?clG:Object.values(clG)).filter(Boolean):[],_bg=new Date().toLocaleDateString("sv-SE"),_bugun=_gl.find(g=>g.tarih===_bg),
+   _adim=g=>{const o=[];Object.values(g&&g.bloklar||{}).forEach(b=>{if(!b||b.tip&&b.tip!=="grup"&&b.tip!=="takim")return;Object.values(b.rows||{}).forEach(rw=>Object.values(rw&&rw.r||{}).forEach(x=>{x&&x.a&&o.push({kat:b.kat,a:String(x.a),al:x.al||(Array.isArray(b.aletler)?b.aletler[0]:"")})}))});return o},
+   _ilk=()=>{if(!_bugun)return null;const n=_adim(_bugun).find(x=>izinK(x.kat,x.al));return n?{kat:n.kat,alet:n.al,kaynak:"oto"}:null};
+  if(!ath)return hk.son?null:_ilk();
+  if(_bugun&&clG){const _cg=_gl.find(g=>_adim(g).some(x=>x.kat===cat&&x.a===String(aid)));if(_cg&&_cg.tarih&&_cg.tarih<_bg)return _ilk()}
   if(!ath||!aid||!cat||!clG||!pkK)return null;
   const gun=(Array.isArray(clG)?clG:Object.values(clG)).find(g=>(g&&g.bloklar?Object.values(g.bloklar):[]).some(b=>b&&b.kat===cat&&(b.rows?Object.values(b.rows):[]).some(rw=>(rw&&rw.r?Object.values(rw.r):[]).some(x=>x&&String(x.a)===String(aid)))));if(!gun)return null;
   const ad=[];Object.values(gun.bloklar||{}).forEach(b=>{if(!b||b.tip&&b.tip!=="grup"&&b.tip!=="takim")return;Object.values(b.rows||{}).forEach(rw=>Object.values(rw&&rw.r||{}).forEach(x=>{x&&x.a&&ad.push({kat:b.kat,a:String(x.a),al:x.al||(Array.isArray(b.aletler)?b.aletler[0]:"")})}))});
