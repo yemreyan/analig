@@ -3,6 +3,7 @@ import{f as usSP,r as R}from"./vendor-react-Cxw6bqwhCb2.js";
 import{k as ref,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";
 import{a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";
 import{katAdi}from"./judgeLinkGroup-Jl01a2b3Cb2.js";
+import{useHakemKilit}from"./hakemKilit-Hk01a2b3Cb2.js";
 import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // Mevcut hakem panellerini bolmelere ayirip yan yana gosterir.
@@ -50,6 +51,8 @@ function SplitPanel(){
   return()=>{u1();u2&&u2()};
  },[elle,comp,fp,adet,link]);
 
+ // ekran kilidi (ritmik v2 bölünmüş ekran): bölmelerin kilidi burada; şifre linkId'ye bağlı (tek ekranla aynı)
+ const kl=useHakemKilit({base:fp==="ritmik_yarismalar"&&link?fp:"",comp,lk:link,slot:(pid||pt||"").toUpperCase(),tetik:oto.join(",")});
  const bolmeler=elle?sabit:Array.from({length:adet},(z,i)=>{
   const a=oto[i];if(!a)return null;
   const p=a.split("|");return{kat:p[0],alet:p[1]||""}});
@@ -80,7 +83,8 @@ function SplitPanel(){
    rozet?e.jsx("span",{style:{background:"#7c3aed",color:"#fff",borderRadius:"999px",padding:"2px 10px",fontWeight:800,fontSize:".74rem"},children:rozet}):null,
    elle?null:e.jsx("span",{style:{background:"#1f6feb33",color:"#79c0ff",border:"1px solid #1f6feb66",borderRadius:"999px",padding:"1px 9px",fontWeight:700,fontSize:".7rem"},children:__T("OTOMATİK")}),
    e.jsx("span",{style:{marginLeft:"auto",opacity:.7,fontSize:".76rem",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"50%"},children:bolmeler.map(bslk).join("  |  ")}),
-   e.jsx("span",{style:{display:"inline-flex",border:"1px solid #30363d",borderRadius:999,overflow:"hidden",flexShrink:0},children:["tr","en"].map(l=>e.jsx("button",{type:"button",onClick:()=>typeof __SETLANG=="function"&&__SETLANG(l),style:{border:0,padding:"3px 9px",fontWeight:800,fontSize:".7rem",cursor:"pointer",fontFamily:"inherit",background:(typeof __LANG=="function"&&__LANG()===l)?"#e6edf3":"transparent",color:(typeof __LANG=="function"&&__LANG()===l)?"#0d1117":"#8b949e"},children:l.toUpperCase()},l))})]}),
+   kl.dugme,e.jsx("span",{style:{display:"inline-flex",border:"1px solid #30363d",borderRadius:999,overflow:"hidden",flexShrink:0},children:["tr","en"].map(l=>e.jsx("button",{type:"button",onClick:()=>typeof __SETLANG=="function"&&__SETLANG(l),style:{border:0,padding:"3px 9px",fontWeight:800,fontSize:".7rem",cursor:"pointer",fontFamily:"inherit",background:(typeof __LANG=="function"&&__LANG()===l)?"#e6edf3":"transparent",color:(typeof __LANG=="function"&&__LANG()===l)?"#0d1117":"#8b949e"},children:l.toUpperCase()},l))})]}),
+  kl.ortu,
   e.jsx("div",{style:{flex:1,minHeight:0,display:"grid",gridTemplateColumns:`repeat(auto-fit,minmax(min(100%,300px),1fr))`,gap:"2px",background:"#30363d"},
    children:bolmeler.map((b,ix)=>e.jsxs("div",{style:{display:"flex",flexDirection:"column",minWidth:0,minHeight:0,background:"#0d1117"},children:[
     e.jsxs("div",{style:{padding:".22rem .6rem",background:b?"#1f2937":"#161b22",color:b?"#a5b4fc":"#6e7681",fontWeight:800,fontSize:".72rem",letterSpacing:".06em",textTransform:"uppercase",flexShrink:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"},children:[ix+1,". ",__T("BÖLME")," — ",bslk(b)]}),

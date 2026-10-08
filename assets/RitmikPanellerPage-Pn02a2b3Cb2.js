@@ -81,8 +81,8 @@ function Paneller(){
 
  R.useEffect(()=>{const u=onValue(ref(db,BASE),s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.isim&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]={isim:c.isim,t:c.baslangicTarihi||""})});setComps(o)});return()=>u()},[]);
  // seçili yarışmanın yalnızca gereken düğümleri dinlenir
- R.useEffect(()=>{if(!comp){setC(null);return}const st={};const set=(k,v)=>{st[k]=v;setC({...st})};
-  const ul=[["isim","isim"],["kategoriler","kategoriler"],["panelGruplari","panelGruplari"],["hakemLinkleri","hakemLinkleri"],["epanelToken","epanelToken"],["aktifSporcu","aktifSporcu"],["itirazYetki","itirazYetki"],["hakemAtama","hakemAtama"]].map(([k,p])=>onValue(ref(db,`${BASE}/${comp}/${p}`),s=>set(k,s.val())));
+ const[pinGor,setPinGor]=R.useState({});R.useEffect(()=>{if(!comp){setC(null);return}const st={};const set=(k,v)=>{st[k]=v;setC({...st})};
+  const ul=[["isim","isim"],["kategoriler","kategoriler"],["panelGruplari","panelGruplari"],["hakemLinkleri","hakemLinkleri"],["epanelToken","epanelToken"],["aktifSporcu","aktifSporcu"],["itirazYetki","itirazYetki"],["hakemAtama","hakemAtama"],["hakemKilit","hakemKilit"],["hakemKilitPin","hakemKilitPin"]].map(([k,p])=>onValue(ref(db,`${BASE}/${comp}/${p}`),s=>set(k,s.val())));
   return()=>ul.forEach(u=>u())},[comp]);
  R.useEffect(()=>{if(comp&&C&&"isim"in C&&!C.isim){toast(__T("Seçili yarışma silinmiş; seçim kaldırıldı."),"warning");setComp("");setForm(null)}},[comp,C?.isim]);
  const cats=C?.kategoriler||{},gruplar=C?.panelGruplari||{},linkler=C?.hakemLinkleri||{},token=C?.epanelToken||"";
@@ -206,7 +206,14 @@ function Paneller(){
   const ra=rolAdi(gid,sl);
   setBusy(!0);try{if(onc&&onc.refId&&(!kayit||onc.refId!==kayit.refId))await gorev(onc.refId,null);if(kayit&&kayit.refId&&(!onc||onc.refId!==kayit.refId))await gorev(kayit.refId,ra);
    await update(ref(db),U);try{logAction("panel_group_update",`[Ritmik] Hakem ataması: ${ra} → ${kayit?kayit.ad:"(kaldırıldı)"}`,{user:_un,competitionId:comp,discipline:"ritmik",data:{koltuk:sl,grup:gid||null,hakem:kayit,onceki:onc}})}catch{}toast(ra+" · "+(kayit?kayit.ad:__T("atama kaldırıldı")),"success")}catch(er){console.error(er);toast(__T("Kaydedilemedi."),"error")}setBusy(!1)};
- const hSec=(gid,sl)=>e.jsx(HakemSec,{val:gid?gruplar[gid]?.hakemler?.[sl]:C?.hakemAtama?.[sl],onSec:v=>hakemAta(gid,sl,v),havuz,yukle:havuzYukle,dis:busy});
+ // hakem ekran kilidi durumu (hakemKilit/<linkId>: {h}|{yok}) — unutulan şifre buradan sıfırlanır (hakem ekranı yeniden şifre sorar)
+// hakem ekran kilidi (hakemKilit/<linkId>: {h}|{yok}; şifre hakemKilitPin/<linkId>.pin) — şifre burada görünür (göz ile açılır), silinince hakem ekranının kilidi kalkar ve yeni şifre sorulur
+  const kilitCip=pid=>{const k=C?.hakemKilit?.[pid],pn=C?.hakemKilitPin?.[pid]?.pin;if(!k)return e.jsxs("span",{style:{display:"inline-flex",alignItems:"center",gap:4,fontSize:".7rem",fontWeight:700,color:"#94A3B8",marginLeft:".4rem"},children:[e.jsx("span",{className:"material-icons-round",style:{fontSize:".95rem"},children:"lock_open"}),__T("Ekran şifresi belirlenmedi")]});
+   const gor=!!pinGor[pid];
+   return e.jsxs("span",{style:{display:"inline-flex",alignItems:"center",gap:5,fontSize:".7rem",fontWeight:800,color:k.h?"#6D28D9":"#64748B",background:k.h?"#F5F3FF":"#F1F5F9",border:"1px solid "+(k.h?"#DDD6FE":"#E2E8F0"),borderRadius:999,padding:"2px 4px 2px 8px",marginLeft:".4rem"},children:[e.jsx("span",{className:"material-icons-round",style:{fontSize:".95rem"},children:k.h?"lock":"bedtime"}),
+    k.h?(pn?[__T("Şifre")+":",e.jsx("b",{style:{fontFamily:"ui-monospace,Menlo,monospace",fontSize:".82rem",letterSpacing:".12em",color:"#4C1D95",minWidth:"3.2em",display:"inline-block"},children:gor?pn:"••••"},"p"),e.jsx("button",{type:"button",title:gor?__T("Gizle"):__T("Göster"),onClick:()=>setPinGor(o=>({...o,[pid]:!o[pid]})),style:{border:0,background:"transparent",cursor:"pointer",padding:0,display:"inline-flex",color:"#6D28D9"},children:e.jsx("span",{className:"material-icons-round",style:{fontSize:"1rem"},children:gor?"visibility_off":"visibility"})},"g")]:__T("Ekran şifreli")):__T("Şifresiz · ekran koruyucu"),
+    e.jsx("button",{type:"button",disabled:busy,title:__T("Hakem ekranı yeniden şifre oluşturmayı sorar"),onClick:async()=>{if(!await window.__gxConfirm(__T("Bu hakem ekranının şifresi silinsin mi? Ekran açılmışsa kilidi kalkar ve yeni şifre oluşturması istenir.")))return;yaz({[`hakemKilit/${pid}`]:null,[`hakemKilitPin/${pid}`]:null},"hakem ekran şifresi silindi: "+pid)},style:{border:0,background:"#fff",color:"#B91C1C",fontWeight:800,fontSize:".68rem",borderRadius:999,padding:"2px 8px",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:3},children:[e.jsx("span",{className:"material-icons-round",style:{fontSize:".85rem"},children:"delete"}),__T("Sil")]})]})};
+  const hSec=(gid,sl)=>e.jsx(HakemSec,{val:gid?gruplar[gid]?.hakemler?.[sl]:C?.hakemAtama?.[sl],onSec:v=>hakemAta(gid,sl,v),havuz,yukle:havuzYukle,dis:busy});
  const grupKarti=gid=>{const g=gruplar[gid],ss=slotlar(g),op=acik[gid]!==!1,gk=kListe(g.kategoriler),ak=aktifKat(gk),eksik=ss.filter(s=>!linkler[pidOf(gid,s.slot)]);
   return e.jsxs("div",{style:{...S.card,borderColor:"#C7D2FE"},children:[
    e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[
@@ -235,7 +242,7 @@ function Paneller(){
      ss.filter(s=>s.tip===t).map(s=>{const pid=pidOf(gid,s.slot),rec=linkler[pid],oz=!!g.paneller?.[s.slot]?.ozel,pk=kListe(rec?.kategoriler),u=linkS(gid,s),bn=sjBolme(g,s),alOz=rec?.aletler?Object.entries(rec.aletler).filter(([,m])=>m).map(([k,m])=>katAd(k)+": "+Object.keys(m).filter(a=>m[a]).map(a=>raAd(a,_en())).join("/")).join(" · "):"";
       return e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"64px 1fr auto",gap:".6rem",alignItems:"start",padding:".5rem 0",borderBottom:"1px solid #EEF2F7"},children:[
        e.jsx("div",{style:S.slot(TIP[t].renk),children:s.slot}),
-       e.jsxs("div",{style:{minWidth:0},children:[e.jsx("div",{style:{marginBottom:".35rem"},children:hSec(gid,s.slot)}),
+       e.jsxs("div",{style:{minWidth:0},children:[e.jsxs("div",{style:{marginBottom:".35rem",display:"flex",alignItems:"center",flexWrap:"wrap",gap:".3rem"},children:[hSec(gid,s.slot),kilitCip(pid)]}),
         e.jsxs("div",{style:{display:"flex",gap:".5rem",alignItems:"center",flexWrap:"wrap",marginBottom:oz?".4rem":0},children:[
          e.jsxs("label",{style:{display:"flex",alignItems:"center",gap:".35rem",fontSize:".76rem",fontWeight:700,color:oz?"#B45309":"#6B7280",cursor:"pointer"},children:[e.jsx("input",{type:"checkbox",checked:oz,disabled:busy,onChange:ev=>ozelDegis(gid,s,ev.target.checked)}),__T("Özel kategori listesi")]}),
          !oz?e.jsx("span",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:600},children:pk.length?pk.map(katAd).join(", "):__T("— kategori yok —")}):null,
