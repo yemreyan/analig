@@ -8,6 +8,8 @@ import{j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-re
 //  Şifresiz: 2 dk işlem yapılmazsa ekran koruyucu; dokununca kapanır. Yeni sporcu çağrısı (tetik) sayacı sıfırlar.
 //  Kilit / koruyucu ekranında yalnız Gymexa Score logosu, panel kodu ve saat görünür.
 export const KILIT_SURE=12e4;
+// 2026-10-08 kullanıcı: "ekran şifresi girme olayını kaldıralım" → şifre sorulmaz / kilit yok; herkes için 2 dk işlemsizlikte ekran koruyucu (ad + bayrak). Kod duruyor: geri açmak için true.
+export const SIFRE=!1;
 const ozet=async t=>{try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,"0")).join("")}catch{let h=0;for(const c of t)h=Math.imul(31,h)+c.charCodeAt(0)|0;return"x"+(h>>>0).toString(16)}};
 const LS=(c,l)=>"gxKilit:"+c+":"+l,lsAl=k=>{try{return localStorage.getItem(k)}catch{return null}},lsYaz=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch{}};
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:20,...st},children:n});
@@ -67,9 +69,9 @@ function Saat(){const[t,setT]=R.useState(Date.now());R.useEffect(()=>{const i=se
 // useHakemKilit({base, comp, lk, slot, tetik}) → {dugme, ortu}; iframe içinde (bölünmüş ekranın bölmesi) devre dışı — kilidi üst sayfa yönetir.
 export function useHakemKilit({base,comp,lk,slot,tetik,kimlik}){
  const ifr=(()=>{try{return window.self!==window.top}catch{return!0}})(),on=!ifr&&!!(base&&comp&&lk);
- const[rec,setRec]=R.useState(void 0),[kilit,setKilit]=R.useState(()=>on&&lsAl(LS(comp,lk))==="1"),[saver,setSaver]=R.useState(!1),[kur,setKur]=R.useState(0),[ilk,setIlk]=R.useState(""),[hata,setHata]=R.useState(""),[yeni,setYeni]=R.useState(!1);
+ const[rec,setRec]=R.useState(SIFRE?void 0:{yok:!0}),[kilit,setKilit]=R.useState(()=>SIFRE&&on&&lsAl(LS(comp,lk))==="1"),[saver,setSaver]=R.useState(!1),[kur,setKur]=R.useState(0),[ilk,setIlk]=R.useState(""),[hata,setHata]=R.useState(""),[yeni,setYeni]=R.useState(!1);
  const son=R.useRef(Date.now()),yol=`${base}/${comp}/hakemKilit/${lk}`;
- R.useEffect(()=>{if(!on)return;return onValue(ref(db,yol),s=>setRec(s.val()||null),()=>setRec(null))},[on,yol]);
+ R.useEffect(()=>{if(!on||!SIFRE)return;return onValue(ref(db,yol),s=>setRec(s.val()||null),()=>setRec(null))},[on,yol]);
  // şifre Paneller'den sıfırlandıysa kilit kalkar
  R.useEffect(()=>{if(rec===null||rec&&rec.yok){if(kilit){setKilit(!1);lsYaz(LS(comp,lk),null)}}},[rec]);
  const kilitle=R.useCallback(()=>{setKilit(!0);setYeni(!1);lsYaz(LS(comp,lk),"1")},[comp,lk]);
@@ -109,6 +111,6 @@ export function useHakemKilit({base,comp,lk,slot,tetik,kimlik}){
  }else if(saver){
   ortu=e.jsxs("div",{className:"gxk-ov",style:{cursor:"pointer"},onPointerDown:ev=>{ev.preventDefault();setSaver(!1);setYeni(!1);son.current=Date.now()},children:[css,e.jsxs("div",{className:"gxk-in",children:[e.jsx("img",{className:"gxk-logo",src:LOGO,alt:"Gymexa Score"}),kim,e.jsx(Saat,{}),alt,yeni?e.jsx("span",{className:"gxk-yeni",children:__T("Yeni sporcu çağrıldı")}):null,e.jsx("div",{className:"gxk-dok",children:__T("Devam etmek için ekrana dokunun")})]})]});
  }
- const dugme=rec&&rec.h?e.jsxs("button",{type:"button",className:"gxk-btn",title:__T("Ekranı kilitle"),onClick:kilitle,children:[css,MI("lock",{fontSize:16}),__T("Kilitle")]}):rec&&rec.yok?e.jsxs("button",{type:"button",className:"gxk-btn",title:__T("Ekran şifresi oluştur"),onClick:()=>{setKur(1);setIlk("");setHata("")},children:[css,MI("lock_open",{fontSize:16}),__T("Şifre")]}):null;
+ const dugme=!SIFRE?null:rec&&rec.h?e.jsxs("button",{type:"button",className:"gxk-btn",title:__T("Ekranı kilitle"),onClick:kilitle,children:[css,MI("lock",{fontSize:16}),__T("Kilitle")]}):rec&&rec.yok?e.jsxs("button",{type:"button",className:"gxk-btn",title:__T("Ekran şifresi oluştur"),onClick:()=>{setKur(1);setIlk("");setHata("")},children:[css,MI("lock_open",{fontSize:16}),__T("Şifre")]}):null;
  return{dugme,ortu};
 }
