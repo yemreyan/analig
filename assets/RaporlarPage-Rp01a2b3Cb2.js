@@ -171,23 +171,118 @@ function degisiklikHesapla(C,logs,opt){const kats=C.kategoriler||{},spor=C.sporc
  const it=Object.entries(C.itirazlar||{}).map(([id,x])=>({id,...x,C,katAd:katAdi(kats,x.kategori),temsil:spUlke(x.kategori,x.sporcuId)||x.kulup||x.il||""})).filter(x=>katOk(x.kategori)).sort((a,b)=>(+a.talepZamani||0)-(+b.talepZamani||0));
  return{ev:ev.filter(e=>opt.dTur.includes(e.tur)).sort((a,b)=>a.ts-b.ts),tumEv:ev,tekrar,it}}
 
+
+// ---------------- KATILIM İSTATİSTİKLERİ ----------------
+// Sporcular yalnız eleme (final_ olmayan) kategorilerden sayılır; final kategorileri finalist sayısı için kullanılır.
+// Kimlik (yarışmalar arası tekrar): lisans, yoksa ad + soyad + doğum tarihi. TC kimlik no hiçbir şekilde kullanılmaz / gösterilmez.
+// Alet çıkışı: sporcunun aletler[] listesi, yoksa kategori aletleri (grup: grup başına seri sayısı). Puanlanan: en az bir alette puan / IRM; puanı olmayan: hiç puanı yok (yarışmadı ya da henüz yarışmadı).
+const dYil=v=>{const m=/(\d{4})/.exec(String(v||""));return m?+m[1]:null};
+function katilimHesapla(C,opt){const kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},intl=isIntl(C),y0=dYil(C.baslangicTarihi)||new Date().getFullYear();
+ const kOk=k=>kats[k]&&!isFin(kats,k)&&(!opt.kats||!opt.kats.length||opt.kats.includes(k));
+ const sp=[],grp={},kat={};
+ Object.keys(spor).filter(kOk).sort((a,b)=>yasI(a)-yasI(b)||a.localeCompare(b)).forEach(k=>{const G=isGrp(kats,k),al=katAletleri(kats,k);
+  const K=kat[k]={k,ad:katAdi(kats,k),grp:G,sporcu:0,giris:0,cikis:0,yarisan:0,yarismayan:0,kulup:new Set(),bolge:new Set(),yas:[],finalist:new Set()};
+  Object.entries(spor[k]||{}).forEach(([id,a])=>{if(!a||typeof a!=="object")return;
+   const kul0=String(a.okul||a.kulup||"").trim(),il=String(a.il||"").trim(),kul=kul0||il,ul=intl?(sporcuUlke(a,C)||""):"",ad=[a.ad,a.soyad].filter(Boolean).join(" ")||a.adSoyad||"";
+   const kimlik=String(a.lisans||"").trim()?"L:"+String(a.lisans).trim():"N:"+nrmAd(ad)+"|"+String(a.dob||"");
+   const yil=dYil(a.dob),yas=yil?y0-yil:null,bolge=intl?ul:il;K.sporcu++;K.kulup.add(kul||"—");bolge&&K.bolge.add(bolge);yas!=null&&yas>3&&yas<60&&K.yas.push(yas);
+   let gkey=null;if(G){gkey=k+"::"+String(kul0).replace(/[.#$\[\]\/]/g,"-")+"::"+(a.grupNo!=null?a.grupNo:1);grp[gkey]=grp[gkey]||{k,kul,bolge};}
+   const pk=G?gkey:id,p=pun[k]?.[pk]||pun[k]?.[id]||{},alL=G?al:(Array.isArray(a.aletler)&&a.aletler.length?a.aletler:al);
+   const pu=alL.filter(x=>{const q=p[x];return q&&typeof q==="object"&&(q.durum==="tamamlandi"||q.sonuc!=null||q.irm)}).length;
+   if(!G){K.giris++;K.cikis+=alL.length;pu?K.yarisan++:K.yarismayan++}
+   sp.push({k,id,kimlik,ad,kul,il,ilce:String(a.ilce||"").trim(),ul,bolge,yil,yas,G,gkey,cikis:G?0:alL.length,puan:pu,fin:!1})});
+  if(G){const gs=Object.entries(grp).filter(([g,v])=>v.k===k);K.giris=gs.length;gs.forEach(([g])=>{const p=pun[k]?.[g]||{},pu=al.filter(x=>{const q=p[x];return q&&typeof q==="object"&&(q.durum==="tamamlandi"||q.sonuc!=null||q.irm)}).length;K.cikis+=al.length;pu?K.yarisan++:K.yarismayan++})}});
+ // finalistler
+ Object.keys(kats).filter(k=>isFin(kats,k)).forEach(fk=>{const b=String(fk).replace(/^final_/,"").split("__")[0];if(!kat[b])return;Object.entries(spor[fk]||{}).forEach(([id,a])=>{if(!a||typeof a!=="object"||a._yedek)return;kat[b].finalist.add(id);const x=sp.find(s0=>s0.k===b&&s0.id===id);x&&(x.fin=!0)})});
+ return{C,intl,sp,kat:Object.values(kat).map(K=>({...K,kulup:K.kulup.size,bolge:K.bolge.size,finalist:K.finalist.size,yasOrt:K.yas.length?K.yas.reduce((a,b)=>a+b,0)/K.yas.length:null,yasMin:K.yas.length?Math.min(...K.yas):null,yasMax:K.yas.length?Math.max(...K.yas):null})),gruplar:Object.keys(grp).length}}
+
+
+// ---------------- ZAMAN ÇİZELGESİ ----------------
+// Plan: cikisListesi.gunler[].bloklar[] (tarih + saat, satırlar = rutinler). Gerçekleşen: ilk çağrı (logs athlete_call) ya da ilk puan,
+// son puan (puanlar/../timestamp = kayıt anı). Çıkış listesi yoksa puan zamanlarından gün × kategori × alet blokları kurulur.
+const gunStr=t=>{const d=new Date(t);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+function zamanHesapla(C,logs,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},cl=C.cikisListesi,bk=k=>String(k).replace(/^final_/,"").split("__")[0];
+ const katOk=k=>k&&(!opt.kats||!opt.kats.length||opt.kats.includes(bk(k)));
+ const pts=(k,id,al)=>{const x=pun[k]?.[id]?.[al];return x&&typeof x==="object"&&(x.durum==="tamamlandi"||x.sonuc!=null)?(+x.timestamp||null):null};
+ const cagri={};Object.values(logs||{}).forEach(v=>{if(v&&v.type==="athlete_call"&&v.timestamp){const key=v.category+"|"+v.athleteId+"|"+v.alet,t=+v.timestamp;if(!cagri[key]||t<cagri[key])cagri[key]=t}});
+ const olc=(r)=>{const sc=r.map(x=>pts(x.k,x.id,x.al)).filter(Boolean),ca=r.map(x=>cagri[x.k+"|"+x.id+"|"+x.al]).filter(Boolean),bas=[...sc,...ca].length?Math.min(...sc,...ca):null,son=sc.length?Math.max(...sc):null;
+  const cp=r.map(x=>{const a=cagri[x.k+"|"+x.id+"|"+x.al],b=pts(x.k,x.id,x.al);return a&&b&&b>a?b-a:null}).filter(v=>v!=null&&v<36e5);
+  return{n:r.length,puanli:sc.length,bas,son,sure:bas&&son?son-bas:null,rutin:bas&&son&&sc.length>1?(son-bas)/(sc.length-1):null,cagriPuan:cp.length?cp.reduce((a,b)=>a+b,0)/cp.length:null}};
+ const bl=[];
+ if(cl&&Array.isArray(cl.gunler)&&cl.gunler.length){cl.gunler.forEach(g=>{const L0=(g.bloklar||[]).filter(Boolean);L0.forEach((b,i)=>{const r=[];(b.rows||[]).forEach(row=>(row&&row.r||[]).forEach(x=>{if(!x||!x.a)return;r.push({k:x.kat||x.k||row.kat||b.kat,id:x.a,al:x.al||(b.aletler||[])[0]})}));
+   const ks=[...new Set(r.map(x=>x.k).filter(Boolean))];if(!ks.some(katOk))return;
+   const plan=g.tarih&&b.saat?new Date(g.tarih+"T"+b.saat+":00").getTime():null,nx=L0[i+1],planSon=nx&&nx.saat&&g.tarih?new Date(g.tarih+"T"+nx.saat+":00").getTime():null;
+   bl.push({C,idx:bl.length,gun:g.tarih||"",saat:b.saat||"",plan,planSure:plan&&planSon&&planSon>plan?planSon-plan:null,kat:ks.map(k=>katAdi(kats,k)).join(" + "),al:[...new Set(r.map(x=>x.al).filter(Boolean))],...olc(r),gecikme:null})})})}
+ else{const G={};Object.entries(pun).forEach(([k,a])=>{if(!katOk(k)||!kats[k])return;Object.entries(a||{}).forEach(([id,als])=>Object.entries(als||{}).forEach(([al])=>{const t=pts(k,id,al);if(!t)return;const key=gunStr(t)+"|"+k+"|"+al;(G[key]||(G[key]={gun:gunStr(t),k,al,r:[]})).r.push({k,id,al})}))});
+  Object.values(G).forEach(x=>bl.push({C,idx:0,gun:x.gun,saat:"",plan:null,planSure:null,kat:katAdi(kats,x.k),al:[x.al],...olc(x.r),gecikme:null}))}
+ // puan plan gününden başka bir günde girildiyse (deneme / erteleme) gecikme hesaplanmaz
+ bl.forEach(b=>{b.farkliGun=!!(b.plan&&b.bas&&gunStr(b.bas)!==b.gun);b.gecikme=b.plan&&b.bas&&!b.farkliGun?b.bas-b.plan:null});
+ const planli=bl.some(b=>b.plan);bl.sort((a,b)=>(a.gun.localeCompare(b.gun))||(planli?a.idx-b.idx:((a.bas||0)-(b.bas||0))));
+ const gunler=[...new Set(bl.map(b=>b.gun))].map(g=>{const B=bl.filter(b=>b.gun===g),P=B.filter(b=>b.plan),A=B.filter(b=>b.bas);
+  return{C,gun:g,blok:B.length,rutin:B.reduce((a,b)=>a+b.n,0),puanli:B.reduce((a,b)=>a+b.puanli,0),planBas:P.length?Math.min(...P.map(b=>b.plan)):null,bas:A.length?Math.min(...A.map(b=>b.bas)):null,son:B.some(b=>b.son)?Math.max(...B.filter(b=>b.son).map(b=>b.son)):null,
+   ortGec:B.filter(b=>b.gecikme!=null).length?B.filter(b=>b.gecikme!=null).reduce((a,b)=>a+b.gecikme,0)/B.filter(b=>b.gecikme!=null).length:null,maxGec:B.filter(b=>b.gecikme!=null).length?Math.max(...B.filter(b=>b.gecikme!=null).map(b=>b.gecikme)):null}});
+ gunler.forEach(g=>{g.gecikme=g.planBas&&g.bas&&gunStr(g.bas)===g.gun?g.bas-g.planBas:null;g.farkliGun=!!(g.planBas&&g.bas&&gunStr(g.bas)!==g.gun);g.sure=g.bas&&g.son?g.son-g.bas:null});
+ return{bl,gunler,planVar:!!(cl&&Array.isArray(cl.gunler)&&cl.gunler.length),cagriVar:Object.keys(cagri).length>0}}
+
+// ---------------- SPORCU KARŞILAŞTIRMA ----------------
+// Her yarışmada genel tasnif (Sonuçlar kurallarıyla) + final sonuçları; sporcu kimliği lisans | ad + soyad + doğum tarihi.
+function sporcuKarsilastir(liste,opt){const M=new Map();
+ liste.forEach(({C,bol})=>{const spor=C.sporcular||{},kats=C.kategoriler||{},intl=isIntl(C);
+  bol.forEach(b=>{if(b.tip!=="aa"&&b.tip!=="final_alet"&&b.tip!=="final_aa")return;const base=String(b.kat).replace(/^final_/,"").split("__")[0];
+   b.rows.forEach(r=>{if(r.takim)return;const a=spor[b.kat]?.[r.key]||spor[base]?.[r.key]||{},ad=[a.ad,a.soyad].filter(Boolean).join(" ")||r.ad;
+    const kim=String(a.lisans||"").trim()?"L:"+String(a.lisans).trim():"N:"+nrmAd(ad)+"|"+String(a.dob||"");
+    const o=M.get(kim)||{kim,ad:satirAd0(r),temsil:intl?(r.ulke||""):(r.kulup||r.il||""),yar:new Map()};M.set(kim,o);
+    const y=o.yar.get(C._id)||{C,kat:"",aa:null,rank:null,apps:{},fin:[],irm:""};o.yar.set(C._id,y);
+    if(b.tip==="aa"){y.kat=b.katAd;y.aa=r.total;y.rank=r.rank;y.apps=r.apps||{};y.irm=r.irm||"";y.n=b.rows.filter(x=>x.rank).length}
+    else y.fin.push({alet:b.alet||"AA",total:r.total,rank:r.rank})})})});
+ let rows=[...M.values()].map(o=>{const L0=[...o.yar.values()].filter(y=>y.aa!=null||y.fin.length).sort((a,b)=>String(a.C.baslangicTarihi||"").localeCompare(String(b.C.baslangicTarihi||"")));
+  const aaL=L0.filter(y=>y.aa!=null&&!y.irm),fark=aaL.length>=2?aaL[aaL.length-1].aa-aaL[0].aa:null,ayniKat=aaL.length>=2&&new Set(aaL.map(y=>y.kat)).size===1;
+  return{...o,yar:L0,n:L0.length,fark,ayniKat,enIyi:aaL.length?Math.max(...aaL.map(y=>y.aa)):null}});
+ const q=nrmAd(opt.sAra||"");rows=rows.filter(x=>x.n>=(opt.sMin||1)&&(!q||nrmAd(x.ad).includes(q)||nrmAd(x.temsil).includes(q)));
+ rows.sort(opt.sSira==="fark"?(a,b)=>(b.fark??-1e9)-(a.fark??-1e9)||a.ad.localeCompare(b.ad,"tr"):opt.sSira==="enIyi"?(a,b)=>(b.enIyi??-1)-(a.enIyi??-1):(a,b)=>a.ad.localeCompare(b.ad,"tr"));
+ return rows}
+const satirAd0=r=>r.soyad?String(r.soyad).toLocaleUpperCase("tr-TR")+" "+String(r.ad||"").replace(r.soyad,"").trim():String(r.ad||"");
+
+// ---------------- VİDEO ARŞİVİ DURUMU ----------------
+// Puanlanmış her rutin (durum tamamlandi) için videoUrlA / videoUrlB; kaynak drive.google → Drive, cloudinary → Cloudinary (hesap kapalı, erişilemez).
+// Boyut / süre / yükleme süresi videoBilgi'den; yükleme hataları <yarışma>/kameraYukleme (durum hata).
+const vKaynak=u=>!u?"":/drive\.google|googleusercontent/.test(u)?"drive":/cloudinary/.test(u)?"cloudinary":"diger";
+function videoHesapla(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},spor=C.sporcular||{},bk=k=>String(k).replace(/^final_/,"").split("__")[0],G={},eksik=[];let mb=0,sure=0,yuk=[],src={drive:0,cloudinary:0,diger:0};
+ Object.entries(pun).forEach(([k,a])=>{if(!kats[k]||opt.kats&&opt.kats.length&&!opt.kats.includes(bk(k)))return;
+  Object.entries(a||{}).forEach(([id,als])=>Object.entries(als||{}).forEach(([al,x])=>{if(!x||typeof x!=="object"||!(x.durum==="tamamlandi"||x.sonuc!=null))return;
+   const key=k+"|"+al,g=G[key]||(G[key]={C,kat:katAdi(kats,k),al,rutin:0,a:0,b:0,biri:0,cl:0});g.rutin++;const ua=x.videoUrlA,ub=x.videoUrlB;ua&&g.a++;ub&&g.b++;(ua||ub)&&g.biri++;
+   [ua,ub].forEach(u=>{const s0=vKaynak(u);if(s0){src[s0]++;s0==="cloudinary"&&g.cl++}});
+   const vb=x.videoBilgi;if((ua||ub)&&vb&&typeof vb==="object"){mb+=+vb.boyutMB||0;sure+=+vb.sureSn||0;vb.yuklemeSn&&yuk.push(+vb.yuklemeSn)}
+   if(!ua&&!ub){const sp=spor[k]?.[id],p=String(id).split("::");eksik.push({C,kat:katAdi(kats,k),al,ad:sp?[sp.ad,sp.soyad].filter(Boolean).join(" "):(p.length>=3?p.slice(1,-1).join(" "):id),temsil:sp?(sp.ulke||sp.okul||sp.kulup||sp.il||""):"",ts:+x.timestamp||0})}}))});
+ const hata=Object.values(C.kameraYukleme||{}).filter(x=>x&&typeof x==="object"&&(x.durum==="hata"||(x.durum==="yukleniyor"||x.durum==="kayitta")&&Date.now()-(+x.guncel||0)>6e5)).map(x=>({C,ad:x.ad||"",kat:katAdi(kats,x.kat),al:x.alet||"",cam:x.cam||"",durum:x.durum,mesaj:x.mesaj||"",ts:+x.guncel||+x.basla||0}));
+ return{G:Object.values(G).sort((a,b)=>a.kat.localeCompare(b.kat,"tr")||a.al.localeCompare(b.al)),eksik:eksik.sort((a,b)=>a.kat.localeCompare(b.kat,"tr")||a.ts-b.ts),mb,sure,yukOrt:yuk.length?yuk.reduce((a,b)=>a+b,0)/yuk.length:null,src,hata}}
+
+// ---------------- İŞLEM KAYDI ----------------
+const LOG_TUR={athlete_call:"Sporcu çağrıldı",call_cancelled:"Çağrı iptal",score_submitted:"Puan kaydedildi",judge_score_submit:"Hakem notu girdi",sj_field_override:"Başhakem hakem alanını değiştirdi",
+ score_field_cleared:"Alan silindi",score_unlock:"Kilit kaldırıldı",score_correction:"Başhakem notu değiştirdi",score_send_back:"Hakeme geri gönderildi",score_approval:"Puan onayı",score_irm:"IRM verildi",score_irm_clear:"IRM kaldırıldı",
+ score_inquiry:"İtiraz açıldı",score_inquiry_decision:"İtiraz kararı",score_stop:"Yayın STOP",score_stop_release:"STOP kaldırıldı",final_create:"Final oluşturuldu",final_delete:"Final silindi",start_order_save:"Çıkış sırası kaydı",
+ athlete_apparatus:"Sporcu aleti değişti",alet_transfer:"Alet aktarımı",panel_group_update:"Panel güncellendi",broadcast_profile:"Yayın profili",report_export:"Rapor indirildi",competition_update:"Yarışma güncellendi",competition_create:"Yarışma oluşturuldu"};
+function logHesapla(C,logs,opt){const L0=[];Object.values(logs||{}).forEach(v=>{if(!v||typeof v!=="object")return;const t=v.type||"";if(t==="judge_score_submit"&&!opt.lHakem)return;if(opt.lTur&&opt.lTur.length&&!opt.lTur.includes(t))return;
+  if(opt.lKul&&String(v.user||"")!==opt.lKul)return;L0.push({C,ts:+v.timestamp||0,t,kim:v.user||"",msj:String(v.message||v.mesaj||"").replace(/^\[Ritmik\]\s*/,""),sp:v.athleteName||"",al:v.alet||"",kat:v.category?katAdi(C.kategoriler||{},v.category):""})});
+ return L0.sort((a,b)=>a.ts-b.ts)}
+
 // ---------------- SAYFA ----------------
 const RAPORLAR=[
  {id:"sonuc",ic:"format_list_numbered",t:"Resmi Sonuçlar",d:"Genel tasnif, alet, takım ve final sonuçları — PDF / Excel"},
  {id:"madalya",ic:"military_tech",t:"Madalya Tablosu",d:"Ülke, kulüp ya da il bazında; birden çok yarışmanın toplamı"},
  {id:"hakem",ic:"balance",t:"Hakem Sapma Analizi",d:"Üst jüri / panel notundan sapma, FIG puanı, D hakem farkları"},
  {id:"itiraz",ic:"gavel",t:"Not Değişikliği ve İtirazlar",d:"İtirazlar ve ücretler, başhakem düzeltmeleri, kilit açma, yeniden kaydedilen puanlar"},
- {id:"zaman",ic:"schedule",t:"Zaman Çizelgesi",d:"Planlanan / gerçekleşen, rotasyon süreleri",yakinda:!0},
- {id:"sporcu",ic:"trending_up",t:"Sporcu Karşılaştırma",d:"Yarışmalar arası performans",yakinda:!0},
- {id:"katilim",ic:"groups",t:"Katılım İstatistikleri",d:"Kulüp, il ve ülke katılımı",yakinda:!0},
- {id:"video",ic:"video_library",t:"Video Arşivi Durumu",d:"Eksik / yüklenmiş videolar",yakinda:!0},
- {id:"log",ic:"history",t:"İşlem Kaydı",d:"Kim, ne zaman, neyi değiştirdi",yakinda:!0}];
+ {id:"zaman",ic:"schedule",t:"Zaman Çizelgesi",d:"Planlanan / gerçekleşen, gecikme, rutin süreleri"},
+ {id:"sporcu",ic:"trending_up",t:"Sporcu Karşılaştırma",d:"Yarışmalar arası genel tasnif, alet ve final sonuçları"},
+ {id:"katilim",ic:"groups",t:"Katılım İstatistikleri",d:"Kategori, kulüp, il / ülke ve yaş dağılımı; yarışmalar arası karşılaştırma"},
+ {id:"video",ic:"video_library",t:"Video Arşivi Durumu",d:"Videosu olan / eksik rutinler, depolama, yükleme hataları"},
+ {id:"log",ic:"history",t:"İşlem Kaydı",d:"Kim, ne zaman, neyi değiştirdi"}];
 
 function Raporlar(){
  const{toast}=usToast();usInit();const{currentUser:U}=usAuth()||{};const kim=U?.adSoyad||U?.kullaniciAdi||"";
  const[liste,setListe]=R.useState(null),[secili,setSecili]=R.useState([]),[ara,setAra]=R.useState(""),[arsiv,setArsiv]=R.useState(!0),
        [rapor,setRapor]=R.useState("sonuc"),[veri,setVeri]=R.useState({}),[yuk,setYuk]=R.useState(!1),[busy,setBusy]=R.useState(""),
-       [opt,setOpt]=R.useState({genel:!0,alet:!0,takim:!1,final:!0,kats:[],dil:"oto",grup:"oto",mGenel:!0,mAlet:!0,mAletElem:!1,mTakim:!0,mSira:"altin",hRef:"sj",hFin:!0,hPanel:["DA","DB","A","E"],hMin:1,dFin:!0,dHakem:!1,dTur:["bh_degistir","geri_gonder","hakem_yeniden","bh_alan","bh_bos","alan_sil","kilit","irm","hakem_duzelt"]});
+       [opt,setOpt]=R.useState({genel:!0,alet:!0,takim:!1,final:!0,kats:[],dil:"oto",grup:"oto",mGenel:!0,mAlet:!0,mAletElem:!1,mTakim:!0,mSira:"altin",hRef:"sj",hFin:!0,hPanel:["DA","DB","A","E"],hMin:1,dFin:!0,dHakem:!1,dTur:["bh_degistir","geri_gonder","hakem_yeniden","bh_alan","bh_bos","alan_sil","kilit","irm","hakem_duzelt"],sMin:1,sAra:"",sSira:"ad",lTur:[],lKul:"",lHakem:!1});
  const so=(k,v)=>setOpt(o=>({...o,[k]:v}));
  // yarışma listesi: yalnız başlık alanları (shallow + alan okuma) — kullanıcının yarışma / il kısıtına uyar
  R.useEffect(()=>{(async()=>{try{const B="https://analig-default-rtdb.firebaseio.com/"+BASE,ks=Object.keys(await(await fetch(B+".json?shallow=true")).json()||{});
@@ -200,7 +295,7 @@ function Raporlar(){
   Promise.all(eksik.map(async k=>[k,{...((await get(ref(db,BASE+"/"+k))).val()||{}),_id:k}])).then(L=>setVeri(v=>{const n={...v};L.forEach(([k,c])=>n[k]=c);return n})).catch(()=>toast(__T("Hata oluştu."),"error")).finally(()=>setYuk(!1))},[secili]);
  // işlem kaydı (yalnız bu rapor için, yarışma başına bir kez; sunucu tarafı süzme)
  const[logV,setLogV]=R.useState({}),[logYuk,setLogYuk]=R.useState(!1);
- R.useEffect(()=>{if(rapor!=="itiraz")return;const eksik=secili.filter(k=>logV[k]===void 0);if(!eksik.length)return;setLogYuk(!0);
+ R.useEffect(()=>{if(!["itiraz","zaman","log"].includes(rapor))return;const eksik=secili.filter(k=>logV[k]===void 0);if(!eksik.length)return;setLogYuk(!0);
   Promise.all(eksik.map(async k=>{try{const r0=await fetch("https://analig-default-rtdb.firebaseio.com/logs.json?orderBy=%22competitionId%22&equalTo="+encodeURIComponent(JSON.stringify(k)));return[k,r0.ok?(await r0.json())||{}:{}]}catch{return[k,{}]}}))
    .then(L=>setLogV(v=>{const n={...v};L.forEach(([k,x])=>n[k]=x);return n})).finally(()=>setLogYuk(!1))},[secili,rapor]);
  const comps=secili.map(k=>veri[k]).filter(Boolean);
@@ -224,6 +319,30 @@ function Raporlar(){
     sure:its.filter(i=>i.sureIcinde===!1).length,tur:Object.fromEntries(Object.keys(DG_TUR).map(t=>[t,say(t)])),tekrar:x.tekrar.length,sonucDeg:x.tekrar.filter(t=>t.ilk!=null&&t.son!=null&&Math.abs(t.son-t.ilk)>1e-6).length,logVar:logV[x.C._id]!==void 0}});
   const kul={};it.forEach(i=>{const k=(i.C._id)+"|"+(i.temsil||"—"),o=kul[k]||(kul[k]={C:i.C,ad:i.temsil||"—",n:0,kabul:0,red:0,bek:0,tahsil:0,iade:0,pb:i.paraBirimi||"CHF"});o.n++;i.durum==="kabul"?(o.kabul++,o.iade+=+i.ucret||0):i.durum==="red"?(o.red++,o.tahsil+=+i.ucret||0):i.durum==="beklemede"&&o.bek++});
   return{it,ev,tekrar,ozet,kul:Object.values(kul).sort((a,b)=>b.n-a.n||a.ad.localeCompare(b.ad,"tr"))}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt),logV]);
+ const katilim=R.useMemo(()=>{if(rapor!=="katilim")return null;const all=comps.map(C=>katilimHesapla(C,opt)),cok=all.length>1;
+  const ozet=all.map(x=>{const ind=x.sp.filter(s0=>!s0.G),u=new Set(x.sp.map(s0=>s0.kimlik)),ys=x.sp.map(s0=>s0.yas).filter(v=>v!=null&&v>3&&v<60);
+   return{C:x.C,intl:x.intl,kat:x.kat.length,sporcu:u.size,grup:x.gruplar,kulup:new Set(x.sp.map(s0=>nrmAd(s0.kul)||"—")).size,bolge:new Set(x.sp.map(s0=>s0.bolge).filter(Boolean)).size,
+    cikis:x.kat.reduce((a,k)=>a+k.cikis,0),yarisan:x.kat.reduce((a,k)=>a+k.yarisan,0),yarismayan:x.kat.reduce((a,k)=>a+k.yarismayan,0),finalist:new Set(x.sp.filter(s0=>s0.fin).map(s0=>s0.kimlik)).size,yas:ys.length?ys.reduce((a,b)=>a+b,0)/ys.length:null}});
+  const kats=all.flatMap(x=>x.kat.map(k=>({...k,C:x.C})));
+  const ku={};all.forEach(x=>x.sp.forEach(s0=>{const key=nrmAd(s0.kul)||"—",o=ku[key]||(ku[key]={ad:s0.kul||"—",bolge:new Set(),sp:new Set(),fin:new Set(),kat:{},yar:{}});s0.bolge&&o.bolge.add(s0.bolge);o.sp.add(s0.kimlik);s0.fin&&o.fin.add(s0.kimlik);
+   const ka=katAdi(x.C.kategoriler,s0.k);o.kat[ka]=(o.kat[ka]||0)+1;(o.yar[x.C._id]||(o.yar[x.C._id]=new Set)).add(s0.kimlik)}));
+  const kulup=Object.values(ku).map(o=>({ad:o.ad,bolge:[...o.bolge].join(", "),sp:o.sp.size,fin:o.fin.size,kat:Object.entries(o.kat).map(([a,n])=>a+" "+n).join(" · "),yar:Object.fromEntries(Object.entries(o.yar).map(([k,v])=>[k,v.size]))})).sort((a,b)=>b.sp-a.sp||a.ad.localeCompare(b.ad,"tr"));
+  const bo={};all.forEach(x=>x.sp.forEach(s0=>{const key=s0.bolge||"—",o=bo[key]||(bo[key]={ad:key,sp:new Set(),kul:new Set(),fin:new Set()});o.sp.add(s0.kimlik);o.kul.add(nrmAd(s0.kul));s0.fin&&o.fin.add(s0.kimlik)}));
+  const tumU=new Set(all.flatMap(x=>x.sp.map(s0=>s0.kimlik)));
+  const bolge=Object.values(bo).map(o=>({ad:o.ad,sp:o.sp.size,kul:o.kul.size,fin:o.fin.size,pay:tumU.size?o.sp.size/tumU.size*100:0})).sort((a,b)=>b.sp-a.sp||a.ad.localeCompare(b.ad,"tr"));
+  const yl={};const tek=new Map();all.forEach(x=>x.sp.forEach(s0=>{tek.has(s0.kimlik)||tek.set(s0.kimlik,s0)}));tek.forEach(s0=>{if(s0.yil)yl[s0.yil]=(yl[s0.yil]||0)+1});
+  const yillar=Object.entries(yl).map(([y,n])=>({y:+y,n,pay:tek.size?n/tek.size*100:0})).sort((a,b)=>a.y-b.y);
+  const tekrar=cok?(()=>{const m={};all.forEach(x=>new Set(x.sp.map(s0=>s0.kimlik)).forEach(k=>{m[k]=(m[k]||0)+1}));const v=Object.values(m);return{toplam:v.length,iki:v.filter(n=>n>=2).length}})():null;
+  const intlVar=all.some(x=>x.intl),ilVar=all.some(x=>!x.intl);
+  return{ozet,kats,kulup,bolge,yillar,tekrar,cok,bolgeTip:intlVar&&ilVar?"karma":intlVar?"ulke":"il",toplam:tumU.size}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt),EN]);
+ const zaman=R.useMemo(()=>{if(rapor!=="zaman")return null;const all=comps.map(C=>zamanHesapla(C,logV[C._id]||{},opt));return{bl:all.flatMap(x=>x.bl),gunler:all.flatMap(x=>x.gunler),planYok:comps.filter((c,i)=>!all[i].planVar).map(c=>c.isim),cagriYok:comps.filter((c,i)=>!all[i].cagriVar).map(c=>c.isim)}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt),logV]);
+ const sporcuK=R.useMemo(()=>{if(rapor!=="sporcu")return null;return sporcuKarsilastir(comps.map(C=>({C,bol:sonucHesapla(C,{genel:!0,alet:!1,takim:!1,final:!0,kats:opt.kats})})),opt)},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
+ const video=R.useMemo(()=>{if(rapor!=="video")return null;const all=comps.map(C=>({C,...videoHesapla(C,opt)}));return{all,G:all.flatMap(x=>x.G),eksik:all.flatMap(x=>x.eksik),hata:all.flatMap(x=>x.hata)}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
+ const islem=R.useMemo(()=>{if(rapor!=="log")return null;const rows=comps.flatMap(C=>logHesapla(C,logV[C._id]||{},opt)).sort((a,b)=>a.ts-b.ts),tur={},kul={};
+  const tumKul=new Set();comps.forEach(C=>Object.values(logV[C._id]||{}).forEach(v=>v&&v.user&&tumKul.add(String(v.user))));
+  const tumTur=new Set();comps.forEach(C=>Object.values(logV[C._id]||{}).forEach(v=>v&&v.type&&tumTur.add(String(v.type))));
+  rows.forEach(x=>{tur[x.t]=(tur[x.t]||0)+1;kul[x.kim]=(kul[x.kim]||0)+1});
+  return{rows,tur:Object.entries(tur).sort((a,b)=>b[1]-a[1]),kul:Object.entries(kul).sort((a,b)=>b[1]-a[1]),tumKul:[...tumKul].sort(),tumTur:[...tumTur].sort()}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt),logV]);
  const madalya=R.useMemo(()=>rapor==="madalya"?madalyaHesapla(sonuc,{...opt,grup}):[],[sonuc,rapor,grup]);
 
  // ---- dil yardımcıları (çıktı) ----
@@ -267,10 +386,38 @@ function Raporlar(){
  const ozRow=o=>[o.C.isim,String(o.it),String(o.kabul),String(o.red),String(o.iptal),String(o.bek),String(o.sure),o.tahsil+" "+o.pb,o.iade+" "+o.pb,String(o.tekrar),String(o.sonucDeg)];
  const turCols=()=>[L("YARIŞMA","COMPETITION"),...Object.keys(DG_TUR).filter(t=>t!=="hakem_duzelt"||opt.dHakem).map(t=>TA(t))];
  const turRow=o=>[o.C.isim,...Object.keys(DG_TUR).filter(t=>t!=="hakem_duzelt"||opt.dHakem).map(t=>String(o.tur[t]||0))];
+ // ---- katılım yardımcıları ----
+ const bAd=t=>t==="karma"?L("İl / Ülke","Province / NOC"):t==="ulke"?L("Ülke","NOC"):L("İl","Province");
+ const f1=v=>v==null||isNaN(v)?"—":Number(v).toFixed(1),yz=v=>(v||0).toFixed(1)+"%";
+ const kOzCols=()=>[L("YARIŞMA","COMPETITION"),L("KATEGORİ","CATEGORIES"),L("SPORCU","GYMNASTS"),L("GRUP","GROUPS"),L("KULÜP","CLUBS"),L("İL / ÜLKE","PROV. / NOC"),L("ALET ÇIKIŞI","STARTS"),L("PUANLANAN","SCORED"),L("PUANI OLMAYAN","NO SCORE"),L("FİNALİST","FINALISTS"),L("YAŞ ORT.","MEAN AGE")];
+ const kOzRow=o=>[o.C.isim,String(o.kat),String(o.sporcu),String(o.grup),String(o.kulup),String(o.bolge),String(o.cikis),String(o.yarisan),String(o.yarismayan),String(o.finalist),f1(o.yas)];
+ const kKatCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNASTS"),L("GİRİŞ","ENTRIES"),L("KULÜP","CLUBS"),L("İL / ÜLKE","PROV. / NOC"),L("ALET ÇIKIŞI","STARTS"),L("PUANLANAN","SCORED"),L("PUANI OLMAYAN","NO SCORE"),L("FİNALİST","FINALISTS"),L("YAŞ (ORT. · ARALIK)","AGE (MEAN · RANGE)")];
+ const kKatRow=k=>[...(comps.length>1?[String(k.C.isim).slice(0,26)]:[]),kA(k.ad)+(k.grp?" ("+L("grup","group")+")":""),String(k.sporcu),String(k.giris),String(k.kulup),String(k.bolge),String(k.cikis),String(k.yarisan),String(k.yarismayan),String(k.finalist),k.yasOrt!=null?f1(k.yasOrt)+" · "+k.yasMin+"–"+k.yasMax:"—"];
+ const kKulCols=()=>[L("KULÜP / TAKIM","CLUB / TEAM"),katilim?bAd(katilim.bolgeTip).toLocaleUpperCase(EN?"en":"tr-TR"):"",L("SPORCU","GYMNASTS"),L("FİNALİST","FINALISTS"),...(comps.length>1?comps.map(c=>String(c.isim).slice(0,18)):[]),L("KATEGORİLER","CATEGORIES")];
+ const kKulRow=o=>[o.ad,o.bolge,String(o.sp),String(o.fin),...(comps.length>1?comps.map(c=>String(o.yar[c._id]||"")):[]),o.kat];
+ // ---- zaman / sporcu / video / işlem yardımcıları ----
+ const saatS=t=>t?new Date(+t).toLocaleTimeString(EN?"en-GB":"tr-TR",{hour:"2-digit",minute:"2-digit"}):"—";
+ const dkS=ms=>ms==null?"—":(ms<0?"−":ms>0?"+":"")+Math.round(Math.abs(ms)/6e4)+L(" dk"," min");
+ const sureS=ms=>ms==null?"—":ms<6e4?Math.round(ms/1e3)+L(" sn"," s"):ms<36e5?Math.floor(ms/6e4)+L(" dk "," min ")+String(Math.round(ms%6e4/1e3)).padStart(2,"0")+L(" sn"," s"):Math.floor(ms/36e5)+L(" sa "," h ")+Math.round(ms%36e5/6e4)+L(" dk"," min");
+ const gunS=g=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(g||"");return m?m[3]+"."+m[2]+"."+m[1]:g||"—"};
+ const zgCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("GÜN","DAY"),L("BLOK","BLOCKS"),L("RUTİN","ROUTINES"),L("PUANLANAN","SCORED"),L("PLAN BAŞLANGIÇ","PLANNED START"),L("GERÇEK BAŞLANGIÇ","ACTUAL START"),L("BAŞLANGIÇ FARKI","START DELAY"),L("SON PUAN","LAST SCORE"),L("TOPLAM SÜRE","DURATION"),L("ORT. BLOK GECİKMESİ","MEAN BLOCK DELAY"),L("EN BÜYÜK GECİKME","MAX DELAY")];
+ const zgRow=g=>[...(comps.length>1?[String(g.C.isim).slice(0,26)]:[]),gunS(g.gun),String(g.blok),String(g.rutin),String(g.puanli),saatS(g.planBas),saatS(g.bas)+(g.farkliGun?" ("+gunS(gunStr(g.bas))+")":""),g.farkliGun?L("farklı gün","other day"):dkS(g.gecikme),saatS(g.son),sureS(g.sure),dkS(g.ortGec),dkS(g.maxGec)];
+ const zbCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("GÜN","DAY"),L("PLAN","PLAN"),L("KATEGORİ","CATEGORY"),L("ALET","APP."),L("RUTİN","ROUT."),L("PUANLANAN","SCORED"),L("BAŞLADI","STARTED"),L("GECİKME","DELAY"),L("BİTTİ","ENDED"),L("SÜRE","DURATION"),L("PLAN SÜRESİ","PLANNED"),L("RUTİN BAŞINA","PER ROUTINE"),L("ÇAĞRI → PUAN","CALL → SCORE")];
+ const zbRow=b=>[...(comps.length>1?[String(b.C.isim).slice(0,22)]:[]),gunS(b.gun),b.saat||"—",kA(b.kat),b.al.map(aA).join(", "),String(b.n),String(b.puanli),saatS(b.bas)+(b.farkliGun?" ("+gunS(gunStr(b.bas))+")":""),b.farkliGun?L("farklı gün","other day"):dkS(b.gecikme),saatS(b.son),sureS(b.sure),sureS(b.planSure),sureS(b.rutin),sureS(b.cagriPuan)];
+ const skCols=()=>[L("SPORCU","GYMNAST"),L("TEMSİL","NOC / CLUB"),L("YARIŞMA","COMP."),...comps.map(c=>String(c.isim).slice(0,22)),L("İLK → SON FARK","FIRST → LAST"),L("EN İYİ","BEST")];
+ const skHucre=y=>!y?"—":(y.aa!=null?(y.irm?y.irm:f3(y.aa))+(y.rank?" ("+y.rank+".)":""):"")+(y.kat?"\n"+kA(y.kat):"")+(y.fin.length?"\n"+L("Final: ","Finals: ")+y.fin.map(f0=>(f0.alet==="AA"?L("Genel","AA"):aA(f0.alet))+" "+f3(f0.total)+(f0.rank?" ("+f0.rank+".)":"")).join(", "):"");
+ const skRow=x=>[x.ad,x.temsil,String(x.n),...comps.map(c=>skHucre(x.yar.find(y=>y.C._id===c._id))),x.fark==null?"—":(x.fark>0?"+":x.fark<0?"−":"±")+Math.abs(x.fark).toFixed(3)+(x.ayniKat?"":" *"),x.enIyi!=null?f3(x.enIyi):"—"];
+ const vdCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("ALET","APP."),L("PUANLANAN RUTİN","SCORED ROUTINES"),L("VİDEOLU","WITH VIDEO"),L("KAMERA A","CAMERA A"),L("KAMERA B","CAMERA B"),L("EKSİK","MISSING"),L("KAPSAMA","COVERAGE"),L("CLOUDINARY (ERİŞİLEMEZ)","CLOUDINARY (UNAVAILABLE)")];
+ const vdRow=g=>[...(comps.length>1?[String(g.C.isim).slice(0,26)]:[]),kA(g.kat),aA(g.al),String(g.rutin),String(g.biri),String(g.a),String(g.b),String(g.rutin-g.biri),g.rutin?Math.round(g.biri/g.rutin*100)+"%":"—",String(g.cl)];
+ const vOzCols=()=>[L("YARIŞMA","COMPETITION"),L("PUANLANAN RUTİN","SCORED ROUTINES"),L("VİDEOLU","WITH VIDEO"),L("EKSİK","MISSING"),L("KAPSAMA","COVERAGE"),L("DRIVE","DRIVE"),L("CLOUDINARY","CLOUDINARY"),L("TOPLAM BOYUT","TOTAL SIZE"),L("TOPLAM SÜRE","TOTAL LENGTH"),L("ORT. YÜKLEME","MEAN UPLOAD"),L("YÜKLEME HATASI","UPLOAD ERRORS")];
+ const vOzRow=x=>{const R0=x.G.reduce((a,g)=>a+g.rutin,0),V0=x.G.reduce((a,g)=>a+g.biri,0);return[x.C.isim,String(R0),String(V0),String(R0-V0),R0?Math.round(V0/R0*100)+"%":"—",String(x.src.drive),String(x.src.cloudinary),x.mb?(x.mb>=1024?(x.mb/1024).toFixed(2)+" GB":x.mb.toFixed(1)+" MB"):"—",x.sure?sureS(x.sure*1e3):"—",x.yukOrt!=null?sureS(x.yukOrt*1e3):"—",String(x.hata.length)]};
+ const LT=t=>{const v=LOG_TUR[t];return v?(EN?({athlete_call:"Athlete called",call_cancelled:"Call cancelled",score_submitted:"Score saved",judge_score_submit:"Judge entered score",sj_field_override:"Chief judge edited judge field",score_field_cleared:"Field cleared",score_unlock:"Unlocked",score_correction:"Chief judge changed score",score_send_back:"Sent back to judge",score_approval:"Score approval",score_irm:"IRM given",score_irm_clear:"IRM removed",score_inquiry:"Inquiry opened",score_inquiry_decision:"Inquiry decision",score_stop:"Broadcast STOP",score_stop_release:"STOP released",final_create:"Final created",final_delete:"Final deleted",start_order_save:"Start order saved",athlete_apparatus:"Athlete apparatus changed",alet_transfer:"Apparatus transfer",panel_group_update:"Panel updated",broadcast_profile:"Broadcast profile",report_export:"Report downloaded",competition_update:"Competition updated",competition_create:"Competition created"})[t]||v:v):t};
+ const lgCols=()=>[L("ZAMAN","TIME"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("İŞLEM","ACTION"),L("KULLANICI","USER"),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("AYRINTI","DETAILS")];
+ const lgRow=x=>[new Date(x.ts).toLocaleString(EN?"en-GB":"tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}),...(comps.length>1?[String(x.C.isim).slice(0,22)]:[]),LT(x.t),x.kim,kA(x.kat),x.sp,x.al?aA(x.al):"",x.msj];
  // ---- PDF ----
  const pdfAl=async()=>{if(busy||!comps.length)return;setBusy("pdf");toast(__T("PDF hazırlanıyor…"),"info");
   try{const jsPDF=await import("./jspdf.es.min-gArCfqm1Cb2.js").then(z=>z.j?.jsPDF||z.E),atM=await import("./jspdf.plugin.autotable-KFqWVtFsCb2.js"),at=atM.default||atM;
-   const yatay=rapor==="hakem"||rapor==="itiraz"||rapor==="sonuc"&&sonuc.some(x=>x.bol.some(b=>(b.tip==="aa"||b.tip==="final_aa")&&b.aletler.length>4)),d=new jsPDF(yatay?"landscape":"portrait","mm","a4");
+   const yatay=["hakem","itiraz","katilim","zaman","sporcu","video","log"].includes(rapor)||rapor==="sonuc"&&sonuc.some(x=>x.bol.some(b=>(b.tip==="aa"||b.tip==="final_aa")&&b.aletler.length>4)),d=new jsPDF(yatay?"landscape":"portrait","mm","a4");
    let FT="helvetica";try{const{R:r0,B:b0}=await import("./fontTR-Fn01a2b3Cb2.js");d.addFileToVFS("Roboto.ttf",r0);d.addFont("Roboto.ttf","Roboto","normal");d.addFileToVFS("Roboto-Bold.ttf",b0);d.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto"}catch{}
    const img=async u=>{try{const b=await(await fetch(u)).blob();const du=await new Promise(K=>{const O=new FileReader;O.onloadend=()=>K(O.result);O.readAsDataURL(b)});const im=new Image;await new Promise(r=>{im.onload=r;im.onerror=r;im.src=du});return im.naturalWidth?{d:du,r:im.naturalWidth/im.naturalHeight}:null}catch{return null}};
    const tcf=await img("/logo.png"),W=yatay?297:210,H=yatay?210:297,M=12,P1=[236,72,153],P2=[139,92,246],INK=[15,23,42],MUT=[100,116,139];
@@ -304,6 +451,40 @@ function Raporlar(){
       const cs={0:{cellWidth:11,halign:"center",fontStyle:"bold"},[uc]:ic?{cellWidth:19,cellPadding:{top:1.5,bottom:1.5,left:8,right:1}}:{cellWidth:32,fontSize:7.2}};cols.forEach((c,i)=>{cs[uc+1+i]={halign:"right",cellWidth:c.t?18:14,fontStyle:c.t?"bold":"normal"}});
       tablo(head,body,{columnStyles:cs,parse:z=>{const r=b.rows[z.row.index];if(r&&r.rank>=1&&r.rank<=3&&z.column.index===0)z.cell.styles.textColor=r.rank===1?[180,130,0]:r.rank===2?[100,116,139]:[180,90,30];if(z.column.index>uc)z.cell.styles.fontSize=7.6},
        didDrawCell:z=>{if(ic&&z.section==="body"&&z.column.index===uc)bayrakCiz(z,b.rows[z.row.index]?.ulke)}})}}
+   }else if(rapor==="zaman"){const Z0=zaman;
+    await ust(comps.length===1?comps[0]:null,L("ZAMAN ÇİZELGESİ","TIMETABLE ANALYSIS"));
+    if(Z0.planYok.length||Z0.cagriYok.length){d.setFont(FT,"normal");d.setFontSize(7.2);d.setTextColor(...MUT);d.text([Z0.planYok.length?L("Çıkış listesi (plan) yok: ","No start list (plan): ")+Z0.planYok.join(", ")+L(" — yalnız gerçekleşen zamanlar."," — actual times only."):"",Z0.cagriYok.length?L("Çağrı kaydı yok: ","No call records: ")+Z0.cagriYok.join(", ")+L(" — başlangıç ilk puandan."," — start taken from first score."):""].filter(Boolean).join("   "),M,y,{maxWidth:W-2*M});y+=7}
+    bolumBas(L("Gün özeti","Daily summary"));tablo(zgCols(),Z0.gunler.map(zgRow),{});
+    bolumBas(L("Bloklar","Blocks")+" ("+Z0.bl.length+")");tablo(zbCols(),Z0.bl.map(zbRow),{styles:{font:FT,fontSize:7,cellPadding:{top:1.2,bottom:1.2,left:1.5,right:1.5},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},parse:z=>{const b=Z0.bl[z.row.index];if(b&&z.column.index===zbCols().length-6&&b.gecikme!=null&&b.gecikme>9e5){z.cell.styles.textColor=[185,28,28];z.cell.styles.fontStyle="bold"}}});
+   }else if(rapor==="sporcu"){const S0=sporcuK||[];
+    await ust(comps.length===1?comps[0]:null,L("SPORCU KARŞILAŞTIRMA","GYMNAST COMPARISON"));
+    d.setFont(FT,"normal");d.setFontSize(7.2);d.setTextColor(...MUT);d.text(L("Hücre: genel tasnif puanı (sıra) · kategori · final sonuçları. * farklı kategorilerdeki puanlar (karşılaştırma dikkatle yorumlanmalı).","Cell: all-around score (rank) · category · final results. * scores from different categories (interpret with care)."),M,y,{maxWidth:W-2*M});y+=7;
+    bolumBas(L("Sporcular","Gymnasts")+" ("+S0.length+")");tablo(skCols(),S0.map(skRow),{styles:{font:FT,fontSize:7,cellPadding:{top:1.2,bottom:1.2,left:1.5,right:1.5},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},columnStyles:{0:{fontStyle:"bold",cellWidth:40},2:{cellWidth:12,halign:"center"}},parse:z=>{const x=S0[z.row.index];if(x&&z.column.index===skCols().length-2&&x.fark!=null){z.cell.styles.fontStyle="bold";z.cell.styles.textColor=x.fark>0?[21,128,61]:x.fark<0?[185,28,28]:INK}}});
+   }else if(rapor==="video"){const V0=video;
+    await ust(comps.length===1?comps[0]:null,L("VİDEO ARŞİVİ DURUMU","VIDEO ARCHIVE STATUS"));
+    bolumBas(L("Özet","Summary"));tablo(vOzCols(),V0.all.map(vOzRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:58}}});
+    if(V0.all.some(x=>x.src.cloudinary)){d.setFont(FT,"normal");d.setFontSize(7.2);d.setTextColor(185,28,28);d.text(L("Cloudinary bağlantıları şu an erişilemez (hesap kapalı). Hesap açılınca Drive'a taşınabilir.","Cloudinary links are currently unavailable (account disabled). They can be moved to Drive once the account is re-enabled."),M,y-4,{maxWidth:W-2*M});y+=3}
+    bolumBas(L("Kategori ve alet bazında","By category and apparatus"));tablo(vdCols(),V0.G.map(vdRow),{});
+    if(V0.hata.length){bolumBas(L("Yükleme sorunları","Upload problems")+" ("+V0.hata.length+")");tablo([L("ZAMAN","TIME"),L("SPORCU","GYMNAST"),L("KATEGORİ","CATEGORY"),L("ALET","APP."),L("KAMERA","CAMERA"),L("DURUM","STATUS"),L("MESAJ","MESSAGE")],V0.hata.map(h=>[zm(h.ts),h.ad,kA(h.kat),h.al?aA(h.al):"",h.cam,h.durum==="hata"?L("hata","error"):L("yanıt yok (10 dk+)","no response (10 min+)"),h.mesaj]),{})}
+    if(V0.eksik.length){bolumBas(L("Videosu olmayan rutinler","Routines without video")+" ("+V0.eksik.length+")");tablo([...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("ALET","APP."),L("SPORCU","GYMNAST"),L("TEMSİL","NOC / CLUB"),L("PUAN ZAMANI","SCORED AT")],V0.eksik.map(x=>[...(comps.length>1?[String(x.C.isim).slice(0,26)]:[]),kA(x.kat),aA(x.al),x.ad,x.temsil,zm(x.ts)]),{})}
+   }else if(rapor==="log"){const I0=islem;
+    await ust(comps.length===1?comps[0]:null,L("İŞLEM KAYDI","AUDIT LOG"));
+    bolumBas(L("Özet","Summary")+" · "+I0.rows.length+" "+L("kayıt","entries"));
+    tablo([L("İŞLEM","ACTION"),L("ADET","COUNT")],I0.tur.map(([t,n])=>[LT(t),String(n)]),{tableWidth:120,columnStyles:{1:{halign:"right",cellWidth:20}}});
+    tablo([L("KULLANICI","USER"),L("ADET","COUNT")],I0.kul.map(([t,n])=>[t||"—",String(n)]),{tableWidth:120,columnStyles:{1:{halign:"right",cellWidth:20}}});
+    const LIM=3000;bolumBas(L("Kayıtlar","Entries")+(I0.rows.length>LIM?" · "+L("ilk ","first ")+LIM+L(" kayıt (tamamı Excel'de)"," entries (all in Excel)"):""));
+    tablo(lgCols(),I0.rows.slice(0,LIM).map(lgRow),{styles:{font:FT,fontSize:6.6,cellPadding:{top:1,bottom:1,left:1.4,right:1.4},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},columnStyles:{0:{cellWidth:24}}});
+   }else if(rapor==="katilim"){const K0=katilim;
+    await ust(comps.length===1?comps[0]:null,L("KATILIM İSTATİSTİKLERİ","PARTICIPATION STATISTICS"));
+    bolumBas(L("Özet","Summary")+(K0.cok?" · "+K0.toplam+" "+L("farklı sporcu","distinct gymnasts")+(K0.tekrar?" · "+K0.tekrar.iki+" "+L("sporcu birden çok yarışmada","gymnasts in more than one competition"):""):""));
+    tablo(kOzCols(),K0.ozet.map(kOzRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:62}}});
+    bolumBas(L("Kategori bazında","By category"));tablo(kKatCols(),K0.kats.map(kKatRow),{columnStyles:{[comps.length>1?1:0]:{fontStyle:"bold"}}});
+    const bar=(z,pay,col)=>{if(z.section!=="body"||z.column.index!==col)return;const w=(z.cell.width-4)*Math.min(1,pay/100*(100/Math.max(1,mxP)));d.setFillColor(...P1);d.roundedRect(z.cell.x+2,z.cell.y+z.cell.height/2-1.3,Math.max(.6,w),2.6,1,1,"F")};let mxP=1;
+    bolumBas(bAd(K0.bolgeTip)+" "+L("bazında","distribution"));mxP=Math.max(1,...K0.bolge.map(b=>b.pay));
+    tablo([bAd(K0.bolgeTip).toLocaleUpperCase(EN?"en":"tr-TR"),L("SPORCU","GYMNASTS"),L("KULÜP","CLUBS"),L("FİNALİST","FINALISTS"),L("PAY","SHARE"),""],K0.bolge.map(b=>[b.ad,String(b.sp),String(b.kul),String(b.fin),yz(b.pay),""]),{columnStyles:{0:{fontStyle:"bold",cellWidth:50},5:{cellWidth:70}},didDrawCell:z=>bar(z,K0.bolge[z.row.index]?.pay||0,5)});
+    bolumBas(L("Kulüp / takım bazında","By club / team")+" ("+K0.kulup.length+")");tablo(kKulCols(),K0.kulup.map(kKulRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:52},[kKulCols().length-1]:{fontSize:6.6}}});
+    if(K0.yillar.length){bolumBas(L("Doğum yılı dağılımı","Birth year distribution"));mxP=Math.max(1,...K0.yillar.map(b=>b.pay));
+     tablo([L("DOĞUM YILI","BIRTH YEAR"),L("SPORCU","GYMNASTS"),L("PAY","SHARE"),""],K0.yillar.map(b=>[String(b.y),String(b.n),yz(b.pay),""]),{columnStyles:{0:{fontStyle:"bold",cellWidth:30},3:{cellWidth:110}},didDrawCell:z=>bar(z,K0.yillar[z.row.index]?.pay||0,3)})}
    }else if(rapor==="itiraz"){const G0=degis;
     await ust(comps.length===1?comps[0]:null,L("NOT DEĞİŞİKLİKLERİ VE İTİRAZLAR","SCORE CHANGES AND INQUIRIES"));
     bolumBas(L("Özet","Summary"));tablo(ozCols(),G0.ozet.map(ozRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:62}}});
@@ -348,7 +529,7 @@ function Raporlar(){
      tablo([L("YARIŞMA / ETKİNLİK","EVENT"),L("ALTIN","GOLD"),L("GÜMÜŞ","SILVER"),L("BRONZ","BRONZE")],body,{columnStyles:{0:{cellWidth:62,fontStyle:"bold",fontSize:7.4},1:{fontSize:7.4},2:{fontSize:7.4},3:{fontSize:7.4}}})}}
    alt();
    const ad=(comps.length===1?comps[0].isim:L("Raporlar","Reports")).replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60);
-   d.save(ad+"_"+(rapor==="sonuc"?L("Resmi_Sonuclar","Official_Results"):rapor==="hakem"?L("Hakem_Sapma_Analizi","Judge_Deviation"):rapor==="itiraz"?L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"):L("Madalya_Tablosu","Medal_Table"))+".pdf");toast(__T("PDF indirildi ✓"),"success");
+   d.save(ad+"_"+(({sonuc:L("Resmi_Sonuclar","Official_Results"),hakem:L("Hakem_Sapma_Analizi","Judge_Deviation"),itiraz:L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"),katilim:L("Katilim_Istatistikleri","Participation_Statistics"),zaman:L("Zaman_Cizelgesi","Timetable"),sporcu:L("Sporcu_Karsilastirma","Gymnast_Comparison"),video:L("Video_Arsivi_Durumu","Video_Archive_Status"),log:L("Islem_Kaydi","Audit_Log")})[rapor]||L("Madalya_Tablosu","Medal_Table"))+".pdf");toast(__T("PDF indirildi ✓"),"success");
    try{logAction("report_export",`[Ritmik] Rapor PDF: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:"ritmik"})}catch{}}
   catch(er){console.error(er);toast(__T("PDF oluşturulamadı: ")+(er?.message||er),"error")}setBusy("")};
 
@@ -362,6 +543,25 @@ function Raporlar(){
       b.rows.forEach(r=>aoa.push([r.rank??"",...(HB?[r.bib||""]:[]),b.tip==="takim"?r.ad:satirAd(r),...(b.tip==="takim"?[(r.uyeler||[]).join(", ")]:[]),ic?(r.ulke||""):(r.takim?(r.il&&UP(r.il)!==UP(r.ad)?r.il:""):r.kulup||r.il||""),...(ic?[r.kulup||""]:[]),...cols.map(c=>{const v=c.f(r);return/^−?\d+\.\d{3}$/.test(v)?Number(v.replace("−","-")):v})]));
       const ws=X.utils.aoa_to_sheet(aoa),bas=aoa[3].length-cols.length;Object.keys(ws).forEach(a=>{if(a[0]==="!")return;const c=X.utils.decode_cell(a);if(c.r>3&&c.c>=bas&&ws[a].t==="n")ws[a].z="0.000"});ws["!cols"]=aoa[3].map((h,i)=>({wch:i===0?6:String(h).length>8?Math.max(12,String(h).length+2):i<=2+(HB?1:0)?28:10}));
       X.utils.book_append_sheet(wb,ws,sayfaAd((tek?"":String(C.isim).slice(0,8)+" ")+bolBaslik(b).replace(" — "," ")))})})}
+   else if(["zaman","sporcu","video","log"].includes(rapor)){const ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=(w||aoa[0].map(()=>14)).map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))};
+    if(rapor==="zaman"){ek(L("Gün özeti","Daily summary"),[zgCols(),...zaman.gunler.map(zgRow)]);ek(L("Bloklar","Blocks"),[zbCols(),...zaman.bl.map(zbRow)],zbCols().map((h,i)=>i===(comps.length>1?3:2)?28:12))}
+    else if(rapor==="sporcu"){ek(L("Sporcular","Gymnasts"),[skCols(),...(sporcuK||[]).map(x=>skRow(x).map(v=>String(v).replace(/\n/g," · ")))],[30,18,8,...comps.map(()=>36),14,10]);
+     const det=[[L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Yarışma","Comp."),L("Tarih","Date"),L("Kategori","Category"),L("Genel puan","AA score"),L("Sıra","Rank"),L("Katılımcı","Field"),L("Alet","App."),L("Alet puanı","App. score"),L("Final","Final"),L("Final puanı","Final score"),L("Final sırası","Final rank")]];
+     (sporcuK||[]).forEach(x=>x.yar.forEach(y=>{const al=Object.keys(y.apps||{});if(!al.length&&!y.fin.length)det.push([x.ad,x.temsil,y.C.isim,tarihStr(y.C),kA(y.kat),y.aa!=null?Number(f3(y.aa)):"",y.rank||"",y.n||"","","","","",""]);
+      al.forEach(a=>det.push([x.ad,x.temsil,y.C.isim,tarihStr(y.C),kA(y.kat),y.aa!=null?Number(f3(y.aa)):"",y.rank||"",y.n||"",aA(a),typeof y.apps[a]==="number"?Number(f3(y.apps[a])):(y.apps[a]||""),"","",""]));
+      y.fin.forEach(f0=>det.push([x.ad,x.temsil,y.C.isim,tarihStr(y.C),kA(y.kat),"","","","","",f0.alet==="AA"?L("Genel","AA"):aA(f0.alet),f0.total!=null?Number(f3(f0.total)):"",f0.rank||""]))}));
+     ek(L("Ayrıntı","Details"),det,[30,18,30,22,24,10,6,9,10,10,10,10,9])}
+    else if(rapor==="video"){ek(L("Özet","Summary"),[vOzCols(),...video.all.map(vOzRow)]);ek(L("Kategori-alet","Category-apparatus"),[vdCols(),...video.G.map(vdRow)]);
+     ek(L("Eksik videolar","Missing videos"),[[L("Yarışma","Comp."),L("Kategori","Category"),L("Alet","App."),L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Puan zamanı","Scored at")],...video.eksik.map(x=>[x.C.isim,kA(x.kat),aA(x.al),x.ad,x.temsil,zm(x.ts)])],[28,24,10,28,16,14]);
+     ek(L("Yükleme sorunları","Upload problems"),[[L("Zaman","Time"),L("Sporcu","Gymnast"),L("Kategori","Category"),L("Alet","App."),L("Kamera","Camera"),L("Durum","Status"),L("Mesaj","Message")],...video.hata.map(h=>[zm(h.ts),h.ad,kA(h.kat),h.al?aA(h.al):"",h.cam,h.durum,h.mesaj])])}
+    else{ek(L("Özet","Summary"),[[L("İşlem","Action"),L("Adet","Count")],...islem.tur.map(([t,n])=>[LT(t),n]),[],[L("Kullanıcı","User"),L("Adet","Count")],...islem.kul.map(([t,n])=>[t||"—",n])],[36,10]);
+     ek(L("Kayıtlar","Entries"),[[L("Zaman","Time"),L("Yarışma","Comp."),L("İşlem","Action"),L("Tür kodu","Type code"),L("Kullanıcı","User"),L("Kategori","Category"),L("Sporcu","Gymnast"),L("Alet","App."),L("Ayrıntı","Details")],...islem.rows.map(x=>[new Date(x.ts).toLocaleString(EN?"en-GB":"tr-TR"),x.C.isim,LT(x.t),x.t,x.kim,kA(x.kat),x.sp,x.al?aA(x.al):"",x.msj])],[20,26,28,18,12,20,24,10,80])}}
+   else if(rapor==="katilim"){const K0=katilim,ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=w.map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))},nm=v=>/^\d+(\.\d+)?$/.test(String(v))?Number(v):v;
+    ek(L("Özet","Summary"),[[L("Katılım İstatistikleri","Participation Statistics")],[],kOzCols(),...K0.ozet.map(o=>kOzRow(o).map(nm)),...(K0.cok?[[],[L("Farklı sporcu","Distinct gymnasts"),K0.toplam],[L("Birden çok yarışmada","In more than one competition"),K0.tekrar?K0.tekrar.iki:0]]:[])],[40,10,10,8,8,10,10,10,12,10,9]);
+    ek(L("Kategoriler","Categories"),[kKatCols(),...K0.kats.map(k=>kKatRow(k).map(nm))],[30,10,8,8,10,10,10,10,10,16].concat(comps.length>1?[26]:[]));
+    ek(bAd(K0.bolgeTip),[[bAd(K0.bolgeTip),L("Sporcu","Gymnasts"),L("Kulüp","Clubs"),L("Finalist","Finalists"),L("Pay %","Share %")],...K0.bolge.map(b=>[b.ad,b.sp,b.kul,b.fin,Number(b.pay.toFixed(1))])],[24,10,10,10,10]);
+    ek(L("Kulüpler","Clubs"),[kKulCols(),...K0.kulup.map(o=>kKulRow(o).map(nm))],[34,18,10,10,...(comps.length>1?comps.map(()=>14):[]),60]);
+    ek(L("Doğum yılı","Birth year"),[[L("Doğum yılı","Birth year"),L("Sporcu","Gymnasts"),L("Pay %","Share %")],...K0.yillar.map(b=>[b.y,b.n,Number(b.pay.toFixed(1))])],[12,10,10])}
    else if(rapor==="itiraz"){const G0=degis,ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=w.map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))};
     ek(L("Özet","Summary"),[[L("Not Değişiklikleri ve İtirazlar","Score Changes and Inquiries")],[],ozCols(),...G0.ozet.map(ozRow),[],turCols(),...G0.ozet.map(turRow)],[36,10,10,10,12,10,12,14,14,12,14]);
     ek(L("İtirazlar","Inquiries"),[[L("Talep","Request"),L("Yarışma","Comp."),L("Kategori","Category"),L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Alet","App."),L("Tür","Type"),L("Geçen sn","Elapsed s"),L("Süre içinde","In time"),L("Eski değer","Old value"),L("Yeni değer","New value"),L("Eski sonuç","Old result"),L("Yeni sonuç","New result"),L("Ücret","Fee"),L("Para birimi","Currency"),L("Kademe","Tier"),L("Durum","Status"),L("Karar veren","Decided by"),L("Karar","Decided at"),L("Not","Note"),L("Karar notu","Decision note")],
@@ -385,7 +585,7 @@ function Raporlar(){
     const w2=X.utils.aoa_to_sheet(ma);w2["!cols"]=[{wch:30},{wch:40},{wch:9},{wch:6},{wch:30},{wch:8},{wch:22},{wch:9}];X.utils.book_append_sheet(wb,w2,sayfaAd(L("Madalya kazananlar","Medallists")))}
    if(!wb.SheetNames.length){toast(__T("Seçili kapsamda puanı olan sonuç yok."),"warning");setBusy("");return}
    const buf=X.write(wb,{type:"array",bookType:"xlsx"}),u=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})),a=document.createElement("a");
-   a.href=u;a.download=(comps.length===1?comps[0].isim:"Raporlar").replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60)+"_"+(rapor==="sonuc"?L("Resmi_Sonuclar","Official_Results"):rapor==="hakem"?L("Hakem_Sapma_Analizi","Judge_Deviation"):rapor==="itiraz"?L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"):L("Madalya_Tablosu","Medal_Table"))+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4e3);
+   a.href=u;a.download=(comps.length===1?comps[0].isim:"Raporlar").replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60)+"_"+(({sonuc:L("Resmi_Sonuclar","Official_Results"),hakem:L("Hakem_Sapma_Analizi","Judge_Deviation"),itiraz:L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"),katilim:L("Katilim_Istatistikleri","Participation_Statistics"),zaman:L("Zaman_Cizelgesi","Timetable"),sporcu:L("Sporcu_Karsilastirma","Gymnast_Comparison"),video:L("Video_Arsivi_Durumu","Video_Archive_Status"),log:L("Islem_Kaydi","Audit_Log")})[rapor]||L("Madalya_Tablosu","Medal_Table"))+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4e3);
    toast(__T("Excel indirildi ✓"),"success");try{logAction("report_export",`[Ritmik] Rapor Excel: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:"ritmik"})}catch{}}
   catch(er){console.error(er);toast(__T("Excel oluşturulamadı: ")+(er?.message||er),"error")}setBusy("")};
 
@@ -440,6 +640,18 @@ function Raporlar(){
      e.jsx(Tog,{on:opt.alet,onClick:()=>so("alet",!opt.alet),t:__T("Alet sıralamaları"),d:"DA · DB · A · E · "+__T("Ceza")}),
      e.jsx(Tog,{on:opt.takim,onClick:()=>so("takim",!opt.takim),t:__T("Takım sıralaması"),d:__T("Ülke / kulüp; ilk 3-4 sporcunun her aletteki en iyi 2 puanı")}),
      e.jsx(Tog,{on:opt.final,onClick:()=>so("final",!opt.final),t:__T("Finaller"),d:__T("Genel tasnif ve alet finalleri")})]})
+   :rapor==="zaman"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Kapsam")}),e.jsx("div",{style:{fontSize:".78rem",color:"#475569",fontWeight:600,lineHeight:1.45},children:__T("Plan: Program / Çıkış Listesi'ndeki gün ve blok saatleri. Gerçekleşen: ilk çağrı (yoksa ilk puan) ve son puan kayıt zamanı. Çıkış listesi olmayan yarışmada yalnız gerçekleşen zamanlar gün × kategori × alet olarak gösterilir.")}),
+     logYuk?e.jsx("div",{style:{fontSize:".74rem",color:"#B45309",fontWeight:800,marginTop:".3rem"},children:__T("İşlem kaydı yükleniyor…")}):null]})
+   :rapor==="sporcu"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Sporcu ara")}),e.jsx("input",{style:S.inp,placeholder:__T("Ad, soyad, kulüp ya da ülke…"),value:opt.sAra,onChange:ev=>so("sAra",ev.target.value)}),
+     e.jsx("div",{style:S.lbl,children:__T("En az yarışma sayısı")}),e.jsx(Seg,{v:String(opt.sMin),on:v=>so("sMin",+v),ops:[["1","1"],["2","2"],["3","3"]]}),
+     e.jsx("div",{style:S.lbl,children:__T("Sıralama")}),e.jsx(Seg,{v:opt.sSira,on:v=>so("sSira",v),ops:[["ad",__T("Ada göre")],["fark",__T("Gelişime göre")],["enIyi",__T("En iyi puana göre")]]})]})
+   :rapor==="video"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Kapsam")}),e.jsx("div",{style:{fontSize:".78rem",color:"#475569",fontWeight:600,lineHeight:1.45},children:__T("Puanlanmış her rutin için kamera A / B videosu aranır. Drive ve Cloudinary bağlantıları ayrı sayılır (Cloudinary hesabı kapalı olduğu için o videolar şu an açılmaz). Yükleme hataları ve 10 dakikadan uzun yanıt vermeyen yüklemeler listelenir.")})]})
+   :rapor==="log"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("İşlem türleri")+(opt.lTur.length?"":" · "+__T("tümü"))}),
+     e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem",maxHeight:150,overflowY:"auto"},children:(islem?islem.tumTur:[]).filter(t=>t!=="judge_score_submit"||opt.lHakem).map(t=>e.jsx("button",{type:"button",style:S.chip(opt.lTur.includes(t)),onClick:()=>so("lTur",opt.lTur.includes(t)?opt.lTur.filter(x=>x!==t):[...opt.lTur,t]),children:__T(LOG_TUR[t]||t)},t))}),
+     e.jsx("div",{style:S.lbl,children:__T("Kullanıcı")}),e.jsxs("select",{style:S.inp,value:opt.lKul,onChange:ev=>so("lKul",ev.target.value),children:[e.jsx("option",{value:"",children:__T("Tüm kullanıcılar")}),...(islem?islem.tumKul:[]).map(u=>e.jsx("option",{value:u,children:u},u))]}),
+     e.jsx("div",{style:{marginTop:".5rem"},children:e.jsx(Tog,{on:opt.lHakem,onClick:()=>so("lHakem",!opt.lHakem),t:__T("Hakem not girişleri"),d:__T("Her hakem notu ayrı kayıttır (binlerce olabilir)")})}),
+     logYuk?e.jsx("div",{style:{fontSize:".74rem",color:"#B45309",fontWeight:800,marginTop:".3rem"},children:__T("İşlem kaydı yükleniyor…")}):null]})
+   :rapor==="katilim"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Kapsam")}),e.jsx("div",{style:{fontSize:".78rem",color:"#475569",fontWeight:600,lineHeight:1.45},children:__T("Sporcular eleme kategorilerinden sayılır; finalistler ayrıca gösterilir. Birden çok yarışma seçilirse aynı sporcu lisans no (yoksa ad soyad + doğum tarihi) ile eşleşir ve kulüpler yarışmalara göre karşılaştırılır. Kimlik numarası kullanılmaz.")})]})
    :rapor==="itiraz"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Gösterilecek değişiklikler")}),
      e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem"},children:Object.keys(DG_TUR).filter(t=>t!=="hakem_duzelt"||opt.dHakem).map(t=>e.jsxs("button",{type:"button",style:S.chip(opt.dTur.includes(t)),onClick:()=>so("dTur",opt.dTur.includes(t)?opt.dTur.filter(x=>x!==t):[...opt.dTur,t]),children:[e.jsx("span",{style:{width:8,height:8,borderRadius:"50%",background:DG_TUR[t][1]}}),TAui(t)]},t))}),
      e.jsx("div",{style:{marginTop:".5rem"},children:e.jsx(Tog,{on:opt.dHakem,onClick:()=>so("dHakem",!opt.dHakem),t:__T("Hakemin kendi düzeltmeleri"),d:__T("Hakem notunu kaydetmeden önce değiştirdiyse (çok sayıda olabilir)")})}),
@@ -482,6 +694,38 @@ function Raporlar(){
        e.jsxs("td",{style:{...S.td,textAlign:"left",whiteSpace:"normal",fontWeight:800,width:"40%"},children:[b.tip==="takim"?r.ad:satirAd(r),r.takim&&r.uyeler?.length?e.jsx("span",{style:{display:"block",fontSize:".7rem",color:"#64748B",fontWeight:600},children:r.uyeler.join(", ")}):null]}),
        e.jsx("td",{style:{...S.td,textAlign:"left",color:"#475569",fontWeight:700},children:ic?r.ulke:(r.takim?(r.il&&UP(r.il)!==UP(r.ad)?r.il:""):r.kulup||r.il)}),
        ...cols.map((c,ci)=>e.jsx("td",{style:{...S.td,fontWeight:c.t?900:600,color:c.t?"#0F172A":"#334155"},children:c.f(r)},ci))]},i))})]})})]},bi)})]},C._id))
+  :["zaman","sporcu","video","log"].includes(rapor)?(()=>{const tab=(cols,rows,o2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,!(o2&&o2.sag&&o2.sag.includes(i))))})}),
+   e.jsx("tbody",{children:rows.map((rw,i)=>e.jsx("tr",{style:{background:i%2?"#FAFAFD":"#fff"},children:rw.map((v,j)=>{const st=o2&&o2.st?o2.st(i,j):null;return e.jsx("td",{style:{...S.td,textAlign:o2&&o2.sag&&o2.sag.includes(j)?"right":"left",fontWeight:j===0?800:600,whiteSpace:o2&&o2.nw?"nowrap":"pre-line",...st},children:v},j)})},i))})]})});
+  const bas=t=>e.jsx("div",{style:{fontWeight:900,fontSize:".85rem",background:"#FDF2F8",borderLeft:"4px solid "+P1,borderRadius:10,padding:".45rem .7rem",margin:"1rem 0 .35rem"},children:t});
+  const not=t=>e.jsx("div",{style:{fontSize:".74rem",fontWeight:700,color:"#B45309",background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:".45rem .6rem",margin:".4rem 0"},children:t});
+  const ic=comps.length>1?1:0,R0=RAPORLAR.find(x=>x.id===rapor),kap=t=>e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:{...S.h,marginBottom:".3rem"},children:[e.jsx("span",{style:S.hi,children:MI(R0.ic,{fontSize:17})}),L(R0.t,({zaman:"Timetable Analysis",sporcu:"Gymnast Comparison",video:"Video Archive Status",log:"Audit Log"})[rapor])]}),logYuk&&(rapor==="zaman"||rapor==="log")?not(__T("İşlem kaydı yükleniyor…")):null,...t]});
+  if(rapor==="zaman"&&zaman)return kap([zaman.planYok.length?not(L("Çıkış listesi (plan) yok: ","No start list (plan): ")+zaman.planYok.join(", ")+L(" — yalnız gerçekleşen zamanlar."," — actual times only.")):null,
+   bas(L("Gün özeti","Daily summary")),tab(zgCols(),zaman.gunler.map(zgRow),{sag:[1,2,3].map(x=>x+ic)}),
+   bas(L("Bloklar","Blocks")+" ("+zaman.bl.length+")"),tab(zbCols(),zaman.bl.map(zbRow),{nw:!0,sag:[4,5].map(x=>x+ic),st:(i,j)=>{const b=zaman.bl[i];return j===zbCols().length-6&&b.gecikme!=null?{color:b.gecikme>9e5?"#B91C1C":b.gecikme>3e5?"#B45309":"#15803D",fontWeight:900}:null}})]);
+  if(rapor==="sporcu"&&sporcuK)return kap([e.jsx("div",{style:{fontSize:".74rem",color:"#64748B",fontWeight:700},children:L("Hücre: genel tasnif puanı (sıra) · kategori · final sonuçları. * farklı kategorilerdeki puanlar.","Cell: all-around score (rank) · category · finals. * different categories.")}),
+   bas(L("Sporcular","Gymnasts")+" ("+sporcuK.length+")"+(sporcuK.length>200?" · "+L("ilk 200 gösteriliyor","first 200 shown"):"")),tab(skCols(),sporcuK.slice(0,200).map(skRow),{sag:[2],st:(i,j)=>{const x=sporcuK[i];return j===skCols().length-2&&x.fark!=null?{color:x.fark>0?"#15803D":x.fark<0?"#B91C1C":"#0F172A",fontWeight:900}:null}})]);
+  if(rapor==="video"&&video)return kap([video.all.some(x=>x.src.cloudinary)?not(L("Cloudinary bağlantıları şu an erişilemez (hesap kapalı).","Cloudinary links are currently unavailable (account disabled).")):null,
+   bas(L("Özet","Summary")),tab(vOzCols(),video.all.map(vOzRow),{sag:[1,2,3,4,5,6,7,8,9,10]}),
+   bas(L("Kategori ve alet bazında","By category and apparatus")),tab(vdCols(),video.G.map(vdRow),{sag:[2,3,4,5,6,7,8].map(x=>x+ic),st:(i,j)=>{const g=video.G[i];return j===vdCols().length-2?{fontWeight:900,color:g.biri===g.rutin?"#15803D":g.biri?"#B45309":"#B91C1C"}:null}}),
+   video.hata.length?e.jsxs(e.Fragment,{children:[bas(L("Yükleme sorunları","Upload problems")+" ("+video.hata.length+")"),tab([L("Zaman","Time"),L("Sporcu","Gymnast"),L("Kategori","Category"),L("Alet","App."),L("Kamera","Camera"),L("Durum","Status"),L("Mesaj","Message")],video.hata.map(h=>[zm(h.ts),h.ad,kA(h.kat),h.al?aA(h.al):"",h.cam,h.durum==="hata"?L("hata","error"):L("yanıt yok (10 dk+)","no response (10 min+)"),h.mesaj]))]}):null,
+   bas(L("Videosu olmayan rutinler","Routines without video")+" ("+video.eksik.length+")"+(video.eksik.length>100?" · "+L("ilk 100","first 100"):"")),video.eksik.length?tab([...(ic?[L("Yarışma","Comp.")]:[]),L("Kategori","Category"),L("Alet","App."),L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Puan zamanı","Scored at")],video.eksik.slice(0,100).map(x=>[...(ic?[x.C.isim]:[]),kA(x.kat),aA(x.al),x.ad,x.temsil,zm(x.ts)])):null]);
+  if(rapor==="log"&&islem)return kap([e.jsxs("div",{style:{display:"flex",gap:"1rem",flexWrap:"wrap"},children:[e.jsx("div",{style:{flex:"1 1 260px"},children:tab([L("İşlem","Action"),L("Adet","Count")],islem.tur.map(([t,n])=>[LT(t),n]),{sag:[1]})}),e.jsx("div",{style:{flex:"1 1 200px"},children:tab([L("Kullanıcı","User"),L("Adet","Count")],islem.kul.map(([t,n])=>[t||"—",n]),{sag:[1]})})]}),
+   bas(L("Kayıtlar","Entries")+" ("+islem.rows.length+")"+(islem.rows.length>300?" · "+L("son 300 gösteriliyor; tamamı PDF / Excel'de","last 300 shown; all in PDF / Excel"):"")),tab(lgCols(),islem.rows.slice(-300).reverse().map(lgRow))]);
+  return null})()
+  :rapor==="katilim"&&katilim?(()=>{const K0=katilim,tab=(cols,rows,o2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,!(o2&&o2.sag&&o2.sag.includes(i))))})}),
+   e.jsx("tbody",{children:rows.map((rw,i)=>e.jsx("tr",{style:{background:i%2?"#FAFAFD":"#fff"},children:rw.map((v,j)=>e.jsx("td",{style:{...S.td,textAlign:o2&&o2.sag&&o2.sag.includes(j)?"right":"left",fontWeight:j===0?800:600,whiteSpace:"normal"},children:v},j))},i))})]})});
+  const bas=t=>e.jsx("div",{style:{fontWeight:900,fontSize:".85rem",background:"#FDF2F8",borderLeft:"4px solid "+P1,borderRadius:10,padding:".45rem .7rem",margin:"1rem 0 .35rem"},children:t});
+  const cubuk=(pay,mx)=>e.jsx("div",{style:{height:9,borderRadius:9,background:"#F1F5F9",minWidth:120},children:e.jsx("div",{style:{height:9,borderRadius:9,width:Math.max(2,pay/Math.max(1,mx)*100)+"%",background:G}})});
+  const mxB=Math.max(1,...K0.bolge.map(b=>b.pay)),mxY=Math.max(1,...K0.yillar.map(b=>b.pay)),kart=(v,t,ic)=>e.jsxs("div",{style:{flex:"1 1 130px",background:"#F8FAFC",border:"1px solid #EEF0F4",borderRadius:14,padding:".6rem .75rem"},children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".35rem",color:"#64748B",fontSize:".7rem",fontWeight:800},children:[MI(ic,{fontSize:15,color:P1}),t]}),e.jsx("div",{style:{fontSize:"1.45rem",fontWeight:900,marginTop:".1rem"},children:v})]});
+  const T0=K0.ozet.reduce((a,o)=>({cikis:a.cikis+o.cikis,yarisan:a.yarisan+o.yarisan,yarismayan:a.yarismayan+o.yarismayan,grup:a.grup+o.grup}),{cikis:0,yarisan:0,yarismayan:0,grup:0});
+  return e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:{...S.h,marginBottom:".5rem"},children:[e.jsx("span",{style:S.hi,children:MI("groups",{fontSize:17})}),L("Katılım İstatistikleri","Participation Statistics")]}),
+   e.jsxs("div",{style:{display:"flex",flexWrap:"wrap",gap:".5rem"},children:[kart(K0.toplam,L("Sporcu","Gymnasts"),"person"),kart(T0.grup,L("Grup","Groups"),"groups_3"),kart(K0.kulup.length,L("Kulüp / takım","Clubs / teams"),"shield"),kart(K0.bolge.filter(b=>b.ad!=="—").length,bAd(K0.bolgeTip),"public"),kart(T0.cikis,L("Alet çıkışı","Starts"),"sports_gymnastics"),kart(T0.yarismayan,L("Puanı olmayan","No score"),"person_off"),
+    K0.tekrar?kart(K0.tekrar.iki,L("Birden çok yarışmada","In 2+ competitions"),"repeat"):null]}),
+   bas(L("Özet","Summary")),tab(kOzCols(),K0.ozet.map(kOzRow),{sag:[1,2,3,4,5,6,7,8,9,10]}),
+   bas(L("Kategori bazında","By category")),tab(kKatCols(),K0.kats.map(kKatRow),{sag:[1,2,3,4,5,6,7,8].map(x=>x+(comps.length>1?1:0))}),
+   bas(bAd(K0.bolgeTip)+" "+L("bazında","distribution")),tab([bAd(K0.bolgeTip),L("Sporcu","Gymnasts"),L("Kulüp","Clubs"),L("Finalist","Finalists"),L("Pay","Share"),""],K0.bolge.map(b=>[b.ad,b.sp,b.kul,b.fin,yz(b.pay),cubuk(b.pay,mxB)]),{sag:[1,2,3,4]}),
+   bas(L("Kulüp / takım bazında","By club / team")+" ("+K0.kulup.length+")"),tab(kKulCols(),K0.kulup.map(kKulRow),{sag:[2,3,...(comps.length>1?comps.map((_,i)=>4+i):[])]}),
+   K0.yillar.length?e.jsxs(e.Fragment,{children:[bas(L("Doğum yılı dağılımı","Birth year distribution")),tab([L("Doğum yılı","Birth year"),L("Sporcu","Gymnasts"),L("Pay","Share"),""],K0.yillar.map(b=>[b.y,b.n,yz(b.pay),cubuk(b.pay,mxY)]),{sag:[1,2]})]}):null]})})()
   :rapor==="itiraz"&&degis?(()=>{const G0=degis,tab=(cols,rows,o2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,!(o2&&o2.sag&&o2.sag.includes(i))))})}),
    e.jsx("tbody",{children:rows.map((rw,i)=>e.jsx("tr",{style:{background:i%2?"#FAFAFD":"#fff"},children:rw.map((v,j)=>{const st=o2&&o2.st?o2.st(i,j):null;return e.jsx("td",{style:{...S.td,textAlign:o2&&o2.sag&&o2.sag.includes(j)?"right":"left",fontWeight:600,whiteSpace:"normal",...st},children:v},j)})},i))})]})});
   const bas=t=>e.jsx("div",{style:{fontWeight:900,fontSize:".85rem",background:"#FDF2F8",borderLeft:"4px solid "+P1,borderRadius:10,padding:".45rem .7rem",margin:"1rem 0 .35rem"},children:t});
