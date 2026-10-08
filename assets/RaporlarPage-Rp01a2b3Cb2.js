@@ -295,6 +295,30 @@ function videoHesapla(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},spor
  const hata=Object.values(C.kameraYukleme||{}).filter(x=>x&&typeof x==="object"&&(x.durum==="hata"||(x.durum==="yukleniyor"||x.durum==="kayitta")&&Date.now()-(+x.guncel||0)>6e5)).map(x=>({C,ad:x.ad||"",kat:katAdi(kats,x.kat),al:x.alet||"",cam:x.cam||"",durum:x.durum,mesaj:x.mesaj||"",ts:+x.guncel||+x.basla||0}));
  return{G:Object.values(G).sort((a,b)=>a.kat.localeCompare(b.kat,"tr")||a.al.localeCompare(b.al)),eksik:eksik.sort((a,b)=>a.kat.localeCompare(b.kat,"tr")||a.ts-b.ts),mb,sure,yukOrt:yuk.length?yuk.reduce((a,b)=>a+b,0)/yuk.length:null,src,hata}}
 
+// ---------------- SEYİRCİ İSTATİSTİKLERİ (2026-10-09) ----------------
+// criteria/seyirciIstat/<brans>_<yarışma> (gymexa-izle api/v.js yazar): o/<oturum>={b ilk sinyal, s son sinyal, u tarayıcı, m d|m|t, c ülke (ISO-2), d dil, k link kodu}
+// g/<gün>/{giris,tekil,saat/<HH>,tepe} sayaçları (Paneller kartı). Eşzamanlı izleyici dakikalık hesaplanır: oturum [b, s+30 sn] arası açık sayılır. Gün / saat Türkiye saati.
+const TRo=108e5,trG=t=>new Date(t+TRo).toISOString().slice(0,10),trS=t=>new Date(t+TRo).toISOString().slice(11,13);
+function seyirciHesapla(C,I){I=I||{};
+ const O=Object.entries(I.o||{}).map(([id,x])=>x&&+x.b?{id,b:+x.b,s:Math.max(+x.s||0,+x.b),u:x.u||id,m:x.m||"d",c:x.c||"",d:x.d||"",k:x.k||""}:null).filter(Boolean).sort((a,b)=>a.b-b.b);
+ const dk=t=>Math.floor(t/6e4),F=new Map();O.forEach(o=>{const a=dk(o.b),z=dk(o.s+3e4)+1;F.set(a,(F.get(a)||0)+1);F.set(z,(F.get(z)||0)-1)});
+ const H={},hs=(t)=>{const g=trG(t),sa=trS(t),k=g+" "+sa;return H[k]||(H[k]={g,sa,giris:0,tepe:0,tepeTs:0,dkT:0})};
+ const ks=[...F.keys()].sort((a,b)=>a-b);let cur=0,tepe=0,tepeTs=0;
+ for(let i=0;i<ks.length;i++){cur+=F.get(ks[i]);if(cur<=0)continue;const son=i+1<ks.length?ks[i+1]:ks[i]+1;
+  for(let m=ks[i];m<son;m++){const t=m*6e4,h=hs(t);h.dkT+=cur;if(cur>h.tepe){h.tepe=cur;h.tepeTs=t}if(cur>tepe){tepe=cur;tepeTs=t}}}
+ O.forEach(o=>hs(o.b).giris++);
+ const G={};O.forEach(o=>{const g=trG(o.b),x=G[g]||(G[g]={g,giris:0,U:new Set,top:0,mob:0,tepe:0,tepeTs:0});x.giris++;x.U.add(o.u);x.top+=o.s-o.b;o.m!=="d"&&x.mob++});
+ Object.values(H).forEach(h=>{const x=G[h.g]||(G[h.g]={g:h.g,giris:0,U:new Set,top:0,mob:0,tepe:0,tepeTs:0});if(h.tepe>x.tepe){x.tepe=h.tepe;x.tepeTs=h.tepeTs}});
+ // ayrıntı kaydı olmayan günler: sayaçlardan
+ Object.entries(I.g||{}).forEach(([g,v])=>{if(!G[g]&&v&&+v.giris)G[g]={g,giris:+v.giris||0,U:null,tekilS:+v.tekil||0,top:0,mob:0,tepe:+v.tepe||0,tepeTs:+v.tepeTs||0,sayac:!0}});
+ const gunler=Object.values(G).sort((a,b)=>a.g.localeCompare(b.g)).map(x=>({...x,tekil:x.U?x.U.size:x.tekilS,ort:x.giris&&!x.sayac?x.top/x.giris:null}));
+ const sureler=O.map(o=>o.s-o.b).sort((a,b)=>a-b),top=sureler.reduce((a,b)=>a+b,0);
+ const cihaz={d:0,m:0,t:0},dil={},link={},ulke={};O.forEach(o=>{cihaz[o.m]=(cihaz[o.m]||0)+1;dil[o.d||"?"]=(dil[o.d||"?"]||0)+1;link[o.k||"?"]=(link[o.k||"?"]||0)+1;const u=ulke[o.c||"?"]||(ulke[o.c||"?"]={n:0,U:new Set});u.n++;u.U.add(o.u)});
+ const sayacG=gunler.filter(x=>x.sayac);
+ return{O,gunler,saatler:Object.values(H).filter(h=>h.giris||h.tepe).sort((a,b)=>(a.g+a.sa).localeCompare(b.g+b.sa)),giris:O.length+sayacG.reduce((a,x)=>a+x.giris,0),tekil:new Set(O.map(o=>o.u)).size+sayacG.reduce((a,x)=>a+x.tekil,0),
+  tepe:Math.max(tepe,...gunler.map(x=>x.tepe)),tepeTs:tepe>=Math.max(0,...gunler.map(x=>x.tepe))?tepeTs:(gunler.find(x=>x.tepe===Math.max(...gunler.map(y=>y.tepe)))||{}).tepeTs||0,
+  top,ort:O.length?top/O.length:null,med:sureler.length?sureler[sureler.length>>1]:null,cihaz,dil,link,ulke,aktif:Object.values(I.a||{}).filter(t=>Date.now()-(+t||0)<75e3).length}}
+
 // ---------------- İŞLEM KAYDI ----------------
 const LOG_TUR={athlete_call:"Sporcu çağrıldı",call_cancelled:"Çağrı iptal",score_submitted:"Puan kaydedildi",judge_score_submit:"Hakem notu girdi",sj_field_override:"Başhakem hakem alanını değiştirdi",
  score_field_cleared:"Alan silindi",score_unlock:"Kilit kaldırıldı",score_correction:"Başhakem notu değiştirdi",score_send_back:"Hakeme geri gönderildi",score_approval:"Puan onayı",score_irm:"IRM verildi",score_irm_clear:"IRM kaldırıldı",
@@ -314,6 +338,7 @@ const RAPORLAR=[
  {id:"sporcu",ic:"trending_up",t:"Sporcu Karşılaştırma",d:"Yarışmalar arası genel tasnif, alet ve final sonuçları"},
  {id:"katilim",ic:"groups",t:"Katılım İstatistikleri",d:"Kategori, kulüp, il / ülke ve yaş dağılımı; yarışmalar arası karşılaştırma"},
  {id:"video",ic:"video_library",t:"Video Arşivi Durumu",d:"Videosu olan / eksik rutinler, depolama, yükleme hataları"},
+ {id:"seyirci",ic:"monitoring",t:"Seyirci İstatistikleri",d:"Seyirci sitesi: giriş, tekil ziyaretçi, en yüksek eşzamanlı izleyici, saatlik yoğunluk, ülke / cihaz"},
  {id:"log",ic:"history",t:"İşlem Kaydı",d:"Kim, ne zaman, neyi değiştirdi"}];
 
 function Raporlar(){
@@ -336,6 +361,11 @@ function Raporlar(){
  R.useEffect(()=>{if(!["itiraz","zaman","log"].includes(rapor))return;const eksik=secili.filter(k=>logV[k]===void 0);if(!eksik.length)return;setLogYuk(!0);
   Promise.all(eksik.map(async k=>{try{const r0=await fetch("https://analig-default-rtdb.firebaseio.com/logs.json?orderBy=%22competitionId%22&equalTo="+encodeURIComponent(JSON.stringify(k)));return[k,r0.ok?(await r0.json())||{}:{}]}catch{return[k,{}]}}))
    .then(L=>setLogV(v=>{const n={...v};L.forEach(([k,x])=>n[k]=x);return n})).finally(()=>setLogYuk(!1))},[secili,rapor]);
+ // seyirci istatistiği (yalnız bu rapor için; Yenile ile yeniden okunur)
+ const[istV,setIstV]=R.useState({}),[istYuk,setIstYuk]=R.useState(!1);
+ R.useEffect(()=>{if(rapor!=="seyirci")return;const eksik=secili.filter(k=>istV[k]===void 0);if(!eksik.length)return;setIstYuk(!0);
+  Promise.all(eksik.map(async k=>{try{return[k,(await get(ref(db,"criteria/seyirciIstat/"+BR+"_"+k))).val()||{}]}catch{return[k,{}]}}))
+   .then(L=>setIstV(v=>{const n={...v};L.forEach(([k,x])=>n[k]=x);return n})).finally(()=>setIstYuk(!1))},[secili,rapor,istV]);
  const comps=secili.map(k=>veri[k]).filter(Boolean);
  const intlHepsi=comps.length&&comps.every(isIntl);
  const EN=opt.dil==="en"||(opt.dil==="oto"&&comps.length>0&&comps.every(c=>isIntl(c)&&c.ciktiDili!=="tr"));
@@ -376,6 +406,10 @@ function Raporlar(){
  const zaman=R.useMemo(()=>{if(rapor!=="zaman")return null;const all=comps.map(C=>zamanHesapla(C,logV[C._id]||{},opt));return{bl:all.flatMap(x=>x.bl),gunler:all.flatMap(x=>x.gunler),planYok:comps.filter((c,i)=>!all[i].planVar).map(c=>c.isim),cagriYok:comps.filter((c,i)=>!all[i].cagriVar).map(c=>c.isim)}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt),logV]);
  const sporcuK=R.useMemo(()=>{if(rapor!=="sporcu")return null;return sporcuKarsilastir(comps.map(C=>({C,bol:sonucHesapla(C,{genel:!0,alet:!1,takim:!1,final:!0,kats:opt.kats})})),opt)},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
  const video=R.useMemo(()=>{if(rapor!=="video")return null;const all=comps.map(C=>({C,...videoHesapla(C,opt)}));return{all,G:all.flatMap(x=>x.G),eksik:all.flatMap(x=>x.eksik),hata:all.flatMap(x=>x.hata)}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
+ const sey=R.useMemo(()=>{if(rapor!=="seyirci")return null;const all=comps.map(C=>({C,...seyirciHesapla(C,istV[C._id])})),ulke={},cihaz={d:0,m:0,t:0},dil={};
+  all.forEach(x=>{Object.entries(x.ulke).forEach(([c,v])=>{const u=ulke[c]||(ulke[c]={c,n:0,t:0});u.n+=v.n;u.t+=v.U.size});Object.entries(x.cihaz).forEach(([k,v])=>cihaz[k]=(cihaz[k]||0)+v);Object.entries(x.dil).forEach(([k,v])=>dil[k]=(dil[k]||0)+v)});
+  const n=all.reduce((a,x)=>a+x.O.length,0);
+  return{all,n,gun:all.flatMap(x=>x.gunler.map(g=>({C:x.C,...g}))),saat:all.flatMap(x=>x.saatler.map(h=>({C:x.C,...h}))),ulke:Object.values(ulke).sort((a,b)=>b.n-a.n),cihaz,dil,ham:all.flatMap(x=>x.O.map(o=>({C:x.C,...o})))}},[comps.map(c=>c._id).join(),rapor,istV]);
  const islem=R.useMemo(()=>{if(rapor!=="log")return null;const rows=comps.flatMap(C=>logHesapla(C,logV[C._id]||{},opt)).sort((a,b)=>a.ts-b.ts),tur={},kul={};
   const tumKul=new Set();comps.forEach(C=>Object.values(logV[C._id]||{}).forEach(v=>v&&v.user&&tumKul.add(String(v.user))));
   const tumTur=new Set();comps.forEach(C=>Object.values(logV[C._id]||{}).forEach(v=>v&&v.type&&tumTur.add(String(v.type))));
@@ -449,13 +483,25 @@ function Raporlar(){
  const vdRow=g=>[...(comps.length>1?[String(g.C.isim).slice(0,26)]:[]),kA(g.kat),aA(g.al),String(g.rutin),String(g.biri),String(g.a),String(g.b),String(g.rutin-g.biri),g.rutin?Math.round(g.biri/g.rutin*100)+"%":"—",String(g.cl)];
  const vOzCols=()=>[L("YARIŞMA","COMPETITION"),L("PUANLANAN RUTİN","SCORED ROUTINES"),L("VİDEOLU","WITH VIDEO"),L("EKSİK","MISSING"),L("KAPSAMA","COVERAGE"),L("DRIVE","DRIVE"),L("CLOUDINARY","CLOUDINARY"),L("TOPLAM BOYUT","TOTAL SIZE"),L("TOPLAM SÜRE","TOTAL LENGTH"),L("ORT. YÜKLEME","MEAN UPLOAD"),L("YÜKLEME HATASI","UPLOAD ERRORS")];
  const vOzRow=x=>{const R0=x.G.reduce((a,g)=>a+g.rutin,0),V0=x.G.reduce((a,g)=>a+g.biri,0);return[x.C.isim,String(R0),String(V0),String(R0-V0),R0?Math.round(V0/R0*100)+"%":"—",String(x.src.drive),String(x.src.cloudinary),x.mb?(x.mb>=1024?(x.mb/1024).toFixed(2)+" GB":x.mb.toFixed(1)+" MB"):"—",x.sure?sureS(x.sure*1e3):"—",x.yukOrt!=null?sureS(x.yukOrt*1e3):"—",String(x.hata.length)]};
+ const syP=(a,b)=>b?Math.round(a/b*100)+"%":"—",syGun=g=>new Date(g+"T12:00:00").toLocaleDateString(EN?"en-GB":"tr-TR",{day:"2-digit",month:"short",year:"numeric",weekday:"short"}),syZ=t=>t?new Date(t+TRo).toISOString().slice(11,16):"—";
+ const syUlke=c=>{if(!c||c==="?")return L("Bilinmiyor","Unknown");try{return new Intl.DisplayNames([EN?"en":"tr"],{type:"region"}).of(c)||c}catch{return c}};
+ const syCih={d:["Bilgisayar","Desktop"],m:["Telefon","Phone"],t:["Tablet","Tablet"]};
+ const syOzCols=()=>[L("YARIŞMA","COMPETITION"),L("GİRİŞ (OTURUM)","SESSIONS"),L("TEKİL ZİYARETÇİ","UNIQUE VISITORS"),L("EN YÜKSEK EŞZAMANLI","PEAK CONCURRENT"),L("TEPE ZAMANI","PEAK AT"),L("ORT. İZLEME","AVG. VIEW"),L("MEDYAN","MEDIAN"),L("TOPLAM İZLEME","TOTAL VIEW TIME"),L("MOBİL","MOBILE"),L("ÜLKE","COUNTRIES")];
+ const syOzRow=x=>[x.C.isim,String(x.giris),String(x.tekil),String(x.tepe),x.tepeTs?syGun(trG(x.tepeTs))+" "+syZ(x.tepeTs):"—",x.ort!=null?sureS(x.ort):"—",x.med!=null?sureS(x.med):"—",x.top?sureS(x.top):"—",syP(x.cihaz.m+x.cihaz.t,x.O.length),String(Object.keys(x.ulke).filter(c=>c!=="?").length)];
+ const syGCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("GÜN","DAY"),L("GİRİŞ","SESSIONS"),L("TEKİL","UNIQUE"),L("EN YÜKSEK EŞZAMANLI","PEAK CONCURRENT"),L("TEPE SAATİ","PEAK AT"),L("ORT. İZLEME","AVG. VIEW"),L("MOBİL","MOBILE")];
+ const syGRow=x=>[...(comps.length>1?[String(x.C.isim).slice(0,26)]:[]),syGun(x.g),String(x.giris),String(x.tekil),String(x.tepe),syZ(x.tepeTs),x.ort!=null?sureS(x.ort):x.sayac?L("sayaç","counter"):"—",x.sayac?"—":syP(x.mob,x.giris)];
+ const sySCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("GÜN","DAY"),L("SAAT","HOUR"),L("YENİ GİRİŞ","NEW SESSIONS"),L("EN YÜKSEK EŞZAMANLI","PEAK CONCURRENT"),L("ORT. EŞZAMANLI","AVG. CONCURRENT")];
+ const sySRow=x=>[...(comps.length>1?[String(x.C.isim).slice(0,26)]:[]),syGun(x.g),x.sa+":00–"+String(+x.sa+1).padStart(2,"0")+":00",String(x.giris),String(x.tepe),(x.dkT/60).toFixed(1)];
+ const syUCols=()=>[L("ÜLKE","COUNTRY"),L("KOD","CODE"),L("OTURUM","SESSIONS"),L("TEKİL","UNIQUE"),L("PAY","SHARE")];
+ const syURow=u=>[syUlke(u.c),u.c==="?"?"—":u.c,String(u.n),String(u.t),syP(u.n,sey?sey.n:0)];
+ const syCRows=()=>sey?[...Object.entries(sey.cihaz).filter(([,v])=>v).map(([k,v])=>[L(...(syCih[k]||[k,k])),String(v),syP(v,sey.n)]),...Object.entries(sey.dil).map(([k,v])=>[L("Dil: ","Language: ")+(k==="?"?L("varsayılan","default"):k.toUpperCase()),String(v),syP(v,sey.n)])]:[];
  const LT=t=>{const v=LOG_TUR[t];return v?(EN?({athlete_call:"Athlete called",call_cancelled:"Call cancelled",score_submitted:"Score saved",judge_score_submit:"Judge entered score",sj_field_override:"Chief judge edited judge field",score_field_cleared:"Field cleared",score_unlock:"Unlocked",score_correction:"Chief judge changed score",score_send_back:"Sent back to judge",score_approval:"Score approval",score_irm:"IRM given",score_irm_clear:"IRM removed",score_inquiry:"Inquiry opened",score_inquiry_decision:"Inquiry decision",score_stop:"Broadcast STOP",score_stop_release:"STOP released",final_create:"Final created",final_delete:"Final deleted",start_order_save:"Start order saved",athlete_apparatus:"Athlete apparatus changed",alet_transfer:"Apparatus transfer",panel_group_update:"Panel updated",broadcast_profile:"Broadcast profile",report_export:"Report downloaded",competition_update:"Competition updated",competition_create:"Competition created",score_create:"Score saved (to Superior Jury)",score_modify:"Chief judge changed judge scores",athlete_update:"Athlete updated"})[t]||v:v):t};
  const lgCols=()=>[L("ZAMAN","TIME"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("İŞLEM","ACTION"),L("KULLANICI","USER"),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("AYRINTI","DETAILS")];
  const lgRow=x=>[new Date(x.ts).toLocaleString(EN?"en-GB":"tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}),...(comps.length>1?[String(x.C.isim).slice(0,22)]:[]),LT(x.t),x.kim,kA(x.kat),x.sp,x.al?aA(x.al):"",x.msj];
  // ---- PDF ----
  const pdfAl=async()=>{if(busy||!comps.length)return;setBusy("pdf");toast(__T("PDF hazırlanıyor…"),"info");
   try{const jsPDF=await import("./jspdf.es.min-gArCfqm1Cb2.js").then(z=>z.j?.jsPDF||z.E),atM=await import("./jspdf.plugin.autotable-KFqWVtFsCb2.js"),at=atM.default||atM;
-   const yatay=["hakem","itiraz","katilim","zaman","sporcu","video","log"].includes(rapor)||rapor==="sonuc"&&sonuc.some(x=>x.bol.some(b=>(b.tip==="aa"||b.tip==="final_aa")&&b.aletler.length>4)),d=new jsPDF(yatay?"landscape":"portrait","mm","a4");
+   const yatay=["hakem","itiraz","katilim","zaman","sporcu","video","log","seyirci"].includes(rapor)||rapor==="sonuc"&&sonuc.some(x=>x.bol.some(b=>(b.tip==="aa"||b.tip==="final_aa")&&b.aletler.length>4)),d=new jsPDF(yatay?"landscape":"portrait","mm","a4");
    let FT="helvetica";try{const{R:r0,B:b0}=await import("./fontTR-Fn01a2b3Cb2.js");d.addFileToVFS("Roboto.ttf",r0);d.addFont("Roboto.ttf","Roboto","normal");d.addFileToVFS("Roboto-Bold.ttf",b0);d.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto"}catch{}
    const img=async u=>{try{const b=await(await fetch(u)).blob();const du=await new Promise(K=>{const O=new FileReader;O.onloadend=()=>K(O.result);O.readAsDataURL(b)});const im=new Image;await new Promise(r=>{im.onload=r;im.onerror=r;im.src=du});return im.naturalWidth?{d:du,r:im.naturalWidth/im.naturalHeight}:null}catch{return null}};
    const tcf=await img("/logo.png"),W=yatay?297:210,H=yatay?210:297,M=12,P1=[236,72,153],P2=[139,92,246],INK=[15,23,42],MUT=[100,116,139];
@@ -498,6 +544,14 @@ function Raporlar(){
     await ust(comps.length===1?comps[0]:null,L("SPORCU KARŞILAŞTIRMA","GYMNAST COMPARISON"));
     d.setFont(FT,"normal");d.setFontSize(7.2);d.setTextColor(...MUT);d.text(L("Hücre: genel tasnif puanı (sıra) · kategori · final sonuçları. * farklı kategorilerdeki puanlar (karşılaştırma dikkatle yorumlanmalı).","Cell: all-around score (rank) · category · final results. * scores from different categories (interpret with care)."),M,y,{maxWidth:W-2*M});y+=7;
     bolumBas(L("Sporcular","Gymnasts")+" ("+S0.length+")");tablo(skCols(),S0.map(skRow),{styles:{font:FT,fontSize:7,cellPadding:{top:1.2,bottom:1.2,left:1.5,right:1.5},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},columnStyles:{0:{fontStyle:"bold",cellWidth:40},2:{cellWidth:12,halign:"center"}},parse:z=>{const x=S0[z.row.index];if(x&&z.column.index===skCols().length-2&&x.fark!=null){z.cell.styles.fontStyle="bold";z.cell.styles.textColor=x.fark>0?[21,128,61]:x.fark<0?[185,28,28]:INK}}});
+   }else if(rapor==="seyirci"){const S0=sey;
+    await ust(comps.length===1?comps[0]:null,L("SEYİRCİ İSTATİSTİKLERİ","SPECTATOR STATISTICS"));
+    d.setFont(FT,"normal");d.setFontSize(7.4);d.setTextColor(...MUT);d.text(L("Seyirci sitesi (kısa link) ziyaretleri. Oturum: sayfanın açık kaldığı süre (30 sn'de bir sinyal; 10 dk'dan uzun aradan sonra yeni oturum). Tekil ziyaretçi: cihaz/tarayıcı bazında. Saatler Türkiye saatidir.","Spectator site (short link) visits. Session: time the page stayed open (signal every 30 s; a gap over 10 min starts a new session). Unique visitor: per device/browser. Times are Turkey time (UTC+3)."),M,y-2,{maxWidth:W-2*M});y+=6;
+    bolumBas(L("Özet","Summary"));tablo(syOzCols(),S0.all.map(syOzRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:58}}});
+    bolumBas(L("Gün bazında","By day"));tablo(syGCols(),S0.gun.map(syGRow),{});
+    if(S0.saat.length){bolumBas(L("Saatlik yoğunluk","Hourly activity"));tablo(sySCols(),S0.saat.map(sySRow),{})}
+    if(S0.ulke.length){bolumBas(L("Ülkeler","Countries"));tablo(syUCols(),S0.ulke.map(syURow),{tableWidth:170})}
+    if(S0.n){bolumBas(L("Cihaz ve dil","Device and language"));tablo([L("TÜR","TYPE"),L("OTURUM","SESSIONS"),L("PAY","SHARE")],syCRows(),{tableWidth:120})}
    }else if(rapor==="video"){const V0=video;
     await ust(comps.length===1?comps[0]:null,L("VİDEO ARŞİVİ DURUMU","VIDEO ARCHIVE STATUS"));
     bolumBas(L("Özet","Summary"));tablo(vOzCols(),V0.all.map(vOzRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:58}}});
@@ -581,7 +635,7 @@ function Raporlar(){
       b.rows.forEach(r=>aoa.push([r.rank??"",...(HB?[r.bib||""]:[]),b.tip==="takim"?r.ad:satirAd(r),...(b.tip==="takim"?[(r.uyeler||[]).join(", ")]:[]),ic?(r.ulke||""):(r.takim?(r.il&&UP(r.il)!==UP(r.ad)?r.il:""):r.kulup||r.il||""),...(ic?[r.kulup||""]:[]),...cols.map(c=>{const v=c.f(r);return/^−?\d+\.\d{3}$/.test(v)?Number(v.replace("−","-")):v})]));
       const ws=X.utils.aoa_to_sheet(aoa),bas=aoa[3].length-cols.length;Object.keys(ws).forEach(a=>{if(a[0]==="!")return;const c=X.utils.decode_cell(a);if(c.r>3&&c.c>=bas&&ws[a].t==="n")ws[a].z="0.000"});ws["!cols"]=aoa[3].map((h,i)=>({wch:i===0?6:String(h).length>8?Math.max(12,String(h).length+2):i<=2+(HB?1:0)?28:10}));
       X.utils.book_append_sheet(wb,ws,sayfaAd((tek?"":String(C.isim).slice(0,8)+" ")+bolBaslik(b).replace(" — "," ")))})})}
-   else if(["zaman","sporcu","video","log"].includes(rapor)){const ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=(w||aoa[0].map(()=>14)).map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))};
+   else if(["zaman","sporcu","video","log","seyirci"].includes(rapor)){const ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=(w||aoa[0].map(()=>14)).map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))};
     if(rapor==="zaman"){ek(L("Gün özeti","Daily summary"),[zgCols(),...zaman.gunler.map(zgRow)]);ek(L("Bloklar","Blocks"),[zbCols(),...zaman.bl.map(zbRow)],zbCols().map((h,i)=>i===(comps.length>1?3:2)?28:12))}
     else if(rapor==="sporcu"){ek(L("Sporcular","Gymnasts"),[skCols(),...(sporcuK||[]).map(x=>skRow(x).map(v=>String(v).replace(/\n/g," · ")))],[30,18,8,...comps.map(()=>36),14,10]);
      const det=[[L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Yarışma","Comp."),L("Tarih","Date"),L("Kategori","Category"),L("Genel puan","AA score"),L("Sıra","Rank"),L("Katılımcı","Field"),L("Alet","App."),L("Alet puanı","App. score"),L("Final","Final"),L("Final puanı","Final score"),L("Final sırası","Final rank")]];
@@ -589,6 +643,10 @@ function Raporlar(){
       al.forEach(a=>det.push([x.ad,x.temsil,y.C.isim,tarihStr(y.C),kA(y.kat),y.aa!=null?Number(f3(y.aa)):"",y.rank||"",y.n||"",aA(a),typeof y.apps[a]==="number"?Number(f3(y.apps[a])):(y.apps[a]||""),"","",""]));
       y.fin.forEach(f0=>det.push([x.ad,x.temsil,y.C.isim,tarihStr(y.C),kA(y.kat),"","","","","",f0.alet==="AA"?L("Genel","AA"):aA(f0.alet),f0.total!=null?Number(f3(f0.total)):"",f0.rank||""]))}));
      ek(L("Ayrıntı","Details"),det,[30,18,30,22,24,10,6,9,10,10,10,10,9])}
+    else if(rapor==="seyirci"){ek(L("Özet","Summary"),[syOzCols(),...sey.all.map(syOzRow)],[34,12,12,12,22,12,12,14,8,8]);ek(L("Günler","Days"),[syGCols(),...sey.gun.map(syGRow)]);
+     ek(L("Saatler","Hours"),[sySCols(),...sey.saat.map(x=>sySRow(x).map((v,i,a)=>i>=a.length-3?Number(v):v))]);ek(L("Ülkeler","Countries"),[syUCols(),...sey.ulke.map(u=>syURow(u).map((v,i)=>i===2||i===3?Number(v):v))],[24,8,10,10,8]);
+     ek(L("Cihaz-dil","Device-language"),[[L("Tür","Type"),L("Oturum","Sessions"),L("Pay","Share")],...syCRows()],[24,10,8]);
+     ek(L("Oturumlar","Sessions"),[[...(comps.length>1?[L("Yarışma","Comp.")]:[]),L("Başlangıç","Start"),L("Son sinyal","Last signal"),L("Süre (sn)","Length (s)"),L("Cihaz","Device"),L("Ülke","Country"),L("Dil","Language"),L("Ziyaretçi","Visitor"),L("Link","Link")],...sey.ham.map(o=>[...(comps.length>1?[o.C.isim]:[]),trG(o.b)+" "+syZ(o.b)+new Date(o.b+TRo).toISOString().slice(16,19),trG(o.s)+" "+syZ(o.s)+new Date(o.s+TRo).toISOString().slice(16,19),Math.round((o.s-o.b)/1e3),L(...(syCih[o.m]||[o.m,o.m])),o.c||"",o.d||"",o.u.slice(0,8),o.k])],[...(comps.length>1?[28]:[]),20,20,10,12,8,6,10,12])}
     else if(rapor==="video"){ek(L("Özet","Summary"),[vOzCols(),...video.all.map(vOzRow)]);ek(L("Kategori-alet","Category-apparatus"),[vdCols(),...video.G.map(vdRow)]);
      ek(L("Eksik videolar","Missing videos"),[[L("Yarışma","Comp."),L("Kategori","Category"),L("Alet","App."),L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Puan zamanı","Scored at")],...video.eksik.map(x=>[x.C.isim,kA(x.kat),aA(x.al),x.ad,x.temsil,zm(x.ts)])],[28,24,10,28,16,14]);
      ek(L("Yükleme sorunları","Upload problems"),[[L("Zaman","Time"),L("Sporcu","Gymnast"),L("Kategori","Category"),L("Alet","App."),L("Kamera","Camera"),L("Durum","Status"),L("Mesaj","Message")],...video.hata.map(h=>[zm(h.ts),h.ad,kA(h.kat),h.al?aA(h.al):"",h.cam,h.durum,h.mesaj])])}
@@ -683,6 +741,8 @@ function Raporlar(){
    :rapor==="sporcu"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Sporcu ara")}),e.jsx("input",{style:S.inp,placeholder:__T("Ad, soyad, kulüp ya da ülke…"),value:opt.sAra,onChange:ev=>so("sAra",ev.target.value)}),
      e.jsx("div",{style:S.lbl,children:__T("En az yarışma sayısı")}),e.jsx(Seg,{v:String(opt.sMin),on:v=>so("sMin",+v),ops:[["1","1"],["2","2"],["3","3"]]}),
      e.jsx("div",{style:S.lbl,children:__T("Sıralama")}),e.jsx(Seg,{v:opt.sSira,on:v=>so("sSira",v),ops:[["ad",__T("Ada göre")],["fark",__T("Gelişime göre")],["enIyi",__T("En iyi puana göre")]]})]})
+   :rapor==="seyirci"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Kapsam")}),e.jsx("div",{style:{fontSize:".78rem",color:"#475569",fontWeight:600,lineHeight:1.45},children:__T("Bağımsız seyirci sitesi (gymexascore.net kısa linki) ziyaretleri. Sayfa açıkken 30 sn'de bir sinyal gelir; en yüksek eşzamanlı izleyici dakikalık hesaplanır. Kişisel veri tutulmaz: rastgele tarayıcı kimliği, cihaz tipi ve ülke. Kayıt 9 Ekim 2026'dan itibaren tutulur.")}),
+     e.jsxs("button",{type:"button",style:{...S.chip(!1),marginTop:".6rem"},disabled:istYuk,onClick:()=>setIstV({}),children:[MI("refresh",{fontSize:15,verticalAlign:"-3px",marginRight:4}),istYuk?__T("Yükleniyor…"):__T("Yenile")]})]})
    :rapor==="video"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Kapsam")}),e.jsx("div",{style:{fontSize:".78rem",color:"#475569",fontWeight:600,lineHeight:1.45},children:__T("Puanlanmış her rutin için kamera A / B videosu aranır. Drive ve Cloudinary bağlantıları ayrı sayılır (Cloudinary hesabı kapalı olduğu için o videolar şu an açılmaz). Yükleme hataları ve 10 dakikadan uzun yanıt vermeyen yüklemeler listelenir.")})]})
    :rapor==="log"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("İşlem türleri")+(opt.lTur.length?"":" · "+__T("tümü"))}),
      e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem",maxHeight:150,overflowY:"auto"},children:(islem?islem.tumTur:[]).filter(t=>t!=="judge_score_submit"||opt.lHakem).map(t=>e.jsx("button",{type:"button",style:S.chip(opt.lTur.includes(t)),onClick:()=>so("lTur",opt.lTur.includes(t)?opt.lTur.filter(x=>x!==t):[...opt.lTur,t]),children:__T(LOG_TUR[t]||t)},t))}),
@@ -732,16 +792,30 @@ function Raporlar(){
        e.jsxs("td",{style:{...S.td,textAlign:"left",whiteSpace:"normal",fontWeight:800,width:"40%"},children:[b.tip==="takim"?r.ad:satirAd(r),r.takim&&r.uyeler?.length?e.jsx("span",{style:{display:"block",fontSize:".7rem",color:"#64748B",fontWeight:600},children:r.uyeler.join(", ")}):null]}),
        e.jsx("td",{style:{...S.td,textAlign:"left",color:"#475569",fontWeight:700},children:ic?r.ulke:(r.takim?(r.il&&UP(r.il)!==UP(r.ad)?r.il:""):r.kulup||r.il)}),
        ...cols.map((c,ci)=>e.jsx("td",{style:{...S.td,fontWeight:c.t?900:600,color:c.t?"#0F172A":"#334155"},children:c.f(r)},ci))]},i))})]})})]},bi)})]},C._id))
-  :["zaman","sporcu","video","log"].includes(rapor)?(()=>{const tab=(cols,rows,o2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,!(o2&&o2.sag&&o2.sag.includes(i))))})}),
+  :["zaman","sporcu","video","log","seyirci"].includes(rapor)?(()=>{const tab=(cols,rows,o2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,!(o2&&o2.sag&&o2.sag.includes(i))))})}),
    e.jsx("tbody",{children:rows.map((rw,i)=>e.jsx("tr",{style:{background:i%2?"#FAFAFD":"#fff"},children:rw.map((v,j)=>{const st=o2&&o2.st?o2.st(i,j):null;return e.jsx("td",{style:{...S.td,textAlign:o2&&o2.sag&&o2.sag.includes(j)?"right":"left",fontWeight:j===0?800:600,whiteSpace:o2&&o2.nw?"nowrap":"pre-line",...st},children:v},j)})},i))})]})});
   const bas=t=>e.jsx("div",{style:{fontWeight:900,fontSize:".85rem",background:"#FDF2F8",borderLeft:"4px solid "+P1,borderRadius:10,padding:".45rem .7rem",margin:"1rem 0 .35rem"},children:t});
   const not=t=>e.jsx("div",{style:{fontSize:".74rem",fontWeight:700,color:"#B45309",background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:".45rem .6rem",margin:".4rem 0"},children:t});
-  const ic=comps.length>1?1:0,R0=RAPORLAR.find(x=>x.id===rapor),kap=t=>e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:{...S.h,marginBottom:".3rem"},children:[e.jsx("span",{style:S.hi,children:MI(R0.ic,{fontSize:17})}),L(R0.t,({zaman:"Timetable Analysis",sporcu:"Gymnast Comparison",video:"Video Archive Status",log:"Audit Log"})[rapor])]}),logYuk&&(rapor==="zaman"||rapor==="log")?not(__T("İşlem kaydı yükleniyor…")):null,...t]});
+  const ic=comps.length>1?1:0,R0=RAPORLAR.find(x=>x.id===rapor),kap=t=>e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:{...S.h,marginBottom:".3rem"},children:[e.jsx("span",{style:S.hi,children:MI(R0.ic,{fontSize:17})}),L(R0.t,({zaman:"Timetable Analysis",sporcu:"Gymnast Comparison",video:"Video Archive Status",log:"Audit Log",seyirci:"Spectator Statistics"})[rapor])]}),logYuk&&(rapor==="zaman"||rapor==="log")?not(__T("İşlem kaydı yükleniyor…")):null,istYuk&&rapor==="seyirci"?not(__T("Seyirci verisi yükleniyor…")):null,...t]});
   if(rapor==="zaman"&&zaman)return kap([zaman.planYok.length?not(L("Çıkış listesi (plan) yok: ","No start list (plan): ")+zaman.planYok.join(", ")+L(" — yalnız gerçekleşen zamanlar."," — actual times only.")):null,
    bas(L("Gün özeti","Daily summary")),tab(zgCols(),zaman.gunler.map(zgRow),{sag:[1,2,3].map(x=>x+ic)}),
    bas(L("Bloklar","Blocks")+" ("+zaman.bl.length+")"),tab(zbCols(),zaman.bl.map(zbRow),{nw:!0,sag:[4,5].map(x=>x+ic),st:(i,j)=>{const b=zaman.bl[i];return j===zbCols().length-6&&b.gecikme!=null?{color:b.gecikme>9e5?"#B91C1C":b.gecikme>3e5?"#B45309":"#15803D",fontWeight:900}:null}})]);
   if(rapor==="sporcu"&&sporcuK)return kap([e.jsx("div",{style:{fontSize:".74rem",color:"#64748B",fontWeight:700},children:L("Hücre: genel tasnif puanı (sıra) · kategori · final sonuçları. * farklı kategorilerdeki puanlar.","Cell: all-around score (rank) · category · finals. * different categories.")}),
    bas(L("Sporcular","Gymnasts")+" ("+sporcuK.length+")"+(sporcuK.length>200?" · "+L("ilk 200 gösteriliyor","first 200 shown"):"")),tab(skCols(),sporcuK.slice(0,200).map(skRow),{sag:[2],st:(i,j)=>{const x=sporcuK[i];return j===skCols().length-2&&x.fark!=null?{color:x.fark>0?"#15803D":x.fark<0?"#B91C1C":"#0F172A",fontWeight:900}:null}})]);
+  if(rapor==="seyirci"&&sey){const kt=(ik,et,v,alt,renk)=>e.jsxs("div",{style:{flex:"1 1 150px",border:"1.5px solid #EEF0F4",borderRadius:14,padding:".6rem .75rem",background:"#fff"},children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:5,fontSize:".68rem",fontWeight:900,letterSpacing:".05em",textTransform:"uppercase",color:"#64748B"},children:[MI(ik,{fontSize:15,color:renk||P1}),et]}),e.jsx("div",{style:{fontSize:"1.55rem",fontWeight:900,color:"#0F172A",lineHeight:1.2},children:v}),alt?e.jsx("div",{style:{fontSize:".7rem",fontWeight:700,color:"#64748B"},children:alt}):null]});
+   const T0=sey.all.reduce((a,x)=>({g:a.g+x.giris,t:a.t+x.tekil,p:Math.max(a.p,x.tepe),a:a.a+x.aktif}),{g:0,t:0,p:0,a:0}),pX=sey.all.reduce((a,x)=>x.tepe>=(a?a.tepe:-1)?x:a,null);
+   const grafik=sey.all.flatMap(x=>x.gunler.filter(g=>!g.sayac).map(g=>{const hs=x.saatler.filter(h=>h.g===g.g),mx=Math.max(1,...hs.map(h=>h.tepe));
+    return e.jsxs("div",{style:{marginBottom:".6rem"},children:[e.jsx("div",{style:{fontSize:".72rem",fontWeight:800,color:"#475569",marginBottom:2},children:(ic?x.C.isim+" · ":"")+syGun(g.g)+" — "+L("saatlik en yüksek eşzamanlı","hourly peak concurrent")}),
+     e.jsx("div",{style:{display:"flex",alignItems:"flex-end",gap:3,height:70,borderBottom:"1px solid #E2E8F0"},children:Array.from({length:24},(_,h)=>{const r=hs.find(z=>+z.sa===h),v=r?r.tepe:0;return e.jsxs("div",{title:String(h).padStart(2,"0")+":00 — "+L("en yüksek ","peak ")+v+" · "+L("giriş ","sessions ")+(r?r.giris:0),style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%"},children:[v?e.jsx("div",{style:{fontSize:".58rem",fontWeight:800,color:"#6D28D9"},children:v}):null,e.jsx("div",{style:{width:"100%",height:Math.max(v?3:1,Math.round(v/mx*52)),borderRadius:"3px 3px 0 0",background:v?"linear-gradient(180deg,#8B5CF6,#EC4899)":"#EEF0F4"}})]},h)})}),
+     e.jsx("div",{style:{display:"flex",gap:3},children:Array.from({length:24},(_,h)=>e.jsx("div",{style:{flex:1,textAlign:"center",fontSize:".55rem",color:"#94A3B8",fontWeight:700},children:h%3?"":String(h).padStart(2,"0")},h))})]},x.C._id+g.g)}));
+   return kap([!sey.n&&!sey.gun.length?not(L("Henüz kayıt yok. Sayaç 9 Ekim 2026'da devreye girdi; seyirci linki açıldıkça veri birikir.","No data yet. Counting started on 9 Oct 2026; data accumulates as the spectator link is opened.")):null,
+    e.jsxs("div",{style:{display:"flex",gap:".5rem",flexWrap:"wrap",margin:".4rem 0 .2rem"},children:[kt("sensors",L("Şu an izleyen","Watching now"),T0.a,L("son 75 sn","last 75 s"),"#16A34A"),kt("login",L("Toplam giriş","Total sessions"),T0.g),kt("person",L("Tekil ziyaretçi","Unique visitors"),T0.t),kt("trending_up",L("En yüksek eşzamanlı","Peak concurrent"),T0.p,pX&&pX.tepeTs?syGun(trG(pX.tepeTs))+" "+syZ(pX.tepeTs):"")]}),
+    bas(L("Özet","Summary")),tab(syOzCols(),sey.all.map(syOzRow),{sag:[1,2,3,5,6,7,8,9]}),
+    bas(L("Gün bazında","By day")),tab(syGCols(),sey.gun.map(syGRow),{sag:[1,2,3,5,6].map(x=>x+ic)}),
+    grafik.length?e.jsxs(e.Fragment,{children:[bas(L("Saatlik yoğunluk grafiği","Hourly activity chart")),...grafik]}):null,
+    sey.saat.length?e.jsxs(e.Fragment,{children:[bas(L("Saatlik yoğunluk","Hourly activity")),tab(sySCols(),sey.saat.map(sySRow),{sag:[2,3,4].map(x=>x+ic)})]}):null,
+    sey.ulke.length?e.jsxs(e.Fragment,{children:[bas(L("Ülkeler","Countries")),tab(syUCols(),sey.ulke.map(syURow),{sag:[2,3,4]})]}):null,
+    sey.n?e.jsxs(e.Fragment,{children:[bas(L("Cihaz ve dil","Device and language")),tab([L("Tür","Type"),L("Oturum","Sessions"),L("Pay","Share")],syCRows(),{sag:[1,2]})]}):null])}
   if(rapor==="video"&&video)return kap([video.all.some(x=>x.src.cloudinary)?not(L("Cloudinary bağlantıları şu an erişilemez (hesap kapalı).","Cloudinary links are currently unavailable (account disabled).")):null,
    bas(L("Özet","Summary")),tab(vOzCols(),video.all.map(vOzRow),{sag:[1,2,3,4,5,6,7,8,9,10]}),
    bas(L("Kategori ve alet bazında","By category and apparatus")),tab(vdCols(),video.G.map(vdRow),{sag:[2,3,4,5,6,7,8].map(x=>x+ic),st:(i,j)=>{const g=video.G[i];return j===vdCols().length-2?{fontWeight:900,color:g.biri===g.rutin?"#15803D":g.biri?"#B45309":"#B91C1C"}:null}}),

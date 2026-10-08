@@ -4791,6 +4791,20 @@ const DICT={
   "Panellere gönderildi": "Sent to panels",
   "Panelleri bu kategoriye geçir": "Switch panels to this category",
   "Tam ekrandan çık": "Exit full screen",
-  "Küçült": "Exit full screen"
+  "Küçült": "Exit full screen",
+  "İzleyici sayacı": "Viewer counter",
+  "Şu an izleyen": "Watching now",
+  "son 75 sn içinde açık sayfa": "pages open in the last 75 s",
+  "bugünkü oturum": "today's sessions",
+  "Tekil ziyaretçi": "Unique visitors",
+  "bugün, cihaz bazında": "today, per device",
+  "aynı anda": "concurrent",
+  "15 sn'de bir yenilenir": "refreshes every 15 s",
+  "Saatlik giriş (bugün)": "Hourly sessions (today)",
+  "Tüm günler, ülke ve cihaz dağılımı, izleme süreleri: Raporlar › Seyirci İstatistikleri. Saatler Türkiye saatidir.": "All days, country and device breakdown, view times: Reports › Spectator Statistics. Times are Turkey time.",
+  "Seyirci İstatistikleri": "Spectator Statistics",
+  "Seyirci sitesi: giriş, tekil ziyaretçi, en yüksek eşzamanlı izleyici, saatlik yoğunluk, ülke / cihaz": "Spectator site: sessions, unique visitors, peak concurrent viewers, hourly activity, country / device",
+  "Bağımsız seyirci sitesi (gymexascore.net kısa linki) ziyaretleri. Sayfa açıkken 30 sn'de bir sinyal gelir; en yüksek eşzamanlı izleyici dakikalık hesaplanır. Kişisel veri tutulmaz: rastgele tarayıcı kimliği, cihaz tipi ve ülke. Kayıt 9 Ekim 2026'dan itibaren tutulur.": "Visits to the standalone spectator site (gymexascore.net short link). An open page sends a signal every 30 s; peak concurrent viewers are computed per minute. No personal data: random browser id, device type and country. Recorded since 9 Oct 2026.",
+  "Seyirci verisi yükleniyor…": "Loading spectator data…"
 };
 export{DICT};
