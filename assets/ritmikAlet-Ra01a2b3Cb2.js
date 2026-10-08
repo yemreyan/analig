@@ -2,7 +2,7 @@
 // raKey(x): alet id'si veya adı (TR/EN) → cember|top|labut|kurdele|ip|serbest|grup_seri1|grup_seri2
 // raSvg(k,{boyut,acik}): SVG metni · raAd(k,en): okunur ad · RaIkon: React (jsx fonksiyonu e ile)
 let _n=0;
-const AD={cember:["Çember","Hoop"],top:["Top","Ball"],labut:["Labut","Clubs"],kurdele:["Kurdele","Ribbon"],ip:["İp","Rope"],serbest:["Serbest","Without Apparatus"],grup_seri1:["1. Seri","Routine 1"],grup_seri2:["2. Seri","Routine 2"]};
+const AD={cember:["Çember","Hoop"],top:["Top","Ball"],labut:["Labut","Clubs"],kurdele:["Kurdele","Ribbon"],ip:["İp","Rope"],serbest:["Serbest","WA"],grup_seri1:["1. Seri","Routine 1"],grup_seri2:["2. Seri","Routine 2"]};
 export const raKey=t=>{if(!t)return"";const s=String(t).toLocaleLowerCase("tr-TR").trim();if(AD[s])return s;
  if(/grup_seri1|1\.?\s*seri|routine\s*1|seri\s*1/.test(s))return"grup_seri1";if(/grup_seri2|2\.?\s*seri|routine\s*2|seri\s*2/.test(s))return"grup_seri2";
  if(/çember|cember|hoop/.test(s))return"cember";if(/kurdele|ribbon/.test(s))return"kurdele";if(/labut|lobut|club/.test(s))return"labut";if(/^top\b|\btop$|ball/.test(s))return"top";if(/^ip\b|\bip$|rope|^i̇p/.test(s))return"ip";if(/serbest|free/.test(s))return"serbest";return""};
@@ -25,13 +25,16 @@ export const RaIkon=(e,{k,boyut=28,acik=!1,ad=!1,en=!1,style})=>{const key=raKey
  return ad?e.jsxs("span",{style:{display:"inline-flex",flexDirection:"column",alignItems:"center",gap:2,...style},children:[ic,e.jsx("span",{style:{fontSize:Math.max(9,boyut*.32),fontWeight:800,letterSpacing:".04em",opacity:.75,textTransform:"uppercase"},children:raAd(key,en)})]}):ic};
 // Kullanıcının verdiği resmi sembol seti (/brans/alet/*.png, "Artistik ve Ritmik Cimnastik İkonları") — tasarım değiştirilmeden kesildi.
 // Ritmikte görseli olan aletler PNG; serbest / grup serileri için SVG yedek. Koyu zeminde beyaz yuvarlak zemin üzerinde gösterilmeli (lacivert siluetler).
-const RA_IMG={cember:"/brans/alet/cember.png",top:"/brans/alet/top.png",labut:"/brans/alet/labut.png",kurdele:"/brans/alet/kurdele.png",ip:"/brans/alet/ip.png"};
+// serbest (2026-10-09): kullanıcının verdiği "Zarif Ritmik Jimnastik Amblemi" (pembe, tasarım korunarak 256px); İngilizce ad resmi listedeki gibi "WA"
+const RA_IMG={serbest:"/brans/alet/serbest.png",cember:"/brans/alet/cember.png",top:"/brans/alet/top.png",labut:"/brans/alet/labut.png",kurdele:"/brans/alet/kurdele.png",ip:"/brans/alet/ip.png"};
 export const raImg=k=>RA_IMG[raKey(k)||k]||null;
 // ARTİSTİK: alet id'si (yer, kulplu, mantar, halka, atlama, paralel, barfiks, denge, asimetrik) veya adı → görsel; kadın/erkek kategoriye göre
 const ART_AD={yer:["Yer","Floor Exercise"],kulplu:["Kulplu Beygir","Pommel Horse"],mantar:["Mantar","Mushroom"],halka:["Halka","Still Rings"],atlama:["Atlama Masası","Vault"],asimetrik:["Asimetrik Paralel","Uneven Bars"],paralel:["Paralel Bar","Parallel Bars"],barfiks:["Barfiks","Horizontal Bar"],denge:["Denge Aleti","Balance Beam"]};
+const _kiz=kat=>{const c=String(kat||"").toLocaleLowerCase("tr-TR");return/kiz|kız|kadin|kadın|women|female|_k$/.test(c)&&!/erkek|\bmen\b|male/.test(c.replace(/women|female/g,""))};
 export const artKey=t=>{const x=String(t||"").toLocaleLowerCase("tr-TR");for(const k of Object.keys(ART_AD))if(x.includes(k))return k;return/beygir|pommel/.test(x)?"kulplu":/mushroom/.test(x)?"mantar":/floor/.test(x)?"yer":/ring/.test(x)?"halka":/vault/.test(x)?"atlama":/uneven/.test(x)?"asimetrik":/parallel/.test(x)?"paralel":/horizontal|high bar/.test(x)?"barfiks":/beam/.test(x)?"denge":""};
-export const artAd=(t,en)=>{const k=artKey(t);return k?ART_AD[k][en?1:0]:String(t||"")};
+export const artAd=(t,en,kat)=>{const k0=artKey(t),k=k0&&globalThis.__artGor?__artGor(k0,kat):k0;return k?ART_AD[k][en?1:0]:String(t||"")};
 const _erk=(k,kat)=>{const c=String(kat||"").toLocaleLowerCase("tr-TR");if(/erkek|men\b|male|_e$/.test(c))return!0;if(/kiz|kız|kadin|kadın|women|female|_k$/.test(c))return!1;return["kulplu","mantar","halka","paralel","barfiks"].includes(k)};
-export const artImg=(t,kat)=>{const k=artKey(t);if(!k)return null;if(k==="mantar"||k==="kulplu")return"/brans/alet/kulplu.png";if(k==="atlama"||k==="yer")return`/brans/alet/${k}_${_erk(k,kat)?"e":"k"}.png`;return`/brans/alet/${k}.png`};
+// 2026-10-09 yeni set ("Artistik Cimnastik Aletleri İnfografiği"): mantar kendi sembolü; barfiks kız kategorisinde kız figürlü (barfiks_k)
+export const artImg=(t,kat)=>{const k0=artKey(t);if(!k0)return null;const k=globalThis.__artGor?__artGor(k0,kat):k0;if(k==="mantar")return"/brans/alet/mantar.png";if(k==="kulplu")return"/brans/alet/kulplu.png";if(k==="barfiks")return`/brans/alet/barfiks${_kiz(kat)?"_k":""}.png`;if(k==="atlama"||k==="yer")return`/brans/alet/${k}_${_erk(k,kat)?"e":"k"}.png`;return`/brans/alet/${k}.png`};
 // Branş sembolü (genel): ritmik / artistik (kadın-erkek) / diğerleri /brans/<br>.png
 export const bransImg=(br,kat)=>br==="ritmik"?"/brans/alet/ritmik.png":br==="artistik"?(_erk("",kat)&&/erkek|men\b|male/.test(String(kat||"").toLocaleLowerCase("tr-TR"))?"/brans/alet/artistik_erkek.png":"/brans/alet/artistik_kadin.png"):`/brans/${br}.png`;

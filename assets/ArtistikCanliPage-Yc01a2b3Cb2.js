@@ -8,8 +8,8 @@ function start(){const __iv=[];
 const FB = "competitions";
 const IDLE_MS = (parseFloat(new URLSearchParams(location.search).get("idle")) || 300) * 1000; // varsayılan 5 dk; ?idle=saniye ile ayarlanır
 
-const ALET_TR = { yer:"Yer", atlama:"Atlama", asimetrik:"Asimetrik P.", denge:"Denge", halka:"Halka", kulplu:"Kulplu", paralel:"Paralel", barfiks:"Barfiks", mantar:"Mantar", sirik:"Sırık", serbest:"Serbest" };
-const ALET_ABBR = { yer:"FX", atlama:"VT", asimetrik:"UB", denge:"BB", halka:"SR", kulplu:"PH", paralel:"PB", barfiks:"HB", mantar:"MH", sirik:"PV", serbest:"FX" };
+const ALET_TR = __artMap({ yer:"Yer", atlama:"Atlama", asimetrik:"Asimetrik P.", denge:"Denge", halka:"Halka", kulplu:"Kulplu", paralel:"Paralel", barfiks:"Barfiks", mantar:"Mantar", sirik:"Sırık", serbest:"Serbest" });
+const ALET_ABBR = __artMap({ yer:"FX", atlama:"VT", asimetrik:"UB", denge:"BB", halka:"SR", kulplu:"PH", paralel:"PB", barfiks:"HB", mantar:"MH", sirik:"PV", serbest:"FX" });
 const OLYMP_W = ["atlama","asimetrik","denge","yer","serbest"];
 const OLYMP_M = ["yer","kulplu","mantar","halka","atlama","paralel","barfiks","sirik"];
 const isKiz = c => /k[iı]z|kad/i.test(String(c||""));
@@ -61,7 +61,7 @@ function fillCats(){
   else { cat=""; clearSubs(); render(); }
 }
 
-function subscribe(){
+function subscribe(){ globalThis.__gxKat=cat;
   clearSubs();
   stopAllCams();
   boardData={}; puanData={}; sporcuData={};

@@ -5,6 +5,13 @@
 const KEY="tcf_lang";
 
 import{DICT}from"./i18n-dict-Tr01a2b3Cb2.js";
+// ARTİSTİK MİNİK ALET GÖRÜNÜMÜ (2026-10-09, kullanıcı: "veriye dokunma, yalnız görünüm"): kayıtlar asimetrik / kulplu kalır;
+// minik KIZ kategorisinde asimetrik → Barfiks, minik ERKEK kategorisinde kulplu → Mantar olarak gösterilir (ad + sembol).
+// __artGor(aletId, kategoriAnahtarıVeyaAdı) → gösterilecek alet id'si. Tüm sayfalar bu modülü yüklediği için global.
+globalThis.__artGor=(a,k)=>{const c=String(k||"").toLocaleLowerCase("tr-TR");if(!/minik/.test(c))return a;if(a==="asimetrik"&&/kiz|kız|kadin|kadın|women|girl/.test(c))return"barfiks";if(a==="kulplu"&&/erkek|men|boy/.test(c))return"mantar";return a};
+// Sayfa alet sözlükleri için: __artMap({yer:..,asimetrik:..}) → o anki kategoriye (globalThis.__gxKat; sayfa render'da yazar) göre anahtarı çevirir
+const __gxKatAl=()=>{if(globalThis.__gxKat)return globalThis.__gxKat;try{const q=new URLSearchParams(location.search);return q.get("catId")||q.get("cat")||q.get("kategori")||""}catch{return""}};
+globalThis.__artMap=o=>new Proxy(o,{get:(t,k)=>t[typeof k==="string"&&globalThis.__artGor?globalThis.__artGor(k,__gxKatAl()):k]});
 
 let _lang=null;
 // Uluslararası yarışma + İngilizce çıktı: hakem panelleri (dil seçilmemişse) İngilizce açılır.
@@ -98,12 +105,12 @@ if(typeof document!=="undefined"&&cur()==="en"){try{
  const UP=x=>x.toLocaleUpperCase("tr-TR"),esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
  const AYR=new RegExp("(\\d{1,2})\\s+("+AY.map(x=>esc(x)+"|"+esc(UP(x))).join("|")+")(\\s+\\d{4})?","g"),GNR=new RegExp("(\\d{4}|,)\\s*("+GN.map(x=>esc(x)+"|"+esc(UP(x))).join("|")+")(?![\\p{L}])","gu");
  const ayE=m=>{let i=AY.indexOf(m);if(i<0)i=AY.map(UP).indexOf(m);const v=AYE[i]||m;return m===UP(m)?v.toUpperCase():v},gnE=m=>{let i=GN.indexOf(m);if(i<0)i=GN.map(UP).indexOf(m);const v=GNE[i]||m;return m===UP(m)?v.toUpperCase():v};
- const APF={"Çember":"Hoop","Top":"Ball","Labut":"Clubs","Kurdele":"Ribbon","İp":"Rope","Çok Mücadele":"All-Around","Grup 1. Seri":"Group Routine 1","Grup 2. Seri":"Group Routine 2","Serbest":"Without Apparatus"};
+ const APF={"Çember":"Hoop","Top":"Ball","Labut":"Clubs","Kurdele":"Ribbon","İp":"Rope","Çok Mücadele":"All-Around","Grup 1. Seri":"Group Routine 1","Grup 2. Seri":"Group Routine 2","Serbest":"WA"};
  const PAT=[[/^(.*?)(Çember|Top|Labut|Kurdele|İp|Çok Mücadele|Grup 1\. Seri|Grup 2\. Seri|Serbest) Finali$/,(m,a,b)=>a+APF[b]+" Final"],[/^Bugün · (.*)$/,(m,a)=>"Today · "+(cev(a)||a)],[/^Dün · (.*)$/,(m,a)=>"Yesterday · "+(cev(a)||a)],[/^(\d+) gün sonra$/,"in $1 days"],[/^(\d+) gün önce$/,"$1 days ago"],[/^(\d+) (dk|dakika) önce$/,"$1 min ago"],[/^(\d+) (sa|saat) önce$/,"$1 h ago"],[/^(\d+) sn önce$/,"$1 s ago"],[/^az önce$/i,"just now"],[/^yarın$/i,"tomorrow"],[/^(\d+) işlem$/,"$1 actions"],[/^(\d+) sporcu$/,"$1 gymnasts"],[/^(\d+) hakem$/,"$1 judges"],[/^(\d+) yarışma$/,"$1 competitions"],[/^(\d+) kategori$/,"$1 categories"]];
  // Kategori / alet adları: metnin TAMAMI kategori sözcüklerinden oluşuyorsa çevrilir (isim/kulüp/yarışma adı bozulmaz)
  const KP=[["Asimetrik Paralel","Uneven Bars"],["Kulplu Beygir","Pommel Horse"],["Atlama Masası","Vault"],["Genel Tasnif","All-Around"],["Çok Mücadele","All-Around"],["Tek Kadın","Individual Women"],["Tek Erkek","Individual Men"],["Karma Çift","Mixed Pair"],["Aerobik Dans","Aerobic Dance"],["Aerobik Step","Aerobic Step"],["Yaş Grubu","Age Group"],
   ["Büyükler","Senior"],["Büyük","Senior"],["Gençler","Junior"],["Genç","Junior"],["Yıldızlar","Pre-Junior"],["Yıldız","Pre-Junior"],["Küçükler","Children"],["Küçük","Children"],["Minikler","Mini"],["Minik","Mini"],["Kızlar","Women"],["Kız","Women"],["Kadınlar","Women"],["Kadın","Women"],["Erkekler","Men"],["Erkek","Men"],
-  ["Bireysel","Individual"],["Ferdi","Individual"],["Grubu","Group"],["Grup","Group"],["Takım","Team"],["Karma","Mixed"],["Finali","Final"],["Çember","Hoop"],["Kurdele","Ribbon"],["Labut","Clubs"],["Top","Ball"],["İp","Rope"],["Serbest","Without Apparatus"],["Seri","Routine"],["Yer","Floor"],["Atlama","Vault"],["Barfiks","High Bar"],["Denge","Beam"],["Paralel","Parallel Bars"],["Halka","Rings"],["Mantar","Mushroom"],["Çift","Mixed Pair"],["Tek","Individual"],["Aerobik","Aerobic"],["Dans","Dance"],["Kategori","Category"],["Yaş","Age"],["ve","and"]];
+  ["Bireysel","Individual"],["Ferdi","Individual"],["Grubu","Group"],["Grup","Group"],["Takım","Team"],["Karma","Mixed"],["Finali","Final"],["Çember","Hoop"],["Kurdele","Ribbon"],["Labut","Clubs"],["Top","Ball"],["İp","Rope"],["Serbest","WA"],["Seri","Routine"],["Yer","Floor"],["Atlama","Vault"],["Barfiks","High Bar"],["Denge","Beam"],["Paralel","Parallel Bars"],["Halka","Rings"],["Mantar","Mushroom"],["Çift","Mixed Pair"],["Tek","Individual"],["Aerobik","Aerobic"],["Dans","Dance"],["Kategori","Category"],["Yaş","Age"],["ve","and"]];
  const LW=x=>x.toLocaleLowerCase("tr-TR"),KV=new Set(KP.flatMap(([t])=>t.split(" ").map(LW))),KN=/^(fig|senior|junior|final|a|b|c|d|aa|u\d+|[ivx]+)$/i,KPL=new Set(["büyükler","gençler","yıldızlar","küçükler","minikler"]);
  const KR=KP.map(([t,e])=>[new RegExp("(?<![\\p{L}])(?:"+esc(t)+"|"+esc(UP(t))+")(?![\\p{L}])","gu"),e]);
  const katCev=k=>{const tk=k.match(/[\p{L}]+|\d+/gu);if(!tk)return null;let n=0,dg=!1;for(const w of tk){if(/^\d+$/.test(w)){dg=!0;continue}const l=LW(w);if(KV.has(l)){n++;continue}if(KN.test(w))continue;return null}
