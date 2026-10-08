@@ -4089,7 +4089,7 @@ const DICT={
  "Yeni sekmede":"New tab",
  "Bu rutin için video yok. Kamera A açıksa çağrıda otomatik kaydedilir (Paneller › Kamera A).":"No video for this routine. If Camera A is open, it records automatically on each call (Panels › Camera A).",
  "Kamera A · video kaydı (itiraz)":"Camera A · video recording (inquiry)",
- "Kamera B · yedek (cihaza indirir)":"Camera B · backup (downloads to device)",
+ "Kamera B · ikinci açı (Drive)":"Camera B · second angle (Drive)",
  "Video Arşivi — Ritmik":"Video Archive — Rhythmic",
  "Kaydedilen performans videolarını kategori ve alet bazında izleyin, indirin veya silin":"Watch, download or delete recorded performance videos by category and apparatus",
  "Sporcu, kulüp, kategori, alet ara...":"Search gymnast, club, category, apparatus...",

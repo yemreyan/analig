@@ -300,7 +300,7 @@ function Paneller(){
       ["sports_score","#DB2777",__T("Başhakem"),o+"/rhythmic/scoring?competitionId="+cid],
       ["gavel","#DC2626",__T("İtiraz Paneli"),o+"/rhythmic/inquiry?competitionId="+cid+tk],
       ["videocam","#0EA5E9",__T("Kamera A · video kaydı (itiraz)"),o+"/rhythmic/camera?compId="+cid+"&cam=a"],
-      ["videocam","#64748B",__T("Kamera B · yedek (cihaza indirir)"),o+"/rhythmic/camera?compId="+cid+"&cam=b"],
+      ["videocam","#64748B",__T("Kamera B · ikinci açı (Drive)"),o+"/rhythmic/camera?compId="+cid+"&cam=b"],
       ["live_tv","#D97706",__T("Canlı Skor"),o+"/rhythmic/scoreboard?compId="+cid],
       ["cast","#E30613",__T("Yayın Overlay"),o+"/broadcast-overlay.html?comp="+cid+"&brans=ritmik"],
       ["event_note","#9333EA",__T("Çıkış Listesi"),o+"/rhythmic/schedule?comp="+cid],
