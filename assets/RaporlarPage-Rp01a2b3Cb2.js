@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{raKey,raAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{isIntl,katEN,bayraklarPng,ulkeAd,sporcuUlke}from"./intl-Ul01a2b3Cb2.js";import"./yayinVeri-Yv01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{raKey,raAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{isIntl,katEN,bayraklarPng,ulkeAd,sporcuUlke,takimAdi}from"./intl-Ul01a2b3Cb2.js";import"./yayinVeri-Yv01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RAPORLAR (2026-10-08) — /ritmik/raporlar · yetki anahtarı "raporlar" (yoksa official_report'a bakılır)
 //  Yarışma seçimi (birden çok, arşivdekiler dahil) → rapor → seçenekler → ekranda önizleme → PDF / Excel.
@@ -54,8 +54,8 @@ function sonucHesapla(C,opt){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular
 
 // Takım sıralaması (Sonuçlar sayfasındaki hesapla aynı)
 function takimHesapla(C,k,intl){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular?.[k]||{},pun=C.puanlar?.[k]||{},al=katAletleri(kats,k),T={},N=String(k).toLowerCase().includes("genc")?3:4;
- Object.entries(spor).forEach(([id,a])=>{if(!a||typeof a!=="object")return;const ok=intl?(sporcuUlke(a,C)||String(a.okul||a.kulup||"")):String(a.okul||a.kulup||a.il||""),il=intl?"":String(a.il||"");if(!ok.trim())return;
-  const key=ok.trim().toLocaleUpperCase("tr-TR")+"|"+il.toLocaleUpperCase("tr-TR"),t=T[key]||(T[key]={ad:ok.trim(),il,ulke:intl?ok.trim():(a.ulke||""),kulup:ok.trim(),uyeler:[]});
+ Object.entries(spor).forEach(([id,a])=>{if(!a||typeof a!=="object")return;const ok=intl?(takimAdi(a,C)||String(a.okul||a.kulup||"")):String(a.okul||a.kulup||a.il||""),il=intl?"":String(a.il||"");if(!ok.trim())return;
+  const key=ok.trim().toLocaleUpperCase("tr-TR")+"|"+il.toLocaleUpperCase("tr-TR"),t=T[key]||(T[key]={ad:ok.trim(),il,ulke:intl?(sporcuUlke(a,C)||ok.trim()):(a.ulke||""),kulup:ok.trim(),uyeler:[]});
   const m={ad:[a.ad,a.soyad].filter(Boolean).join(" "),total:0,ap:{}};al.forEach(x=>{const z=Y.sonuc("ritmik",kats[k],pun[id],x);const v=z&&!z.yalnizIrm?num(z.total):0;m.ap[x]=v;m.total+=v});t.uyeler.push(m)});
  const ded={};Object.values(C.teamDeductions||{}).forEach(x=>{if(x&&x.categoryId===k)ded[String(x.teamName||"").trim().toLocaleUpperCase("tr-TR")]=(ded[String(x.teamName||"").trim().toLocaleUpperCase("tr-TR")]||0)+num(x.amount)});
  const rows=Object.values(T).filter(t=>t.uyeler.filter(m=>m.total>0).length>=2).map(t=>{const sec=[...t.uyeler].sort((p,q)=>q.total-p.total).slice(0,N),apps={};let top=0;

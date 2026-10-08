@@ -22,15 +22,27 @@ export function V2Kapi(Old,kind){return function V2Gate(p){
  const sjK=kind==="d"&&/^sj(da|db|a|e)$/.test(pt),uygun=!!(lk&&comp)&&(kind==="ae"||kind==="t"||kind==="l"||/^d[ab]\d?$/.test(pt)||sjK);
  const[st,setSt]=R.useState(uygun?{y:void 0}:{y:null});
  R.useEffect(()=>{if(!uygun)return;let u2=null;const u1=onValue(ref(db,`${B}/${comp}/hakemLinkleri/${lk}/panelGrubu`),s=>{const g=s.val();u2&&u2();u2=null;if(!g){setSt({y:null});return}
-   u2=onValue(ref(db,`${B}/${comp}/panelGruplari/${g}`),t=>{const v=t.val();setSt(v&&v.yapi?{y:yapiNorm(v.yapi),g:{ad:v.ad||"",adet:v.adet||{},hakemler:v.hakemler||{}}}:{y:null})})},()=>setSt({y:null}));return()=>{u1();u2&&u2()}},[]);
+   u2=onValue(ref(db,`${B}/${comp}/panelGruplari/${g}`),t=>{const v=t.val();setSt(v&&v.yapi?{y:yapiNorm(v.yapi),g:{ad:v.ad||"",adet:v.adet||{},hakemler:v.hakemler||{},hakemAlet:v.hakemAlet||{}}}:{y:null})})},()=>setSt({y:null}));return()=>{u1();u2&&u2()}},[]);
  if(st.y===void 0)return e.jsx("div",{style:{minHeight:"100vh",background:"#0B0F19",color:"#8E9AB8",display:"grid",placeItems:"center",fontFamily:"system-ui,sans-serif",fontWeight:700},children:__T("Yükleniyor…")});
  return st.y?e.jsx(HakemV2,{kind:sjK?"sj":kind,yapi:st.y,grup:st.g}):e.jsx(Old,{...p})}}
 
-const CSS=`.hv2 .hv-kimlik{display:flex;align-items:center;gap:16px;padding:14px 22px;margin-bottom:18px;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);text-align:left}
+const CSS=`.hv2 .hv-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--card2);border:1px solid var(--line)}
+.hv2 .hv-seg button{border:0;border-radius:10px;padding:10px 8px;background:transparent;color:var(--mut);font:inherit;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.hv2 .hv-seg button.on{background:var(--rc);color:#fff;box-shadow:0 6px 16px -8px var(--rc)}
+.hv2 .hv-qs-d{grid-template-columns:repeat(3,1fr);gap:12px}
+.hv2 .hv-qs-d .hv-q{min-height:110px;font-size:34px;font-weight:900;border-width:2px;border-radius:20px}
+.hv2 .hv-qs-d .hv-q:active{transform:scale(.97);background:color-mix(in srgb,var(--rc) 22%,var(--card))}
+.hv2 .hv-qs-e{gap:10px}
+.hv2 .hv-qs-e .hv-q{min-height:88px;font-size:26px;font-weight:900;border-width:2px;border-radius:18px}
+.hv2 .hv-qs-e .hv-q:active{transform:scale(.97);background:color-mix(in srgb,var(--rc) 22%,var(--card))}
+.hv2 .hv-t-sn{margin-left:4px;opacity:.75;font-family:ui-monospace,Menlo,monospace}
+.hv2 .hv-kimlik{display:flex;align-items:center;gap:16px;padding:14px 22px;margin-bottom:18px;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);text-align:left}
 .hv2 .hv-kimlik img{width:72px;height:54px;object-fit:cover;border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 .hv2 .hv-kimlik b{display:block;font-size:clamp(26px,5vw,44px);font-weight:900;line-height:1.1;color:var(--tx)}
 .hv2 .hv-kimlik>div{min-width:0}
 .hv2 .hv-kimlik b{overflow-wrap:break-word}
+.hv2 .hv-kimlik.bos{opacity:.85;border-style:dashed}
+.hv2 .hv-full .hv-kimlik{margin:18px 0 0}
 .hv2 .hv-kimlik span{display:block;margin-top:4px;font-size:15px;font-weight:800;letter-spacing:.08em;color:var(--rc)}
 .hv2 .hv-btn.send{background:linear-gradient(135deg,#16A34A,#15803D)!important;box-shadow:0 14px 26px -14px #16A34A!important;color:#fff!important}
 .hv2 .hv-btn.send:disabled{opacity:.45}
@@ -95,7 +107,11 @@ const CSS=`.hv2 .hv-kimlik{display:flex;align-items:center;gap:16px;padding:14px
 @media(max-width:820px){.hv-b{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:12px}.hv-b>.hv-col{display:contents}.hv-b>.hv-col>*{order:2}.hv-b>.hv-col>.hv-ath{order:0}.hv-b>.hv-giris{order:1}}
 @media(max-height:820px),(max-width:520px){.hv-k{height:50px;font-size:21px}.hv-disp{padding:8px}.hv-disp .v{font-size:44px}.hv-q{min-height:44px}.hv-btn.send{min-height:54px}.hv-sec{padding:12px;gap:9px}.hv-ath{padding:12px}.hv-med{width:56px;height:56px}.hv-nm{font-size:19px}.hv-h{padding:8px 12px}.hv-badge{height:38px;min-width:48px;font-size:16px}}`;
 
-const AE_Q=[.1,.2,.3,.5,1],DB_V=[.1,.2,.3,.4,.5,.6,.7,.8,.9,1],DA_V=[.2,.3,.4,.5,.6,.7,.8,.9,1,1.1],DGRP=[["S","Sıçrama"],["D","Denge"],["R","Dönüş"]];
+const AE_Q=[.1,.3,.5,.7,1],DA_T=[.2,.3,.4], // DA tuşları (2026-10-08 kullanıcı: yalnız 0.2 / 0.3 / 0.4)
+ // 2026-10-08 kullanıcı: 0.2 yok, 0.7 var
+// kesinti şeridi kalemi: sayı gibi toplanır (valueOf), ayrıca basış anı (ts) ve süre hakeminin kronometresine göre saniyesi (sn) tutulur
+ TK=(v,basla)=>{const ts=Date.now(),sn=basla&&ts>=basla?Math.round((ts-basla)/100)/10:null;return{v,ts,sn,valueOf(){return v}}},
+ MSS=x=>{const m0=Math.floor(x/60),s0=x-m0*60;return m0+":"+(s0<10?"0":"")+s0.toFixed(1)},DB_V=[.1,.2,.3,.4,.5,.6,.7,.8,.9,1],DA_V=[.2,.3,.4,.5,.6,.7,.8,.9,1,1.1],DGRP=[["S","Sıçrama"],["D","Denge"],["R","Dönüş"]];
 const RC={DA:"#7C3AED",DB:"#4F46E5",A:"#EC4899",E:"#10B981"};
 
 function Numpad({val,set,max}){const press=k=>{let v=val||"";if(k==="⌫")v=v.slice(0,-1);else if(k===".")v.includes(".")||(v=(v||"0")+".");else{const nx=v+k;if(/^\d{0,2}(\.\d{0,3})?$/.test(nx)&&!(max&&parseFloat(nx)>max))v=nx}set(v)};
@@ -127,14 +143,18 @@ function HakemV2({kind,yapi,grup}){
  R.useEffect(()=>{if(!cat||!alet||sj)return;return onValue(ref(db,`${B}/${comp}/refereeCalls/${cat}/${alet}/sj${P.toLowerCase()}`),s=>{const v=s.val();setSjc(v&&v.ts?+v.ts:null)})},[comp,cat,alet,P]);
  R.useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1e3);return()=>clearInterval(t)},[]);
  // hakem adı: kategori/alet kaydı (hakemler/<kat>/<alet>) yoksa — final kategorisi, sporcu çağrılmadan önce — panel grubundaki koltuk ataması
- const _gh=grup?.hakemler||{},_gx=_gh[slot]||(tek?_gh[slot+"1"]:null),hAdG=hAd||(_gx&&(_gx.ad||_gx.name))||"";
+ const _gh=grup?.hakemler||{},_bk=String(cat||"").replace(/^final_/,"").split("__")[0],_ha=grup?.hakemAlet||{},_hx=(_ha[slot]||(tek?_ha[slot+"1"]:null)||{})[_bk]?.[alet],_gx=(_hx&&_hx.ad?_hx:null)||_gh[slot]||(tek?_gh[slot+"1"]:null),hAdG=hAd||(_gx&&(_gx.ad||_gx.name))||"";
  // süre hakemi kronometresi: çalışırken 0.1 sn'de bir yenilenir; sınırlar / hazırlık / elle fark yerel
  const _sy=rec&&rec.tPanel&&rec.tPanel.sayac,[,setTk]=R.useState(0),[tLim,setTLim]=R.useState(null),[tGec,setTGec]=R.useState(null),[tFark,setTFark]=R.useState(null);
  R.useEffect(()=>{if(kind!=="t"||!_sy||!_sy.basla||_sy.bitis)return;const i=setInterval(()=>setTk(Date.now()),100);return()=>clearInterval(i)},[kind,_sy&&_sy.basla,_sy&&_sy.bitis]);
  R.useEffect(()=>{setTLim(null);setTGec(null);setTFark(null)},[key]);
+ // E ve DA giriş biçimi (2026-10-08): "tus" = büyük tuşlar + şerit (basış saniyesi tutulur) | "yaz" = yalnız tuş takımı; cihazda hatırlanır
+ const _gk="gxGiris:"+(kind==="d"||sj&&sjD?"D":"E"),[girisM,setGirisM]=R.useState(()=>{try{return localStorage.getItem(_gk)||"tus"}catch{return"tus"}});
  const hUl=hUlR.current||(_gx&&_gx.ulke)||"",hBf=hUl?bayrakUrl(hUl):null;
  // hakem kimliği (büyük): ilk girişte / beklerken / ekran koruyucuda — hakem koltuğunu bulsun
  const kimlikB=hAdG?e.jsxs("div",{className:"hv-kimlik",children:[hBf?e.jsx("img",{src:hBf,alt:hUl}):null,e.jsxs("div",{children:[e.jsx("b",{children:hAdG}),e.jsx("span",{children:[slot,hUl].filter(Boolean).join(" · ")})]})]}):null;
+ // bekleme ekranının altında: atanmış hakem adı + bayrak; atama yoksa uyarı
+ const kimlikA=kimlikB||e.jsxs("div",{className:"hv-kimlik bos",children:[e.jsx("div",{className:"hv-badge",style:{width:54,height:54,fontSize:18},children:slot||"?"}),e.jsxs("div",{children:[e.jsx("b",{style:{fontSize:20},children:__T("Bu koltuğa hakem atanmadı")}),e.jsx("span",{style:{letterSpacing:0,fontWeight:700,color:"var(--mut)"},children:__T("Paneller sayfasından hakem atayın; ad ve bayrak burada görünür.")})]})]});
  const kl=useHakemKilit({base:B,comp,lk,slot,kimlik:{ad:hAdG,ulke:hUl,bayrak:hBf},tetik:(ath?.id||"")+"|"+(ath?.alet||alet0||"")+"|"+(ath?.ts||"")});
 
  const r=rec||{},mine=kind==="t"?r.tPanel?.zaman:kind==="l"?r.lPanel?.[lf]:kind==="d"||sj?r[own]:r[pan]?.[jk],finV=kind==="d"?r[fin]:null,kilit=r.kilitli===!0,bhk=kind==="ae"&&r.lockedFields?.[`${pan}__${jk}`]===!0;
@@ -149,11 +169,11 @@ function HakemV2({kind,yapi,grup}){
  const deger=kind==="l"?r3(lc*.3):aeL?(tape.length&&val===""?apeSum:parseFloat(val)||0):mode==="toplam"||stage2||durum==="asama2"?parseFloat(val)||0:val!==""&&mode==="ikisi"?parseFloat(val)||0:elSum;
  const log=(v,ek)=>{try{logAction("judge_score_submit",`[Ritmik] ${slot}${ek||""}: ${v} · ${athAd} · ${raAd(alet,EN())||alet}`,{competitionId:comp,category:cat,athleteId:aid,discipline:"ritmik",data:{slot,alet,deger:v,v2:!0}})}catch{}};
  const gonder=async(ov)=>{setErr("");if(!aid||!alet||!cat)return;const v=r3(typeof ov==="number"?ov:deger);if(!(v>=0)||aeL&&v>10){setErr(__T("Geçersiz değer."));return}setBusy(!0);
-  try{const z=Date.now(),_es=kind==="d"&&tek?finV:mine,_gg=r.geriGonder&&r.geriGonder[slot],_dz=v=>{const o={};if(has(_es)&&Math.abs(+_es-v)>1e-9)o[`duzeltmeler/dz${z.toString(36)}${slot}`]={alan:slot,eski:+_es,yeni:v,tip:"hakem",kim:hAdG||slot,ts:z,istek:!!_gg};if(_gg)o[`geriGonder/${slot}`]=null;return o};if(_gg)update(ref(db),{[`${B}/${comp}/duzeltmeIzni/${cat}/${aid}/${alet}/${slot}`]:null}).catch(()=>{});if(sj){await update(ref(db,yol),{[own]:v,[`hakemZaman/${slot}`]:z,..._dz(v)});log(v)}
+  try{const z=Date.now(),_es=kind==="d"&&tek?finV:mine,_gg=r.geriGonder&&r.geriGonder[slot],_dz=v=>{const o={};if(has(_es)&&Math.abs(+_es-v)>1e-9)o[`duzeltmeler/dz${z.toString(36)}${slot}`]={alan:slot,eski:+_es,yeni:v,tip:"hakem",kim:hAdG||slot,ts:z,istek:!!_gg};if(_gg)o[`geriGonder/${slot}`]=null;return o};if(_gg)update(ref(db),{[`${B}/${comp}/duzeltmeIzni/${cat}/${aid}/${alet}/${slot}`]:null}).catch(()=>{});if(sj){await update(ref(db,yol),{[own]:v,[`hakemZaman/${slot}`]:z,...(sjD&&P==="DA"&&el.some(x=>x&&x.ts)?{[`elemSeridi/${slot}`]:{basla:(r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla)||null,kalemler:el.map(x=>({v:+x.v,ts:x.ts||null,sn:x.sn!=null?x.sn:null}))}}:{}),...(aeL?{[`kesintiSeridi/${slot}`]:tape.length&&val===""?{basla:(r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla)||null,kalemler:tape.map(x=>({v:+x,ts:x&&x.ts||null,sn:x&&x.sn!=null?x.sn:null}))}:null}:{}),..._dz(v)});log(v)}
     else if(kind==="t"){await update(ref(db,yol),{"tPanel/zaman":v,"tPanel/zaman_meta":{value:v,timestamp:z},[`hakemZaman/${slot}`]:z,..._dz(v)});log(v)}
     else if(kind==="l"){await update(ref(db,yol),{[`lPanel/${lf}`]:v,[`lPanel/${lf}_meta`]:{calls:lc,totalDeduction:v,timestamp:z},[`hakemZaman/${slot}`]:z,..._dz(v)});log(v," ("+lc+" ihlal)")}else if(kind==="ae"){const lk2=(await get(ref(db,`${B}/${comp}/board/${cat}/${aid}/ustJuriKilit`))).val();if(lk2){setErr(__T("Üst Jüri kontrolünde — not gönderilemez."));setBusy(!1);return}
-    await update(ref(db,yol),{[`${pan}/${jk}`]:v,[`hakemZaman/${slot}`]:z,..._dz(v)});log(v)}
-   else{const u={[`hakemZaman/${slot}`]:z};if(tek){u[fin]=v;u[fin+"Score"]=v}else u[own]=v;if(mode!=="toplam")u[own+"Elem"]=el.length?el.map(x=>P==="DB"?{v:x.v,g:x.g}:x.v):null;Object.assign(u,_dz(v));
+    await update(ref(db,yol),{[`${pan}/${jk}`]:v,[`hakemZaman/${slot}`]:z,[`kesintiSeridi/${slot}`]:tape.length&&val===""?{basla:(r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla)||null,kalemler:tape.map(x=>({v:+x,ts:x&&x.ts||null,sn:x&&x.sn!=null?x.sn:null}))}:null,..._dz(v)});log(v)}
+   else{const u={[`hakemZaman/${slot}`]:z};if(P==="DA")u[`elemSeridi/${slot}`]=el.some(x=>x&&x.ts)?{basla:(r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla)||null,kalemler:el.map(x=>({v:+x.v,ts:x.ts||null,sn:x.sn!=null?x.sn:null}))}:null;if(tek){u[fin]=v;u[fin+"Score"]=v}else u[own]=v;if(mode!=="toplam")u[own+"Elem"]=el.length?el.map(x=>P==="DB"?{v:x.v,g:x.g}:x.v):null;Object.assign(u,_dz(v));
     await update(ref(db,yol),u);log(v);
     if(C.yapi==="ortalama"){const s=(await get(ref(db,yol))).val()||{},vs=[...Array(C.n)].map((_,i)=>s[(P+(i+1)).toLowerCase()]);if(vs.every(has)){const a=r3(vs.reduce((x,y)=>x+ +y,0)/vs.length),nv=vs.map(Number),fk=Math.max(...nv)-Math.min(...nv);if(yapi.esikDavranis==="onay"&&fk>yapi.esik+1e-9)await update(ref(db,yol),{[`onay/${P}`]:{durum:"bekliyor",deger:a,kaynak:"ORT",fark:r3(fk),esik:yapi.esik,ts:Date.now(),degerler:Object.fromEntries(vs.map((x,i)=>[P+(i+1),+x]))}});else await update(ref(db,yol),{[fin]:a,[fin+"Score"]:a,[`onay/${P}`]:null})}}
     if(resp){setStage2(!0);setVal("")}}
@@ -167,6 +187,7 @@ function HakemV2({kind,yapi,grup}){
 
  // ---- parçalar ----
  const kat=kats[cat]||{},katAd=kat.name||katAdi(cat),ulke=ath?.ulke||spr?.ulke||"",bib=ath?.bib||spr?.bib||"",bf=ulke?bayrakUrl(ulke):null,img=raImg(alet);
+ const segm=e.jsx("div",{className:"hv-seg",children:[["tus","touch_app",__T("Tuşlarla")],["yaz","dialpad",__T("Doğrudan yaz")]].map(([k,ic,t])=>e.jsxs("button",{type:"button",className:girisM===k?"on":"",onClick:()=>{if(girisM===k)return;setGirisM(k);try{localStorage.setItem(_gk,k)}catch{}setTape([]);setEl([]);setVal("")},children:[MI(ic,{fontSize:18})," ",t]},k))});
  const header=e.jsxs("div",{className:"hv-h",children:[e.jsxs("div",{className:"hv-role",style:{display:"flex",alignItems:"center",gap:10},children:[e.jsx("div",{className:"hv-badge",children:slot||"?"}),e.jsxs("div",{children:[e.jsx("small",{children:title}),e.jsx("strong",{children:hAdG||grup?.ad||__T("Hakem paneli")})]})]}),e.jsx("div",{className:"hv-sp"}),hAdG&&grup?.ad?e.jsx("span",{className:"hv-pill",children:grup.ad}):null,kl.dugme,
   e.jsxs("span",{className:"hv-pill",children:[e.jsx("span",{className:"dot"+(bagli?"":" off")}),bagli?__T("Bağlı"):__T("Bağlantı yok")]}),isim?e.jsxs("span",{className:"hv-pill",children:[MI("emoji_events",{fontSize:16}),isim]}):null]});
  const athKart=ath?e.jsxs("div",{className:"hv-card hv-ath",children:[img?e.jsx("div",{className:"hv-med",children:e.jsx("img",{src:img,alt:""})}):null,e.jsxs("div",{style:{minWidth:0},children:[e.jsxs("div",{className:"hv-nm",children:[ath.soyad?e.jsx("span",{children:ath.ad}):null,ath.soyad?String(ath.soyad).toLocaleUpperCase("tr-TR"):athAd||ath.okul||aid]}),
@@ -195,8 +216,8 @@ function HakemV2({kind,yapi,grup}){
  if(!comp||!slot)return kap(tam("link_off",__T("Geçersiz link"),__T("Bu link eksik; Paneller sayfasından yeniden alın.")));
  if(tokS==="bad")return kap(tam("lock",__T("Geçersiz anahtar"),__T("Linkin hakem anahtarı geçerli değil. Paneller sayfasından güncel linki alın.")));
  const yetAl=hk.kisitli&&hk.kisit?Object.entries(hk.kisit).map(([k,m])=>(kats[k]?.name||katAdi(k))+": "+Object.keys(m||{}).filter(a=>m[a]).map(a=>raAd(a,EN())||a).join(", ")).join(" · "):"";
- if(durum==="bekliyor"&&lk&&!fixCat&&!fixAl&&!hk.yok&&!hk.tumu&&!(hk.kume||[]).length)return kap(tam("playlist_remove",__T("Bu panele kategori atanmadı"),__T("Sporcu çağrıları bu ekrana gelmez. Paneller sayfasında bu panelin grubuna kategori ekleyin; ekran kendiliğinden güncellenir."),{ust:kimlikB}));
- if(durum==="bekliyor")return kap(tam("hourglass_top",__T("Sporcu bekleniyor"),__T("Başhakem sporcuyu çağırdığında ekran otomatik açılır."),yetAl?{ust:kimlikB,alt:e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--mut)"},children:[MI("rule"),e.jsxs("span",{children:[__T("Yetkili olduğun aletler")+": ",e.jsx("b",{children:yetAl})]})]})}:{ust:kimlikB}));
+ if(durum==="bekliyor"&&lk&&!fixCat&&!fixAl&&!hk.yok&&!hk.tumu&&!(hk.kume||[]).length)return kap(tam("playlist_remove",__T("Bu panele kategori atanmadı"),__T("Sporcu çağrıları bu ekrana gelmez. Paneller sayfasında bu panelin grubuna kategori ekleyin; ekran kendiliğinden güncellenir."),{alt:kimlikA}));
+ if(durum==="bekliyor")return kap(tam("hourglass_top",__T("Sporcu bekleniyor"),__T("Başhakem sporcuyu çağırdığında ekran otomatik açılır."),{alt:e.jsxs("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:14,marginTop:6},children:[yetAl?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--mut)"},children:[MI("rule"),e.jsxs("span",{children:[__T("Yetkili olduğun aletler")+": ",e.jsx("b",{children:yetAl})]})]}):null,kimlikA]})}));
  // Aletsiz seri (WA): FIG — alet zorluğu (DA) yok, D = DB
  if(kind==="d"&&P==="DA"&&alet==="serbest")return kap(e.jsxs(e.Fragment,{children:[e.jsx("div",{style:{padding:"16px 16px 0"},children:athKart}),tam("block",__T("Aletsiz seri (WA)"),__T("Bu seride alet zorluğu (DA) puanı verilmez. Sıradaki sporcu çağrılınca ekran açılır."))]}));
  const benimF=f2(aeL?mine:tek?finV??mine:mine);
@@ -267,13 +288,13 @@ function HakemV2({kind,yapi,grup}){
    e.jsx("div",{className:"hv-row",children:e.jsxs("button",{type:"button",className:"hv-btn send",disabled:busy,onClick:gonder,children:[MI("send")," ",__T("GÖNDER")," ",e.jsx("span",{className:"mono",children:"−"+f2(ded)})]})})]});
   return kap(e.jsxs("div",{className:"hv-b",children:[sol,sag]}))}
  if(aeL){const ded=deger,aT=P!=="A"; // A paneli: kesinti şeridi / hızlı kesinti tuşları şimdilik yok (yalnız toplam yazılır)
-  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,sjKart,skKart,e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("insights")," ",__T("Puan önizlemesi")]}),e.jsxs("div",{className:"hv-peer",children:[e.jsxs("div",{children:[e.jsx("small",{children:__T("KESİNTİ")}),e.jsx("b",{className:"mono",style:{color:rc},children:"−"+f2(ded)})]}),e.jsxs("div",{children:[e.jsx("small",{children:P==="A"?__T("A PUANI"):__T("E PUANI")}),e.jsx("b",{className:"mono",children:f2(Math.max(0,10-ded))})]}),aT?e.jsxs("div",{children:[e.jsx("small",{children:__T("BASIŞ")}),e.jsx("b",{className:"mono",children:tape.length})]}):null]})]}),
-   aT&&e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("receipt_long")," ",__T("Kesinti şeridi"),e.jsx("span",{className:"hv-sp"}),e.jsxs("button",{type:"button",className:"hv-btn",style:{minHeight:32,fontSize:12},onClick:()=>setTape(t=>t.slice(0,-1)),children:[MI("undo")," ",__T("Geri al")]})]}),
-    e.jsx("div",{className:"hv-tape",children:tape.length?tape.map((v,i)=>e.jsxs("span",{className:"hv-t",children:[e.jsx("small",{children:"#"+(i+1)}),"−"+f2(v),e.jsx("button",{type:"button",onClick:()=>setTape(t=>t.filter((_,j)=>j!==i)),children:MI("close",{fontSize:16})})]},i)):e.jsx("span",{className:"hv-empty",children:__T("Kesinti butonlarına her basış buraya eklenir")})})]})]});
-  const sag=e.jsxs("div",{className:"hv-card hv-sec hv-giris",children:[e.jsxs("h4",{children:[MI("remove_circle")," ",__T("Toplam kesinti"),e.jsx("span",{className:"hv-sp"}),e.jsx("span",{className:"hv-chip",children:"10 − "+__T("kesinti")})]}),e.jsxs("div",{className:"hv-disp",children:[e.jsx("span",{className:"v neg mono",children:"−"+f2(ded)}),e.jsx("span",{className:"u",children:__T("kesinti")})]}),
-   aT&&e.jsx("div",{className:"hv-qs",children:AE_Q.map(v=>e.jsx("button",{type:"button",className:"hv-q",onClick:()=>{setVal("");setTape(t=>[...t,v])},children:"−"+v.toFixed(1)},v))}),
-   e.jsxs("div",{className:"hv-subl",children:[e.jsx("span",{children:aT?__T("veya doğrudan yaz:"):__T("Toplam kesintiyi yaz:")}),e.jsxs("span",{children:[__T("en fazla")," ",e.jsx("b",{children:"10.00"})]})]}),
-   e.jsx(Numpad,{val,set:v=>{setVal(v);setTape([])},max:10}),err?e.jsx("div",{className:"hv-err",children:err}):null,
+  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,sjKart,skKart,e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("insights")," ",__T("Puan önizlemesi")]}),e.jsxs("div",{className:"hv-peer",children:[e.jsxs("div",{children:[e.jsx("small",{children:__T("KESİNTİ")}),e.jsx("b",{className:"mono",style:{color:rc},children:"−"+f2(ded)})]}),e.jsxs("div",{children:[e.jsx("small",{children:P==="A"?__T("A PUANI"):__T("E PUANI")}),e.jsx("b",{className:"mono",children:f2(Math.max(0,10-ded))})]}),aT&&girisM==="tus"?e.jsxs("div",{children:[e.jsx("small",{children:__T("BASIŞ")}),e.jsx("b",{className:"mono",children:tape.length})]}):null]})]}),
+   aT&&girisM==="tus"&&e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("receipt_long")," ",__T("Kesinti şeridi"),e.jsx("span",{className:"hv-sp"}),e.jsxs("button",{type:"button",className:"hv-btn",style:{minHeight:32,fontSize:12},onClick:()=>setTape(t=>t.slice(0,-1)),children:[MI("undo")," ",__T("Geri al")]})]}),
+    e.jsx("div",{className:"hv-tape",children:tape.length?tape.map((v,i)=>e.jsxs("span",{className:"hv-t",children:[e.jsx("small",{children:"#"+(i+1)}),"−"+f2(v),v&&v.sn!=null?e.jsx("small",{className:"hv-t-sn",children:MSS(v.sn)}):null,e.jsx("button",{type:"button",onClick:()=>setTape(t=>t.filter((_,j)=>j!==i)),children:MI("close",{fontSize:16})})]},i)):e.jsx("span",{className:"hv-empty",children:__T("Kesinti butonlarına her basış buraya eklenir")})})]})]});
+  const sag=e.jsxs("div",{className:"hv-card hv-sec hv-giris",children:[e.jsxs("h4",{children:[MI("remove_circle")," ",__T("Toplam kesinti"),e.jsx("span",{className:"hv-sp"}),e.jsx("span",{className:"hv-chip",children:"10 − "+__T("kesinti")})]}),aT?segm:null,e.jsxs("div",{className:"hv-disp",children:[e.jsx("span",{className:"v neg mono",children:"−"+f2(ded)}),e.jsx("span",{className:"u",children:__T("kesinti")})]}),
+   aT&&girisM==="tus"&&e.jsx("div",{className:"hv-qs hv-qs-e",children:AE_Q.map(v=>e.jsx("button",{type:"button",className:"hv-q",onClick:()=>{setVal("");const _b=r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla;setTape(t=>[...t,TK(v,_b)])},children:"−"+v.toFixed(1)},v))}),
+   aT&&girisM==="tus"?null:e.jsxs("div",{className:"hv-subl",children:[e.jsx("span",{children:__T("Toplam kesintiyi yaz:")}),e.jsxs("span",{children:[__T("en fazla")," ",e.jsx("b",{children:"10.00"})]})]}),
+   aT&&girisM==="tus"?null:e.jsx(Numpad,{val,set:v=>{setVal(v);setTape([])},max:10}),err?e.jsx("div",{className:"hv-err",children:err}):null,
    e.jsx("div",{className:"hv-row",children:e.jsxs("button",{type:"button",className:"hv-btn send",disabled:busy||!(tape.length||val!==""),onClick:gonder,children:[MI("send")," ",__T("GÖNDER")," ",e.jsx("span",{className:"mono",children:"−"+f2(ded)})]})})]});
   return kap(e.jsxs("div",{className:"hv-b",children:[sol,sag]}))}
 
@@ -288,12 +309,17 @@ function HakemV2({kind,yapi,grup}){
   C?.yapi==="bashakem"?e.jsxs("div",{className:"hv-info",children:[MI("gavel"),__T("Kesin")+` ${P} `+__T("notunu başhakem belirler.")]}):null,
   resp?e.jsxs("div",{className:"hv-info",children:[MI("star"),__T("Sorumlu hakemsin: göndermeden sonra panelin kesin notunu gireceksin.")]}):null,
   edit?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--warn)"},children:[MI("edit"),__T("Düzeltme modundasın — yeni değeri gönder.")]}):null]});
- const vals=P==="DB"?DB_V:DA_V,cnt={S:0,D:0,R:0};el.forEach(x=>cnt[x.g]!=null&&cnt[x.g]++);
+ const vals=P==="DB"?DB_V:DA_T,cnt={S:0,D:0,R:0};el.forEach(x=>cnt[x.g]!=null&&cnt[x.g]++);
  const sag=e.jsxs("div",{className:"hv-card hv-sec hv-giris",children:[e.jsxs("h4",{children:[MI(mode==="toplam"?"dialpad":"format_list_numbered")," ",mode==="toplam"?(sj?__T("SJ referans notu")+" · "+P:tek?__T("Kesin")+" "+P:__T("Toplam")+" "+P):mode==="element"?__T("Element sayma"):__T("Element + toplam düzelt"),e.jsx("span",{className:"hv-sp"}),mode!=="toplam"?e.jsx("span",{className:"hv-chip",children:el.length+" "+__T("element")}):null]}),
   e.jsxs("div",{className:"hv-disp",children:[e.jsx("span",{className:"v mono",children:toplamGos}),e.jsx("span",{className:"u",children:__T("puan")})]}),
-  ...(mode==="toplam"?[e.jsx("div",{className:"hv-qs",children:[.1,.2,.3,.4,.5].map(v=>e.jsx("button",{type:"button",className:"hv-q",onClick:()=>setVal(x=>String(r3((parseFloat(x)||0)+v))),children:"+"+v.toFixed(1)},v))},"q"),e.jsx(Numpad,{val,set:setVal,max:30},"np")]
+  ...(mode==="toplam"&&P==="DA"?[segm,...(girisM==="tus"?[
+    e.jsx("div",{className:"hv-qs hv-qs-d",children:DA_T.map(v=>e.jsx("button",{type:"button",className:"hv-q",onClick:()=>{const it=TK(v,r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla);it.g="";const n=[...el,it];setEl(n);setVal(String(r3(n.reduce((a2,y)=>a2+(+y.v),0))))},children:"+"+v.toFixed(1)},v))},"dq"),
+    e.jsx("div",{className:"hv-tape",children:el.length?el.map((x,i)=>e.jsxs("span",{className:"hv-t",children:[e.jsx("small",{children:"#"+(i+1)}),"+"+f2(x.v),x.sn!=null?e.jsx("small",{className:"hv-t-sn",children:MSS(x.sn)}):null,e.jsx("button",{type:"button",onClick:()=>{const n=el.filter((_,j)=>j!==i);setEl(n);setVal(n.length?String(r3(n.reduce((a2,y)=>a2+(+y.v),0))):"")},children:MI("close",{fontSize:16})})]},i)):e.jsx("span",{className:"hv-empty",children:__T("Tuşa her basış buraya eklenir; süre hakemi başlattıysa saniyesi de tutulur")})},"dt"),
+    e.jsxs("div",{className:"hv-row",children:[e.jsxs("button",{type:"button",className:"hv-btn",disabled:!el.length,onClick:()=>{const n=el.slice(0,-1);setEl(n);setVal(n.length?String(r3(n.reduce((a2,y)=>a2+(+y.v),0))):"")},children:[MI("undo")," ",__T("Geri al")]}),e.jsxs("button",{type:"button",className:"hv-btn del",onClick:()=>{setEl([]);setVal("")},children:[MI("delete_sweep")," ",__T("Temizle")]})]},"db")]
+   :[e.jsx(Numpad,{val,set:v=>{setVal(v);setEl([])},max:30},"np")])]
+  :mode==="toplam"?[e.jsx("div",{className:"hv-qs",children:[.1,.2,.3,.4,.5].map(v=>e.jsx("button",{type:"button",className:"hv-q",onClick:()=>setVal(x=>String(r3((parseFloat(x)||0)+v))),children:"+"+v.toFixed(1)},v))},"q"),e.jsx(Numpad,{val,set:setVal,max:30},"np")]
    :[P==="DB"?e.jsx("div",{className:"hv-grp",children:DGRP.map(([k,t])=>e.jsx("button",{type:"button",className:grp===k?"on":"",onClick:()=>setGrp(k),children:__T(t)},k))},"g"):null,
-    e.jsx("div",{className:"hv-qs",children:vals.map(v=>e.jsx("button",{type:"button",className:"hv-q big",onClick:()=>{setEl(x=>[...x,{v,g:P==="DB"?grp:""}]);mode==="ikisi"&&setVal("")},children:v.toFixed(1)},v))},"v"),
+    e.jsx("div",{className:"hv-qs",children:vals.map(v=>e.jsx("button",{type:"button",className:"hv-q big",onClick:()=>{const it=TK(v,r.tPanel&&r.tPanel.sayac&&r.tPanel.sayac.basla);it.g=P==="DB"?grp:"";setEl(x=>[...x,it]);mode==="ikisi"&&setVal("")},children:v.toFixed(1)},v))},"v"),
     e.jsx("div",{className:"hv-tape",children:el.length?el.map((x,i)=>e.jsxs("span",{className:"hv-t",children:[e.jsx("small",{children:(x.g||"#")+(i+1)}),f2(x.v),e.jsx("button",{type:"button",onClick:()=>setEl(a=>a.filter((_,j)=>j!==i)),children:MI("close",{fontSize:16})})]},i)):e.jsx("span",{className:"hv-empty",children:__T("Değere dokundukça element eklenir")})},"t"),
     P==="DB"?e.jsxs("div",{className:"hv-subl",children:[e.jsxs("span",{children:[__T("Sıçrama")," ",e.jsx("b",{children:cnt.S})," · ",__T("Denge")," ",e.jsx("b",{children:cnt.D})," · ",__T("Dönüş")," ",e.jsx("b",{children:cnt.R})]}),cnt.S&&cnt.D&&cnt.R?e.jsx("span",{className:"hv-gap ok",children:"3 "+__T("grup")+" ✓"}):e.jsx("span",{className:"hv-gap w",children:__T("her gruptan en az 1")})]},"c"):null,
     e.jsxs("div",{className:"hv-row",children:[e.jsxs("button",{type:"button",className:"hv-btn",onClick:()=>setEl(a=>a.slice(0,-1)),children:[MI("undo")," ",__T("Geri al")]}),e.jsxs("button",{type:"button",className:"hv-btn del",onClick:()=>{setEl([]);setVal("")},children:[MI("delete_sweep")," ",__T("Temizle")]}),

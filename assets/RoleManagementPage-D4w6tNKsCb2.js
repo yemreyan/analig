@@ -30,6 +30,7 @@ const KATALOG=[
   {key:"yayin",label:"Yayın Overlay ve TV Verisi",icon:"cast",ekran:["Yayın Overlay","Yayın profilleri","TV veri linki"],actions:[A("goruntule","Görüntüle"),A("duzenle","Profil düzenle")]},
   {key:"certificates",label:"Sertifikalar",icon:"workspace_premium",ekran:["Sertifikalar"],actions:[A("goruntule","Görüntüle"),A("olustur","PDF oluştur")]},
   {key:"official_report",label:"Yarışma Raporu",icon:"description",ekran:["Yarışma Raporu"],actions:[A("goruntule","Görüntüle"),A("duzenle","Düzenle"),A("sil","Sil")]},
+  {key:"bayrak_ekrani",label:"Bayrak Ekranı",icon:"flag",ekran:["Bayrak Ekranı (marş sırasında projeksiyonda ülke bayrağı)"],actions:[A("goruntule","Görüntüle"),A("yonet","Ülke seç")]},
   {key:"gorsel_onay",label:"Görsel Onayları",icon:"add_a_photo",ekran:["Görsel Onayları (sporcu fotoğrafı onayı, QR yükleme linkleri)"],actions:[A("goruntule","Görüntüle"),A("onayla","Onayla / reddet")]},
   {key:"raporlar",label:"Raporlar",icon:"summarize",ekran:["Raporlar (resmi sonuçlar, madalya tablosu)"],actions:[A("goruntule","Görüntüle"),A("indir","PDF / Excel indir")]}]},
  {grup:"Rapor ve Denetim",ic:"fact_check",renk:"#0891B2",izinler:[

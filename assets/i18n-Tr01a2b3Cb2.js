@@ -58,7 +58,7 @@ function gizliMi(){
  const p=location.pathname;
  // bölünmüş ekranın bölmeleri (iframe): dil düğmesi üst sayfadadır
  try{if(window.self!==window.top)return!0}catch{return!0}
- return /\/scoreboard|\/split|\/overlay/.test(p);
+ return /\/scoreboard|\/split|\/overlay|\/flag-screen/.test(p);
 }
 function ciz(){
  if(gizliMi()||document.getElementById("tcf-lang-sw"))return;

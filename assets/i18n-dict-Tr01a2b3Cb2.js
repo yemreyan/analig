@@ -4726,6 +4726,27 @@ const DICT={
   "hazırlık": "preparation",
   "Bu gruba kategori seçilmedi — sporcu çağrıldığında bu gruptaki hakem ekranlarına veri gelmez.": "No category selected for this group — judge screens in this group will not receive athlete calls.",
   "Bu panele kategori atanmadı": "No category assigned to this panel",
-  "Sporcu çağrıları bu ekrana gelmez. Paneller sayfasında bu panelin grubuna kategori ekleyin; ekran kendiliğinden güncellenir.": "Athlete calls will not reach this screen. Add categories to this panel's group on the Panels page; the screen updates automatically."
+  "Sporcu çağrıları bu ekrana gelmez. Paneller sayfasında bu panelin grubuna kategori ekleyin; ekran kendiliğinden güncellenir.": "Athlete calls will not reach this screen. Add categories to this panel's group on the Panels page; the screen updates automatically.",
+  "Bu koltuğa hakem atanmadı": "No judge assigned to this seat",
+  "Paneller sayfasından hakem atayın; ad ve bayrak burada görünür.": "Assign a judge on the Panels page; the name and flag will appear here.",
+  "Bayrak Ekranı": "Flag Screen",
+  "Ulusal marş sırasında projeksiyonda tam ekran dalgalanan ülke bayrağı; ülkeyi buradan seç": "Full-screen waving national flag on the projector during the anthem; choose the country here",
+  "Ulusal marş sırasında projeksiyonda tam ekran ülke bayrağı": "Full-screen national flag on the projector during the anthem",
+  "Projeksiyon linki": "Projector link",
+  "Projeksiyon bilgisayarında açın, Tam ekran'a basın (ya da çift tıklayın).": "Open it on the projector computer and press Full screen (or double-click).",
+  "Ekranda şu an": "On screen now",
+  "TCF ve yarışma logosu": "TCF and competition logo",
+  "Logolara dön": "Back to logos",
+  "Yarışmadaki ülkeler": "Countries in this competition",
+  "Bu yarışmada ülke bilgisi olan sporcu yok.": "No athletes with a country in this competition.",
+  "Başka ülke ara (ad ya da kod)…": "Search another country (name or code)…",
+  "Bayrak gösterilecek yarışmayı seçin.": "Select the competition for the flag screen.",
+  "EKRANDA": "ON SCREEN",
+  "Tam ekran": "Full screen",
+  "Yarışma seçilmedi": "No competition selected",
+  "Tuşlarla": "Buttons",
+  "Doğrudan yaz": "Type directly",
+  "Tuşa her basış buraya eklenir; süre hakemi başlattıysa saniyesi de tutulur": "Each press is added here; if the time judge started the clock, its second is recorded",
+  "Toplam kesintiyi yaz:": "Type the total deduction:"
 };
 export{DICT};

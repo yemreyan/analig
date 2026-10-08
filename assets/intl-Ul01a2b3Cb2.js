@@ -56,6 +56,9 @@ export const ulkeAd=(k,dil)=>{const u=BY[k];return u?(dil==="tr"?u.tr:u.en):k||"
 export const isIntl=c=>!!c&&(c.tur==="uluslararasi"||c.uluslararasi===!0);
 // Sporcunun ülkesi: kayıttaki ulke alanı → (yalnız uluslararası yarışmada) varsayılan TUR
 export const sporcuUlke=(a,comp)=>{const k=ulkeKod(a?.ulke)||ulkeKod(a?.country)||ulkeKod(a?.noc);return k||(isIntl(comp)?"TUR":null)};
+// Takım adı (2026-10-08): uluslararası yarışmada ülke içinde birden fazla takım olabilir ("TUR Team 1", "TUR Team 2") — karışmasın.
+// takim alanı ya da kulüp/okul metnindeki "Team N" / "Takım N" kullanılır; yoksa yalnız ülke kodu.
+export const takimAdi=(a,comp)=>{const u=sporcuUlke(a,comp);if(!u)return"";const ham=String(a&&a.takim||"").trim()||((String(a&&(a.kulup||a.okul)||"").match(/\b(team|tak[ıi]m)\s*\d+\b/i)||[])[0]||"");if(!ham)return u;const n=(ham.match(/\d+/)||[""])[0];return n?u+" Team "+n:u+" "+ham};
 export const bayrakUrl=k=>{const u=BY[k];return u&&u.iso!=="un"?`https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/${u.iso}.svg`:null};
 // Ekranda bayrak + kod (React jsx fonksiyonu e ile)
 export function UlkeEtiket(e,k,o){if(!k)return null;const u=bayrakUrl(k),s=o?.boy||14;return e.jsxs("span",{className:"gx-ulke",title:ulkeAd(k,o?.dil),style:{display:"inline-flex",alignItems:"center",gap:5,fontWeight:800,letterSpacing:".04em",whiteSpace:"nowrap",...(o?.style||{})},children:[u?e.jsx("img",{src:u,alt:"",loading:"lazy",style:{width:Math.round(s*4/3),height:s,borderRadius:2,objectFit:"cover",boxShadow:"0 0 0 1px rgba(0,0,0,.12)",flexShrink:0}}):null,k]})}
