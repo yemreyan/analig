@@ -521,3 +521,17 @@ html.rtm-koyu .rtm-akis-al--tamamlandi,html.rtm-koyu .rtm-akis-al--kilitli{backg
 .rtm-sure-t--on{background:#DCFCE7;color:#166534}
 .rtm-sure-t--on b{animation:rtmSureNb 1s infinite}
 @keyframes rtmSureNb{50%{opacity:.55}}
+
+/* 2026-10-08 kullanıcı: DA / DB / A / E / Ceza alanları birbirinden net ayrılsın (klasik düzendeki gibi) — her bölüm kendi rengiyle çerçeve, sol şerit, renkli başlık bandı */
+.rtm-card:has(.rtm-card-label--da){--sec:#DB2777}
+.rtm-card:has(.rtm-card-label--db){--sec:#EA580C}
+.rtm-card:has(.rtm-card-label--a){--sec:#4F46E5}
+.rtm-card:has(.rtm-card-label--e){--sec:#16A34A}
+.rtm-card:has(.rtm-card-label--ded){--sec:#DC2626}
+.rtm-card:has(.rtm-card-label){border:2px solid color-mix(in srgb,var(--sec) 40%,#E5E7EB)!important;border-left:7px solid var(--sec)!important;border-radius:14px!important;box-shadow:0 2px 0 color-mix(in srgb,var(--sec) 12%,transparent),0 8px 20px -14px color-mix(in srgb,var(--sec) 60%,transparent)!important;margin-bottom:6px}
+.rtm-card:has(.rtm-card-label) .rtm-card-header{background:color-mix(in srgb,var(--sec) 11%,#fff)!important;border-bottom:2px solid color-mix(in srgb,var(--sec) 35%,#E5E7EB)!important}
+.rtm-card:has(.rtm-card-label) .rtm-card-title{color:var(--sec);font-weight:900;letter-spacing:.01em}
+.rtm-card .rtm-card-label--da,.rtm-card .rtm-card-label--db,.rtm-card .rtm-card-label--a,.rtm-card .rtm-card-label--e,.rtm-card .rtm-card-label--ded{background:var(--sec)!important;color:#fff!important}
+html.rtm-koyu .rtm-card:has(.rtm-card-label){border-color:color-mix(in srgb,var(--sec) 55%,#2b3442)!important;border-left-color:var(--sec)!important}
+html.rtm-koyu .rtm-card:has(.rtm-card-label) .rtm-card-header{background:color-mix(in srgb,var(--sec) 22%,#161b27)!important;border-bottom-color:color-mix(in srgb,var(--sec) 45%,#2b3442)!important}
+html.rtm-koyu .rtm-card:has(.rtm-card-label) .rtm-card-title{color:color-mix(in srgb,var(--sec) 55%,#fff)}
