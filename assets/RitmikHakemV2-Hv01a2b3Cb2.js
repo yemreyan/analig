@@ -26,7 +26,9 @@ export function V2Kapi(Old,kind){return function V2Gate(p){
  if(st.y===void 0)return e.jsx("div",{style:{minHeight:"100vh",background:"#0B0F19",color:"#8E9AB8",display:"grid",placeItems:"center",fontFamily:"system-ui,sans-serif",fontWeight:700},children:__T("Yükleniyor…")});
  return st.y?e.jsx(HakemV2,{kind:sjK?"sj":kind,yapi:st.y,grup:st.g}):e.jsx(Old,{...p})}}
 
-const CSS=`.hv2 .hv-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--card2);border:1px solid var(--line)}
+const CSS=`.hv2 .hv-fs{cursor:pointer;font:inherit;font-weight:800;border:1px solid color-mix(in srgb,var(--rc) 45%,var(--line));color:var(--tx);background:color-mix(in srgb,var(--rc) 14%,var(--card))}
+.hv2 .hv-fs:active{transform:scale(.97)}
+.hv2 .hv-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--card2);border:1px solid var(--line)}
 .hv2 .hv-seg button{border:0;border-radius:10px;padding:10px 8px;background:transparent;color:var(--mut);font:inherit;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .hv2 .hv-seg button.on{background:var(--rc);color:#fff;box-shadow:0 6px 16px -8px var(--rc)}
 .hv2 .hv-qs-d{grid-template-columns:repeat(3,1fr);gap:12px}
@@ -171,6 +173,10 @@ function HakemV2({kind,yapi,grup}){
   let son=-1;ad.forEach((x,i)=>{x.kat===cat&&(son=i)});const n=ad.slice(son+1).find(x=>x.kat!==cat&&izinK(x.kat,x.al));
   return n?{kat:n.kat,alet:n.al,kaynak:"oto"}:null})();
  R.useEffect(()=>{setSiraH(null);if(!sira)return;return onValue(ref(db,`${B}/${comp}/hakemler/${sira.kat}/${sira.alet}`),s=>{const v=s.val()||{},x=v[slot.toLowerCase()]||v[slot]||(kind==="t"?v.zaman:kind==="l"?v[lf]:null)||(tek?v[slot.toLowerCase()+"1"]||v[slot+"1"]:null);setSiraH(x&&typeof x==="object"?{ad:x.name||x.ad||"",ulke:x.ulke||""}:x?{ad:String(x),ulke:""}:null)})},[comp,sira&&sira.kat,sira&&sira.alet,slot]);
+ // tam ekran (2026-10-08): başlıkta "Bağlı"nın yanında; iPad Safari için webkit öneki
+ const _fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement,_fsVar=(()=>{try{return window.self===window.top}catch{return!1}})()&&!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen),[tamE,setTamE]=R.useState(()=>!!_fsEl());
+ R.useEffect(()=>{const f=()=>setTamE(!!_fsEl());document.addEventListener("fullscreenchange",f);document.addEventListener("webkitfullscreenchange",f);return()=>{document.removeEventListener("fullscreenchange",f);document.removeEventListener("webkitfullscreenchange",f)}},[]);
+ const tamDegis=()=>{try{if(_fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else{const d=document.documentElement;(d.requestFullscreen||d.webkitRequestFullscreen).call(d)}}catch{}};
  const kl=useHakemKilit({base:B,comp,lk,slot,kimlik:{ad:hAdG,ulke:hUl,bayrak:hBf},tetik:(ath?.id||"")+"|"+(ath?.alet||alet0||"")+"|"+(ath?.ts||"")});
 
  const r=rec||{},mine=kind==="t"?r.tPanel?.zaman:kind==="l"?r.lPanel?.[lf]:kind==="d"||sj?r[own]:r[pan]?.[jk],finV=kind==="d"?r[fin]:null,kilit=r.kilitli===!0,bhk=kind==="ae"&&r.lockedFields?.[`${pan}__${jk}`]===!0;
@@ -205,7 +211,7 @@ function HakemV2({kind,yapi,grup}){
  const kat=kats[cat]||{},katAd=kat.name||katAdi(cat),ulke=ath?.ulke||spr?.ulke||"",bib=ath?.bib||spr?.bib||"",bf=ulke?bayrakUrl(ulke):null,img=raImg(alet);
  const segm=e.jsx("div",{className:"hv-seg",children:[["tus","touch_app",__T("Tuşlarla")],["yaz","dialpad",__T("Doğrudan yaz")]].map(([k,ic,t])=>e.jsxs("button",{type:"button",className:girisM===k?"on":"",onClick:()=>{if(girisM===k)return;setGirisM(k);try{localStorage.setItem(_gk,k)}catch{}setTape([]);setEl([]);setVal("")},children:[MI(ic,{fontSize:18})," ",t]},k))});
  const header=e.jsxs("div",{className:"hv-h",children:[e.jsxs("div",{className:"hv-role",style:{display:"flex",alignItems:"center",gap:10},children:[e.jsx("div",{className:"hv-badge",children:slot||"?"}),e.jsxs("div",{children:[e.jsx("small",{children:title}),e.jsx("strong",{children:hAdG||grup?.ad||__T("Hakem paneli")})]})]}),e.jsx("div",{className:"hv-sp"}),hAdG&&grup?.ad?e.jsx("span",{className:"hv-pill",children:grup.ad}):null,kl.dugme,
-  e.jsxs("span",{className:"hv-pill",children:[e.jsx("span",{className:"dot"+(bagli?"":" off")}),bagli?__T("Bağlı"):__T("Bağlantı yok")]}),isim?e.jsxs("span",{className:"hv-pill",children:[MI("emoji_events",{fontSize:16}),isim]}):null]});
+  e.jsxs("span",{className:"hv-pill",children:[e.jsx("span",{className:"dot"+(bagli?"":" off")}),bagli?__T("Bağlı"):__T("Bağlantı yok")]}),_fsVar?e.jsxs("button",{type:"button",className:"hv-pill hv-fs",onClick:tamDegis,title:tamE?__T("Tam ekrandan çık"):__T("Tam ekran"),children:[MI(tamE?"fullscreen_exit":"fullscreen",{fontSize:18}),tamE?__T("Küçült"):__T("Tam ekran")]}):null,isim?e.jsxs("span",{className:"hv-pill",children:[MI("emoji_events",{fontSize:16}),isim]}):null]});
  const athKart=ath?e.jsxs("div",{className:"hv-card hv-ath",children:[img?e.jsx("div",{className:"hv-med",children:e.jsx("img",{src:img,alt:""})}):null,e.jsxs("div",{style:{minWidth:0},children:[e.jsxs("div",{className:"hv-nm",children:[ath.soyad?e.jsx("span",{children:ath.ad}):null,ath.soyad?String(ath.soyad).toLocaleUpperCase("tr-TR"):athAd||ath.okul||aid]}),
   e.jsxs("div",{className:"hv-chips",children:[bib?e.jsx("span",{className:"hv-chip bib",children:"BIB "+bib}):null,ulke?e.jsxs("span",{className:"hv-chip",children:[bf?e.jsx("img",{src:bf,alt:""}):null,ulke]}):ath.okul?e.jsx("span",{className:"hv-chip",children:ath.okul}):null,katAd?e.jsx("span",{className:"hv-chip",children:katAd}):null,alet?e.jsx("span",{className:"hv-chip",children:raAd(alet,EN())||alet}):null]})]})]}):null;
  const tam=(ic,baslik,metin,ek)=>e.jsxs("div",{className:"hv-full",children:[e.jsx("div",{className:"big"+(ic==="hourglass_top"?" hv-pulse":""),children:MI(ic)}),ek&&ek.ust,e.jsx("h2",{children:baslik}),metin?e.jsx("p",{children:metin}):null,ek&&ek.alt]});

@@ -4789,6 +4789,8 @@ const DICT={
   "Kategoriye hakem…": "Judge for category…",
   "Sporcu çağrılana kadar bu kategoriye yetkili hakem ekranları bu kategoriyi ve hakemini gösterir": "Until an athlete is called, judge screens for this category show this category and its judge",
   "Panellere gönderildi": "Sent to panels",
-  "Panelleri bu kategoriye geçir": "Switch panels to this category"
+  "Panelleri bu kategoriye geçir": "Switch panels to this category",
+  "Tam ekrandan çık": "Exit full screen",
+  "Küçült": "Exit full screen"
 };
 export{DICT};
