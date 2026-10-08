@@ -4616,6 +4616,14 @@ const DICT={
   "Eksik / yüklenmiş videolar": "Missing / uploaded videos",
   "İşlem Kaydı": "Audit Log",
   "Kim, ne zaman, neyi değiştirdi": "Who changed what, and when",
-  "Resmi sonuçlar, madalya tablosu ve diğer raporlar (PDF / Excel)": "Official results, medal table and other reports (PDF / Excel)"
+  "Resmi sonuçlar, madalya tablosu ve diğer raporlar (PDF / Excel)": "Official results, medal table and other reports (PDF / Excel)",
+  "Referans not": "Reference score",
+  "Üst Jüri (SJ), yoksa panel": "Superior jury (SJ), else panel",
+  "Final kategorilerindeki notlar da değerlendirilir": "Scores in final categories are evaluated too",
+  "En az not sayısı": "Minimum number of scores",
+  "hakem notu": "judge scores",
+  "Seçili yarışmalarda hakem notu bulunamadı.": "No judge scores found in the selected competitions.",
+  "pozisyonda hakem adı atanmamış; bu satırlar yarışma · pozisyon olarak gösterilir. Hakemleri Paneller sayfasından ya da FIG Hakem Karnesi › Hakem İsimleri'nden atayabilirsiniz.": "positions have no judge name assigned; these rows are shown as competition · position. Assign judges on the Panels page or in FIG Judge Report › Judge Names.",
+  "Üst jüri / panel notundan sapma, FIG puanı, D hakem farkları": "Deviation from superior jury / panel score, FIG score, D judge differences"
 };
 export{DICT};
