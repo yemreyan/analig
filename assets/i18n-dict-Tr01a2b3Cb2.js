@@ -4747,6 +4747,14 @@ const DICT={
   "Tuşlarla": "Buttons",
   "Doğrudan yaz": "Type directly",
   "Tuşa her basış buraya eklenir; süre hakemi başlattıysa saniyesi de tutulur": "Each press is added here; if the time judge started the clock, its second is recorded",
-  "Toplam kesintiyi yaz:": "Type the total deduction:"
+  "Toplam kesintiyi yaz:": "Type the total deduction:",
+  "Ödül töreni (madalya podyumu)": "Award ceremony (medal podium)",
+  "Başlık (ör. Senior — Hoop Final)": "Title (e.g. Senior — Hoop Final)",
+  "seçin": "select",
+  "Töreni ekrana gönder": "Show ceremony on screen",
+  "Tören": "Ceremony",
+  "Durdur (ekranı karart)": "Stop (black screen)",
+  "Devam et": "Resume",
+  "Ekran karartıldı": "Screen blacked out"
 };
 export{DICT};
