@@ -4624,6 +4624,20 @@ const DICT={
   "hakem notu": "judge scores",
   "Seçili yarışmalarda hakem notu bulunamadı.": "No judge scores found in the selected competitions.",
   "pozisyonda hakem adı atanmamış; bu satırlar yarışma · pozisyon olarak gösterilir. Hakemleri Paneller sayfasından ya da FIG Hakem Karnesi › Hakem İsimleri'nden atayabilirsiniz.": "positions have no judge name assigned; these rows are shown as competition · position. Assign judges on the Panels page or in FIG Judge Report › Judge Names.",
-  "Üst jüri / panel notundan sapma, FIG puanı, D hakem farkları": "Deviation from superior jury / panel score, FIG score, D judge differences"
+  "Üst jüri / panel notundan sapma, FIG puanı, D hakem farkları": "Deviation from superior jury / panel score, FIG score, D judge differences",
+  "Gösterilecek değişiklikler": "Changes to show",
+  "Hakemin kendi düzeltmeleri": "Judges' own corrections",
+  "Hakem notunu kaydetmeden önce değiştirdiyse (çok sayıda olabilir)": "When a judge changed a score before saving (can be many)",
+  "Final kategorilerindeki değişiklik ve itirazlar": "Changes and inquiries in final categories",
+  "İşlem kaydı yükleniyor…": "Loading audit log…",
+  "İtirazlar ve ücretler, başhakem düzeltmeleri, kilit açma, yeniden kaydedilen puanlar": "Inquiries and fees, chief judge corrections, unlocks, re-saved scores",
+  "Başhakem notu değiştirdi": "Chief judge changed score",
+  "Hakem yeniden girdi": "Judge re-entered",
+  "Başhakem hakem alanını değiştirdi": "Chief judge edited judge field",
+  "Başhakem boş hakem notunu girdi": "Chief judge entered missing score",
+  "Alan silindi": "Field cleared",
+  "Kilit kaldırıldı": "Unlocked",
+  "IRM (DNS/DNF/DSQ)": "IRM (DNS/DNF/DSQ)",
+  "Hakem kendi notunu düzeltti": "Judge corrected own score"
 };
 export{DICT};

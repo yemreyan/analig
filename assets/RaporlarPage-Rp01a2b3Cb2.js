@@ -96,13 +96,15 @@ const aeTol=ref=>ref<=1.2+1e-9?.399:.699;
 const trimmed=a=>{const s=[...a].sort((x,y)=>x-y);if(s.length>=4){const o=s.slice(1,s.length-1);return o.reduce((p,q)=>p+q,0)/o.length}return s.reduce((p,q)=>p+q,0)/s.length};
 const HKEY={T:"zaman",L1:"cizgi1",L2:"cizgi2",BH:"bashakem"},hkey=sl=>HKEY[sl]||String(sl).toLowerCase();
 const nrmAd=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/\s+/g," ").trim();
+function hakemKimi(C,k,al,poz){const bk=x=>String(x).replace(/^final_/,"").split("__")[0],gr=C.panelGruplari||{};
+ const h=C.hakemler?.[k]?.[al]?.[hkey(poz)]||C.hakemler?.[bk(k)]?.[al]?.[hkey(poz)];if(h&&(h.name||h.ad))return{ad:nrmAd(h.name||h.ad),ulke:h.ulke||"",refId:h.refId||null};
+ const g=Object.values(gr).find(g=>g&&Array.isArray(g.kategoriler)&&g.kategoriler.includes(bk(k))),gh=g&&g.hakemler&&g.hakemler[poz];if(gh&&gh.ad)return{ad:nrmAd(gh.ad),ulke:gh.ulke||gh.il||"",refId:gh.refId||null};
+ const a=C.hakemKarnesi?.atama?.[poz];if(a&&a.ad)return{ad:nrmAd(a.ad),ulke:a.kulup||"",refId:null};return null}
 function hakemAnaliz(C,opt){const kats=C.kategoriler||{},pun=C.puanlar||{},spor=C.sporcular||{},gr=C.panelGruplari||{},rows=[],ozel={},dfark=[];
  const bk=k=>String(k).replace(/^final_/,"").split("__")[0];
  const grupOf=k=>Object.values(gr).find(g=>g&&Array.isArray(g.kategoriler)&&g.kategoriler.includes(bk(k)))||null;
  const esikOf=k=>{const g=grupOf(k);return+(g&&g.yapi&&g.yapi.esik)||.3};
- const kimOf=(k,al,poz)=>{const h=C.hakemler?.[k]?.[al]?.[hkey(poz)]||C.hakemler?.[bk(k)]?.[al]?.[hkey(poz)];if(h&&(h.name||h.ad))return{ad:nrmAd(h.name||h.ad),ulke:h.ulke||"",refId:h.refId||null};
-  const g=grupOf(k),gh=g&&g.hakemler&&g.hakemler[poz];if(gh&&gh.ad)return{ad:nrmAd(gh.ad),ulke:gh.ulke||gh.il||"",refId:gh.refId||null};
-  const a=C.hakemKarnesi?.atama?.[poz];if(a&&a.ad)return{ad:nrmAd(a.ad),ulke:a.kulup||"",refId:null};return null};
+ const kimOf=(k,al,poz)=>hakemKimi(C,k,al,poz);
  Object.entries(pun).forEach(([cat,aths])=>{if(!kats[cat])return;const fin=isFin(kats,cat);if(fin&&!opt.hFin)return;if(opt.kats&&opt.kats.length&&!opt.kats.includes(bk(cat)))return;const grp=isGrp(kats,cat),katAd=katAdi(kats,cat);
   Object.entries(aths||{}).forEach(([aid,als])=>{Object.entries(als||{}).forEach(([al,sc])=>{if(!sc||typeof sc!=="object")return;if(!(sc.durum==="tamamlandi"||sc.sonuc!=null))return;
    const a=spor[cat]?.[aid],p=String(aid).split("::"),sp={ad:a?[a.ad,a.soyad].filter(Boolean).join(" "):(p.length>=3?p.slice(1,-1).join(" "):aid),ulke:a?(a.ulke||""):"",kulup:a?String(a.okul||a.kulup||"").trim():(p.length>=3?p.slice(1,-1).join("::"):""),il:a?(a.il||""):""};
@@ -130,12 +132,51 @@ function hakemOzet(rows){const M=new Map();
    if(ken.length&&dig.length){const sg=x=>x.panel==="A"||x.panel==="E"?-x.dev:x.dev;leh={n:ken.length,fark:ken.reduce((a,x)=>a+sg(x),0)/ken.length-dig.reduce((a,x)=>a+sg(x),0)/dig.length}}}
   return{...o,yar:o.yar.size,poz:[...o.poz].sort().join(", "),pan:[...o.pan].sort().join(", "),n,pct,grade:GRADE(pct,tip),ort,abs,mx,dis,leh}}).sort((a,b)=>{const O=x=>["DA","DB","A","E"].indexOf(x.pan.split(", ")[0]);return O(a)-O(b)||a.pan.localeCompare(b.pan)||b.pct-a.pct||a.ad.localeCompare(b.ad,"tr")})}
 
+
+// ---------------- NOT DEĞİŞİKLİKLERİ VE İTİRAZLAR ----------------
+// Kaynaklar: <yarışma>/itirazlar (ritmikItiraz), puanlar/<kat>/<sp>/<alet>/duzeltmeler (başhakem / geri gönderme / hakem yeniden girdi),
+// kök logs (competitionId): sj_field_override (başhakem hakem alanını değiştirdi / boş alanı girdi), score_field_cleared, score_unlock,
+// score_irm(_clear), judge_score_submit (hakem kendi notunu düzeltti), score_submitted (aynı rutin birden çok kayıt → sonuç değişimi).
+// score_correction / score_send_back logları yalnız duzeltmeler kaydı yoksa (eski kayıtlar) sayılır.
+const DG_TUR={bh_degistir:["Başhakem notu değiştirdi","#DB2777","Chief judge changed score"],geri_gonder:["Hakeme geri gönderildi","#7C3AED","Sent back to judge"],hakem_yeniden:["Hakem yeniden girdi","#0891B2","Judge re-entered"],bh_alan:["Başhakem hakem alanını değiştirdi","#E11D48","Chief judge edited judge field"],
+ bh_bos:["Başhakem boş hakem notunu girdi","#F59E0B","Chief judge entered missing score"],alan_sil:["Alan silindi","#64748B","Field cleared"],kilit:["Kilit kaldırıldı","#B45309","Unlocked"],irm:["IRM (DNS/DNF/DSQ)","#475569","IRM (DNS/DNF/DSQ)"],hakem_duzelt:["Hakem kendi notunu düzeltti","#0E7490","Judge corrected own score"]};
+const IT_TUR={DB:"DB",DA:"DA",ZAMAN:"Zaman",CIZGI:"Çizgi"},IT_DUR={beklemede:"İncelemede",kabul:"Kabul",red:"Red",iptal:"Geri çekildi"};
+const alanPoz=a=>{const s=String(a||"");let m=/^(a|e)Panel\.j(\d)$/i.exec(s);if(m)return m[1].toUpperCase()+m[2];m=/^(da|db)(\d)$/i.exec(s);if(m)return m[1].toUpperCase()+m[2];
+ m=/^sj(a|e|da|db)$/i.exec(s);if(m)return"SJ"+m[1].toUpperCase();if(/zaman/i.test(s))return"T";m=/cizgi(\d)/i.exec(s);if(m)return"L"+m[1];return s};
+function degisiklikHesapla(C,logs,opt){const kats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},ev=[],bk=k=>String(k).replace(/^final_/,"").split("__")[0];
+ const katOk=k=>k&&(!opt.kats||!opt.kats.length||opt.kats.includes(bk(k)))&&(opt.dFin||!isFin(kats,k));
+ const spAd=(k,id,yed)=>{const a=spor[k]?.[id];if(a)return[a.ad,a.soyad].filter(Boolean).join(" ");const p=String(id||"").split("::");return yed||(p.length>=3?p.slice(1,-1).join(" "):id||"")};
+ const spUlke=(k,id)=>{const a=spor[k]?.[id];return a?(a.ulke||a.okul||a.kulup||a.il||""):""};
+ const push=(o)=>{if(!katOk(o.kat))return;const poz=alanPoz(o.alan);ev.push({...o,C,katAd:katAdi(kats,o.kat),sp:spAd(o.kat,o.aid,o.sp),temsil:spUlke(o.kat,o.aid),poz,hakem:/^(A|E|DA|DB)\d$/.test(poz)?hakemKimi(C,o.kat,o.al,poz):null})};
+ // puan kayıtlarındaki düzeltmeler
+ Object.entries(pun).forEach(([k,aths])=>Object.entries(aths||{}).forEach(([id,als])=>Object.entries(als||{}).forEach(([al,rec])=>{const dz=rec&&typeof rec==="object"&&rec.duzeltmeler;if(!dz||typeof dz!=="object")return;
+  Object.values(dz).forEach(x=>{if(!x||typeof x!=="object")return;push({ts:+x.ts||0,kat:k,aid:id,al,tur:x.tip==="bashakem"?"bh_degistir":x.tip==="geri_gonder"?"geri_gonder":"hakem_yeniden",alan:x.alan||"",eski:x.eski,yeni:x.yeni,kim:x.kim||"",not:x.not||(x.istek?"istek üzerine":"")})})})));
+ // işlem kaydı
+ const sub={};
+ Object.values(logs||{}).forEach(v=>{if(!v||typeof v!=="object")return;const t=v.type,base={ts:+v.timestamp||0,kat:v.category,aid:v.athleteId,al:v.alet,sp:v.athleteName,kim:v.user||""};
+  if(t==="sj_field_override")push({...base,tur:v.oldValue!=null&&v.oldValue!==""?"bh_alan":"bh_bos",alan:v.field,eski:v.oldValue,yeni:v.newValue});
+  else if(t==="score_correction"||t==="score_send_back"){let d={};try{d=JSON.parse(v.data||"{}")}catch{}const tur=t==="score_correction"?"bh_degistir":"geri_gonder",al2=d.alan||"";
+   // duzeltmeler kaydı varsa (aynı rutin, alan, ±10 sn) sayılmaz
+   if(!ev.some(e=>e.tur===tur&&e.kat===base.kat&&e.aid===base.aid&&e.al===base.al&&e.alan===al2&&Math.abs(e.ts-base.ts)<1e4))push({...base,tur,alan:al2,eski:v.oldValue,yeni:t==="score_correction"?v.newValue:null,not:d.not||""})}
+  else if(t==="score_field_cleared")push({...base,tur:"alan_sil",alan:v.field,eski:v.oldValue,yeni:null});
+  else if(t==="score_unlock"){let b2=base;if(!b2.aid){const m=/\]\s*(\S+)\s+(\S+)\s*$/.exec(String(v.message||v.mesaj||""));if(m){b2={...b2,aid:m[1],al:m[2]};if(!b2.kat){const k=Object.keys(pun).find(k=>pun[k]&&pun[k][m[1]]&&pun[k][m[1]][m[2]]);b2.kat=k}}}
+   let not="";try{const d=JSON.parse(v.data||"{}");not=d.yetki?"yetki: "+d.yetki:""}catch{}push({...b2,tur:"kilit",alan:"",eski:null,yeni:null,not})}
+  else if(t==="score_irm"||t==="score_irm_clear"){let d={};try{d=JSON.parse(v.data||"{}")}catch{}push({...base,tur:"irm",alan:"",eski:t==="score_irm_clear"?(d.irm||v.oldValue||"IRM"):null,yeni:t==="score_irm"?(d.irm||v.newValue||"IRM"):null,not:d.neden||d.irmNeden||""})}
+  else if(t==="judge_score_submit"&&opt.dHakem&&v.oldValue!=null&&v.oldValue!==""&&String(v.oldValue)!==String(v.newValue))push({...base,tur:"hakem_duzelt",alan:v.field,eski:v.oldValue,yeni:v.newValue});
+  else if(t==="score_submitted"){let so=null;try{so=JSON.parse(v.data||"{}").sonuc}catch{}const key=v.category+"|"+v.athleteId+"|"+v.alet;(sub[key]||(sub[key]=[])).push({ts:base.ts,so,kim:v.user||""})}});
+ const tekrar=Object.entries(sub).filter(([,l])=>l.length>1).map(([key,l])=>{l.sort((a,b)=>a.ts-b.ts);const[k,id,al]=key.split("|");const u=l.filter(x=>x.so!=null);
+  return{C,kat:k,katAd:katAdi(kats,k),aid:id,al,sp:spAd(k,id),temsil:spUlke(k,id),n:l.length,ilk:u.length?u[0].so:null,son:u.length?u[u.length-1].so:null,ts1:l[0].ts,ts2:l[l.length-1].ts,kilit:ev.filter(e=>e.tur==="kilit"&&e.kat===k&&e.aid===id&&e.al===al).length}})
+  .filter(x=>katOk(x.kat)).sort((a,b)=>Math.abs((b.son??0)-(b.ilk??0))-Math.abs((a.son??0)-(a.ilk??0))||b.n-a.n);
+ // itirazlar
+ const it=Object.entries(C.itirazlar||{}).map(([id,x])=>({id,...x,C,katAd:katAdi(kats,x.kategori),temsil:spUlke(x.kategori,x.sporcuId)||x.kulup||x.il||""})).filter(x=>katOk(x.kategori)).sort((a,b)=>(+a.talepZamani||0)-(+b.talepZamani||0));
+ return{ev:ev.filter(e=>opt.dTur.includes(e.tur)).sort((a,b)=>a.ts-b.ts),tumEv:ev,tekrar,it}}
+
 // ---------------- SAYFA ----------------
 const RAPORLAR=[
  {id:"sonuc",ic:"format_list_numbered",t:"Resmi Sonuçlar",d:"Genel tasnif, alet, takım ve final sonuçları — PDF / Excel"},
  {id:"madalya",ic:"military_tech",t:"Madalya Tablosu",d:"Ülke, kulüp ya da il bazında; birden çok yarışmanın toplamı"},
  {id:"hakem",ic:"balance",t:"Hakem Sapma Analizi",d:"Üst jüri / panel notundan sapma, FIG puanı, D hakem farkları"},
- {id:"itiraz",ic:"gavel",t:"Not Değişikliği ve İtirazlar",d:"Başhakem düzeltmeleri, itiraz kararları",yakinda:!0},
+ {id:"itiraz",ic:"gavel",t:"Not Değişikliği ve İtirazlar",d:"İtirazlar ve ücretler, başhakem düzeltmeleri, kilit açma, yeniden kaydedilen puanlar"},
  {id:"zaman",ic:"schedule",t:"Zaman Çizelgesi",d:"Planlanan / gerçekleşen, rotasyon süreleri",yakinda:!0},
  {id:"sporcu",ic:"trending_up",t:"Sporcu Karşılaştırma",d:"Yarışmalar arası performans",yakinda:!0},
  {id:"katilim",ic:"groups",t:"Katılım İstatistikleri",d:"Kulüp, il ve ülke katılımı",yakinda:!0},
@@ -146,7 +187,7 @@ function Raporlar(){
  const{toast}=usToast();usInit();const{currentUser:U}=usAuth()||{};const kim=U?.adSoyad||U?.kullaniciAdi||"";
  const[liste,setListe]=R.useState(null),[secili,setSecili]=R.useState([]),[ara,setAra]=R.useState(""),[arsiv,setArsiv]=R.useState(!0),
        [rapor,setRapor]=R.useState("sonuc"),[veri,setVeri]=R.useState({}),[yuk,setYuk]=R.useState(!1),[busy,setBusy]=R.useState(""),
-       [opt,setOpt]=R.useState({genel:!0,alet:!0,takim:!1,final:!0,kats:[],dil:"oto",grup:"oto",mGenel:!0,mAlet:!0,mAletElem:!1,mTakim:!0,mSira:"altin",hRef:"sj",hFin:!0,hPanel:["DA","DB","A","E"],hMin:1});
+       [opt,setOpt]=R.useState({genel:!0,alet:!0,takim:!1,final:!0,kats:[],dil:"oto",grup:"oto",mGenel:!0,mAlet:!0,mAletElem:!1,mTakim:!0,mSira:"altin",hRef:"sj",hFin:!0,hPanel:["DA","DB","A","E"],hMin:1,dFin:!0,dHakem:!1,dTur:["bh_degistir","geri_gonder","hakem_yeniden","bh_alan","bh_bos","alan_sil","kilit","irm","hakem_duzelt"]});
  const so=(k,v)=>setOpt(o=>({...o,[k]:v}));
  // yarışma listesi: yalnız başlık alanları (shallow + alan okuma) — kullanıcının yarışma / il kısıtına uyar
  R.useEffect(()=>{(async()=>{try{const B="https://analig-default-rtdb.firebaseio.com/"+BASE,ks=Object.keys(await(await fetch(B+".json?shallow=true")).json()||{});
@@ -157,6 +198,11 @@ function Raporlar(){
  // seçilen yarışmaların tam verisi
  R.useEffect(()=>{const eksik=secili.filter(k=>!veri[k]);if(!eksik.length)return;setYuk(!0);
   Promise.all(eksik.map(async k=>[k,{...((await get(ref(db,BASE+"/"+k))).val()||{}),_id:k}])).then(L=>setVeri(v=>{const n={...v};L.forEach(([k,c])=>n[k]=c);return n})).catch(()=>toast(__T("Hata oluştu."),"error")).finally(()=>setYuk(!1))},[secili]);
+ // işlem kaydı (yalnız bu rapor için, yarışma başına bir kez; sunucu tarafı süzme)
+ const[logV,setLogV]=R.useState({}),[logYuk,setLogYuk]=R.useState(!1);
+ R.useEffect(()=>{if(rapor!=="itiraz")return;const eksik=secili.filter(k=>logV[k]===void 0);if(!eksik.length)return;setLogYuk(!0);
+  Promise.all(eksik.map(async k=>{try{const r0=await fetch("https://analig-default-rtdb.firebaseio.com/logs.json?orderBy=%22competitionId%22&equalTo="+encodeURIComponent(JSON.stringify(k)));return[k,r0.ok?(await r0.json())||{}:{}]}catch{return[k,{}]}}))
+   .then(L=>setLogV(v=>{const n={...v};L.forEach(([k,x])=>n[k]=x);return n})).finally(()=>setLogYuk(!1))},[secili,rapor]);
  const comps=secili.map(k=>veri[k]).filter(Boolean);
  const intlHepsi=comps.length&&comps.every(isIntl);
  const EN=opt.dil==="en"||(opt.dil==="oto"&&comps.length>0&&comps.every(c=>isIntl(c)&&c.ciktiDili!=="tr"));
@@ -170,6 +216,14 @@ function Raporlar(){
   const hk=hakemOzet(rows).filter(h=>h.n>=(opt.hMin||1)),buyuk=[...rows].sort((a,b)=>Math.abs(b.dev)-Math.abs(a.dev)).slice(0,40);
   const dOz=["DA","DB"].filter(P=>opt.hPanel.includes(P)).map(P=>{const L=dfark.filter(x=>x.panel===P),n=L.length;return{P,n,ort:n?L.reduce((a,x)=>a+x.g,0)/n:0,asti:L.filter(x=>x.asti).length,mx:n?Math.max(...L.map(x=>x.g)):0}});
   return{rows,hk,pan,buyuk,dfark:[...dfark].sort((a,b)=>b.g-a.g),dOz,isimsiz:hk.filter(h=>!h.isimli).length}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt)]);
+ const degis=R.useMemo(()=>{if(rapor!=="itiraz")return null;const all=comps.map(C=>({C,...degisiklikHesapla(C,logV[C._id]||{},opt)}));
+  const it=all.flatMap(x=>x.it),ev=all.flatMap(x=>x.ev),tekrar=all.flatMap(x=>x.tekrar);
+  const ozet=all.map(x=>{const say=t=>x.tumEv.filter(e=>e.tur===t).length,its=x.it,D=its.filter(i=>i.tur==="DA"||i.tur==="DB");
+   return{C:x.C,it:its.length,kabul:its.filter(i=>i.durum==="kabul").length,red:its.filter(i=>i.durum==="red").length,iptal:its.filter(i=>i.durum==="iptal").length,bek:its.filter(i=>i.durum==="beklemede").length,
+    tahsil:D.filter(i=>i.durum==="red").reduce((a,i)=>a+(+i.ucret||0),0),iade:D.filter(i=>i.durum==="kabul").reduce((a,i)=>a+(+i.ucret||0),0),pb:(its.find(i=>i.paraBirimi)||{}).paraBirimi||"CHF",
+    sure:its.filter(i=>i.sureIcinde===!1).length,tur:Object.fromEntries(Object.keys(DG_TUR).map(t=>[t,say(t)])),tekrar:x.tekrar.length,sonucDeg:x.tekrar.filter(t=>t.ilk!=null&&t.son!=null&&Math.abs(t.son-t.ilk)>1e-6).length,logVar:logV[x.C._id]!==void 0}});
+  const kul={};it.forEach(i=>{const k=(i.C._id)+"|"+(i.temsil||"—"),o=kul[k]||(kul[k]={C:i.C,ad:i.temsil||"—",n:0,kabul:0,red:0,bek:0,tahsil:0,iade:0,pb:i.paraBirimi||"CHF"});o.n++;i.durum==="kabul"?(o.kabul++,o.iade+=+i.ucret||0):i.durum==="red"?(o.red++,o.tahsil+=+i.ucret||0):i.durum==="beklemede"&&o.bek++});
+  return{it,ev,tekrar,ozet,kul:Object.values(kul).sort((a,b)=>b.n-a.n||a.ad.localeCompare(b.ad,"tr"))}},[comps.map(c=>c._id).join(),rapor,JSON.stringify(opt),logV]);
  const madalya=R.useMemo(()=>rapor==="madalya"?madalyaHesapla(sonuc,{...opt,grup}):[],[sonuc,rapor,grup]);
 
  // ---- dil yardımcıları (çıktı) ----
@@ -197,10 +251,26 @@ function Raporlar(){
  const bRow=r=>[r.kim?r.kim.ad:"—",r.poz,...(comps.length>1?[String(r.C.isim).slice(0,26)]:[]),kA(r.katAd),spAd(r),aA(r.al),f2(r.val),f2(r.ref)+" "+(r.refKaynak==="SJ"?"SJ":r.refKaynak==="Ortak"?L("ortak","common"):L("panel","panel")),sg(r.dev),f2(r.tol)];
  const dCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("HAKEMLER","JUDGES"),L("NOTLAR","SCORES"),L("FARK","DIFF."),L("EŞİK","THRESHOLD")];
  const dRow=x=>[...(comps.length>1?[String(x.C.isim).slice(0,26)]:[]),kA(x.katAd),spAd(x),aA(x.al),x.c,f2(x.u)+" / "+f2(x.w),f2(x.g),f2(x.esik)];
+ // ---- değişiklik / itiraz yardımcıları ----
+ const zm=t=>t?new Date(+t).toLocaleString(EN?"en-GB":"tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+ const dv=v=>v==null||v===""?"—":isNaN(v)?String(v):Number(v).toFixed(String(v).includes(".")&&String(v).split(".")[1].length>2?3:2);
+ const TA=t=>DG_TUR[t]?L(DG_TUR[t][0],DG_TUR[t][2]):t,TAui=t=>__T(DG_TUR[t]?.[0]||t);
+ const itCols=()=>[L("TALEP","REQUEST"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("TEMSİL","NOC / CLUB"),L("ALET","APP."),L("TÜR","TYPE"),L("SÜRE","TIME"),L("DEĞER","VALUE"),L("SONUÇ","RESULT"),L("ÜCRET","FEE"),L("KARAR","DECISION"),L("KARAR VEREN","DECIDED BY")];
+ const itRow=i=>[zm(i.talepZamani),...(comps.length>1?[String(i.C.isim).slice(0,24)]:[]),kA(i.katAd),i.sporcuAd||"",i.temsil||"",i.alet?aA(i.alet):(i.aletAd||""),IT_TUR[i.tur]||i.tur||"",(i.gecenSn!=null?i.gecenSn+" "+L("sn","s"):"—")+(i.sureIcinde===!1?" ⚠":""),
+  dv(i.eskiDeger)+(i.durum==="kabul"&&i.yeniDeger!=null?" → "+dv(i.yeniDeger):""),f3(i.eskiSonuc)+(i.durum==="kabul"&&i.yeniSonuc!=null?" → "+f3(i.yeniSonuc):""),(+i.ucret?i.ucret+" "+(i.paraBirimi||"CHF")+" ("+i.ucretKademe+".)":L("ücretsiz","free")),
+  L(IT_DUR[i.durum]||i.durum||"",({beklemede:"Pending",kabul:"Accepted",red:"Rejected",iptal:"Withdrawn"})[i.durum]||i.durum||""),(i.kararVeren||"")+(i.kararZamani&&i.talepZamani?" · "+Math.round((i.kararZamani-i.talepZamani)/1e3)+L(" sn"," s"):"")];
+ const evCols=()=>[L("ZAMAN","TIME"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("İŞLEM","ACTION"),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("ALAN","FIELD"),L("HAKEM","JUDGE"),L("ESKİ","OLD"),L("YENİ","NEW"),L("FARK","DIFF."),L("YAPAN","BY"),L("NOT","NOTE")];
+ const evRow=x=>{const a=parseFloat(x.eski),b=parseFloat(x.yeni);return[zm(x.ts),...(comps.length>1?[String(x.C.isim).slice(0,24)]:[]),TA(x.tur),kA(x.katAd),x.sp||"",x.al?aA(x.al):"",x.poz||"",x.hakem?x.hakem.ad:"",dv(x.eski),dv(x.yeni),!isNaN(a)&&!isNaN(b)?sg(b-a):"",x.kim||"",x.not||""]};
+ const tkCols=()=>[...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("TEMSİL","NOC / CLUB"),L("ALET","APP."),L("KAYIT","SAVES"),L("KİLİT AÇMA","UNLOCKS"),L("İLK SONUÇ","FIRST"),L("SON SONUÇ","LAST"),L("FARK","DIFF."),L("İLK / SON KAYIT","FIRST / LAST SAVE")];
+ const tkRow=t=>[...(comps.length>1?[String(t.C.isim).slice(0,24)]:[]),kA(t.katAd),t.sp,t.temsil,aA(t.al),String(t.n),String(t.kilit),f3(t.ilk),f3(t.son),t.ilk!=null&&t.son!=null?(Math.abs(t.son-t.ilk)<1e-6?"±0.000":(t.son>t.ilk?"+":"−")+Math.abs(t.son-t.ilk).toFixed(3)):"",zm(t.ts1)+" / "+zm(t.ts2)];
+ const ozCols=()=>[L("YARIŞMA","COMPETITION"),L("İTİRAZ","INQUIRIES"),L("KABUL","ACCEPTED"),L("RED","REJECTED"),L("GERİ ÇEKİLEN","WITHDRAWN"),L("BEKLEYEN","PENDING"),L("SÜRE SONRASI","LATE"),L("ÜCRET TAHSİL","FEES KEPT"),L("ÜCRET İADE","FEES REFUNDED"),L("YENİDEN KAYIT","RE-SAVED"),L("SONUCU DEĞİŞEN","RESULT CHANGED")];
+ const ozRow=o=>[o.C.isim,String(o.it),String(o.kabul),String(o.red),String(o.iptal),String(o.bek),String(o.sure),o.tahsil+" "+o.pb,o.iade+" "+o.pb,String(o.tekrar),String(o.sonucDeg)];
+ const turCols=()=>[L("YARIŞMA","COMPETITION"),...Object.keys(DG_TUR).filter(t=>t!=="hakem_duzelt"||opt.dHakem).map(t=>TA(t))];
+ const turRow=o=>[o.C.isim,...Object.keys(DG_TUR).filter(t=>t!=="hakem_duzelt"||opt.dHakem).map(t=>String(o.tur[t]||0))];
  // ---- PDF ----
  const pdfAl=async()=>{if(busy||!comps.length)return;setBusy("pdf");toast(__T("PDF hazırlanıyor…"),"info");
   try{const jsPDF=await import("./jspdf.es.min-gArCfqm1Cb2.js").then(z=>z.j?.jsPDF||z.E),atM=await import("./jspdf.plugin.autotable-KFqWVtFsCb2.js"),at=atM.default||atM;
-   const yatay=rapor==="hakem"||rapor==="sonuc"&&sonuc.some(x=>x.bol.some(b=>(b.tip==="aa"||b.tip==="final_aa")&&b.aletler.length>4)),d=new jsPDF(yatay?"landscape":"portrait","mm","a4");
+   const yatay=rapor==="hakem"||rapor==="itiraz"||rapor==="sonuc"&&sonuc.some(x=>x.bol.some(b=>(b.tip==="aa"||b.tip==="final_aa")&&b.aletler.length>4)),d=new jsPDF(yatay?"landscape":"portrait","mm","a4");
    let FT="helvetica";try{const{R:r0,B:b0}=await import("./fontTR-Fn01a2b3Cb2.js");d.addFileToVFS("Roboto.ttf",r0);d.addFont("Roboto.ttf","Roboto","normal");d.addFileToVFS("Roboto-Bold.ttf",b0);d.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto"}catch{}
    const img=async u=>{try{const b=await(await fetch(u)).blob();const du=await new Promise(K=>{const O=new FileReader;O.onloadend=()=>K(O.result);O.readAsDataURL(b)});const im=new Image;await new Promise(r=>{im.onload=r;im.onerror=r;im.src=du});return im.naturalWidth?{d:du,r:im.naturalWidth/im.naturalHeight}:null}catch{return null}};
    const tcf=await img("/logo.png"),W=yatay?297:210,H=yatay?210:297,M=12,P1=[236,72,153],P2=[139,92,246],INK=[15,23,42],MUT=[100,116,139];
@@ -234,6 +304,19 @@ function Raporlar(){
       const cs={0:{cellWidth:11,halign:"center",fontStyle:"bold"},[uc]:ic?{cellWidth:19,cellPadding:{top:1.5,bottom:1.5,left:8,right:1}}:{cellWidth:32,fontSize:7.2}};cols.forEach((c,i)=>{cs[uc+1+i]={halign:"right",cellWidth:c.t?18:14,fontStyle:c.t?"bold":"normal"}});
       tablo(head,body,{columnStyles:cs,parse:z=>{const r=b.rows[z.row.index];if(r&&r.rank>=1&&r.rank<=3&&z.column.index===0)z.cell.styles.textColor=r.rank===1?[180,130,0]:r.rank===2?[100,116,139]:[180,90,30];if(z.column.index>uc)z.cell.styles.fontSize=7.6},
        didDrawCell:z=>{if(ic&&z.section==="body"&&z.column.index===uc)bayrakCiz(z,b.rows[z.row.index]?.ulke)}})}}
+   }else if(rapor==="itiraz"){const G0=degis;
+    await ust(comps.length===1?comps[0]:null,L("NOT DEĞİŞİKLİKLERİ VE İTİRAZLAR","SCORE CHANGES AND INQUIRIES"));
+    bolumBas(L("Özet","Summary"));tablo(ozCols(),G0.ozet.map(ozRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:62}}});
+    tablo(turCols(),G0.ozet.map(turRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:62}},headStyles:{fontStyle:"bold",fontSize:6.2,textColor:[255,255,255],fillColor:P2}});
+    bolumBas(L("İtirazlar","Inquiries")+" ("+G0.it.length+")");
+    if(G0.it.length){tablo(itCols(),G0.it.map(itRow),{styles:{font:FT,fontSize:7.2,cellPadding:{top:1.3,bottom:1.3,left:1.6,right:1.6},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},parse:z=>{const i=G0.it[z.row.index];if(i&&z.column.index===itCols().length-2){z.cell.styles.fontStyle="bold";z.cell.styles.textColor=i.durum==="kabul"?[21,128,61]:i.durum==="red"?[185,28,28]:[100,116,139]}}});
+     bolumBas(L("İtiraz ücretleri — temsilci bazında","Inquiry fees — by NOC / club"));
+     tablo([...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("TEMSİL","NOC / CLUB"),L("İTİRAZ","INQUIRIES"),L("KABUL","ACCEPTED"),L("RED","REJECTED"),L("BEKLEYEN","PENDING"),L("TAHSİL","KEPT"),L("İADE","REFUNDED")],G0.kul.map(k=>[...(comps.length>1?[String(k.C.isim).slice(0,30)]:[]),k.ad,String(k.n),String(k.kabul),String(k.red),String(k.bek),k.tahsil+" "+k.pb,k.iade+" "+k.pb]),{})}
+    else{d.setFont(FT,"normal");d.setFontSize(8.5);d.setTextColor(...MUT);d.text(L("İtiraz kaydı yok.","No inquiries."),M,y);y+=8}
+    if(G0.tekrar.length){bolumBas(L("Birden çok kaydedilen puanlar","Scores saved more than once")+" ("+G0.tekrar.length+")");tablo(tkCols(),G0.tekrar.map(tkRow),{parse:z=>{const t=G0.tekrar[z.row.index];if(t&&z.column.index===tkCols().length-2&&t.ilk!=null&&t.son!=null&&Math.abs(t.son-t.ilk)>1e-6){z.cell.styles.textColor=[185,28,28];z.cell.styles.fontStyle="bold"}}})}
+    bolumBas(L("Not değişiklikleri","Score changes")+" ("+G0.ev.length+")");
+    if(G0.ev.length)tablo(evCols(),G0.ev.map(evRow),{styles:{font:FT,fontSize:6.8,cellPadding:{top:1.1,bottom:1.1,left:1.5,right:1.5},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},parse:z=>{const x=G0.ev[z.row.index];if(x&&z.column.index===(comps.length>1?2:1)){const c=DG_TUR[x.tur]?.[1];if(c){z.cell.styles.textColor=c.match(/\w\w/g).map(h=>parseInt(h,16));z.cell.styles.fontStyle="bold"}}}});
+    else{d.setFont(FT,"normal");d.setFontSize(8.5);d.setTextColor(...MUT);d.text(L("Seçili türlerde değişiklik yok.","No changes of the selected types."),M,y);y+=8}
    }else if(rapor==="hakem"){const H0=hakem;
     await ust(comps.length===1?comps[0]:null,L("HAKEM SAPMA ANALİZİ","JUDGE DEVIATION ANALYSIS"));
     d.setFont(FT,"normal");d.setFontSize(7.5);d.setTextColor(...MUT);
@@ -265,7 +348,7 @@ function Raporlar(){
      tablo([L("YARIŞMA / ETKİNLİK","EVENT"),L("ALTIN","GOLD"),L("GÜMÜŞ","SILVER"),L("BRONZ","BRONZE")],body,{columnStyles:{0:{cellWidth:62,fontStyle:"bold",fontSize:7.4},1:{fontSize:7.4},2:{fontSize:7.4},3:{fontSize:7.4}}})}}
    alt();
    const ad=(comps.length===1?comps[0].isim:L("Raporlar","Reports")).replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60);
-   d.save(ad+"_"+(rapor==="sonuc"?L("Resmi_Sonuclar","Official_Results"):rapor==="hakem"?L("Hakem_Sapma_Analizi","Judge_Deviation"):L("Madalya_Tablosu","Medal_Table"))+".pdf");toast(__T("PDF indirildi ✓"),"success");
+   d.save(ad+"_"+(rapor==="sonuc"?L("Resmi_Sonuclar","Official_Results"):rapor==="hakem"?L("Hakem_Sapma_Analizi","Judge_Deviation"):rapor==="itiraz"?L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"):L("Madalya_Tablosu","Medal_Table"))+".pdf");toast(__T("PDF indirildi ✓"),"success");
    try{logAction("report_export",`[Ritmik] Rapor PDF: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:"ritmik"})}catch{}}
   catch(er){console.error(er);toast(__T("PDF oluşturulamadı: ")+(er?.message||er),"error")}setBusy("")};
 
@@ -279,6 +362,13 @@ function Raporlar(){
       b.rows.forEach(r=>aoa.push([r.rank??"",...(HB?[r.bib||""]:[]),b.tip==="takim"?r.ad:satirAd(r),...(b.tip==="takim"?[(r.uyeler||[]).join(", ")]:[]),ic?(r.ulke||""):(r.takim?(r.il&&UP(r.il)!==UP(r.ad)?r.il:""):r.kulup||r.il||""),...(ic?[r.kulup||""]:[]),...cols.map(c=>{const v=c.f(r);return/^−?\d+\.\d{3}$/.test(v)?Number(v.replace("−","-")):v})]));
       const ws=X.utils.aoa_to_sheet(aoa),bas=aoa[3].length-cols.length;Object.keys(ws).forEach(a=>{if(a[0]==="!")return;const c=X.utils.decode_cell(a);if(c.r>3&&c.c>=bas&&ws[a].t==="n")ws[a].z="0.000"});ws["!cols"]=aoa[3].map((h,i)=>({wch:i===0?6:String(h).length>8?Math.max(12,String(h).length+2):i<=2+(HB?1:0)?28:10}));
       X.utils.book_append_sheet(wb,ws,sayfaAd((tek?"":String(C.isim).slice(0,8)+" ")+bolBaslik(b).replace(" — "," ")))})})}
+   else if(rapor==="itiraz"){const G0=degis,ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=w.map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))};
+    ek(L("Özet","Summary"),[[L("Not Değişiklikleri ve İtirazlar","Score Changes and Inquiries")],[],ozCols(),...G0.ozet.map(ozRow),[],turCols(),...G0.ozet.map(turRow)],[36,10,10,10,12,10,12,14,14,12,14]);
+    ek(L("İtirazlar","Inquiries"),[[L("Talep","Request"),L("Yarışma","Comp."),L("Kategori","Category"),L("Sporcu","Gymnast"),L("Temsil","NOC / Club"),L("Alet","App."),L("Tür","Type"),L("Geçen sn","Elapsed s"),L("Süre içinde","In time"),L("Eski değer","Old value"),L("Yeni değer","New value"),L("Eski sonuç","Old result"),L("Yeni sonuç","New result"),L("Ücret","Fee"),L("Para birimi","Currency"),L("Kademe","Tier"),L("Durum","Status"),L("Karar veren","Decided by"),L("Karar","Decided at"),L("Not","Note"),L("Karar notu","Decision note")],
+     ...G0.it.map(i=>[zm(i.talepZamani),i.C.isim,kA(i.katAd),i.sporcuAd||"",i.temsil||"",i.alet?aA(i.alet):"",IT_TUR[i.tur]||i.tur||"",i.gecenSn??"",i.sureIcinde===!1?L("hayır","no"):L("evet","yes"),i.eskiDeger??"",i.yeniDeger??"",i.eskiSonuc??"",i.yeniSonuc??"",+i.ucret||0,i.paraBirimi||"",i.ucretKademe||"",L(IT_DUR[i.durum]||i.durum||"",i.durum||""),i.kararVeren||"",zm(i.kararZamani),i.not||"",i.kararNot||""])],[13,26,22,24,14,10,8,8,8,9,9,9,9,7,7,6,12,14,13,20,20]);
+    ek(L("İtiraz ücretleri","Inquiry fees"),[[L("Yarışma","Comp."),L("Temsil","NOC / Club"),L("İtiraz","Inquiries"),L("Kabul","Accepted"),L("Red","Rejected"),L("Bekleyen","Pending"),L("Tahsil","Kept"),L("İade","Refunded"),L("Para birimi","Currency")],...G0.kul.map(k=>[k.C.isim,k.ad,k.n,k.kabul,k.red,k.bek,k.tahsil,k.iade,k.pb])],[30,20,9,9,9,9,9,9,8]);
+    ek(L("Yeniden kaydedilen","Re-saved scores"),[[L("Yarışma","Comp."),...tkCols().slice(comps.length>1?1:0)],...G0.tekrar.map(t=>[t.C.isim,...tkRow(t).slice(comps.length>1?1:0)].map(v=>/^[−+±]?\d+\.\d{3}$/.test(v)?Number(String(v).replace("−","-").replace("±","")):v))],[28,24,24,14,10,7,9,10,10,9,24]);
+    ek(L("Not değişiklikleri","Score changes"),[[L("Zaman","Time"),L("Yarışma","Comp."),L("İşlem","Action"),L("Kategori","Category"),L("Sporcu","Gymnast"),L("Alet","App."),L("Alan","Field"),L("Hakem","Judge"),L("Eski","Old"),L("Yeni","New"),L("Yapan","By"),L("Not","Note")],...G0.ev.map(x=>[zm(x.ts),x.C.isim,TA(x.tur),kA(x.katAd),x.sp||"",x.al?aA(x.al):"",x.poz||"",x.hakem?x.hakem.ad:"",x.eski==null?"":isNaN(x.eski)?x.eski:Number(x.eski),x.yeni==null?"":isNaN(x.yeni)?x.yeni:Number(x.yeni),x.kim||"",x.not||""])],[13,26,30,22,24,10,7,22,7,7,12,24])}
    else if(rapor==="hakem"){const H0=hakem,ek=(ad,aoa,w)=>{const ws=X.utils.aoa_to_sheet(aoa);ws["!cols"]=w.map(x=>({wch:x}));X.utils.book_append_sheet(wb,ws,sayfaAd(ad))},nm=v=>{const t=String(v).replace("−","-").replace("±","").replace("+","");return/^-?\d+(\.\d+)?$/.test(t)?Number(t):v};
     ek(L("Panel özeti","Panel summary"),[[L("Hakem Sapma Analizi","Judge Deviation Analysis")],[comps.map(c=>c.isim).join(" · ")],[],panCols(),...H0.pan.map(p=>panRow(p).map(nm))],[28,10,12,12,14,8,18,12,12]);
     ek(L("Hakemler","Judges"),[hkCols(),...H0.hk.map(h=>hkRow(h).map(nm))],[36,12,12,16,8,10,10,10,14,8,12,18].concat(comps.length>1?[8]:[]));
@@ -295,7 +385,7 @@ function Raporlar(){
     const w2=X.utils.aoa_to_sheet(ma);w2["!cols"]=[{wch:30},{wch:40},{wch:9},{wch:6},{wch:30},{wch:8},{wch:22},{wch:9}];X.utils.book_append_sheet(wb,w2,sayfaAd(L("Madalya kazananlar","Medallists")))}
    if(!wb.SheetNames.length){toast(__T("Seçili kapsamda puanı olan sonuç yok."),"warning");setBusy("");return}
    const buf=X.write(wb,{type:"array",bookType:"xlsx"}),u=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})),a=document.createElement("a");
-   a.href=u;a.download=(comps.length===1?comps[0].isim:"Raporlar").replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60)+"_"+(rapor==="sonuc"?L("Resmi_Sonuclar","Official_Results"):rapor==="hakem"?L("Hakem_Sapma_Analizi","Judge_Deviation"):L("Madalya_Tablosu","Medal_Table"))+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4e3);
+   a.href=u;a.download=(comps.length===1?comps[0].isim:"Raporlar").replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_").slice(0,60)+"_"+(rapor==="sonuc"?L("Resmi_Sonuclar","Official_Results"):rapor==="hakem"?L("Hakem_Sapma_Analizi","Judge_Deviation"):rapor==="itiraz"?L("Not_Degisiklikleri_ve_Itirazlar","Score_Changes_and_Inquiries"):L("Madalya_Tablosu","Medal_Table"))+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4e3);
    toast(__T("Excel indirildi ✓"),"success");try{logAction("report_export",`[Ritmik] Rapor Excel: ${rapor} · ${comps.map(c=>c.isim).join(", ")}`.slice(0,480),{user:kim,competitionId:comps[0]?._id,discipline:"ritmik"})}catch{}}
   catch(er){console.error(er);toast(__T("Excel oluşturulamadı: ")+(er?.message||er),"error")}setBusy("")};
 
@@ -350,6 +440,11 @@ function Raporlar(){
      e.jsx(Tog,{on:opt.alet,onClick:()=>so("alet",!opt.alet),t:__T("Alet sıralamaları"),d:"DA · DB · A · E · "+__T("Ceza")}),
      e.jsx(Tog,{on:opt.takim,onClick:()=>so("takim",!opt.takim),t:__T("Takım sıralaması"),d:__T("Ülke / kulüp; ilk 3-4 sporcunun her aletteki en iyi 2 puanı")}),
      e.jsx(Tog,{on:opt.final,onClick:()=>so("final",!opt.final),t:__T("Finaller"),d:__T("Genel tasnif ve alet finalleri")})]})
+   :rapor==="itiraz"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Gösterilecek değişiklikler")}),
+     e.jsx("div",{style:{display:"flex",flexWrap:"wrap",gap:".3rem"},children:Object.keys(DG_TUR).filter(t=>t!=="hakem_duzelt"||opt.dHakem).map(t=>e.jsxs("button",{type:"button",style:S.chip(opt.dTur.includes(t)),onClick:()=>so("dTur",opt.dTur.includes(t)?opt.dTur.filter(x=>x!==t):[...opt.dTur,t]),children:[e.jsx("span",{style:{width:8,height:8,borderRadius:"50%",background:DG_TUR[t][1]}}),TAui(t)]},t))}),
+     e.jsx("div",{style:{marginTop:".5rem"},children:e.jsx(Tog,{on:opt.dHakem,onClick:()=>so("dHakem",!opt.dHakem),t:__T("Hakemin kendi düzeltmeleri"),d:__T("Hakem notunu kaydetmeden önce değiştirdiyse (çok sayıda olabilir)")})}),
+     e.jsx(Tog,{on:opt.dFin,onClick:()=>so("dFin",!opt.dFin),t:__T("Finaller dahil"),d:__T("Final kategorilerindeki değişiklik ve itirazlar")}),
+     logYuk?e.jsx("div",{style:{fontSize:".74rem",color:"#B45309",fontWeight:800,marginTop:".3rem"},children:__T("İşlem kaydı yükleniyor…")}):null]})
    :rapor==="hakem"?e.jsxs("div",{children:[e.jsx("div",{style:S.lbl,children:__T("Referans not")}),
      e.jsx(Seg,{v:opt.hRef,on:v=>so("hRef",v),ops:[["sj",__T("Üst Jüri (SJ), yoksa panel")],["panel",__T("Panel sonucu")]]}),
      e.jsx("div",{style:S.lbl,children:__T("Paneller")}),
@@ -387,6 +482,18 @@ function Raporlar(){
        e.jsxs("td",{style:{...S.td,textAlign:"left",whiteSpace:"normal",fontWeight:800,width:"40%"},children:[b.tip==="takim"?r.ad:satirAd(r),r.takim&&r.uyeler?.length?e.jsx("span",{style:{display:"block",fontSize:".7rem",color:"#64748B",fontWeight:600},children:r.uyeler.join(", ")}):null]}),
        e.jsx("td",{style:{...S.td,textAlign:"left",color:"#475569",fontWeight:700},children:ic?r.ulke:(r.takim?(r.il&&UP(r.il)!==UP(r.ad)?r.il:""):r.kulup||r.il)}),
        ...cols.map((c,ci)=>e.jsx("td",{style:{...S.td,fontWeight:c.t?900:600,color:c.t?"#0F172A":"#334155"},children:c.f(r)},ci))]},i))})]})})]},bi)})]},C._id))
+  :rapor==="itiraz"&&degis?(()=>{const G0=degis,tab=(cols,rows,o2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,!(o2&&o2.sag&&o2.sag.includes(i))))})}),
+   e.jsx("tbody",{children:rows.map((rw,i)=>e.jsx("tr",{style:{background:i%2?"#FAFAFD":"#fff"},children:rw.map((v,j)=>{const st=o2&&o2.st?o2.st(i,j):null;return e.jsx("td",{style:{...S.td,textAlign:o2&&o2.sag&&o2.sag.includes(j)?"right":"left",fontWeight:600,whiteSpace:"normal",...st},children:v},j)})},i))})]})});
+  const bas=t=>e.jsx("div",{style:{fontWeight:900,fontSize:".85rem",background:"#FDF2F8",borderLeft:"4px solid "+P1,borderRadius:10,padding:".45rem .7rem",margin:"1rem 0 .35rem"},children:t});
+  const ic=comps.length>1?1:0;
+  return e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:{...S.h,marginBottom:".3rem"},children:[e.jsx("span",{style:S.hi,children:MI("gavel",{fontSize:17})}),L("Not Değişiklikleri ve İtirazlar","Score Changes and Inquiries")]}),
+   logYuk?e.jsx("div",{style:{fontSize:".74rem",color:"#B45309",fontWeight:800},children:__T("İşlem kaydı yükleniyor…")}):null,
+   bas(L("Özet","Summary")),tab(ozCols(),G0.ozet.map(ozRow),{sag:[1,2,3,4,5,6,7,8,9,10]}),e.jsx("div",{style:{height:8}}),tab(turCols(),G0.ozet.map(turRow),{sag:turCols().map((_,i)=>i).slice(1)}),
+   bas(L("İtirazlar","Inquiries")+" ("+G0.it.length+")"),G0.it.length?tab(itCols(),G0.it.map(itRow),{st:(i,j)=>j===itCols().length-2?{fontWeight:900,color:G0.it[i].durum==="kabul"?"#15803D":G0.it[i].durum==="red"?"#B91C1C":"#64748B"}:null}):e.jsx("div",{style:{color:"#64748B",fontWeight:700},children:L("İtiraz kaydı yok.","No inquiries.")}),
+   G0.kul.length?e.jsxs(e.Fragment,{children:[bas(L("İtiraz ücretleri — temsilci bazında","Inquiry fees — by NOC / club")),tab([...(ic?[L("Yarışma","Comp.")]:[]),L("Temsil","NOC / Club"),L("İtiraz","Inquiries"),L("Kabul","Accepted"),L("Red","Rejected"),L("Bekleyen","Pending"),L("Tahsil","Kept"),L("İade","Refunded")],G0.kul.map(k=>[...(ic?[k.C.isim]:[]),k.ad,k.n,k.kabul,k.red,k.bek,k.tahsil+" "+k.pb,k.iade+" "+k.pb]),{sag:[1,2,3,4,5,6].map(x=>x+ic)})]}):null,
+   G0.tekrar.length?e.jsxs(e.Fragment,{children:[bas(L("Birden çok kaydedilen puanlar","Scores saved more than once")+" ("+G0.tekrar.length+")"),tab(tkCols(),G0.tekrar.slice(0,40).map(tkRow),{sag:[4,5,6,7,8].map(x=>x+ic),st:(i,j)=>{const t=G0.tekrar[i];return j===tkCols().length-2&&t.ilk!=null&&t.son!=null&&Math.abs(t.son-t.ilk)>1e-6?{color:"#B91C1C",fontWeight:900}:null}})]}):null,
+   bas(L("Not değişiklikleri","Score changes")+" ("+G0.ev.length+")"+(G0.ev.length>150?" · "+L("ilk 150 gösteriliyor; tamamı PDF / Excel'de","first 150 shown; all in PDF / Excel"):"")),
+   G0.ev.length?tab(evCols(),G0.ev.slice(0,150).map(evRow),{sag:[7,8,9].map(x=>x+ic),st:(i,j)=>j===ic+1?{color:DG_TUR[G0.ev[i].tur]?.[1],fontWeight:800}:null}):e.jsx("div",{style:{color:"#64748B",fontWeight:700},children:L("Seçili türlerde değişiklik yok.","No changes of the selected types.")})]})})()
   :rapor==="hakem"&&hakem?(()=>{const H0=hakem,tab=(cols,rows,opt2)=>e.jsx("div",{style:{overflowX:"auto"},children:e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse"},children:[e.jsx("thead",{children:e.jsx("tr",{children:cols.map((c,i)=>thR(c,i===0||(opt2&&opt2.sol&&opt2.sol.includes(i))))})}),
    e.jsx("tbody",{children:rows.map((rw,i)=>e.jsx("tr",{style:{background:i%2?"#FAFAFD":"#fff"},children:rw.map((v,j)=>{const st=opt2&&opt2.st?opt2.st(i,j,v):null;return e.jsx("td",{style:{...S.td,textAlign:j===0||(opt2&&opt2.sol&&opt2.sol.includes(j))?"left":"right",fontWeight:j===0?800:600,...st},children:v},j)})},i))})]})});
   const bas=t=>e.jsx("div",{style:{fontWeight:900,fontSize:".85rem",background:"#FDF2F8",borderLeft:"4px solid "+P1,borderRadius:10,padding:".45rem .7rem",margin:"1rem 0 .35rem"},children:t});
