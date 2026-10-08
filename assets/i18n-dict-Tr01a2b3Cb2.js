@@ -4786,6 +4786,9 @@ const DICT={
   "Link eklenince seyirci sayfasında \"Canlı yayını izle\" düğmesi çıkar; isteyen açar, sayfada küçük oynatıcıda izler. Boş bırakılırsa düğme görünmez.": "When a link is set, a \"Watch live stream\" button appears on the spectator page; viewers can open it in a small player. Leave empty to hide the button.",
   "Yalnız YouTube linki eklenebilir (youtube.com ya da youtu.be).": "Only YouTube links can be added (youtube.com or youtu.be).",
   "Seçilen hakem bu kategorinin tüm aletlerine atanır": "The selected judge is assigned to all apparatus of this category",
-  "Kategoriye hakem…": "Judge for category…"
+  "Kategoriye hakem…": "Judge for category…",
+  "Sporcu çağrılana kadar bu kategoriye yetkili hakem ekranları bu kategoriyi ve hakemini gösterir": "Until an athlete is called, judge screens for this category show this category and its judge",
+  "Panellere gönderildi": "Sent to panels",
+  "Panelleri bu kategoriye geçir": "Switch panels to this category"
 };
 export{DICT};

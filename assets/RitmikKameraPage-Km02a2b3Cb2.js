@@ -183,8 +183,17 @@ function scheduleNeg(ms=1500){ if(!alive)return; clearTimeout(negTimer); negTime
 async function boot(){
   setConn("requesting","Kamera izni...");
   let s;
-  try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:24}},audio:false}); }
-  catch{ try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false}); }catch{ setConn("error","🔴 Kamera açılamadı"); return; } }
+  // 2026-10-08: kamera başka uygulamada (ör. OBS) açıksa: önce bu cihazda son seçilen kamera, olmazsa varsayılan, o da olmazsa
+  // diğer kameralar sırayla ("OBS Virtual Camera" önce). Seçilen kamera localStorage gxKameraDev ile hatırlanır.
+  const _q=v=>({video:Object.assign({width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},v),audio:false});
+  let _dev=null;try{_dev=localStorage.getItem("gxKameraDev")}catch(e){}
+  if(_dev){try{s=await navigator.mediaDevices.getUserMedia(_q({deviceId:{exact:_dev}}))}catch(e){s=null}}
+  if(!s){ try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:24}},audio:false}); }
+  catch{ try{ s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false}); }catch{ s=null } } }
+  if(!s){ try{ const _d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==="videoinput").sort((a,b)=>(/obs/i.test(b.label)?1:0)-(/obs/i.test(a.label)?1:0));
+    for(const d of _d){ try{ s=await navigator.mediaDevices.getUserMedia(_q({deviceId:{exact:d.deviceId}})); break; }catch(e){} } }catch(e){} }
+  if(!s){ setConn("error","🔴 Kamera açılamadı — kamera başka uygulamada açıksa OBS'de 'Sanal Kamerayı Başlat'a basın"); return; }
+  try{ const _id=s.getVideoTracks()[0]?.getSettings?.().deviceId; _id&&localStorage.setItem("gxKameraDev",_id); }catch(e){}
   stream=s; ZW.feed(s);
   watchActive();
   watchStop();
@@ -205,6 +214,7 @@ $("btnCam").onclick=async()=>{ try{
   if(devs.length>1){ const ct=raw?.getVideoTracks?.()[0], cid=ct?.getSettings?.().deviceId, ci=devs.findIndex(x=>x.deviceId===cid), nx=devs[(ci+1)%devs.length]; ns=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:nx.deviceId}},audio:false}); }
   else{ const vt=raw?.getVideoTracks?.()[0], cf=vt?.getSettings?.().facingMode, nf=cf==="environment"?"user":"environment"; try{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:nf}},audio:false});}catch{ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:nf}},audio:false});} }
   const old=ZW.r; ZW.feed(ns); if(old)try{old.getTracks().forEach(t=>t.stop())}catch(e){}
+  try{ const _id=ns.getVideoTracks()[0]?.getSettings?.().deviceId; _id&&localStorage.setItem("gxKameraDev",_id); }catch(e){}
 }catch(e){} };
 window.addEventListener("beforeunload",()=>{alive=false;try{pc&&pc.close()}catch(e){};remove(ref(db,H)).catch(()=>{});});
 

@@ -44,6 +44,9 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
  const _al=String(alet||"").trim();
  const izinAl=(k,al)=>{if(!kisit)return!0;const m=kisit[k]||kisit[norm(k)];return!m||!!m[al]};
  const kisitli=!!kisit&&!_al;
+ // 2026-10-08: çağrı iptal edilince ekran daha ESKİ bir çağrıya (ör. önceki kategorinin son sporcusu) geri dönmesin —
+ // görülen en yeni çağrı (zaman, kategori, alet) tutulur; kalan en yeni çağrı ondan eskiyse aktif kategori değişmez (beklemede kalır).
+ const enYeni=R.useRef(null);
  R.useEffect(()=>{
   if(tek){setAktif(raw);return}
   if(!comp)return;
@@ -58,7 +61,9 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
      if(!izin(k)||!v[k]||typeof v[k]!=="object")return;
      Object.keys(v[k]).forEach(al=>{const c=v[k][al];if(!c||!izinAl(k,al))return;const t=Number(c.ts)||1;if(t>=zaman){zaman=t;en=k;enAl=al}});
     });
-    if(en){setAktif(en);setAktifAl(enAl)}
+    const ey=enYeni.current;
+    if(ey&&zaman<ey.t&&ey.k&&(tumu||kume.indexOf(ey.k)>=0||kume.indexOf(norm(ey.k))>=0)){setAktif(ey.k);setAktifAl(ey.a||"");return}
+    if(en){enYeni.current={t:zaman,k:en,a:enAl};setAktif(en);setAktifAl(enAl)}
     else{setAktif(o=>o||kume[0]||"");setAktifAl("")}
    });
   }
@@ -73,7 +78,9 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
      const t=Number(c.ts)||1;
      if(t>=zaman){zaman=t;en=k}
     });
-    if(en)setAktif(en);
+    const ey=enYeni.current;
+    if(ey&&zaman<ey.t&&ey.k&&(tumu||kume.indexOf(ey.k)>=0||kume.indexOf(norm(ey.k))>=0)){setAktif(ey.k);return}
+    if(en){enYeni.current={t:zaman,k:en};setAktif(en)}
     else setAktif(o=>o||kume[0]||"");
    });
   }
@@ -85,6 +92,9 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
     const t=Number(v[k].ts)||1;
     if(t>=zaman){zaman=t;en=k}
    });
+   const ey=enYeni.current;
+   if(ey&&zaman<ey.t&&ey.k&&(tumu||kume.indexOf(ey.k)>=0||kume.indexOf(norm(ey.k))>=0)){setAktif(ey.k);return}
+   if(en)enYeni.current={t:zaman,k:en};
    setAktif(en||kume[0]||"");
   });
  },[base,comp,tek,raw,tumu,anahtar,_al,kAnahtar]);

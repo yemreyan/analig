@@ -143,7 +143,7 @@ function HakemV2({kind,yapi,grup}){
  R.useEffect(()=>{if(!cat||!alet||sj)return;return onValue(ref(db,`${B}/${comp}/refereeCalls/${cat}/${alet}/sj${P.toLowerCase()}`),s=>{const v=s.val();setSjc(v&&v.ts?+v.ts:null)})},[comp,cat,alet,P]);
  R.useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1e3);return()=>clearInterval(t)},[]);
  // hakem adı: kategori/alet kaydı (hakemler/<kat>/<alet>) yoksa — final kategorisi, sporcu çağrılmadan önce — panel grubundaki koltuk ataması
- const _gh=grup?.hakemler||{},_bk=String(cat||"").replace(/^final_/,"").split("__")[0],_ha=grup?.hakemAlet||{},_hx=(_ha[slot]||(tek?_ha[slot+"1"]:null)||{})[_bk]?.[alet],_gx=(_hx&&_hx.ad?_hx:null)||_gh[slot]||(tek?_gh[slot+"1"]:null),hAdG=hAd||(_gx&&(_gx.ad||_gx.name))||"";
+ const _gh=grup?.hakemler||{},_bk=String(cat||"").replace(/^final_/,"").split("__")[0],_ha=grup?.hakemAlet||{},_hkm=(_ha[slot]||(tek?_ha[slot+"1"]:null)||{})[_bk]||{},_hx=_hkm[alet],_hkv=Object.values(_hkm).filter(x=>x&&x.ad),_hkt=_hkv.length&&_hkv.every(x=>x.ad===_hkv[0].ad)?_hkv[0]:null,_gx=(_hx&&_hx.ad?_hx:null)||(!alet?_hkt:null)||_gh[slot]||(tek?_gh[slot+"1"]:null),hAdG=hAd||(_gx&&(_gx.ad||_gx.name))||"";
  // süre hakemi kronometresi: çalışırken 0.1 sn'de bir yenilenir; sınırlar / hazırlık / elle fark yerel
  const _sy=rec&&rec.tPanel&&rec.tPanel.sayac,[,setTk]=R.useState(0),[tLim,setTLim]=R.useState(null),[tGec,setTGec]=R.useState(null),[tFark,setTFark]=R.useState(null);
  R.useEffect(()=>{if(kind!=="t"||!_sy||!_sy.basla||_sy.bitis)return;const i=setInterval(()=>setTk(Date.now()),100);return()=>clearInterval(i)},[kind,_sy&&_sy.basla,_sy&&_sy.bitis]);
@@ -155,6 +155,22 @@ function HakemV2({kind,yapi,grup}){
  const kimlikB=hAdG?e.jsxs("div",{className:"hv-kimlik",children:[hBf?e.jsx("img",{src:hBf,alt:hUl}):null,e.jsxs("div",{children:[e.jsx("b",{children:hAdG}),e.jsx("span",{children:[slot,hUl].filter(Boolean).join(" · ")})]})]}):null;
  // bekleme ekranının altında: atanmış hakem adı + bayrak; atama yoksa uyarı
  const kimlikA=kimlikB||e.jsxs("div",{className:"hv-kimlik bos",children:[e.jsx("div",{className:"hv-badge",style:{width:54,height:54,fontSize:18},children:slot||"?"}),e.jsxs("div",{children:[e.jsx("b",{style:{fontSize:20},children:__T("Bu koltuğa hakem atanmadı")}),e.jsx("span",{style:{letterSpacing:0,fontWeight:700,color:"var(--mut)"},children:__T("Paneller sayfasından hakem atayın; ad ve bayrak burada görünür.")})]})]});
+ // SIRADAKİ KATEGORİYE GEÇİŞ (2026-10-08): (a) elle — başhakem <yarışma>/panelGecis {kat,alet,ts}; (b) otomatik — çıkış listesinde panelin
+ // kategorisinin o günkü tüm adımları puanlanınca sıradaki (izinli) kategori. Ekran "Sporcu bekleniyor · Sıradaki: …" + o kategorinin hakemi.
+ const[gecis,setGecis]=R.useState(null),[clG,setClG]=R.useState(null),[pkK,setPkK]=R.useState(null),[siraH,setSiraH]=R.useState(null);
+ R.useEffect(()=>{const u=[onValue(ref(db,`${B}/${comp}/panelGecis`),s=>setGecis(s.val()||null)),onValue(ref(db,`${B}/${comp}/cikisListesi/gunler`),s=>setClG(s.val()||null))];return()=>u.forEach(f=>f())},[comp]);
+ R.useEffect(()=>{setPkK(null);if(!cat)return;return onValue(ref(db,`${B}/${comp}/puanlar/${cat}`),s=>setPkK(s.val()||{}))},[comp,cat]);
+ const izinK=(k,al)=>(hk.tumu||(hk.kume||[]).includes(k)||(hk.kume||[]).includes(String(k).replace(/^final_/,"")))&&(!al||!hk.izinAl||hk.izinAl(k,al));
+ const sira=(()=>{const cTs=+(ath&&ath.ts)||0;
+  if(gecis&&gecis.kat&&+gecis.ts>cTs&&izinK(gecis.kat,gecis.alet))return{kat:gecis.kat,alet:gecis.alet||"",kaynak:"elle"};
+  if(!ath||!aid||!cat||!clG||!pkK)return null;
+  const gun=(Array.isArray(clG)?clG:Object.values(clG)).find(g=>(g&&g.bloklar?Object.values(g.bloklar):[]).some(b=>b&&b.kat===cat&&(b.rows?Object.values(b.rows):[]).some(rw=>(rw&&rw.r?Object.values(rw.r):[]).some(x=>x&&String(x.a)===String(aid)))));if(!gun)return null;
+  const ad=[];Object.values(gun.bloklar||{}).forEach(b=>{if(!b||b.tip&&b.tip!=="grup"&&b.tip!=="takim")return;Object.values(b.rows||{}).forEach(rw=>Object.values(rw&&rw.r||{}).forEach(x=>{x&&x.a&&ad.push({kat:b.kat,a:String(x.a),al:x.al||(Array.isArray(b.aletler)?b.aletler[0]:"")})}))});
+  const ks=ad.filter(x=>x.kat===cat);if(!ks.length)return null;
+  if(!ks.every(x=>{const r=pkK[x.a]&&pkK[x.a][x.al];return r&&(r.durum==="tamamlandi"||r.kilitli===!0||r.irm)}))return null;
+  let son=-1;ad.forEach((x,i)=>{x.kat===cat&&(son=i)});const n=ad.slice(son+1).find(x=>x.kat!==cat&&izinK(x.kat,x.al));
+  return n?{kat:n.kat,alet:n.al,kaynak:"oto"}:null})();
+ R.useEffect(()=>{setSiraH(null);if(!sira)return;return onValue(ref(db,`${B}/${comp}/hakemler/${sira.kat}/${sira.alet}`),s=>{const v=s.val()||{},x=v[slot.toLowerCase()]||v[slot]||(kind==="t"?v.zaman:kind==="l"?v[lf]:null)||(tek?v[slot.toLowerCase()+"1"]||v[slot+"1"]:null);setSiraH(x&&typeof x==="object"?{ad:x.name||x.ad||"",ulke:x.ulke||""}:x?{ad:String(x),ulke:""}:null)})},[comp,sira&&sira.kat,sira&&sira.alet,slot]);
  const kl=useHakemKilit({base:B,comp,lk,slot,kimlik:{ad:hAdG,ulke:hUl,bayrak:hBf},tetik:(ath?.id||"")+"|"+(ath?.alet||alet0||"")+"|"+(ath?.ts||"")});
 
  const r=rec||{},mine=kind==="t"?r.tPanel?.zaman:kind==="l"?r.lPanel?.[lf]:kind==="d"||sj?r[own]:r[pan]?.[jk],finV=kind==="d"?r[fin]:null,kilit=r.kilitli===!0,bhk=kind==="ae"&&r.lockedFields?.[`${pan}__${jk}`]===!0;
@@ -216,6 +232,12 @@ function HakemV2({kind,yapi,grup}){
  if(!comp||!slot)return kap(tam("link_off",__T("Geçersiz link"),__T("Bu link eksik; Paneller sayfasından yeniden alın.")));
  if(tokS==="bad")return kap(tam("lock",__T("Geçersiz anahtar"),__T("Linkin hakem anahtarı geçerli değil. Paneller sayfasından güncel linki alın.")));
  const yetAl=hk.kisitli&&hk.kisit?Object.entries(hk.kisit).map(([k,m])=>(kats[k]?.name||katAdi(k))+": "+Object.keys(m||{}).filter(a=>m[a]).map(a=>raAd(a,EN())||a).join(", ")).join(" · "):"";
+ if(sira&&!fixCat&&(sira.kaynak==="elle"||!ath||durum==="gonderildi"||durum==="kilitli")){
+  const sb=sira.kat?katAdi(sira.kat):"",sAd=(kats[sira.kat]&&kats[sira.kat].name)||sb,sAl=sira.alet?(raAd(sira.alet,EN())||sira.alet):"",_hs=grup?.hakemAlet?.[slot]?.[String(sira.kat).replace(/^final_/,"").split("__")[0]]||{},_hsv=Object.values(_hs).filter(x=>x&&x.ad),
+   sh=siraH&&siraH.ad?siraH:(_hs[sira.alet]&&_hs[sira.alet].ad?{ad:_hs[sira.alet].ad,ulke:_hs[sira.alet].ulke}:_hsv.length?{ad:_hsv[0].ad,ulke:_hsv[0].ulke}:(grup?.hakemler?.[slot]?{ad:grup.hakemler[slot].ad,ulke:grup.hakemler[slot].ulke}:null)),
+   sbf=sh&&sh.ulke?bayrakUrl(sh.ulke):null;
+  const kimS=sh&&sh.ad?e.jsxs("div",{className:"hv-kimlik",children:[sbf?e.jsx("img",{src:sbf,alt:sh.ulke}):null,e.jsxs("div",{children:[e.jsx("b",{children:sh.ad}),e.jsx("span",{children:[slot,sh.ulke].filter(Boolean).join(" · ")})]})]}):kimlikA;
+  return kap(tam("hourglass_top",__T("Sporcu bekleniyor"),__T("Sıradaki")+": "+[sAd,sAl].filter(Boolean).join(" · "),{alt:kimS}))}
  if(durum==="bekliyor"&&lk&&!fixCat&&!fixAl&&!hk.yok&&!hk.tumu&&!(hk.kume||[]).length)return kap(tam("playlist_remove",__T("Bu panele kategori atanmadı"),__T("Sporcu çağrıları bu ekrana gelmez. Paneller sayfasında bu panelin grubuna kategori ekleyin; ekran kendiliğinden güncellenir."),{alt:kimlikA}));
  if(durum==="bekliyor")return kap(tam("hourglass_top",__T("Sporcu bekleniyor"),__T("Başhakem sporcuyu çağırdığında ekran otomatik açılır."),{alt:e.jsxs("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:14,marginTop:6},children:[yetAl?e.jsxs("div",{className:"hv-info",style:{"--ic":"var(--mut)"},children:[MI("rule"),e.jsxs("span",{children:[__T("Yetkili olduğun aletler")+": ",e.jsx("b",{children:yetAl})]})]}):null,kimlikA]})}));
  // Aletsiz seri (WA): FIG — alet zorluğu (DA) yok, D = DB
