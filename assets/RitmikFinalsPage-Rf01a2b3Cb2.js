@@ -17,7 +17,7 @@ const aletTr=a=>RA[a]?.labelTr||RA[a]?.label||a;
 const aletLabel=a=>__T(aletTr(a));
 const num=v=>v==null||v===""||isNaN(v)?null:Number(v);
 const clamp=(v,a,b,d)=>{const n=parseInt(v);return isNaN(n)?d:Math.max(a,Math.min(b,n))};
-const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (WC)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"],["elle","edit_note","Elle","Bu final için sıra eşlemesini elle seç (ör. 1. → 3. çıkar)"]];
+const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (WG)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"],["elle","edit_note","Elle","Bu final için sıra eşlemesini elle seç (ör. 1. → 3. çıkar)"]];
 
 function RitmikFinals(){
  const{toast}=usToast();usInit();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
@@ -323,7 +323,7 @@ function RitmikFinals(){
       realCats.length===0?e.jsx("div",{style:S.center,children:__T("Bu yarışmada kategori yok.")}):e.jsxs(e.Fragment,{children:[
         e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:S.h,children:[e.jsx("span",{style:S.hi,children:MI("tune",{fontSize:17})}),__T("Genel ayarlar")]}),
          e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:".6rem"},children:[
-          e.jsxs("label",{style:{...S.tog(!0),cursor:"default"},children:[MI(INTLc?"flag":"groups",{color:P1}),e.jsxs("span",{style:{flex:1},children:[INTLc?__T("Ülke kotası"):__T("Kulüp kotası"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:INTLc?__T("WC: ülke başına en çok 2 · 0 = kota yok"):__T("0 = kota yok")})]}),e.jsx("input",{type:"number",min:"0",max:"8",value:limit,onChange:x=>setLimit(x.target.value),style:S.numin})]}),
+          e.jsxs("label",{style:{...S.tog(!0),cursor:"default"},children:[MI(INTLc?"flag":"groups",{color:P1}),e.jsxs("span",{style:{flex:1},children:[INTLc?__T("Ülke kotası"):__T("Kulüp kotası"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:INTLc?__T("WG: ülke başına en çok 2 · 0 = kota yok"):__T("0 = kota yok")})]}),e.jsx("input",{type:"number",min:"0",max:"8",value:limit,onChange:x=>setLimit(x.target.value),style:S.numin})]}),
           e.jsxs("label",{style:S.tog(useAA),children:[e.jsx("input",{type:"checkbox",checked:useAA,onChange:()=>setUseAA(v=>!v),style:{width:18,height:18,accentColor:P1}}),e.jsxs("span",{children:[__T("Genel tasnif finali"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:__T("tüm aletler toplamı")})]})]}),
           e.jsxs("label",{style:S.tog(fill),children:[e.jsx("input",{type:"checkbox",checked:fill,onChange:()=>setFill(v=>!v),style:{width:18,height:18,accentColor:"#F59E0B"}}),e.jsxs("span",{children:[__T("Kota yetmezse tamamla"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:__T("kotayı deler")})]})]})]}),
          e.jsxs("div",{style:{marginTop:".8rem",padding:".7rem .8rem",borderRadius:14,background:"#FAF5FF",border:"1px dashed #D8B4FE",display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[

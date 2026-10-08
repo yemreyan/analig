@@ -161,7 +161,7 @@ const taze=Math.max(0,parseInt(Q.get("taze"))||15)*60000;
 const EN=()=>C.dil==="en";
 const L=()=>EN()?{puan:"SCORE",sira:r=>"RANK "+r,ksn:"Ded.",siralama:"Standings",sonuc:"Results",sirada:"Up next",simdi:"NOW",podyum:"Medalists",rk:"RK",top:"TOTAL",pen:"PEN"}
  :{puan:"PUAN",sira:r=>r+". SIRA",ksn:"Kesinti",siralama:"Anlık sıralama",sonuc:"Sonuçlar",sirada:"Sıradaki sporcular",simdi:"ŞİMDİ",podyum:"Madalyalar",rk:"SIRA",top:"TOPLAM",pen:"CEZA"};
-const UP=(s,u)=>String(s??"").toLocaleUpperCase(u&&u!=="TUR"?"en":"tr-TR");
+const UP=(s,u)=>String(s??"").toLocaleUpperCase(u?(u!=="TUR"?"en":"tr-TR"):(EN()?"en":"tr-TR")); // u: sporcunun ülkesi (TUR adları Türkçe büyük harf); u yoksa (başlıklar) yayın dili
 const fl=k=>{const u=k&&V.bayrakUrl(k);return u?`<img class="fl" src="${u}" alt="">`:""};
 
 /* ---------------- VERİ ---------------- */
@@ -182,7 +182,7 @@ const $=id=>document.getElementById(id),st=$("st"),lt=$("lt");
 const logoListe=()=>{const g=C.logo||{},o=[];if(g.etkinlik!==!1&&D.evLogo)o.push({src:D.evLogo,c:"ev"});if(g.ek)o.push({src:g.ek,c:"ek"});if(g.tcf!==!1)o.push({src:"/logo.png",c:"tcf"});if(g.gymexa!==!1)o.push({src:"/brand/gymnaxis-logo.svg",c:"gx"});return o};
 const img=x=>`<img class="${x.c}" src="${esc(x.src)}" alt="">`;
 const basLogo=()=>logoListe().map(img).join("");
-function ayarUygula(){
+function ayarUygula(){document.documentElement.lang=EN()?"en":"tr"; /* büyük harf (text-transform) İngilizcede "SENİOR" olmasın */
  st.className="stage M t-"+(["tcf","koyu","acik"].includes(C.tema)?C.tema:"tcf");
  st.style.setProperty("--s",`calc(100vw/1920*${Math.min(200,Math.max(40,+C.olcek||100))/100})`);
  st.style.setProperty("--m",String(Math.min(240,Math.max(20,+C.kenar||90))));

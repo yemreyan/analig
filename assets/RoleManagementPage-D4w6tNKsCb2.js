@@ -17,7 +17,7 @@ const KATALOG=[
   {key:"athletes",label:"Sporcular",icon:"groups",ekran:["Sporcular","Sporcu profili","Uluslararası kayıt onayı"],actions:[A("goruntule","Görüntüle"),A("ekle","Ekle"),A("duzenle","Düzenle"),A("sil","Sil")]},
   {key:"sporcu_aletleri",label:"Sporcu Aletleri",icon:"low_priority",ekran:["Sporcu Aletleri (ritmik)","Çıkış akışı (gün bazlı alet sırası)"],actions:[A("goruntule","Görüntüle"),A("duzenle","Düzenle")]},
   {key:"coaches",label:"Antrenörler",icon:"sports",ekran:["Antrenörler"],actions:[A("goruntule","Görüntüle"),A("ekle","Ekle"),A("duzenle","Düzenle"),A("sil","Sil")]},
-  {key:"referees",label:"Hakemler",icon:"gavel",ekran:["Hakem Listesi","WC / TCF hakem içe aktarma"],actions:[A("goruntule","Görüntüle"),A("ekle","Ekle"),A("duzenle","Düzenle"),A("sil","Sil")]}]},
+  {key:"referees",label:"Hakemler",icon:"gavel",ekran:["Hakem Listesi","WG / TCF hakem içe aktarma"],actions:[A("goruntule","Görüntüle"),A("ekle","Ekle"),A("duzenle","Düzenle"),A("sil","Sil")]}]},
  {grup:"Puanlama ve Hakem",ic:"scoreboard",renk:"#DB2777",izinler:[
   {key:"scoring",label:"Puanlama",icon:"scoreboard",ekran:["Puanlama (Modern/Klasik)","Sunucu ekranı","Yayın Kontrol"],actions:[A("goruntule","Görüntüle"),A("puanla","Puanla")]},
   {key:"finaller",label:"Final Oluştur",icon:"emoji_events",ekran:["Final Oluştur","Final çıkış listesi PDF"],actions:[A("goruntule","Görüntüle"),A("olustur","Oluştur"),A("sil","Sil")]},
@@ -35,7 +35,7 @@ const KATALOG=[
  {grup:"Rapor ve Denetim",ic:"fact_check",renk:"#0891B2",izinler:[
   {key:"analytics",label:"Raporlar",icon:"analytics",ekran:["Raporlar","Hakem Fark Analizi"],actions:[A("goruntule","Görüntüle")]},
   {key:"videolar",label:"Video Arşivi",icon:"video_library",ekran:["Video Arşivi","Kamera yükleme durumu"],actions:[A("goruntule","Görüntüle"),A("sil","Sil")]},
-  {key:"audit",label:"Hakem Denetimi",icon:"fact_check",ekran:["Hakem Raporu","Hakem Karnesi","WC Hakem Karnesi"],actions:[A("goruntule","Görüntüle")]}]}];
+  {key:"audit",label:"Hakem Denetimi",icon:"fact_check",ekran:["Hakem Raporu","Hakem Karnesi","WG Hakem Karnesi"],actions:[A("goruntule","Görüntüle")]}]}];
 const IZ=KATALOG.flatMap(g=>g.izinler.map(i=>({...i,grup:g.grup,grenk:g.renk})));
 const BRANS=[{id:"artistik",label:"Artistik",icon:"sports_gymnastics",color:"#E30613",base:"competitions"},{id:"ritmik",label:"Ritmik",icon:"self_improvement",color:"#DB2777",base:"ritmik_yarismalar"},{id:"aerobik",label:"Aerobik",icon:"directions_run",color:"#2563EB",base:"aerobik_yarismalar"},{id:"parkur",label:"Parkur",icon:"terrain",color:"#059669",base:"parkur_yarismalar"},{id:"trampolin",label:"Trampolin",icon:"height",color:"#7C3AED",base:"trampolin_yarismalar"}];
 const ILLER=Object.keys(TR).sort((a,b)=>a.localeCompare(b,"tr"));
