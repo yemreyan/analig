@@ -8,7 +8,7 @@ import{DICT}from"./i18n-dict-Tr01a2b3Cb2.js";
 
 let _lang=null;
 // Uluslararası yarışma + İngilizce çıktı: hakem panelleri (dil seçilmemişse) İngilizce açılır.
-try{(function(){const m=location.pathname.match(/^\/(artistik|ritmik|aerobik|parkur|trampolin)\/(epanel|dpanel|lpanel|tpanel|apanel|sjpanel|split)\b/);if(!m)return;
+try{(function(){const m0=location.pathname.match(/^\/(artistik|ritmik|aerobik|parkur|trampolin|artistic|rhythmic|aerobic|parkour|trampoline)\/(epanel|dpanel|lpanel|tpanel|apanel|sjpanel|split)\b/);if(!m0)return;const m=[m0[0],({artistic:"artistik",rhythmic:"ritmik",aerobic:"aerobik",parkour:"parkur",trampoline:"trampolin"})[m0[1]]||m0[1],m0[2]];
  if(localStorage.getItem(KEY))return;const q=new URLSearchParams(location.search),c=q.get("competitionId")||q.get("comp");if(!c)return;
  const B={artistik:"competitions",ritmik:"ritmik_yarismalar",aerobik:"aerobik_yarismalar",parkur:"parkur_yarismalar",trampolin:"trampolin_yarismalar"}[m[1]],sk="tcf_intl_"+m[1]+"_"+c,v=sessionStorage.getItem(sk);
  if(v==="en"){_lang="en";return}if(v==="tr")return;const U="https://analig-default-rtdb.firebaseio.com/"+B+"/"+encodeURIComponent(c);
@@ -130,3 +130,13 @@ export{T,cur as getLang,set as setLang,DICT};
 // Sayısal alanlarda fare tekerleği puanı DEĞİŞTİRMESİN (başhakem/hakem ekranları, 2026-10-08):
 // odaklı number input üzerinde tekerlek çevrilince alan odaktan çıkar → değer değişmez, sayfa kaymaya devam eder.
 try{if(typeof document!=="undefined"&&!globalThis.__gxWheel){globalThis.__gxWheel=1;document.addEventListener("wheel",ev=>{const t=ev.target;if(t&&t.tagName==="INPUT"&&t.type==="number"&&document.activeElement===t)t.blur()},{passive:!0,capture:!0})}}catch{}
+
+// FIG → WC (2026-10-08 kullanıcı): ekranda görünen her "FIG" "WC" olur. Veritabanındaki değerler (ör. bröve "FIG Kat. 2") ve
+// kod içi karşılaştırmalar değişmez; yalnız gösterim (metin düğümleri, title, sayfa başlığı) çevrilir. Giriş alanlarına dokunulmaz.
+try{if(typeof document!=="undefined"&&!globalThis.__gxWC){globalThis.__gxWC=1;const RX=/\bF[Iİ]G\b/g,TX=/\bF[Iİ]G\b/;
+ const atla=n=>{const p=n.parentNode;return!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/.test(p.nodeName)||p.isContentEditable};
+ const duz=n=>{if(!n)return;if(n.nodeType===3){if(TX.test(n.nodeValue)&&!atla(n))n.nodeValue=n.nodeValue.replace(RX,"WC");return}
+  if(n.nodeType!==1||/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.nodeName))return;if(n.title&&TX.test(n.title))n.title=n.title.replace(RX,"WC");
+  const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let t;while(t=w.nextNode()){if(t.nodeType===3){TX.test(t.nodeValue)&&!atla(t)&&(t.nodeValue=t.nodeValue.replace(RX,"WC"))}else if(t.title&&TX.test(t.title))t.title=t.title.replace(RX,"WC")}};
+ const bas=()=>{duz(document.body);new MutationObserver(ms=>{for(const m of ms){if(m.type==="characterData")duz(m.target);else if(m.type==="attributes"){const el=m.target;el.title&&TX.test(el.title)&&(el.title=el.title.replace(RX,"WC"))}else m.addedNodes.forEach(duz)}if(TX.test(document.title))document.title=document.title.replace(RX,"WC")}).observe(document.body,{childList:!0,subtree:!0,characterData:!0,attributes:!0,attributeFilter:["title"]})};
+ document.body?bas():document.addEventListener("DOMContentLoaded",bas)}}catch{}

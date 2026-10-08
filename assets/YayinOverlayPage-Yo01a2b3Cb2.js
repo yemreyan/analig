@@ -3,7 +3,7 @@ import"./i18n-Tr01a2b3Cb2.js";import{u as useAuth,a as usDisc,j as e,d as db,b a
 const __gsKod=()=>{const a="abcdefghijkmnpqrstuvwxyz23456789",b=new Uint8Array(9);crypto.getRandomValues(b);return Array.from(b,x=>a[x%a.length]).join("")};
 
 // YAYIN OVERLAY — KURULUM (eski /yayin-overlay.html kurulum ekranının uygulama içi sürümü)
-// Üretilen OBS/vMix linki yine şeffaf /yayin-overlay.html?comp=… sayfasını açar (overlay HTML olarak kalır).
+// Üretilen OBS/vMix linki şeffaf /broadcast-overlay.html?comp=… (vercel.json → yayin-overlay.html; eski /yayin-overlay.html linkleri de çalışır).
 // v2: kanal başına YAYIN PROFİLLERİ (logolar, tema, alt bant, sıralama, sıradaki, podyum), canlı kontrol ve TV veri linki (/api/yayin).
 const RENK={aerobik:["#10B981","directions_run"],ritmik:["#EC4899","auto_awesome"],artistik:["#4F46E5","sports_gymnastics"]};
 const CSS=GXP_CSS+`
@@ -123,7 +123,7 @@ export default function YayinOverlayPage(){
  R.useEffect(()=>{const f=ev=>{if(ev.origin===location.origin&&ev.data?.gxOverlayHazir)gonder()};window.addEventListener("message",f);return()=>window.removeEventListener("message",f)},[gonder]);
  const pvGoster=g=>{setPvG(g);try{frame.current?.contentWindow?.postMessage({gxGoster:g},location.origin)}catch{}};
  // linkler
- const O=location.origin,ovUrl=comp&&pid?`${O}/yayin-overlay.html?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}`:"";
+ const O=location.origin,ovUrl=comp&&pid?`${O}/broadcast-overlay.html?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}`:"";
  const apiUrl=comp&&pid?`${O}/api/yayin?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}${veri!=="hepsi"?"&veri="+veri:""}${fmt!=="json"?"&format="+fmt:""}`:"";
  const kopyala=async u=>{if(!u)return;try{await navigator.clipboard.writeText(u);setOk(__T("Kopyalandı ✓"))}catch{await window.__gxPrompt(__T("Linki kopyalayın:"),u)}setTimeout(()=>setOk(""),2500)};
  const prev=`${O}/yayin-overlay.html?demo=1&brans=${br}${intl?"":"&intl=0"}`;
@@ -180,7 +180,7 @@ export default function YayinOverlayPage(){
     e.jsxs("div",{className:"yo-row",children:[e.jsx(Alan,{t:__T("Satır sayısı"),children:e.jsx(Num,{v:T.tablo.n,mn:3,mx:20,on:v=>degis("tablo","n",v)})}),T.tablo.mod==="puan"?e.jsx(Alan,{t:__T("Gösterim süresi (sn)"),children:e.jsx(Num,{v:T.tablo.sure,mn:3,mx:120,on:v=>degis("tablo","sure",v)})}):e.jsx("div",{})]}),
     br==="ritmik"?e.jsx(Alan,{t:__T("Sıralama türü"),children:e.jsx(Seg,{v:T.tablo.tur,on:v=>degis("tablo","tur",v),ops:[["genel",__T("Genel (aletler toplamı)")],["alet",__T("Son aletin sıralaması")]]})}):null,
     T.tablo.konum==="orta"?e.jsx(Tog,{v:T.tablo.detay!==!1,on:v=>degis("tablo","detay",v),t:__T("Not sütunları"),d:br==="ritmik"?"DA · DB · A · E · "+__T("Ceza"):"D · A · E · "+__T("Ceza")}):null,
-    e.jsx("p",{className:"yo-note",children:__T("Eşitlikte FIG kuralı: E, sonra A, sonra D notu yüksek olan önde. Kategori tamamlanınca başlık \"Sonuçlar\" olur ve ilk üç madalya rengiyle gösterilir.")})]}):null]}):null,
+    e.jsx("p",{className:"yo-note",children:__T("Eşitlikte WC kuralı: E, sonra A, sonra D notu yüksek olan önde. Kategori tamamlanınca başlık \"Sonuçlar\" olur ve ilk üç madalya rengiyle gösterilir.")})]}):null]}):null,
   sekme==="sirada"?e.jsxs("div",{className:"yo-list",children:[
    e.jsx(Tog,{v:T.sirada.acik,on:v=>degis("sirada","acik",v),t:__T("Sıradaki sporcular"),d:__T("Çıkış sırasına göre çağrılan sporcu ve sonraki sporcular")}),
    T.sirada.acik?e.jsxs(e.Fragment,{children:[

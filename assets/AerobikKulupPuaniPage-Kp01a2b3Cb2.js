@@ -106,7 +106,7 @@ function KulupPuani(){
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[
-   e.jsx("a",{href:"/aerobik",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"groups"})}),
+   e.jsx("a",{href:"/aerobic",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"groups"})}),
    e.jsxs("div",{style:{minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.02rem"},children:__T("Kulüp Takım Puanı")}),
     e.jsx("div",{style:{fontSize:".76rem",color:"#6B7280",fontWeight:600},children:__T("Takım kategorisi → puan türleri → kategorilerin en iyi puanı")})]})
    ]}),

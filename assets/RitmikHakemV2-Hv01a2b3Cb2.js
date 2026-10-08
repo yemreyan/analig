@@ -17,7 +17,7 @@ const MI=(n,st)=>e.jsx("i",{className:"material-icons-round hv-mi",style:st,chil
 
 // ---- Kapı: Paneller linki + kayıtlı yapı varsa v2, yoksa eski ekran ----
 export function V2Kapi(Old,kind){return function V2Gate(p){
- if(!/^\/ritmik\//.test(location.pathname))return e.jsx(Old,{...p});
+ if(!/^\/(ritmik|rhythmic)\//.test(location.pathname))return e.jsx(Old,{...p});
  const q=new URLSearchParams(location.search),lk=q.get("linkId")||q.get("v2link"),comp=q.get("competitionId"),pt=(q.get("panelType")||"").toLowerCase();
  const sjK=kind==="d"&&/^sj(da|db|a|e)$/.test(pt),uygun=!!(lk&&comp)&&(kind==="ae"||kind==="t"||kind==="l"||/^d[ab]\d?$/.test(pt)||sjK);
  const[st,setSt]=R.useState(uygun?{y:void 0}:{y:null});
@@ -191,7 +191,7 @@ function HakemV2({kind,yapi,grup}){
 
  // ---- PUANLAMA ----
  if(kind==="t"){const ded=deger,sn=Math.round(ded/.05);
-  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,e.jsxs("div",{className:"hv-info",children:[MI("timer"),__T("FIG: süre sınırı dışında kalan her saniye için 0.05 kesinti.")]}),
+  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,e.jsxs("div",{className:"hv-info",children:[MI("timer"),__T("WC: süre sınırı dışında kalan her saniye için 0.05 kesinti.")]}),
    e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("more_time")," ",__T("Saniye farkı")]}),e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"64px 1fr 64px",gap:10,alignItems:"center"},children:[
     e.jsx("button",{type:"button",className:"hv-k",onClick:()=>setVal(String(r3(Math.max(0,sn-1)*.05))),children:MI("remove")}),e.jsxs("div",{style:{textAlign:"center"},children:[e.jsx("b",{className:"mono",style:{fontSize:40},children:sn}),e.jsx("div",{style:{fontSize:12,fontWeight:800,color:"var(--mut)"},children:__T("saniye")})]}),
     e.jsx("button",{type:"button",className:"hv-k",onClick:()=>setVal(String(r3((sn+1)*.05))),children:MI("add")})]})]})]});
@@ -201,7 +201,7 @@ function HakemV2({kind,yapi,grup}){
    e.jsx("div",{className:"hv-row",children:e.jsxs("button",{type:"button",className:"hv-btn send",disabled:busy||val==="",onClick:gonder,children:[MI("send")," ",__T("GÖNDER")," ",e.jsx("span",{className:"mono",children:"−"+f2(ded)})]})})]});
   return kap(e.jsxs("div",{className:"hv-b",children:[sol,sag]}))}
  if(kind==="l"){const ded=deger;
-  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,e.jsxs("div",{className:"hv-info",children:[MI("border_outer"),__T("FIG: her çizgi ihlali (alet ya da sporcu) 0.30 kesinti.")]})]});
+  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,e.jsxs("div",{className:"hv-info",children:[MI("border_outer"),__T("WC: her çizgi ihlali (alet ya da sporcu) 0.30 kesinti.")]})]});
   const sag=e.jsxs("div",{className:"hv-card hv-sec hv-giris",children:[e.jsxs("h4",{children:[MI("border_outer")," ",__T("Çizgi ihlali")]}),e.jsxs("div",{className:"hv-disp",children:[e.jsx("span",{className:"v mono",children:lc}),e.jsx("span",{className:"u",children:__T("ihlal")+" · −"+f2(ded)})]}),
    e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"1fr 2fr",gap:10},children:[e.jsx("button",{type:"button",className:"hv-k",style:{height:96},disabled:!lc,onClick:()=>setLc(c=>Math.max(0,c-1)),children:MI("remove",{fontSize:34})}),e.jsxs("button",{type:"button",className:"hv-q big",style:{minHeight:96,fontSize:22},onClick:()=>setLc(c=>c+1),children:[MI("add",{fontSize:30})," ",__T("İhlal")," (−0.30)"]})]}),
    e.jsxs("button",{type:"button",className:"hv-btn",onClick:()=>setLc(0),children:[MI("restart_alt")," ",__T("İhlal yok (0)")]}),err?e.jsx("div",{className:"hv-err",children:err}):null,
@@ -221,7 +221,7 @@ function HakemV2({kind,yapi,grup}){
  // DA / DB
  const toplamGos=mode==="toplam"?val||"0.00":val!==""&&mode==="ikisi"?val:f2(elSum);
  const sol=e.jsxs("div",{className:"hv-col",children:[athKart,sjKart,
-  sj?e.jsxs("div",{className:"hv-info",children:[MI("verified_user"),__T("Üst Jüri referans notu — başhakem ve FIG karnesinde karşılaştırma için kullanılır.")]}):null,
+  sj?e.jsxs("div",{className:"hv-info",children:[MI("verified_user"),__T("Üst Jüri referans notu — başhakem ve WC karnesinde karşılaştırma için kullanılır.")]}):null,
   resp?e.jsxs("div",{className:"hv-step",children:[__T("Aşama"),e.jsx("i",{className:"on"}),e.jsx("i",{}),e.jsx("span",{style:{color:"var(--tx)"},children:"1/2 · "+__T("kendi notun")})]}):null,
   !tek&&(yapi.gor.partner||yapi.gor.sjRef)?e.jsxs("div",{className:"hv-card hv-sec",children:[e.jsxs("h4",{children:[MI("visibility")," ",__T("Diğer notlar")]}),e.jsx("div",{className:"hv-peer",children:[...(yapi.gor.partner?peers.filter(([s])=>s!==slot):[]),...(yapi.gor.sjRef?[["SJ"+P,r["sj"+fin]]]:[])].map(([s,v])=>e.jsxs("div",{children:[e.jsx("small",{children:s}),e.jsx("b",{className:"mono",children:f2(v)})]},s))})]}):null,
   tek?e.jsxs("div",{className:"hv-info",children:[MI("looks_one"),__T("Girdiğin not doğrudan kesin")+" "+P+" "+__T("notudur.")]}):null,

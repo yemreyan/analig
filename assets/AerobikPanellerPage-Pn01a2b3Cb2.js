@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{A as V}from"./aerobikCriteriaDefaults-ld4mBtrICb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{A as V}from"./aerobikCriteriaDefaults-ld4mBtrICb2.js";import{SeyirciKart}from"./seyirciKart-Gs01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // AEROBİK PANELLER
 //  <yarışma>/panelGruplari/<gid> : {ad, tipler{A,E,D,T,L,SJ}, adet{A,E}, kategoriler{kat:true}, paneller{SLOT:{ozel}}}
@@ -35,7 +35,7 @@ function Paneller(){
  const cats=C?.kategoriler||{},gruplar=C?.panelGruplari||{},linkler=C?.hakemLinkleri||{},token=C?.epanelToken||"";
  const katAd=k=>String(cats[k]?.name||V[k]?.label||V[String(k).replace(/^final_/,"")]?.label||k).replace(/^🏆\s*/,"🏆 ");
  const katSira=Object.keys(cats).sort((a,b)=>(/^final_/.test(a)?1:0)-(/^final_/.test(b)?1:0)||String(V[a.replace(/^final_/,"")]?.group||"").localeCompare(String(V[b.replace(/^final_/,"")]?.group||""),"tr")||katAd(a).localeCompare(katAd(b),"tr"));
- const link=(gid,s)=>`${location.origin}/aerobik/${s.yol}?competitionId=${encodeURIComponent(comp)}&linkId=${pidOf(gid,s.slot)}${s.ek}${token?`&token=${token}`:""}`;
+ const link=(gid,s)=>`${location.origin}/aerobic/${s.yol}?competitionId=${encodeURIComponent(comp)}&linkId=${pidOf(gid,s.slot)}${s.ek}${token?`&token=${token}`:""}`;
  const aktifKat=ks=>{const a=C?.aktifSporcu||{};let en=null,t=-1;ks.forEach(k=>{const x=a[k];if(x&&(+x.ts||0)>t){t=+x.ts||0;en=k}});return en};
 
  // ---- yaz ----
@@ -147,7 +147,7 @@ function Paneller(){
 
  const gl=Object.keys(gruplar).sort((a,b)=>String(gruplar[a]?.ad||"").localeCompare(String(gruplar[b]?.ad||""),"tr",{numeric:!0}));
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/aerobik",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"view_module"})}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/aerobic",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"view_module"})}),
    e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:__T("Aerobik")}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Paneller")})]})
    ]}),
   e.jsxs("div",{style:S.in,children:[
@@ -157,18 +157,19 @@ function Paneller(){
     e.jsxs("div",{style:{...S.card,display:"flex",gap:".8rem",alignItems:"center",flexWrap:"wrap"},children:[
      e.jsx("div",{style:{flex:1,minWidth:240,fontSize:".82rem",color:"#6B7280",fontWeight:600,lineHeight:1.5},children:__T("Panel grubu oluşturun (ör. Salon 1), içinde hangi panellerin (A, E, D, T, L, SJ) olacağını ve hakem sayısını seçin. Her panelin linki/QR'ı ayrıdır. Kategori eklediğinizde/çıkardığınızda açık paneller anında güncellenir.")}),
      e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#db2777,#6366f1)"},onClick:()=>formAc(null),children:"+ "+__T("Yeni panel grubu")})]}),
+    e.jsx(SeyirciKart,{comp,br:"aerobik",kim:""}),
     (()=>{const o=location.origin,tk=token?"&token="+token:"",cid=encodeURIComponent(comp),L=[
-      ["gavel","#7C3AED",__T("Üst Jüri"),o+"/aerobik/ustjuri?competitionId="+cid+tk],
-      ["groups","#0EA5E9",__T("Teknik Kurul"),o+"/aerobik/teknikkurul?competitionId="+cid+tk],
-      ["flag","#DC2626",__T("İtiraz Ekranı"),o+"/aerobik/itiraz?competitionId="+cid+tk],
-      ["live_tv","#D97706",__T("Canlı Skor (Flashcard)"),o+"/aerobik/canli?comp="+cid],
-      ["balance","#DB2777",__T("SJA · Artistik"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sja"+tk],
-      ["balance","#16A34A",__T("SJE · Uygulama"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sje"+tk],
-      ["balance","#2563EB",__T("SJD · Zorluk"),o+"/aerobik/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sjd"+tk],
-      ["videocam","#475569",__T("Kamera A"),o+"/aerobik/kamera?cam=a&compId="+cid],
-      ["videocam","#475569",__T("Kamera B"),o+"/aerobik/kamera?cam=b&compId="+cid],
-      ["qr_code_2","#0F766E",__T("Birleşik Panel QR"),o+"/aerobik/panel-birlestir"],
-      ["format_list_numbered","#9333EA",__T("Çıkış Sırası"),o+"/aerobik/cikis-listesi?comp="+cid]];
+      ["gavel","#7C3AED",__T("Üst Jüri"),o+"/aerobic/superior-jury?competitionId="+cid+tk],
+      ["groups","#0EA5E9",__T("Teknik Kurul"),o+"/aerobic/technical-committee?competitionId="+cid+tk],
+      ["flag","#DC2626",__T("İtiraz Ekranı"),o+"/aerobic/inquiry?competitionId="+cid+tk],
+      ["live_tv","#D97706",__T("Canlı Skor (Flashcard)"),o+"/aerobic/live?comp="+cid],
+      ["balance","#DB2777",__T("SJA · Artistik"),o+"/aerobic/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sja"+tk],
+      ["balance","#16A34A",__T("SJE · Uygulama"),o+"/aerobic/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sje"+tk],
+      ["balance","#2563EB",__T("SJD · Zorluk"),o+"/aerobic/sjpanel?competitionId="+cid+"&catId=__ALL__&panelType=sjd"+tk],
+      ["videocam","#475569",__T("Kamera A"),o+"/aerobic/camera?cam=a&compId="+cid],
+      ["videocam","#475569",__T("Kamera B"),o+"/aerobic/camera?cam=b&compId="+cid],
+      ["qr_code_2","#0F766E",__T("Birleşik Panel QR"),o+"/aerobic/panel-merge"],
+      ["format_list_numbered","#9333EA",__T("Çıkış Sırası"),o+"/aerobic/start-list?comp="+cid]];
      const ib={width:32,height:32,borderRadius:9,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0};
      return e.jsxs("div",{style:{...S.card,borderColor:"#FCD34D",background:"linear-gradient(135deg,#FFFBEB,#fff 60%)"},children:[
       e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",marginBottom:".8rem"},children:[e.jsx("div",{style:{width:38,height:38,borderRadius:11,background:"linear-gradient(135deg,#F59E0B,#D97706)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:e.jsx("span",{className:"material-icons-round",children:"dashboard"})}),

@@ -270,7 +270,7 @@ function logHesapla(C,logs,opt){const L0=[];Object.values(logs||{}).forEach(v=>{
 const RAPORLAR=[
  {id:"sonuc",ic:"format_list_numbered",t:"Resmi Sonuçlar",d:"Genel tasnif, alet, takım ve final sonuçları — PDF / Excel"},
  {id:"madalya",ic:"military_tech",t:"Madalya Tablosu",d:"Ülke, kulüp ya da il bazında; birden çok yarışmanın toplamı"},
- {id:"hakem",ic:"balance",t:"Hakem Sapma Analizi",d:"Üst jüri / panel notundan sapma, FIG puanı, D hakem farkları"},
+ {id:"hakem",ic:"balance",t:"Hakem Sapma Analizi",d:"Üst jüri / panel notundan sapma, WC puanı, D hakem farkları"},
  {id:"itiraz",ic:"gavel",t:"Not Değişikliği ve İtirazlar",d:"İtirazlar ve ücretler, başhakem düzeltmeleri, kilit açma, yeniden kaydedilen puanlar"},
  {id:"zaman",ic:"schedule",t:"Zaman Çizelgesi",d:"Planlanan / gerçekleşen, gecikme, rutin süreleri"},
  {id:"sporcu",ic:"trending_up",t:"Sporcu Karşılaştırma",d:"Yarışmalar arası genel tasnif, alet ve final sonuçları"},
@@ -361,9 +361,9 @@ function Raporlar(){
  const PAD=P=>({DA:L("Zorluk · Alet (DA)","Apparatus Difficulty (DA)"),DB:L("Zorluk · Beden (DB)","Body Difficulty (DB)"),A:L("Artistik (A)","Artistry (A)"),E:L("Uygulama (E)","Execution (E)")})[P]||P;
  const f2=v=>v==null||isNaN(v)?"—":Number(v).toFixed(2),sg=v=>v==null||isNaN(v)?"—":(v>0.0049?"+":v<-0.0049?"−":"±")+Math.abs(Number(v)).toFixed(2);
  const hkAd=h=>h.isimli?h.ad:h.ad+" · "+(comps.length>1?String(h.C.isim).slice(0,28):L("isim atanmamış","no name assigned"));
- const hkCols=()=>[L("HAKEM","JUDGE"),L("ÜLKE / İL","NOC / PROV."),L("PANEL","PANEL"),L("POZİSYON","POSITION"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("NOT","SCORES"),L("ORT. SAPMA","MEAN DEV."),L("ORT. |SAPMA|","MEAN |DEV.|"),L("EN BÜYÜK","MAX"),L("TOL. DIŞI","OUT OF TOL."),L("FIG %","FIG %"),L("DERECE","GRADE"),L("KENDİ SPORCUSU LEHİNE","OWN ATHLETES")];
+ const hkCols=()=>[L("HAKEM","JUDGE"),L("ÜLKE / İL","NOC / PROV."),L("PANEL","PANEL"),L("POZİSYON","POSITION"),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("NOT","SCORES"),L("ORT. SAPMA","MEAN DEV."),L("ORT. |SAPMA|","MEAN |DEV.|"),L("EN BÜYÜK","MAX"),L("TOL. DIŞI","OUT OF TOL."),L("WC %","WC %"),L("DERECE","GRADE"),L("KENDİ SPORCUSU LEHİNE","OWN ATHLETES")];
  const hkRow=h=>[hkAd(h),h.ulke||"",h.pan,h.poz,...(comps.length>1?[String(h.yar)]:[]),String(h.n),sg(h.ort),f2(h.abs),sg(h.mx),h.dis+" ("+Math.round(h.dis/h.n*100)+"%)",h.pct.toFixed(1),h.grade,h.leh?sg(h.leh.fark)+" ("+h.leh.n+")":""];
- const panCols=()=>[L("PANEL","PANEL"),L("RUTİN","ROUTINES"),L("HAKEM NOTU","JUDGE SCORES"),L("ORT. |SAPMA|","MEAN |DEV.|"),L("TOL. DIŞI","OUT OF TOL."),L("FIG %","FIG %"),L("ÜST JÜRİ MÜDAHALESİ","SJ INTERVENTION"),L("SJ NOTU YOK","NO SJ SCORE"),L("BLOK (>2.00)","BLOCK (>2.00)")];
+ const panCols=()=>[L("PANEL","PANEL"),L("RUTİN","ROUTINES"),L("HAKEM NOTU","JUDGE SCORES"),L("ORT. |SAPMA|","MEAN |DEV.|"),L("TOL. DIŞI","OUT OF TOL."),L("WC %","WC %"),L("ÜST JÜRİ MÜDAHALESİ","SJ INTERVENTION"),L("SJ NOTU YOK","NO SJ SCORE"),L("BLOK (>2.00)","BLOCK (>2.00)")];
  const panRow=p=>[PAD(p.P),String(p.rut),String(p.n),f2(p.abs),p.n?p.dis+" ("+Math.round(p.dis/p.n*100)+"%)":"0",p.pct.toFixed(1),String(p.mud),String(p.sjYok),p.P==="A"||p.P==="E"?String(p.blok):"—"];
  const spAd=r=>(r.grp?r.sp.kulup||r.sp.ad:r.sp.ad)+(r.sp.ulke?" ("+r.sp.ulke+")":"");
  const bCols=()=>[L("HAKEM","JUDGE"),L("POZ.","POS."),...(comps.length>1?[L("YARIŞMA","COMP.")]:[]),L("KATEGORİ","CATEGORY"),L("SPORCU","GYMNAST"),L("ALET","APP."),L("NOT","SCORE"),L("REFERANS","REFERENCE"),L("SAPMA","DEV."),L("TOL.","TOL.")];
@@ -501,7 +501,7 @@ function Raporlar(){
    }else if(rapor==="hakem"){const H0=hakem;
     await ust(comps.length===1?comps[0]:null,L("HAKEM SAPMA ANALİZİ","JUDGE DEVIATION ANALYSIS"));
     d.setFont(FT,"normal");d.setFontSize(7.5);d.setTextColor(...MUT);
-    d.text(L("Referans: ","Reference: ")+(opt.hRef==="sj"?L("Üst Jüri kontrol notu (yoksa panel sonucu)","Superior jury control score (panel result if missing)"):L("panel sonucu (A/E: en yüksek ve en düşük atılmış ortalama; D: ortak not)","panel result (A/E: trimmed mean; D: common score)"))+"  ·  "+L("Tolerans: A/E ≤1.20 → 0.40, üstü 0.70; D 0.50  ·  FIG RG Judges' Rules değerlendirme tabloları","Tolerance: A/E ≤1.20 → 0.40, above 0.70; D 0.50  ·  FIG RG Judges' Rules evaluation tables")+(comps.length>1?"  ·  "+comps.map(c=>c.isim).join(" · "):""),M,y,{maxWidth:W-2*M});y+=8;
+    d.text(L("Referans: ","Reference: ")+(opt.hRef==="sj"?L("Üst Jüri kontrol notu (yoksa panel sonucu)","Superior jury control score (panel result if missing)"):L("panel sonucu (A/E: en yüksek ve en düşük atılmış ortalama; D: ortak not)","panel result (A/E: trimmed mean; D: common score)"))+"  ·  "+L("Tolerans: A/E ≤1.20 → 0.40, üstü 0.70; D 0.50  ·  WC RG Judges' Rules değerlendirme tabloları","Tolerance: A/E ≤1.20 → 0.40, above 0.70; D 0.50  ·  WC RG Judges' Rules evaluation tables")+(comps.length>1?"  ·  "+comps.map(c=>c.isim).join(" · "):""),M,y,{maxWidth:W-2*M});y+=8;
     bolumBas(L("Panel özeti","Panel summary"));tablo(panCols(),H0.pan.map(panRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:58}}});
     bolumBas(L("Hakem bazında","By judge")+(H0.isimsiz?" · "+H0.isimsiz+" "+L("pozisyonda hakem adı atanmamış","positions without judge names"):""));
     const hc=hkCols();tablo(hc,H0.hk.map(hkRow),{columnStyles:{0:{fontStyle:"bold",cellWidth:46}},parse:z=>{const h=H0.hk[z.row.index];if(!h)return;if(z.column.index===hc.length-2){const g=GRENK[h.grade];if(g){z.cell.styles.textColor=g[0].match(/\w\w/g).map(x=>parseInt(x,16));z.cell.styles.fontStyle="bold"}}if(z.column.index===hc.length-5&&h.dis/h.n>.25)z.cell.styles.textColor=[185,28,28];if(z.column.index===hc.length-1&&h.leh&&h.leh.fark>.1)z.cell.styles.textColor=[185,28,28]}});
@@ -574,7 +574,7 @@ function Raporlar(){
     ek(L("Hakemler","Judges"),[hkCols(),...H0.hk.map(h=>hkRow(h).map(nm))],[36,12,12,16,8,10,10,10,14,8,12,18].concat(comps.length>1?[8]:[]));
     ek(L("D farkları","D differences"),[dCols(),...H0.dfark.map(x=>dRow(x).map(nm))],[30,30,12,12,16,8,8].concat(comps.length>1?[26]:[]));
     ek(L("En büyük sapmalar","Largest deviations"),[bCols(),...H0.buyuk.map(r=>bRow(r).map(nm))],[30,6,30,30,12,8,16,8,6].concat(comps.length>1?[26]:[]));
-    ek(L("Tüm hakem notları","All judge scores"),[[L("Yarışma","Comp."),L("Kategori","Category"),L("Sporcu","Gymnast"),L("Alet","App."),L("Panel","Panel"),L("Poz.","Pos."),L("Hakem","Judge"),L("Not","Score"),L("Referans","Reference"),L("Ref. kaynağı","Ref. source"),L("Sapma","Dev."),L("Tolerans","Tol."),L("Tol. dışı","Out"),"FIG %",L("Atılan not","Dropped")],
+    ek(L("Tüm hakem notları","All judge scores"),[[L("Yarışma","Comp."),L("Kategori","Category"),L("Sporcu","Gymnast"),L("Alet","App."),L("Panel","Panel"),L("Poz.","Pos."),L("Hakem","Judge"),L("Not","Score"),L("Referans","Reference"),L("Ref. kaynağı","Ref. source"),L("Sapma","Dev."),L("Tolerans","Tol."),L("Tol. dışı","Out"),"WC %",L("Atılan not","Dropped")],
      ...H0.rows.map(r=>[r.C.isim,kA(r.katAd),spAd(r),aA(r.al),r.panel,r.poz,r.kim?r.kim.ad:"",Number(f2(r.val)),Number(f2(r.ref)),r.refKaynak,Number(r.dev.toFixed(2)),r.tol,r.dis?L("evet","yes"):"",r.pct,r.atildi?L("evet","yes"):""])],[26,24,28,10,6,6,24,7,9,9,7,7,7,6,8])}
    else{const gAd=grup==="ulke"?L("Ülke","NOC"):grup==="il"?L("İl","Province"):L("Kulüp","Club");
     const aoa=[[L("Madalya Tablosu","Medal Table")],[comps.map(c=>c.isim).join(" · ")],[],[L("Sıra","Rank"),gAd,...(grup==="ulke"?[L("Ülke adı","Country")]:[]),L("Altın","Gold"),L("Gümüş","Silver"),L("Bronz","Bronze"),L("Toplam","Total"),...(comps.length>1?[L("Yarışma sayısı","Competitions")]:[])]];
@@ -747,7 +747,7 @@ function Raporlar(){
    !H0.rows.length?e.jsx("div",{style:{color:"#64748B",fontWeight:700,marginTop:".8rem"},children:__T("Seçili yarışmalarda hakem notu bulunamadı.")}):e.jsxs(e.Fragment,{children:[
     bas(L("Panel özeti","Panel summary")),tab(panCols(),H0.pan.map(panRow)),
     bas(L("Hakem bazında","By judge")),
-    H0.isimsiz?e.jsxs("div",{style:{fontSize:".74rem",fontWeight:700,color:"#B45309",background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:".45rem .6rem",marginBottom:".4rem"},children:["⚠ ",H0.isimsiz+" "+__T("pozisyonda hakem adı atanmamış; bu satırlar yarışma · pozisyon olarak gösterilir. Hakemleri Paneller sayfasından ya da FIG Hakem Karnesi › Hakem İsimleri'nden atayabilirsiniz.")]}):null,
+    H0.isimsiz?e.jsxs("div",{style:{fontSize:".74rem",fontWeight:700,color:"#B45309",background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:".45rem .6rem",marginBottom:".4rem"},children:["⚠ ",H0.isimsiz+" "+__T("pozisyonda hakem adı atanmamış; bu satırlar yarışma · pozisyon olarak gösterilir. Hakemleri Paneller sayfasından ya da WC Hakem Karnesi › Hakem İsimleri'nden atayabilirsiniz.")]}):null,
     tab(hc,H0.hk.map(hkRow),{sol:[1,2,3],st:(i,j)=>{const h=H0.hk[i];if(j===hc.length-2){const g=GRENK[h.grade];return g?{color:g[0],background:g[1],fontWeight:900}:null}if(j===hc.length-5&&h.dis/h.n>.25)return{color:"#B91C1C",fontWeight:900};if(j===hc.length-1&&h.leh&&h.leh.fark>.1)return{color:"#B91C1C",fontWeight:900};return null}}),
     H0.dOz.length?e.jsxs(e.Fragment,{children:[bas(L("D paneli hakem farkları","D panel judge differences")+" (DA1–DA2 · DB1–DB2)"),
      tab([L("Panel","Panel"),L("Karşılaştırma","Pairs"),L("Ort. fark","Mean diff."),L("Eşiği aşan","Over threshold"),L("En büyük","Max")],H0.dOz.map(o=>[PAD(o.P),o.n,f2(o.ort),o.n?o.asti+" ("+Math.round(o.asti/o.n*100)+"%)":"0",f2(o.mx)])),
@@ -766,7 +766,7 @@ function Raporlar(){
      e.jsx("b",{children:(comps.length>1?o.C.isim+" · ":"")+bolBaslik(o.b)}),...[1,2,3].map(n=>e.jsx("span",{style:{color:madalyaRenk(n),fontWeight:700},children:o.m.filter(r=>r.rank===n).map(r=>(n===1?"🥇 ":n===2?"🥈 ":"🥉 ")+(r.takim?r.ad:satirAd(r))+(isIntl(o.C)&&r.ulke&&r.ulke!==r.ad?" ("+r.ulke+")":"")).join(", ")||"—"},n))]},oi))]}):null]});
 
  return e.jsxs("div",{style:S.wrap,children:[e.jsx("style",{children:"@media(max-width:900px){.rp-in{grid-template-columns:1fr!important}}"}),
-  e.jsxs("div",{style:S.top,children:[e.jsx("button",{type:"button",title:__T("Geri"),style:S.back,onClick:()=>{window.history.length>1?history.back():location.assign("/ritmik")},children:MI("arrow_back",{fontSize:20})}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("button",{type:"button",title:__T("Geri"),style:S.back,onClick:()=>{window.history.length>1?history.back():location.assign("/rhythmic")},children:MI("arrow_back",{fontSize:20})}),
    e.jsx("div",{style:S.ico,children:MI("summarize",{color:"#fff",fontSize:22})}),
    e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.1rem",lineHeight:1.15},children:__T("Raporlar")}),
     e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:__T("Ritmik · yarışma seçin, raporu oluşturun, PDF / Excel indirin")})]})]}),

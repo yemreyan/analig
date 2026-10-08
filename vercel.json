@@ -1,19 +1,35 @@
 {
   "rewrites": [
-    { "source": "/trambolin/(.*)", "destination": "/trambolin/index.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/broadcast-overlay.html",
+      "destination": "/yayin-overlay.html"
+    },
+    {
+      "source": "/trambolin/(.*)",
+      "destination": "/trambolin/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/data/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ]

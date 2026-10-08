@@ -11,6 +11,47 @@
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon-180.png" />
   <title>Gymexa Score · Yarışma Yönetim Sistemi</title>
+  <script>
+    // İNGİLİZCE ADRESLER (2026-10-08): sayfa adresleri İngilizce (/rhythmic/panels …). Eski Türkçe adresler (dağıtılmış hakem / kamera
+    // linkleri, QR kodları) çalışmaya devam eder: açılışta ve uygulama içi her geçişte İngilizce karşılığına çevrilir.
+    (function () {
+      var P = { ritmik: "rhythmic", aerobik: "aerobic", artistik: "artistic", trampolin: "trampoline", parkur: "parkour" };
+      var S = { arsiv: "archive", canli: "live", "cikis-listesi": "start-list", "fig-karne": "wc-scorecard", "fig-scorecard": "wc-scorecard", finaller: "final-builder", "hakem-karnesi": "judge-scorecard",
+        "hakem-raporu": "judge-report", itiraz: "inquiry", kamera: "camera", kategoriler: "categories", "kulup-puani": "club-points", "panel-birlestir": "panel-merge",
+        paneller: "panels", teknikkurul: "technical-committee", ustjuri: "superior-jury", "ust-juri": "superior-jury", videolar: "videos", "yayin-overlay": "broadcast-overlay",
+        "hakem-fark-analizi": "judge-difference-analysis", "not-silme": "score-deletion", "yayin-grid": "broadcast-grid", "yayin-kontrol": "broadcast-control",
+        raporlar: "reports", "sporcu-aletleri": "athlete-apparatus", "sporcu-karti": "athlete-card" };
+      var T = { basvuru: "apply", "gorevli-kartlari": "staff-cards", kamera: "camera", "kategori-yonetimi": "category-management" };
+      var EN = {}; Object.keys(P).forEach(function (k) { EN[P[k]] = 1; });
+      function yol(p) {
+        if (typeof p !== "string" || p.charAt(0) !== "/") return p;
+        var a = p.split("/"); // ["", seg0, seg1, ...]
+        if (P[a[1]]) a[1] = P[a[1]];
+        if (EN[a[1]] && a.length > 2 && S[a[2]]) a[2] = S[a[2]];
+        else if (a.length === 2 && T[a[1]]) a[1] = T[a[1]];
+        return a.join("/");
+      }
+      function url(u) {
+        try {
+          if (u == null) return u;
+          var s = String(u);
+          if (s.charAt(0) === "/" && s.charAt(1) !== "/") { var m = /^([^?#]*)(.*)$/.exec(s); return yol(m[1]) + m[2]; }
+          var x = new URL(s, location.href);
+          if (x.origin !== location.origin) return u;
+          x.pathname = yol(x.pathname); return typeof u === "string" ? x.toString() : x;
+        } catch (e) { return u; }
+      }
+      window.__ENYOL = yol; window.__ENURL = url;
+      try {
+        var np = yol(location.pathname);
+        if (np !== location.pathname) history.replaceState(history.state, "", np + location.search + location.hash);
+        ["pushState", "replaceState"].forEach(function (f) {
+          var o = history[f];
+          history[f] = function (st, t, u) { return o.call(this, st, t, u == null ? u : url(u)); };
+        });
+      } catch (e) { }
+    })();
+  </script>
   <script type="module" crossorigin src="/assets/main-C2LpyYUGCb2.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMXCb2.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-react-Cxw6bqwhCb2.js">

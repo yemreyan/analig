@@ -114,7 +114,7 @@ function pdfBaslik(doc,FT,o,W,t1,t2,comp,etiket){
   doc.setFont(FT,"bold");doc.setFontSize(7.5);doc.setTextColor(48,56,104);const t=o("AEROBİK CİMNASTİK");doc.text(t,cx,30.5,{align:"center"});const tw=doc.getTextWidth(t);doc.setDrawColor(...CC);doc.setLineWidth(.5);doc.line(cx-tw/2,32.6,cx+tw/2,32.6)}
  doc.setTextColor(0,0,0)}
 function sayfaNo(doc,FT,o,W,H){const g=doc.internal.getNumberOfPages();for(let i=1;i<=g;i++){doc.setPage(i);doc.setFont(FT,"normal");doc.setFontSize(6.8);doc.setTextColor(140);
- doc.text(o("FIG AER CoP 2025–2028 · §8.1.1–8.1.6 · §2.1 · §3.2"),10,H-6);doc.text(`${i} / ${g}`,W-10,H-6,{align:"right"})}}
+ doc.text(o("WC AER CoP 2025–2028 · §8.1.1–8.1.6 · §2.1 · §3.2"),10,H-6);doc.text(`${i} / ${g}`,W-10,H-6,{align:"right"})}}
 const HS={fillColor:[30,27,75],textColor:255,fontStyle:"bold",halign:"center",valign:"middle",fontSize:7.2,cellPadding:1.8},BS={fontSize:7.3,cellPadding:1.5,valign:"middle",lineColor:[226,232,240],lineWidth:.1,textColor:[30,27,75]};
 // PDF: sapma grafiği (her rutin bir nokta, tolerans bandı)
 function pdfSapmaGrafik(doc,FT,o,x,y,w,h,satir,panelRgb){
@@ -180,7 +180,7 @@ function Karne(){
  const karnePdf=async liste=>{if(!liste.length)return;setBusy(!0);toast(__T("PDF hazırlanıyor, lütfen bekleyin..."),"info");
   try{const{doc,at,FT,o}=await pdfHazirla(!1),W=210,H=297;
    liste.forEach((h,ix)=>{ix&&doc.addPage();const P=PANEL[h.panel];
-    pdfBaslik(doc,FT,o,W,"HAKEM DEĞERLENDİRME KARNESİ","JUDGE EVALUATION REPORT · FIG AER CoP 2025–2028",compBilgi,P.kod+" PANEL");try{doc.outline&&doc.outline.add(null,o(P.kod+" · "+(h.ad||h.poslar.join(", "))),{pageNumber:doc.internal.getNumberOfPages()})}catch{}
+    pdfBaslik(doc,FT,o,W,"HAKEM DEĞERLENDİRME KARNESİ","JUDGE EVALUATION REPORT · WC AER CoP 2025–2028",compBilgi,P.kod+" PANEL");try{doc.outline&&doc.outline.add(null,o(P.kod+" · "+(h.ad||h.poslar.join(", "))),{pageNumber:doc.internal.getNumberOfPages()})}catch{}
     // hakem kimlik kutusu
     let y=46;doc.setFillColor(255,255,255);doc.setDrawColor(226,232,240);doc.setLineWidth(.3);doc.roundedRect(10,y,W-20,19,2,2,"FD");doc.setFillColor(...P.rgb);doc.rect(10,y,1.6,19,"F");
     doc.setFont(FT,"bold");doc.setFontSize(13);doc.setTextColor(...INK);doc.text(o(h.ad||"(atanmamış hakem)"),15,y+7.2);
@@ -195,7 +195,7 @@ function Karne(){
     y+=19;doc.setFont(FT,"bold");doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(o("Sapma grafiği / Deviation chart"),10,y);doc.setFont(FT,"normal");doc.setFontSize(6.5);doc.setTextColor(100,116,139);doc.text(o("Nokta: hakem notu − referans · yeşil bant: §8.1.2 toleransı · kırmızı: tolerans dışı"),W-10,y,{align:"right"});
     const ss=satirSirali(h);pdfSapmaGrafik(doc,FT,o,10,y+2,W-20,46,ss,P.rgb);
     // histogram + bulgular
-    y+=52;doc.setFont(FT,"bold");doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(o("Sapma dağılımı / Distribution"),10,y);doc.text(o("Bulgular / Findings (FIG)"),W/2+3,y);
+    y+=52;doc.setFont(FT,"bold");doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(o("Sapma dağılımı / Distribution"),10,y);doc.text(o("Bulgular / Findings (WC)"),W/2+3,y);
     pdfHistogram(doc,FT,o,10,y+2,W/2-12,34,ss);
     let by=y+5;doc.setFont(FT,"normal");doc.setFontSize(7.2);h.bulgu.forEach(([kod,tr])=>{doc.setFont(FT,"bold");doc.setTextColor(...CC);doc.text(o(kod),W/2+3,by);doc.setFont(FT,"normal");doc.setTextColor(30,41,59);const ln=doc.splitTextToSize(o(tr),W/2-26);doc.text(ln,W/2+17,by);by+=ln.length*3.2+1.6});
     // kategori özeti
@@ -211,16 +211,16 @@ function Karne(){
      columnStyles:{0:{cellWidth:8,halign:"center"},1:{cellWidth:28},2:{cellWidth:38},3:{cellWidth:30},4:{halign:"center",cellWidth:12},5:{halign:"center",cellWidth:20},6:{halign:"center",cellWidth:14},7:{halign:"center",cellWidth:9},8:{halign:"center",cellWidth:13},9:{halign:"center",cellWidth:16,fontSize:6.4}},alternateRowStyles:{fillColor:[248,247,255]}});
     let yy=doc.lastAutoTable.finalY+5;if(yy>H-40){doc.addPage();yy=20}
     doc.setFont(FT,"normal");doc.setFontSize(6.6);doc.setTextColor(100,116,139);
-    doc.text(doc.splitTextToSize(o("Referans: Superior Jury kontrol notu (SJA/SJE); yoksa panel sonucu (§8.1.1: 4 hakemde en yüksek ve en düşük not atılır, ortadaki notların ortalaması). Tolerans §8.1.2: 8.00–10.00: 0.3 · 7.00–7.99: 0.4 · 6.00–6.99: 0.5 · 0–5.99: 0.6. E notları 10 − kesinti olarak değerlendirilmiştir. Sıra uyumu: hakemin sıralaması ile referans sıralaması arasındaki Spearman katsayısı (1 = tam uyum). Bu karne derece içermez; Superior Jury değerlendirmesi için FIG maddelerine dayalı ölçümleri sunar (§2.1, §3.2)."),W-20),10,yy);
+    doc.text(doc.splitTextToSize(o("Referans: Superior Jury kontrol notu (SJA/SJE); yoksa panel sonucu (§8.1.1: 4 hakemde en yüksek ve en düşük not atılır, ortadaki notların ortalaması). Tolerans §8.1.2: 8.00–10.00: 0.3 · 7.00–7.99: 0.4 · 6.00–6.99: 0.5 · 0–5.99: 0.6. E notları 10 − kesinti olarak değerlendirilmiştir. Sıra uyumu: hakemin sıralaması ile referans sıralaması arasındaki Spearman katsayısı (1 = tam uyum). Bu karne derece içermez; Superior Jury değerlendirmesi için WC maddelerine dayalı ölçümleri sunar (§2.1, §3.2)."),W-20),10,yy);
     yy+=16;doc.setTextColor(0,0,0);doc.setDrawColor(148,163,184);doc.setLineWidth(.3);doc.line(20,yy+8,80,yy+8);doc.line(W-80,yy+8,W-20,yy+8);doc.setFontSize(8);doc.text(o("CJP"),50,yy+12,{align:"center"});doc.text(o("Superior Jury Başkanı / President"),W-50,yy+12,{align:"center"})});
    sayfaNo(doc,FT,o,W,H);
-   doc.save(dosyaAdi((liste.length===1?(liste[0].ad||liste[0].poslar.join("-"))+" FIG Karne":"FIG Hakem Karneleri "+(V.isim||"")))+".pdf");
+   doc.save(dosyaAdi((liste.length===1?(liste[0].ad||liste[0].poslar.join("-"))+" WC Karne":"WC Hakem Karneleri "+(V.isim||"")))+".pdf");
    toast(__T("PDF başarıyla indirildi."),"success")}catch(er){console.error(er);toast(__T("PDF oluşturulurken bir hata oluştu."),"error")}setBusy(!1)};
 
  // ---- PDF: CJP sapma raporu (§3.2) ----
  const cjpPdf=async()=>{setBusy(!0);toast(__T("PDF hazırlanıyor, lütfen bekleyin..."),"info");
   try{const{doc,at,FT,o}=await pdfHazirla(!0),W=297,H=210;
-   const bas=()=>pdfBaslik(doc,FT,o,W,"CJP SAPMA RAPORU","CJP DISCREPANCY REPORT TO SUPERIOR JURY · FIG AER CoP §3.2",compBilgi,"§3.2");bas();
+   const bas=()=>pdfBaslik(doc,FT,o,W,"CJP SAPMA RAPORU","CJP DISCREPANCY REPORT TO SUPERIOR JURY · WC AER CoP §3.2",compBilgi,"§3.2");bas();
    const K=[["Rutin-panel",String(A.rutinler.length)],["SJ referanslı",sjOran.toFixed(0)+"%"],["§8.1.2 ihlali",String(f812.length)],["§8.1.6 uç fark ≥ 1.0",String(f816.length)],["Tol. dışı not",String(toplamDis)],["Hakem",String(A.ozet.length)]],kw=(W-20-5*3)/6;
    K.forEach(([a,v],i)=>{const kx=10+i*(kw+3);doc.setFillColor(248,247,255);doc.setDrawColor(226,232,240);doc.roundedRect(kx,45,kw,12,1.8,1.8,"FD");doc.setFont(FT,"bold");doc.setFontSize(6.6);doc.setTextColor(100,116,139);doc.text(o(a.toLocaleUpperCase("tr-TR")),kx+3,49.5);doc.setFontSize(11);doc.setTextColor(...((i===2||i===3||i===4)&&v!=="0"?[185,28,28]:INK));doc.text(o(v),kx+3,55.2)});
    const mxJ=Math.max(4,...sapmali.map(r=>r.hakemler.length));
@@ -243,11 +243,11 @@ function Karne(){
   catch(er){console.error(er);toast(__T("PDF oluşturulurken bir hata oluştu."),"error")}setBusy(!1)};
 
  const excel=()=>{const wb=XU.book_new();
-  XU.book_append_sheet(wb,XU.json_to_sheet(A.ozet.map(h=>({Panel:PANEL[h.panel].kod,Pozisyon:h.poslar.join(", "),Hakem:h.ad,"Brövé":h.brove,"Ülke":h.ulke,"İl":h.il,Rutin:h.n,"Ort. sapma":r3(h.ort),"Ort. |sapma|":r3(h.abs),"RMS sapma":r3(h.rms),"En büyük":r3(h.mx),"Tolerans dışı":h.dis,"Tol. dışı %":Math.round(h.disPct),"§8.1.6 uç not":h.uc816,"Atılan en yüksek":h.atilanY,"Atılan en düşük":h.atilanD,"Sıra uyumu ρ":h.rho==null?"":r3(h.rho),"Bulgular (FIG)":h.bulgu.map(b=>b[0]+" "+b[1]).join(" | ")}))),"Hakem Ozeti");
+  XU.book_append_sheet(wb,XU.json_to_sheet(A.ozet.map(h=>({Panel:PANEL[h.panel].kod,Pozisyon:h.poslar.join(", "),Hakem:h.ad,"Brövé":h.brove,"Ülke":h.ulke,"İl":h.il,Rutin:h.n,"Ort. sapma":r3(h.ort),"Ort. |sapma|":r3(h.abs),"RMS sapma":r3(h.rms),"En büyük":r3(h.mx),"Tolerans dışı":h.dis,"Tol. dışı %":Math.round(h.disPct),"§8.1.6 uç not":h.uc816,"Atılan en yüksek":h.atilanY,"Atılan en düşük":h.atilanD,"Sıra uyumu ρ":h.rho==null?"":r3(h.rho),"Bulgular (WC)":h.bulgu.map(b=>b[0]+" "+b[1]).join(" | ")}))),"Hakem Ozeti");
   XU.book_append_sheet(wb,XU.json_to_sheet(A.ozet.flatMap(h=>h.katOzet.map(k=>({Panel:PANEL[h.panel].kod,Hakem:h.ad||h.poslar.join(", "),Kategori:k.katAd,Rutin:k.n,"Ort. sapma":r3(k.ort),"Ort. |sapma|":r3(k.abs),RMS:r3(k.rms),"Tol. dışı":k.dis,"Sıra uyumu ρ":k.rho==null?"":r3(k.rho)})))),"Kategori Bazinda");
   XU.book_append_sheet(wb,XU.json_to_sheet(A.ozet.flatMap(h=>satirSirali(h).map(s=>({Panel:PANEL[h.panel].kod,Pozisyon:s.pos,Hakem:h.ad,Kategori:s.katAd,"Sporcu/Takım":s.sporcu,"Kulüp":s.kulup,Not:r3(s.not),Referans:r3(s.ref),"Ref. kaynağı":s.refSrc,Sapma:r3(s.dev),Tolerans:s.tol,"Tolerans dışı":s.dis?"EVET":"","Atılan":s.atil==="Y"?"En yüksek":s.atil==="D"?"En düşük":""})))),"Hakem Notlari");
   XU.book_append_sheet(wb,XU.json_to_sheet(sapmali.map(r=>({Kategori:r.katAd,"Sporcu/Takım":r.ad,Panel:PANEL[r.panel].kod,...Object.fromEntries(r.hakemler.map(h=>[h.pos,r3(h.not)])),"Orta fark":r3(r.ortaFark),"Tolerans §8.1.2":r.ortaTol,"§8.1.2 ihlali":r.f812?"EVET":"","Uç fark":r3(r.uc),"§8.1.6":r.f816?"EVET":"","Panel sonucu":r3(r.panelFinal),Referans:r3(r.ref),"Ref. kaynağı":r.refSrc}))),"CJP Sapma Raporu");
-  XW(wb,dosyaAdi((V.isim||"")+" FIG Hakem Karnesi")+".xlsx")};
+  XW(wb,dosyaAdi((V.isim||"")+" WC Hakem Karnesi")+".xlsx")};
 
  // ---- görünüm ----
  const C={bg:"#F0F2F5",card:"#fff",line:"#E5E7EB",soft:"#F8FAFC",ink:"#1A1D26",ink2:"#334155",muted:"#6B7280",sub:"#94A3B8"};
@@ -306,7 +306,7 @@ function Karne(){
    e.jsxs("div",{style:S.card,children:[e.jsx("div",{style:S.h3,children:__T("Sapma grafiği")}),e.jsx("div",{style:S.hs,children:__T("Her nokta bir rutin: hakem notu − referans. Yeşil bant §8.1.2 toleransı, kırmızı nokta tolerans dışı. Noktanın üzerine gelince ayrıntı görünür.")}),e.jsx(SapmaGrafik,{satir:ss,renk:P.renk})]}),
    e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(340px,1fr))",gap:"1rem",marginBottom:"1rem"},children:[
     e.jsxs("div",{style:{...S.card,marginBottom:0},children:[e.jsx("div",{style:S.h3,children:__T("Sapma dağılımı")}),e.jsx("div",{style:S.hs,children:__T("0.1'lik aralıklarla sapma sayısı")}),e.jsx(Histogram,{satir:ss})]}),
-    e.jsxs("div",{style:{...S.card,marginBottom:0},children:[e.jsx("div",{style:S.h3,children:__T("Bulgular (FIG)")}),e.jsx("div",{style:S.hs,children:__T("Yalnızca FIG AER CoP maddelerine dayalı ölçümler; derece verilmez.")}),
+    e.jsxs("div",{style:{...S.card,marginBottom:0},children:[e.jsx("div",{style:S.h3,children:__T("Bulgular (WC)")}),e.jsx("div",{style:S.hs,children:__T("Yalnızca WC AER CoP maddelerine dayalı ölçümler; derece verilmez.")}),
      ...h.bulgu.map((b,i)=>e.jsxs("div",{style:{display:"flex",gap:".6rem",padding:".45rem 0",borderTop:i?"1px solid #EEF2F7":"none"},children:[e.jsx("span",{style:{flexShrink:0,fontSize:".72rem",fontWeight:900,color:"#7C3AED",background:"#F5F3FF",borderRadius:6,padding:".1rem .4rem",height:"fit-content"},children:b[0]}),e.jsx("span",{style:{fontSize:".84rem",fontWeight:700,color:C.ink2},children:b[1]})]},i))]})]}),
    e.jsxs("div",{style:{...S.card,overflowX:"auto"},children:[e.jsx("div",{style:S.h3,children:__T("Kategori bazında")}),e.jsxs("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:640},children:[
     e.jsx("thead",{children:e.jsx("tr",{children:["Kategori","Rutin","Ort. sapma","Ort. |sapma|","RMS","En büyük","Tol. dışı","Sıra uyumu ρ"].map(t=>e.jsx("th",{style:S.th,children:__T(t)},t))})}),
@@ -334,14 +334,14 @@ function Karne(){
      e.jsx("td",{style:{...S.td,textAlign:"left",fontSize:".74rem",color:"#B91C1C",minWidth:180},children:[r.f812?"§8.1.2 "+__T("tolerans aşıldı → tüm notların ort."):"",r.f816?"§8.1.6 "+__T("analiz gerekli"):"",r.hakemler.some(h=>h.dis)?__T("Tol. dışı")+": "+r.hakemler.filter(h=>h.dis).map(h=>h.pos).join(", "):""].filter(Boolean).join(" · ")||e.jsx("span",{style:{color:"#15803D"},children:"✓"})})]},i))})]}):e.jsx("div",{style:{color:"#15803D",fontWeight:800},children:__T("Sapma yok.")}),
    e.jsx("div",{style:{fontSize:".72rem",color:C.muted,fontWeight:700,marginTop:".6rem"},children:__T("Üstü çizili: §8.1.1 gereği atılan not (↑ en yüksek, ↓ en düşük) · kırmızı: tolerans dışı · kesik turuncu çerçeve: §8.1.6 uç not")})]})};
 
- const kurallar=()=>e.jsxs("div",{style:S.card,children:[e.jsx("div",{style:S.h3,children:"FIG Aerobic Gymnastics Code of Points 2025–2028"}),e.jsx("div",{style:S.hs,children:__T("Bu karne yalnızca aşağıdaki FIG maddelerine dayanır; TCF'ye özgü derece veya eşik kullanılmaz.")}),
+ const kurallar=()=>e.jsxs("div",{style:S.card,children:[e.jsx("div",{style:S.h3,children:"WC Aerobic Gymnastics Code of Points 2025–2028"}),e.jsx("div",{style:S.hs,children:__T("Bu karne yalnızca aşağıdaki WC maddelerine dayanır; TCF'ye özgü derece veya eşik kullanılmaz.")}),
   ...[["§8.1.1",__T("4 hakemde en yüksek ve en düşük not atılır, ortadaki 2 notun ortalaması alınır (6 hakemde 2+2).")],["§8.1.2",__T("Ortadaki iki not arasındaki azami fark: 8.00–10.00: 0.3 · 7.00–7.99: 0.4 · 6.00–6.99: 0.5 · 0–5.99: 0.6. Aşılırsa tüm notların ortalaması son puandır.")],["§8.1.6",__T("Uç notlar arasında 1.0 veya daha fazla fark varsa yarışma sonrası hakem analizi yapılır.")],["§2.1",__T("Superior Jury hakem sapmalarını kayda geçirir; tekrarlayan sapma, taraflılık veya sürekli çok yüksek/düşük not → uyarı ya da hakem değişikliği.")],["§3.2",__T("CJP yarışma sonunda tüm hakemlerin sapma raporunu Superior Jury'ye gönderir.")],[__T("Referans"),__T("Superior Jury kontrol notu (SJA/SJE); yoksa §8.1.1 panel sonucu. Hakemin notu referanstan §8.1.2 toleransından fazla saparsa tolerans dışı sayılır. E notları 10 − kesinti olarak değerlendirilir.")],[__T("Ölçümler"),__T("Ort. sapma (işaretli), ort. mutlak sapma, RMS sapma, en büyük sapma, tolerans dışı sayısı, atılan notlar ve Spearman sıra uyumu (hakem sıralaması ↔ referans sıralaması).")]].map(([k,t],i)=>e.jsxs("div",{style:{display:"flex",gap:".7rem",padding:".55rem 0",borderTop:i?"1px solid #EEF2F7":"none"},children:[e.jsx("span",{style:{flexShrink:0,minWidth:70,fontSize:".76rem",fontWeight:900,color:"#7C3AED"},children:k}),e.jsx("span",{style:{fontSize:".86rem",fontWeight:600,color:C.ink2,lineHeight:1.5},children:t})]},i))]});
 
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsx("div",{style:S.top,children:e.jsxs("div",{style:S.topIn,children:[
-   currentUser?e.jsx("a",{href:"/aerobik",title:__T("Geri"),style:{width:38,height:38,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:C.ink,textDecoration:"none"},children:MI("arrow_back",{fontSize:"1.4rem"})}):null,
+   currentUser?e.jsx("a",{href:"/aerobic",title:__T("Geri"),style:{width:38,height:38,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:C.ink,textDecoration:"none"},children:MI("arrow_back",{fontSize:"1.4rem"})}):null,
    e.jsx("div",{style:S.ico,children:MI("fact_check",{color:"#fff",fontSize:"1.4rem"})}),
-   e.jsxs("div",{style:{flex:1,minWidth:200},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.12rem"},children:__T("FIG Hakem Değerlendirme Karnesi")}),e.jsx("div",{style:{fontSize:".78rem",color:C.muted,fontWeight:700},children:(V.isim?V.isim+" · ":"")+"FIG AER CoP 2025–2028"})]}),
+   e.jsxs("div",{style:{flex:1,minWidth:200},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.12rem"},children:__T("WC Hakem Değerlendirme Karnesi")}),e.jsx("div",{style:{fontSize:".78rem",color:C.muted,fontWeight:700},children:(V.isim?V.isim+" · ":"")+"WC AER CoP 2025–2028"})]}),
    !urlComp?e.jsxs("select",{style:S.sel,value:comp,onChange:ev=>{setComp(ev.target.value);setSecCat([]);setSecH(null)},children:[e.jsx("option",{value:"",children:__T("Yarışma seçin…")}),Object.entries(comps).sort((a,b)=>String(b[1].t).localeCompare(String(a[1].t))).map(([k,c])=>e.jsx("option",{value:k,children:c.isim},k))]}):null,
    comp?e.jsxs("button",{style:S.btn("linear-gradient(135deg,#7C3AED,#4338CA)"),disabled:busy||!A.ozet.length,onClick:()=>karnePdf(A.ozet),children:[MI("picture_as_pdf"),__T("Tüm karneler")]}):null,
    comp?e.jsxs("button",{style:S.btn("#fff","#B91C1C","1.5px solid #FCA5A5"),disabled:busy||!A.rutinler.length,onClick:cjpPdf,children:[MI("summarize"),__T("CJP Sapma Raporu")]}):null,
@@ -361,7 +361,7 @@ function Karne(){
      kpi("warning",f816.length?"#DC2626":"#16A34A","§8.1.6 "+__T("uç fark ≥ 1.0"),f816.length,__T("hakem analizi gerekli"),f816.length?"#B91C1C":null),
      kpi("rule",toplamDis?"#F59E0B":"#16A34A",__T("Tolerans dışı hakem notu"),toplamDis),
      kpi("groups","#4338CA",__T("Hakem"),A.ozet.length,A.ozet.filter(h=>h.panel==="a").length+" A · "+A.ozet.filter(h=>h.panel==="e").length+" E")]}),
-    e.jsx("div",{style:{display:"flex",gap:".5rem",marginBottom:"1rem",flexWrap:"wrap"},children:[["genel","Genel Bakış"],["hakem","Hakem Karneleri"],["rutin","Rutin Analizi"],["kural","FIG Kuralları"]].map(([k,l])=>e.jsx("button",{style:S.tab(sekme===k),onClick:()=>setSekme(k),children:__T(l)+(k==="rutin"?" · "+sapmali.length:k==="hakem"?" · "+A.ozet.length:"")},k))}),
+    e.jsx("div",{style:{display:"flex",gap:".5rem",marginBottom:"1rem",flexWrap:"wrap"},children:[["genel","Genel Bakış"],["hakem","Hakem Karneleri"],["rutin","Rutin Analizi"],["kural","WC Kuralları"]].map(([k,l])=>e.jsx("button",{style:S.tab(sekme===k),onClick:()=>setSekme(k),children:__T(l)+(k==="rutin"?" · "+sapmali.length:k==="hakem"?" · "+A.ozet.length:"")},k))}),
     !A.rutinler.length&&sekme!=="kural"?e.jsx("div",{style:{...S.card,color:C.muted,fontWeight:700},children:__T("Tamamlanmış puan yok.")}):
     sekme==="genel"?e.jsxs(e.Fragment,{children:[dogrulukGrafik(),isiHaritasi()]}):
     sekme==="hakem"?e.jsxs(e.Fragment,{children:[

@@ -17,7 +17,7 @@ const aletTr=a=>RA[a]?.labelTr||RA[a]?.label||a;
 const aletLabel=a=>__T(aletTr(a));
 const num=v=>v==null||v===""||isNaN(v)?null:Number(v);
 const clamp=(v,a,b,d)=>{const n=parseInt(v);return isNaN(n)?d:Math.max(a,Math.min(b,n))};
-const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (FIG)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"],["elle","edit_note","Elle","Bu final için sıra eşlemesini elle seç (ör. 1. → 3. çıkar)"]];
+const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (WC)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"],["elle","edit_note","Elle","Bu final için sıra eşlemesini elle seç (ör. 1. → 3. çıkar)"]];
 
 function RitmikFinals(){
  const{toast}=usToast();usInit();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
@@ -171,27 +171,43 @@ function RitmikFinals(){
    const alt=()=>{const n=d.getNumberOfPages();for(let i=1;i<=n;i++){d.setPage(i);serit(H-1.6,1.6);d.setFont(FT,"normal");d.setFontSize(7);d.setTextColor(...MUT);
      d.text(L("Gymexa Score · Türkiye Cimnastik Federasyonu","Gymexa Score · Turkish Gymnastics Federation"),M,H-5);d.text(new Date().toLocaleString(EN?"en-GB":"tr-TR",{dateStyle:"short",timeStyle:"short"})+"   "+i+" / "+n,W-M,H-5,{align:"right"})}};
    ust();
+   // 2026-10-08 yeni düzen: her final renk geçişli başlık bantlı bir kart; çıkış no rozeti, eleme sırasında ilk üç madalya rengi, yedekler ayrı bölüm
+   const bant=(x,yy,w,h)=>{const n=40;for(let i=0;i<n;i++){const t=i/(n-1);d.setFillColor(P1[0]+(P2[0]-P1[0])*t,P1[1]+(P2[1]-P1[1])*t,P1[2]+(P2[2]-P1[2])*t);d.rect(x+i*w/n,yy,w/n+.25,h,"F")}};
+   const kural=b=>({ters:L("çıkış sırası elemenin tersi — eleme sonuncusu ilk çıkar","start order reversed — last qualifier starts first"),duz:L("çıkış sırası eleme sırasıyla aynı","start order equals qualification order"),sablon:L("çıkış sırası yarışma şablonuna göre","start order from competition template"),elle:L("çıkış sırası elle belirlendi","start order set manually")})[b.sira]||"";
+   const MED=[[202,138,4],[100,116,139],[194,65,12]];
    const katlar=[...new Set(U.map(([c])=>c))];
    katlar.forEach((cat,ki)=>{const us=U.filter(([c])=>c===cat);
-    if(y>H-60){ust()}
+    if(y>H-70)ust();
     // kategori başlığı
-    d.setFillColor(253,242,248);d.roundedRect(M,y,W-2*M,9,2,2,"F");d.setFillColor(...P1);d.roundedRect(M,y,2.2,9,1,1,"F");
-    d.setFont(FT,"bold");d.setFontSize(10.5);d.setTextColor(...INK);d.text(UP(kA(catLabel(cat))),M+5,y+6.1);y+=13;
-    us.forEach(([c,a])=>{const{rows,olustu}=pdfVeri(c,a),b=bOf(c,a),need=14+rows.length*6.4;if(y+Math.min(need,60)>H-14)ust();
-     const ik=a!==AA&&AP[raKey(a)||a];if(ik)d.addImage(ik.d,"PNG",M,y-1,6,6,"ap_"+a,"FAST");
-     d.setFont(FT,"bold");d.setFontSize(9.5);d.setTextColor(...INK);d.text(UP(aA(a))+" "+L("FİNALİ","FINAL"),M+(ik?8:0),y+3.6);
-     d.setFont(FT,"normal");d.setFontSize(7.2);d.setTextColor(...MUT);d.text((rows.filter(r=>!r.yedek).length)+" "+L("finalist","finalists")+(rows.some(r=>r.yedek)?" · "+rows.filter(r=>r.yedek).length+" "+L("yedek","reserve"):"")+(olustu?"":"  ·  "+L("önizleme (final henüz oluşturulmadı)","preview (final not created yet)")),W-M,y+3.6,{align:"right"});y+=6;
+    d.setFillColor(...INK);d.roundedRect(M,y,W-2*M,10,2.5,2.5,"F");d.setFont(FT,"bold");d.setFontSize(11);d.setTextColor(255,255,255);d.text(UP(kA(catLabel(cat))),M+5,y+6.8);
+    d.setFont(FT,"normal");d.setFontSize(7.6);d.setTextColor(203,213,225);d.text(us.length+" "+L("final","finals"),W-M-4,y+6.6,{align:"right"});y+=14;
+    us.forEach(([c,a])=>{const{rows,olustu}=pdfVeri(c,a),b=bOf(c,a),fin=rows.filter(r=>!r.yedek),yed=rows.filter(r=>r.yedek),need=24+fin.length*7.2+(yed.length?10+yed.length*6.6:0);
+     if(y+need>H-14&&need<H-60)ust();else if(y+40>H-14)ust();
+     // başlık bandı
+     bant(M,y,W-2*M,11);const ik=a!==AA&&AP[raKey(a)||a];let x=M+4;
+     if(ik){d.setFillColor(255,255,255);d.circle(x+3.6,y+5.5,4,"F");d.addImage(ik.d,"PNG",x+.6,y+2.5,6,6,"ap_"+a,"FAST");x+=10}
+     else{d.setFillColor(255,255,255);d.circle(x+3.6,y+5.5,4,"F");d.setFont(FT,"bold");d.setFontSize(7.5);d.setTextColor(...P2);d.text("AA",x+3.6,y+6.8,{align:"center"});x+=10}
+     d.setFont(FT,"bold");d.setFontSize(10.5);d.setTextColor(255,255,255);d.text(UP(aA(a))+" "+L("FİNALİ","FINAL"),x,y+7.2);
+     d.setFont(FT,"normal");d.setFontSize(7.8);d.text(fin.length+" "+L("finalist","finalists")+(yed.length?"  ·  "+yed.length+" "+L("yedek","reserves"):""),W-M-4,y+7,{align:"right"});y+=11;
+     // bilgi satırı
+     d.setFillColor(248,250,252);d.rect(M,y,W-2*M,6.5,"F");d.setFont(FT,"normal");d.setFontSize(7.2);d.setTextColor(...MUT);d.text(kural(b),M+4,y+4.4);
+     if(!olustu){const t=L("ÖNİZLEME — final henüz oluşturulmadı","PREVIEW — final not created yet");d.setFont(FT,"bold");d.setFontSize(6.8);const w=d.getTextWidth(t)+5;d.setFillColor(254,243,199);d.roundedRect(W-M-w-2,y+1,w,4.6,1.2,1.2,"F");d.setTextColor(180,83,9);d.text(t,W-M-2-w/2,y+4.3,{align:"center"})}
+     y+=8.5;
      const HB=rows.some(r=>r.bib!=null&&r.bib!=="");
-     const head=[[L("NO","NO"),L("ELEME","RANK"),...(HB?["BIB"]:[]),L("SPORCU","GYMNAST"),INTL?L("ÜLKE","NOC"):L("KULÜP","CLUB"),...(INTL?[L("TAKIM","TEAM")]:[]),L("ELEME PUANI","QUAL. SCORE")]];
-     const body=rows.map(r=>[r.no,String(r.rank||""),...(HB?[r.bib!=null?String(r.bib):""]:[]),[UP(r.soyad),r.ad].filter(Boolean).join(" "),INTL?(r.ulke||""):UP(r.kulup),...(INTL?[r.kulup||""]:[]),f3(r.score)]);
-     const ulkeCol=3+(HB?1:0)-1+1;
-     at(d,{startY:y,margin:{left:M,right:M},head,body,theme:"plain",
-      styles:{font:FT,fontSize:8.2,cellPadding:{top:1.6,bottom:1.6,left:2,right:2},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25}},
-      headStyles:{fontStyle:"bold",fontSize:7,textColor:[255,255,255],fillColor:P2},
-      columnStyles:{0:{cellWidth:11,halign:"center",fontStyle:"bold"},1:{cellWidth:13,halign:"center",textColor:MUT},...(HB?{2:{cellWidth:12,halign:"center"}}:{}),[ulkeCol]:INTL?{cellWidth:22,cellPadding:{top:1.6,bottom:1.6,left:8.5,right:1}}:{cellWidth:58},[head[0].length-1]:{cellWidth:24,halign:"right"}},
-      didParseCell:z=>{if(z.section==="body"){const r=rows[z.row.index];if(r&&r.yedek){z.cell.styles.textColor=[126,34,206];z.cell.styles.fillColor=[250,245,255];z.cell.styles.fontStyle=z.column.index===0?"bold":"normal"}else if(z.row.index%2)z.cell.styles.fillColor=[250,250,253]}},
-      didDrawCell:z=>{if(INTL&&z.section==="body"&&z.column.index===ulkeCol){const r=rows[z.row.index],f=r&&FL[r.ulke];if(f)try{d.addImage(f,"PNG",z.cell.x+2,z.cell.y+(z.cell.height-3.4)/2,4.5,3.4,"fl_"+r.ulke,"FAST")}catch{}}}});
-     y=d.lastAutoTable.finalY+8});
+     const kolon=[L("ÇIKIŞ","START"),L("SPORCU","GYMNAST"),INTL?L("ÜLKE","NOC"):L("KULÜP","CLUB"),...(INTL?[L("TAKIM","TEAM")]:[]),...(HB?["BIB"]:[]),L("ELEME SIRASI","QUAL. RANK"),L("ELEME PUANI","QUAL. SCORE")];
+     const ulkeCol=2,qr=kolon.length-2,qs=kolon.length-1;
+     const ciz=(L0,yedekMi)=>{at(d,{startY:y,margin:{left:M,right:M,top:18,bottom:12},head:[kolon],body:L0.map(r=>[yedekMi?r.no:String(r.no),[UP(r.soyad),r.ad].filter(Boolean).join(" "),INTL?(r.ulke||""):UP(r.kulup),...(INTL?[r.kulup||""]:[]),...(HB?[r.bib!=null?String(r.bib):""]:[]),r.rank?String(r.rank)+".":"",f3(r.score)]),theme:"plain",
+       styles:{font:FT,fontSize:8.6,cellPadding:{top:2,bottom:2,left:2,right:2},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25},valign:"middle",minCellHeight:7},
+       headStyles:{fontStyle:"bold",fontSize:6.8,textColor:MUT,fillColor:[255,255,255],lineWidth:{bottom:.4},lineColor:[226,232,240],minCellHeight:5},
+       columnStyles:{0:{cellWidth:15,halign:"center",fontStyle:"bold"},1:{fontStyle:"bold"},[ulkeCol]:INTL?{cellWidth:22,cellPadding:{top:2,bottom:2,left:8.5,right:1}}:{cellWidth:56},[qr]:{cellWidth:22,halign:"center"},[qs]:{cellWidth:24,halign:"right",fontStyle:"bold"}},
+       didParseCell:z=>{if(z.section!=="body")return;const r=L0[z.row.index];if(yedekMi){z.cell.styles.textColor=[107,33,168];z.cell.styles.fillColor=[250,245,255]}else if(z.row.index%2)z.cell.styles.fillColor=[250,250,253];
+        if(z.column.index===0)z.cell.text=[""];if(z.column.index===qr&&r&&r.rank>=1&&r.rank<=3&&!yedekMi){z.cell.styles.textColor=MED[r.rank-1];z.cell.styles.fontStyle="bold"}},
+       didDrawCell:z=>{if(z.section!=="body")return;const r=L0[z.row.index];if(!r)return;
+        if(z.column.index===0){const cx=z.cell.x+z.cell.width/2,cy=z.cell.y+z.cell.height/2;if(yedekMi){d.setDrawColor(168,85,247);d.setLineWidth(.35);d.roundedRect(cx-4.2,cy-2.6,8.4,5.2,1.4,1.4,"S");d.setTextColor(126,34,206)}else{d.setFillColor(...P1);d.circle(cx,cy,2.9,"F");d.setTextColor(255,255,255)}d.setFont(FT,"bold");d.setFontSize(7.6);d.text(String(r.no),cx,cy+1.05,{align:"center"})}
+        if(INTL&&z.column.index===ulkeCol){const f0=FL[r.ulke];if(f0)try{d.addImage(f0,"PNG",z.cell.x+2,z.cell.y+(z.cell.height-3.4)/2,4.5,3.4,"fl_"+r.ulke,"FAST")}catch{}}}});y=d.lastAutoTable.finalY};
+     ciz(fin,!1);
+     if(yed.length){y+=2.5;d.setFont(FT,"bold");d.setFontSize(7.4);d.setTextColor(126,34,206);d.text(L("YEDEKLER","RESERVES"),M+2,y+3);y+=4.5;ciz(yed,!0)}
+     y+=9});
     y+=2});
    alt();
    const ad=(C.isim||"final").replace(/[^\wçğıöşüÇĞİÖŞÜ -]+/g,"").trim().replace(/\s+/g,"_");d.save(ad+"_"+L("Final_Cikis_Listesi","Finals_Start_List")+".pdf");toast(__T("PDF indirildi ✓"),"success")}
@@ -286,7 +302,7 @@ function RitmikFinals(){
  const kayitPill=kayit?e.jsxs("span",{style:{...S.badge,background:kayit==="hata"?"#FEE2E2":kayit==="bekliyor"?"#FEF3C7":"#DCFCE7",color:kayit==="hata"?"#B91C1C":kayit==="bekliyor"?"#B45309":"#15803D",display:"inline-flex",alignItems:"center",gap:".25rem",fontSize:".72rem"},children:[MI(kayit==="hata"?"error":kayit==="bekliyor"?"sync":"cloud_done",{fontSize:14}),kayit==="hata"?__T("Kaydedilemedi"):kayit==="bekliyor"?__T("Kaydediliyor…"):__T("Seçimler yarışmaya kaydedildi")]}):null;
 
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/ritmik",title:__T("Geri"),style:S.back,children:MI("arrow_back",{fontSize:20})}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/rhythmic",title:__T("Geri"),style:S.back,children:MI("arrow_back",{fontSize:20})}),
     e.jsx("div",{style:S.ico,children:MI("emoji_events",{color:"#fff",fontSize:22})}),
     e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.1rem",lineHeight:1.15},children:__T("Final Oluştur")}),
       e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:__T("Ritmik · elemeden alet ve genel tasnif finallerine")})]}),kayitPill]}),
@@ -307,7 +323,7 @@ function RitmikFinals(){
       realCats.length===0?e.jsx("div",{style:S.center,children:__T("Bu yarışmada kategori yok.")}):e.jsxs(e.Fragment,{children:[
         e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:S.h,children:[e.jsx("span",{style:S.hi,children:MI("tune",{fontSize:17})}),__T("Genel ayarlar")]}),
          e.jsxs("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:".6rem"},children:[
-          e.jsxs("label",{style:{...S.tog(!0),cursor:"default"},children:[MI(INTLc?"flag":"groups",{color:P1}),e.jsxs("span",{style:{flex:1},children:[INTLc?__T("Ülke kotası"):__T("Kulüp kotası"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:INTLc?__T("FIG: ülke başına en çok 2 · 0 = kota yok"):__T("0 = kota yok")})]}),e.jsx("input",{type:"number",min:"0",max:"8",value:limit,onChange:x=>setLimit(x.target.value),style:S.numin})]}),
+          e.jsxs("label",{style:{...S.tog(!0),cursor:"default"},children:[MI(INTLc?"flag":"groups",{color:P1}),e.jsxs("span",{style:{flex:1},children:[INTLc?__T("Ülke kotası"):__T("Kulüp kotası"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:INTLc?__T("WC: ülke başına en çok 2 · 0 = kota yok"):__T("0 = kota yok")})]}),e.jsx("input",{type:"number",min:"0",max:"8",value:limit,onChange:x=>setLimit(x.target.value),style:S.numin})]}),
           e.jsxs("label",{style:S.tog(useAA),children:[e.jsx("input",{type:"checkbox",checked:useAA,onChange:()=>setUseAA(v=>!v),style:{width:18,height:18,accentColor:P1}}),e.jsxs("span",{children:[__T("Genel tasnif finali"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:__T("tüm aletler toplamı")})]})]}),
           e.jsxs("label",{style:S.tog(fill),children:[e.jsx("input",{type:"checkbox",checked:fill,onChange:()=>setFill(v=>!v),style:{width:18,height:18,accentColor:"#F59E0B"}}),e.jsxs("span",{children:[__T("Kota yetmezse tamamla"),e.jsx("small",{style:{display:"block",color:"#94A3B8",fontWeight:700,fontSize:".72rem"},children:__T("kotayı deler")})]})]})]}),
          e.jsxs("div",{style:{marginTop:".8rem",padding:".7rem .8rem",borderRadius:14,background:"#FAF5FF",border:"1px dashed #D8B4FE",display:"flex",alignItems:"center",gap:".6rem",flexWrap:"wrap"},children:[

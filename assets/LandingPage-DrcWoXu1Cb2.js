@@ -1,10 +1,10 @@
 import"./i18n-Tr01a2b3Cb2.js";import{j as i}from"./main-C2LpyYUGCb2.js";import{u as r,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";import"./vendor-firebase-940mxgRVCb2.js";
 // BRANŞ SEÇİMİ (/) — branş amblemleri, branş paletine göre degrade kartlar, aktif yarışma sayısı (REST, arşiv/test hariç).
-const s=[{id:"artistik",title:__T("Artistik Cimnastik"),subtitle:"Artistic Gymnastics",img:["/brans/alet/artistik_kadin.png","/brans/alet/artistik_erkek.png"],c1:"#4F46E5",c2:"#7C3AED",path:"/artistik",base:"competitions"},
- {id:"ritmik",title:__T("Ritmik Cimnastik"),subtitle:"Rhythmic Gymnastics",img:["/brans/alet/ritmik.png"],c1:"#EC4899",c2:"#8B5CF6",path:"/ritmik",base:"ritmik_yarismalar"},
- {id:"aerobik",title:__T("Aerobik Cimnastik"),subtitle:"Aerobic Gymnastics",img:["/brans/aerobik.png"],c1:"#10B981",c2:"#0EA5E9",path:"/aerobik",base:"aerobik_yarismalar"},
- {id:"parkur",title:__T("Parkur"),subtitle:"Parkour",img:["/brans/parkur.png"],c1:"#F59E0B",c2:"#EF4444",path:"/parkur",base:"parkur_yarismalar"},
- {id:"trampolin",title:__T("Trampolin Cimnastik"),subtitle:"Trampoline Gymnastics",img:["/brans/trampolin.png"],c1:"#F97316",c2:"#DB2777",path:"/trampolin",base:"trampolin_yarismalar"}];
+const s=[{id:"artistik",title:__T("Artistik Cimnastik"),subtitle:"Artistic Gymnastics",img:["/brans/alet/artistik_kadin.png","/brans/alet/artistik_erkek.png"],c1:"#4F46E5",c2:"#7C3AED",path:"/artistic",base:"competitions"},
+ {id:"ritmik",title:__T("Ritmik Cimnastik"),subtitle:"Rhythmic Gymnastics",img:["/brans/alet/ritmik.png"],c1:"#EC4899",c2:"#8B5CF6",path:"/rhythmic",base:"ritmik_yarismalar"},
+ {id:"aerobik",title:__T("Aerobik Cimnastik"),subtitle:"Aerobic Gymnastics",img:["/brans/aerobik.png"],c1:"#10B981",c2:"#0EA5E9",path:"/aerobic",base:"aerobik_yarismalar"},
+ {id:"parkur",title:__T("Parkur"),subtitle:"Parkour",img:["/brans/parkur.png"],c1:"#F59E0B",c2:"#EF4444",path:"/parkour",base:"parkur_yarismalar"},
+ {id:"trampolin",title:__T("Trampolin Cimnastik"),subtitle:"Trampoline Gymnastics",img:["/brans/trampolin.png"],c1:"#F97316",c2:"#DB2777",path:"/trampoline",base:"trampolin_yarismalar"}];
 const CSS=`.lp2{min-height:100vh;position:relative;overflow:hidden;font-family:Inter,"Plus Jakarta Sans",system-ui,sans-serif;color:#0F172A;background:#F6F7FB}
 .lp2 *{box-sizing:border-box}
 .lp2-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(900px 520px at 8% -6%,rgba(99,102,241,.16),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(236,72,153,.14),transparent 60%),radial-gradient(900px 600px at 50% 120%,rgba(16,185,129,.12),transparent 60%)}

@@ -64,7 +64,7 @@ function Kriterler(){
  return e.jsxs("div",{style:S.wrap,children:[
   e.jsxs("div",{style:S.top,children:[e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"tune"})}),
    e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#8b97b3",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:__T("Aerobik")}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Kriterler — Kategori Adları")})]}),
-   e.jsx("div",{style:{flex:1}}),e.jsx("a",{href:"/aerobik",style:{...S.ghost,textDecoration:"none"},children:__T("← Geri")})]}),
+   e.jsx("div",{style:{flex:1}}),e.jsx("a",{href:"/aerobic",style:{...S.ghost,textDecoration:"none"},children:__T("← Geri")})]}),
   e.jsxs("div",{style:S.in,children:[
 
    // ---------- yarışmaya uygula ----------

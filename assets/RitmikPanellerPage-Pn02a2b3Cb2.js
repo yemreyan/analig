@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update,l as get}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{YAPI_VARS,yapiNorm,dSlotlari}from"./RitmikHakemV2-Hv01a2b3Cb2.js";import{raAd,raImg}from"./ritmikAlet-Ra01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usDisc,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update,l as get}from"./vendor-firebase-940mxgRVCb2.js";import{R as RC}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{YAPI_VARS,yapiNorm,dSlotlari}from"./RitmikHakemV2-Hv01a2b3Cb2.js";import{raAd,raImg}from"./ritmikAlet-Ra01a2b3Cb2.js";import{SeyirciKart}from"./seyirciKart-Gs01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK PANELLER (aerobik Paneller sayfasıyla aynı yapı; ritmik DA/DB/A/E/T/L/SJ panelleri)
 //  <yarışma>/panelGruplari/<gid> : {ad, tipler{A,E,D,T,L,SJ}, adet{A,E}, kategoriler{kat:true}, paneller{SLOT:{ozel}}}
@@ -88,7 +88,7 @@ function Paneller(){
  const cats=C?.kategoriler||{},gruplar=C?.panelGruplari||{},linkler=C?.hakemLinkleri||{},token=C?.epanelToken||"";
  const katAd=k=>String(cats[k]?.name||V[k]?.label||V[String(k).replace(/^final_/,"")]?.label||k).replace(/^🏆\s*/,"🏆 ");
  const katSira=Object.keys(cats).sort((a,b)=>(/^final_/.test(a)?1:0)-(/^final_/.test(b)?1:0)||String(V[a.replace(/^final_/,"")]?.group||"").localeCompare(String(V[b.replace(/^final_/,"")]?.group||""),"tr")||katAd(a).localeCompare(katAd(b),"tr"));
- const link=(gid,s)=>`${location.origin}/ritmik/${s.yol}?competitionId=${encodeURIComponent(comp)}&linkId=${pidOf(gid,s.slot)}${s.ek}${token?`&token=${token}`:""}`;
+ const link=(gid,s)=>`${location.origin}/rhythmic/${s.yol}?competitionId=${encodeURIComponent(comp)}&linkId=${pidOf(gid,s.slot)}${s.ek}${token?`&token=${token}`:""}`;
  const aktifKat=ks=>{const a=C?.aktifSporcu||{};let en=null,t=-1;ks.forEach(k=>{const x=a[k];if(x&&(+x.ts||0)>t){t=+x.ts||0;en=k}});return en};
 
  // ---- yaz ----
@@ -100,7 +100,7 @@ function Paneller(){
  const alTikla=(m,k,al)=>{const T=katAletleri(k),cur=new Set(m&&m[k]?Object.keys(m[k]).filter(a=>m[k][a]):T);cur.has(al)?cur.delete(al):cur.add(al);
   if(!cur.size){toast(__T("En az bir alet seçili kalmalı."),"warning");return void 0}return T.every(a=>cur.has(a))?null:Object.fromEntries(T.filter(a=>cur.has(a)).map(a=>[a,!0]))};
  const sjBolme=(g,s)=>s.tip==="SJ"?parseInt(g?.paneller?.[s.slot]?.bolme)||0:0;
- const linkS=(gid,s)=>{const g=gruplar[gid],n=sjBolme(g,s);if(!n)return link(gid,s);const pt=(/panelType=([a-z]+)/.exec(s.ek)||[])[1]||"";return`${location.origin}/ritmik/split?competitionId=${encodeURIComponent(comp)}&hedef=dpanel&panelType=${pt}&linkId=${pidOf(gid,s.slot)}&bolme=${n}${token?`&token=${token}`:""}`};
+ const linkS=(gid,s)=>{const g=gruplar[gid],n=sjBolme(g,s);if(!n)return link(gid,s);const pt=(/panelType=([a-z]+)/.exec(s.ek)||[])[1]||"";return`${location.origin}/rhythmic/split?competitionId=${encodeURIComponent(comp)}&hedef=dpanel&panelType=${pt}&linkId=${pidOf(gid,s.slot)}&bolme=${n}${token?`&token=${token}`:""}`};
 
  // grup oluştur / düzenle
  const formAc=gid=>{const g=gid?gruplar[gid]:null;setForm(g?{gid,ad:g.ad||"",tipler:{...(g.tipler||{})},adet:{A:g.adet?.A||4,E:g.adet?.E||4},kategoriler:{...(g.kategoriler||{})}}:{gid:null,ad:"",tipler:{DA:!0,DB:!0,A:!0,E:!0,T:!0,L:!0,SJ:!0},adet:{A:4,E:4},kategoriler:{}})};
@@ -267,7 +267,7 @@ function Paneller(){
 
  const gl=Object.keys(gruplar).sort((a,b)=>String(gruplar[a]?.ad||"").localeCompare(String(gruplar[b]?.ad||""),"tr",{numeric:!0}));
  return e.jsxs("div",{style:S.wrap,children:[
-  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/ritmik",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"view_module"})}),
+  e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/rhythmic",title:__T("Geri"),style:S.back,children:e.jsx("span",{className:"material-icons-round",children:"arrow_back"})}),e.jsx("div",{style:S.ico,children:e.jsx("span",{className:"material-icons-round",style:{color:"#fff"},children:"view_module"})}),
    e.jsxs("div",{children:[e.jsx("div",{style:{fontSize:".72rem",color:"#6B7280",fontWeight:800,textTransform:"uppercase",letterSpacing:".05em"},children:__T("Ritmik")}),e.jsx("div",{style:{fontWeight:900,fontSize:"1.05rem"},children:__T("Paneller")})]})
    ]}),
   e.jsxs("div",{style:S.in,children:[
@@ -277,16 +277,16 @@ function Paneller(){
     e.jsxs("div",{style:{...S.card,display:"flex",gap:".8rem",alignItems:"center",flexWrap:"wrap"},children:[
      e.jsx("div",{style:{flex:1,minWidth:240,fontSize:".82rem",color:"#6B7280",fontWeight:600,lineHeight:1.5},children:__T("Panel grubu oluşturun (ör. Salon 1), içinde hangi panellerin (DA, DB, A, E, T, L, SJ) olacağını ve hakem sayısını seçin. Her panelin linki/QR'ı ayrıdır. Kategori eklediğinizde/çıkardığınızda açık paneller anında güncellenir.")}),
      e.jsx("button",{style:{...S.btn,background:"linear-gradient(135deg,#db2777,#6366f1)"},onClick:()=>formAc(null),children:"+ "+__T("Yeni panel grubu")})]}),
+    e.jsx(SeyirciKart,{comp,br:"ritmik",kim:_un}),
     (()=>{const o=location.origin,tk=token?"&token="+token:"",cid=encodeURIComponent(comp),L=[
-      ["sports_score","#DB2777",__T("Başhakem"),o+"/ritmik/scoring?competitionId="+cid],
-      ["gavel","#DC2626",__T("İtiraz Paneli"),o+"/ritmik/itiraz?competitionId="+cid+tk],
-      ["videocam","#0EA5E9",__T("Kamera A · video kaydı (itiraz)"),o+"/ritmik/kamera?compId="+cid+"&cam=a"],
-      ["videocam","#64748B",__T("Kamera B · yedek (cihaza indirir)"),o+"/ritmik/kamera?compId="+cid+"&cam=b"],
-      ["live_tv","#D97706",__T("Canlı Skor"),o+"/ritmik/scoreboard?compId="+cid],
-      ["cast","#E30613",__T("Yayın Overlay"),o+"/yayin-overlay.html?comp="+cid+"&brans=ritmik"],
-      ["event_note","#9333EA",__T("Çıkış Listesi"),o+"/ritmik/schedule?comp="+cid],
-      ["military_tech","#B45309",__T("Final Sonuçları"),o+"/ritmik/finals"],
-      ["qr_code_2","#0F766E",__T("QR & Linkler"),o+"/ritmik/links"]];
+      ["sports_score","#DB2777",__T("Başhakem"),o+"/rhythmic/scoring?competitionId="+cid],
+      ["gavel","#DC2626",__T("İtiraz Paneli"),o+"/rhythmic/inquiry?competitionId="+cid+tk],
+      ["videocam","#0EA5E9",__T("Kamera A · video kaydı (itiraz)"),o+"/rhythmic/camera?compId="+cid+"&cam=a"],
+      ["videocam","#64748B",__T("Kamera B · yedek (cihaza indirir)"),o+"/rhythmic/camera?compId="+cid+"&cam=b"],
+      ["live_tv","#D97706",__T("Canlı Skor"),o+"/rhythmic/scoreboard?compId="+cid],
+      ["cast","#E30613",__T("Yayın Overlay"),o+"/broadcast-overlay.html?comp="+cid+"&brans=ritmik"],
+      ["event_note","#9333EA",__T("Çıkış Listesi"),o+"/rhythmic/schedule?comp="+cid],
+      ["military_tech","#B45309",__T("Final Sonuçları"),o+"/rhythmic/finals"],];
      const ib={width:32,height:32,borderRadius:9,border:"1px solid #E5E7EB",background:"#fff",color:"#334155",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0};
      return e.jsxs("div",{style:{...S.card,borderColor:"#FCD34D",background:"linear-gradient(135deg,#FFFBEB,#fff 60%)"},children:[
       e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:".6rem",marginBottom:".8rem"},children:[e.jsx("div",{style:{width:38,height:38,borderRadius:11,background:"linear-gradient(135deg,#F59E0B,#D97706)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0},children:e.jsx("span",{className:"material-icons-round",children:"dashboard"})}),

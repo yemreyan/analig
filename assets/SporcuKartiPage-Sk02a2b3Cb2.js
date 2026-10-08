@@ -59,7 +59,7 @@ const CSS=`#gx-cobrand,#tcf-lang-sw{display:none!important}
 const useSaat=()=>{const[t,setT]=R.useState(Date.now());R.useEffect(()=>{const i=setInterval(()=>setT(Date.now()),1e3);return()=>clearInterval(i)},[]);return t};
 const Sayac=({v,ms=1300})=>{const[x,setX]=R.useState(0);R.useEffect(()=>{const hedef=parseFloat(v)||0;let r,t0=null;const ad=t=>{t0=t0??t;const p=Math.min(1,(t-t0)/ms),k=1-Math.pow(1-p,3);setX(hedef*k);p<1&&(r=requestAnimationFrame(ad))};r=requestAnimationFrame(ad);return()=>cancelAnimationFrame(r)},[v,ms]);return x.toFixed(3)};
 export default function SporcuKartiPage(){
- const _b=(location.pathname.split("/")[1]||"").toLowerCase(),BR=CFG[_b]?_b:"ritmik",C=CFG[BR],BASE=C.base;
+ const _b0=(location.pathname.split("/")[1]||"").toLowerCase(),_b=({rhythmic:"ritmik",artistic:"artistik",aerobic:"aerobik"})[_b0]||_b0,BR=CFG[_b]?_b:"ritmik",C=CFG[BR],BASE=C.base;
  const q=new URLSearchParams(location.search),cp=q.get("competitionId")||q.get("comp")||"",catF=q.get("cat")||"",alF=q.get("alet")||"",sure=Math.max(5,parseInt(q.get("sure")||"30",10)||30);
  const[comp,setComp]=R.useState({}),[kat,setKat]=R.useState({}),[cagri,setCagri]=R.useState({}),[ars,setArs]=R.useState(!1),[flash,setFlash]=R.useState(null),[sp,setSp]=R.useState(null),[liste,setListe]=R.useState(null),[secK,setSecK]=R.useState(null),[dilS,setDilS]=R.useState(""),[secKat,setSecKat]=R.useState(null),[hid,setHid]=R.useState(!1);
  const now=useSaat();

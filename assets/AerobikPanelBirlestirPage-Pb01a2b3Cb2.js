@@ -53,8 +53,8 @@ $("compSel").addEventListener("change",async e=>{
   renderMgmt();
 });
 function renderMgmt(){
-  const sjUrl=pt=>`${location.origin}/aerobik/sjpanel?competitionId=${encodeURIComponent(comp)}&catId=__ALL__&panelType=${pt}&token=${token}`;
-  const mgs=[{full:location.origin+"/aerobik/ustjuri?competitionId="+encodeURIComponent(comp)+"&token="+token,t:"🏛️ Üst Jüri",d:"Çoklu onay + hedefli red notu"},{full:location.origin+"/aerobik/teknikkurul?competitionId="+encodeURIComponent(comp)+"&token="+token,t:"👥 Teknik Kurul",d:"Sıralama & detay"},{full:location.origin+"/aerobik/itiraz?competitionId="+encodeURIComponent(comp)+"&token="+token,t:"🚩 İtiraz Ekranı",d:"Biten sporcu 10 dk · D/A/E itiraz → Üst Jüri"},{f:"aerobik/canli",t:"📺 Canlı Skor",d:"Flashcard + sıralama (seyirci)"},{full:sjUrl("sja"),t:"⚖️ SJA (Süper Jüri)",d:"Artistik — fark>0.5 panele uyarı"},{full:sjUrl("sje"),t:"⚖️ SJE (Süper Jüri)",d:"Uygulama — fark>0.5 panele uyarı"},{full:sjUrl("sjd"),t:"⚖️ SJD (Süper Jüri)",d:"Zorluk — fark>0.5 panele uyarı"}];
+  const sjUrl=pt=>`${location.origin}/aerobic/sjpanel?competitionId=${encodeURIComponent(comp)}&catId=__ALL__&panelType=${pt}&token=${token}`;
+  const mgs=[{full:location.origin+"/aerobic/superior-jury?competitionId="+encodeURIComponent(comp)+"&token="+token,t:"🏛️ Üst Jüri",d:"Çoklu onay + hedefli red notu"},{full:location.origin+"/aerobic/technical-committee?competitionId="+encodeURIComponent(comp)+"&token="+token,t:"👥 Teknik Kurul",d:"Sıralama & detay"},{full:location.origin+"/aerobic/inquiry?competitionId="+encodeURIComponent(comp)+"&token="+token,t:"🚩 İtiraz Ekranı",d:"Biten sporcu 10 dk · D/A/E itiraz → Üst Jüri"},{f:"aerobik/canli",t:"📺 Canlı Skor",d:"Flashcard + sıralama (seyirci)"},{full:sjUrl("sja"),t:"⚖️ SJA (Süper Jüri)",d:"Artistik — fark>0.5 panele uyarı"},{full:sjUrl("sje"),t:"⚖️ SJE (Süper Jüri)",d:"Uygulama — fark>0.5 panele uyarı"},{full:sjUrl("sjd"),t:"⚖️ SJD (Süper Jüri)",d:"Zorluk — fark>0.5 panele uyarı"}];
   const mgUrl=c=>c.full?c.full:`${location.origin}/${c.f}${c.f.includes("?")?"&":"?"}compId=${encodeURIComponent(comp)}`;
   $("mgmtGrid").innerHTML=mgs.map((c,i)=>{
     return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}</div><div id="mg${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(mgUrl(c))}">Linki Kopyala</div></div>`;
@@ -66,10 +66,10 @@ function renderCameras(){
   const cams=[{cam:"a",t:"📹 Kamera A",d:"Buluta yükler (skorlara eklenir)"},{cam:"b",t:"📹 Kamera B",d:"Yedek (indirir)"}];
   const _cc=selectedCats(),_cq=_cc.length?("&catId="+encodeURIComponent(_cc.join(","))):"",_cl=_cc.length?(" · "+_cc.length+" kategori (seçili)"):" · tüm kategoriler";
   $("camGrid").innerHTML=cams.map((c,i)=>{
-    const url=`${location.origin}/aerobik/kamera?compId=${encodeURIComponent(comp)}&cam=${c.cam}${_cq}`;
+    const url=`${location.origin}/aerobic/camera?compId=${encodeURIComponent(comp)}&cam=${c.cam}${_cq}`;
     return `<div class="qrcard"><h4>${c.t}</h4><div class="sub">${c.d}${_cl}</div><div id="cam${i}" style="display:flex;justify-content:center"></div><div class="copy" data-u="${esc(url)}">Linki Kopyala</div></div>`;
   }).join("");
-  cams.forEach((c,i)=>{const url=`${location.origin}/aerobik/kamera?compId=${encodeURIComponent(comp)}&cam=${c.cam}${_cq}`;try{new QRCode($("cam"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
+  cams.forEach((c,i)=>{const url=`${location.origin}/aerobic/camera?compId=${encodeURIComponent(comp)}&cam=${c.cam}${_cq}`;try{new QRCode($("cam"+i),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error(e);}});
   $("camGrid").querySelectorAll(".copy").forEach(el=>el.onclick=()=>{navigator.clipboard.writeText(el.dataset.u);toast(__T("Kamera linki kopyalandı ✓"),"ok");});
 }
 $("selAll").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.checked=true;i.dispatchEvent(new Event("change"));});
@@ -77,7 +77,7 @@ $("selNone").onclick=()=>$("cats").querySelectorAll("input").forEach(i=>{i.check
 
 function selectedCats(){return [...$("cats").querySelectorAll("input:checked")].map(i=>i.value);}
 function buildUrl(route,catId,panelId){
-  let u=`${location.origin}/aerobik/${route}?competitionId=${encodeURIComponent(comp)}&catId=${encodeURIComponent(catId)}`;
+  let u=`${location.origin}/aerobic/${route}?competitionId=${encodeURIComponent(comp)}&catId=${encodeURIComponent(catId)}`;
   if(panelId)u+=`&panelId=${panelId}`;
   u+=`&token=${token}`; return u;
 }
