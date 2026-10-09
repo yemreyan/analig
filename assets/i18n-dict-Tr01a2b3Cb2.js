@@ -4928,6 +4928,9 @@ const DICT={
   "Bu kategoriye gönderildi": "Sent to this category",
   "Gönderilemedi. Bağlantıyı kontrol edin.": "Could not send. Check the connection.",
   "BAŞHAKEM": "HEAD JUDGE",
-  "Notunuzu yeniden girin": "Re-enter your score"
+  "Notunuzu yeniden girin": "Re-enter your score",
+  "Aşılan süre": "Time over",
+  "elle": "manual",
+  "Süre aşımı yok (0)": "No time fault (0)"
 };
 export{DICT};
