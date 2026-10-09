@@ -101,15 +101,19 @@ function siralama(o){if(o.brans==="artistik"){var sp={};Object.keys(o.spor||{}).
 //  (genç 3, diğerleri 4), her alette bu sporcuların en iyi 2 notu; en az 2 puanlı sporcusu olmayan takım girmez; takım kesintisi düşülür.
 function takimAdi(a,intl){if(!intl)return String(a.okul||a.kulup||"").trim();var u=String(a.ulke||"").trim().toUpperCase();if(!u)return String(a.okul||a.kulup||"").trim();
  var h=String(a.takim||"").trim()||((String(a.kulup||a.okul||"").match(/\b(team|tak[ıi]m)\s*\d+\b/i)||[])[0]||"");if(!h)return u;var n=(h.match(/\d+/)||[""])[0];return n?u+" Team "+n:u+" "+h}
+// o.hepsi (seyirci sitesi, 2026-10-09): takım olarak kayıtlı TÜM takımlar (puanı olmasa da); uluslararasıda "Team N"/takim alanı olmayan sporcu (ör. tek sporcu ALB) takım sayılmaz,
+//  ulusalda kategoride yarismaTuru "takim" işaretli sporcu varsa yalnız onlar.
 function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletler)?kd.aletler:[],N=/genc/i.test(String(o.kat))?3:4,T={},ded={};
+ var tkmMi=function(a){return /tak[ıi]m|team/i.test(String(a.yarismaTuru||a.katilimTuru||""))},isaretli=o.hepsi&&!o.intl&&Object.keys(o.spor||{}).some(function(id){return obj(o.spor[id])&&tkmMi(o.spor[id])});
  Object.keys(o.spor||{}).forEach(function(id){var a=o.spor[id];if(!obj(a))return;var ad=takimAdi(a,o.intl);if(!ad)return;
+  if(o.hepsi&&o.intl&&!(String(a.takim||"").trim()||/\b(team|tak[ıi]m)\s*\d+\b/i.test(String(a.kulup||a.okul||""))))return;if(isaretli&&!tkmMi(a))return;
   var t=T[ad]||(T[ad]={ad:ad,ulke:a.ulke?String(a.ulke).trim().toUpperCase():null,uyeler:[]}),p=(o.puan||{})[id],m={ad:[a.ad,a.soyad].filter(Boolean).join(" "),soyad:a.soyad||"",total:0,ap:{}};
   al.forEach(function(x){var r=sonuc("ritmik",kd,p,x),v=r&&!r.yalnizIrm?num(r.total):0;m.ap[x]=v;m.total+=v});t.uyeler.push(m)});
  Object.keys(o.kesintiler||{}).forEach(function(k){var x=o.kesintiler[k];if(obj(x)&&(!x.categoryId||x.categoryId===o.kat)){var n=String(x.teamName||"").trim().toUpperCase();ded[n]=(ded[n]||0)+num(x.amount)}});
- var rows=Object.keys(T).map(function(k){return T[k]}).filter(function(t){return t.uyeler.filter(function(m){return m.total>0}).length>=2}).map(function(t){
+ var rows=Object.keys(T).map(function(k){return T[k]}).filter(function(t){return o.hepsi||t.uyeler.filter(function(m){return m.total>0}).length>=2}).map(function(t){
   var sec=t.uyeler.slice().sort(function(p,q){return q.total-p.total}).slice(0,N),apps={},top=0;
   al.forEach(function(x){var v=sec.map(function(m){return m.ap[x]||0}).sort(function(p,q){return q-p}).slice(0,2).reduce(function(p,q){return p+q},0);apps[x]=r3(v);top+=v});
-  var d=ded[t.ad.toUpperCase()]||0;return {ad:t.ad,ulke:t.ulke,uyeler:sec.filter(function(m){return m.total>0}).map(function(m){return m.soyad||m.ad}),apps:apps,toplam:r3(top),kesinti:r3(d),total:r3(top-d)}})
+  var d=ded[t.ad.toUpperCase()]||0;return {ad:t.ad,ulke:t.ulke,uyeler:(o.hepsi?t.uyeler.slice().sort(function(p,q){return q.total-p.total}):sec.filter(function(m){return m.total>0})).map(function(m){return m.soyad||m.ad}),yarisan:t.uyeler.filter(function(m){return m.total>0}).length,uyeSay:t.uyeler.length,apps:apps,toplam:r3(top),kesinti:r3(d),total:r3(top-d)}})
   .sort(function(a,b){return b.total-a.total});
  rows.forEach(function(r,i){r.sira=i&&Math.round(rows[i-1].total*1e3)===Math.round(r.total*1e3)?rows[i-1].sira:i+1});
  return rows}
