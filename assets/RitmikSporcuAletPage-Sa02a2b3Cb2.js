@@ -82,6 +82,49 @@ function CikisSira({C,comp,kat,FB,usr,toast,renk}){
   U[`${B}/siralama/${kat}`]=sira;Object.entries(alOf).forEach(([id,al])=>{spor[id]&&(U[`${B}/sporcular/${kat}/${id}/aletler`]=al)});
   setBusy(!0);try{await update(ref(db),U);try{logAction("start_order_save",`[Ritmik] Çıkış akışı güncellendi (${kd.name||kat}): `+G.map(d=>"G"+(d.gi+1)+" "+d.ad.length+" adım").join(", "),{user:usr,competitionId:comp,discipline:"ritmik",category:kat,data:{gunler:G.map(d=>({tarih:d.t,adim:d.ad.map(x=>x.a+":"+x.al)}))}})}catch{}
    toast(__T("Çıkış sırası kaydedildi ✓"),"success");setGd(null)}catch(er){toast(__T("Kaydedilemedi: ")+(er?.message||er),"error")}setBusy(!1)};
+ // PDF (2026-10-09): ekrandaki çıkış sırası (kaydedilmemiş değişiklikler dahil) — Program › Çıkış Listesi PDF'iyle aynı standart:
+ //  başlık (TCF + etkinlik logosu, yarışma adı, tarih · şehir, "ÇIKIŞ SIRASI · KATEGORİ"), gün bandı, tablo (No, saat, BIB, sporcu, ülke bayrağı / kulüp, alet simgesi + adı), alt bilgi + sayfa no.
+ const pdfIndir=async()=>{if(!G.length){toast(__T("Bu kategoride çıkış sırası yok."),"warning");return}toast(__T("PDF hazırlanıyor…"),"info");try{
+  const jsPDF=await import("./jspdf.es.min-gArCfqm1Cb2.js").then(z=>z.j?.jsPDF||z.E),atM=await import("./jspdf.plugin.autotable-KFqWVtFsCb2.js"),at=atM.default||atM,d=new jsPDF("portrait","mm","a4");
+  let FT="helvetica";try{const{R:r0,B:b0}=await import("./fontTR-Fn01a2b3Cb2.js");d.addFileToVFS("Roboto.ttf",r0);d.addFont("Roboto.ttf","Roboto","normal");d.addFileToVFS("Roboto-Bold.ttf",b0);d.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto"}catch{}
+  const IM=await import("./intl-Ul01a2b3Cb2.js"),INTL=C?.tur==="uluslararasi"||C?.uluslararasi===!0,ENP=C?.ciktiDili==="en"||(INTL&&C?.ciktiDili!=="tr");
+  const L=(tr,en)=>ENP?en:tr,UPx=t=>String(t||"").toLocaleUpperCase(ENP?"en":"tr-TR"),aA=a=>ENP?({serbest:"WA",ip:"Rope",cember:"Hoop",top:"Ball",labut:"Clubs",kurdele:"Ribbon"}[a]||a):(ALL[a]||a);
+  const katT=ENP&&IM.katEN?IM.katEN(kd.name||kat):(kd.name||kat);
+  const gB=t=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(t||""));if(!m)return"";return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString(ENP?"en-GB":"tr-TR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).toLocaleUpperCase(ENP?"en":"tr-TR")};
+  const img=async u=>{try{const b=await(await fetch(u)).blob();const du=await new Promise(K=>{const O=new FileReader;O.onloadend=()=>K(O.result);O.readAsDataURL(b)});const im=new Image;await new Promise(r=>{im.onload=r;im.onerror=r;im.src=du});return im.naturalWidth?{d:du,r:im.naturalWidth/im.naturalHeight}:null}catch{return null}};
+  const tcf=await img("/logo.png"),ev=C?.etkinlikLogo?await img(C.etkinlikLogo):null,AP={};await Promise.all(["serbest","ip","cember","top","labut","kurdele"].map(async k=>{const x=await img("/brans/alet/"+k+".png");x&&(AP[k]=x)}));
+  const FL=INTL&&IM.bayraklarPng?await IM.bayraklarPng([...new Set(G.flatMap(g=>g.ad.map(x=>spor[x.a]?.ulke).filter(Boolean)))]).catch(()=>({})):{};
+  const HB=G.some(g=>g.ad.some(x=>spor[x.a]?.bib!=null&&spor[x.a]?.bib!==""));
+  const W=210,H=297,M=12,P1=[236,72,153],P2=[139,92,246],INK=[15,23,42],MUT=[100,116,139];
+  const ad1=C?.isim||"",tarih=[C?.baslangicTarihi,C?.bitisTarihi].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).map(t=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(t);return m?m[3]+"."+m[2]+"."+m[1]:t}).join(" – "),alt2=[tarih,C?.il||""].filter(Boolean).join("  ·  ");
+  const serit=(yy,h)=>{const n=60;for(let i=0;i<n;i++){const t=i/(n-1);d.setFillColor(P1[0]+(P2[0]-P1[0])*t,P1[1]+(P2[1]-P1[1])*t,P1[2]+(P2[2]-P1[2])*t);d.rect(i*W/n,yy,W/n+.3,h,"F")}};
+  let y=0,sayfa=1,gunAd="";const baslik=L("ÇIKIŞ SIRASI","START ORDER")+"  ·  "+UPx(katT);
+  serit(0,3);let lx=M;const lh=16;if(tcf){const w=lh*tcf.r;d.addImage(tcf.d,"PNG",lx,8,w,lh,"tcf","FAST");lx+=w+4}if(ev){const w=Math.min(34,lh*ev.r);d.addImage(ev.d,"PNG",W-M-w,8,w,lh,"ev","FAST")}
+  d.setTextColor(...INK);d.setFont(FT,"bold");d.setFontSize(12.5);d.text(UPx(ad1),lx,13.5,{maxWidth:W-lx-M-(ev?38:0)});d.setFont(FT,"normal");d.setFontSize(8.5);d.setTextColor(...MUT);d.text(alt2,lx,19);
+  d.setFont(FT,"bold");d.setFontSize(10);d.setTextColor(...P1);d.text(baslik,lx,25);d.setDrawColor(226,232,240);d.setLineWidth(.3);d.line(M,30,W-M,30);y=35;
+  const devam=()=>{serit(0,3);d.setFont(FT,"bold");d.setFontSize(7.5);d.setTextColor(...MUT);d.text(UPx(ad1)+"  ·  "+baslik+(gunAd?"  ·  "+gunAd:""),M,10,{maxWidth:W-2*M});d.setDrawColor(226,232,240);d.setLineWidth(.3);d.line(M,13,W-M,13)};
+  const yeniSayfa=()=>{d.addPage();sayfa++;devam();y=18};
+  G.forEach((g,ix)=>{gunAd=gB(g.t);if(ix&&y>60)yeniSayfa();if(y>H-50)yeniSayfa();
+   d.setFillColor(...P2);d.roundedRect(M,y,W-2*M,9,2,2,"F");d.setFont(FT,"bold");d.setFontSize(10);d.setTextColor(255,255,255);d.text((gunAd||L("GÜN","DAY")+" "+(g.gi+1)),M+4,y+6.2);
+   d.setFont(FT,"normal");d.setFontSize(8);d.text(g.ad.length+" "+L("çıkış","routines")+(g.saat?"  ·  "+g.saat:""),W-M-4,y+6.2,{align:"right"});y+=13;
+   const rows=g.ad.map((x,i)=>{const a=spor[x.a]||{};return{no:i+1,saat:saatT(g.saat,i),bib:a.bib!=null?String(a.bib):"",ad:ad(a)||x.a,ok:INTL?(a.ulke||""):UPx(a.okul||a.kulup||x.k||""),tk:INTL&&(a.okul||a.kulup)&&(a.okul||a.kulup)!==a.ulke?(a.okul||a.kulup):"",ul:a.ulke||"",al:x.al}});
+   const TK=rows.some(r=>r.tk),SA=rows.some(r=>r.saat);
+   const head=[L("NO","NO"),...(SA?[L("SAAT","TIME")]:[]),...(HB?["BIB"]:[]),L("SPORCU","GYMNAST"),INTL?L("ÜLKE","NOC"):L("KULÜP","CLUB"),...(TK?[L("TAKIM","TEAM")]:[]),L("ALET","APPARATUS")];
+   const cO=1+(SA?1:0)+(HB?1:0)+1,cA=head.length-1;
+   at(d,{startY:y,margin:{left:M,right:M,top:18,bottom:12},head:[head],body:rows.map(r=>[String(r.no),...(SA?[r.saat]:[]),...(HB?[r.bib]:[]),r.ad,r.ok,...(TK?[r.tk]:[]),UPx(aA(r.al))]),theme:"plain",
+    styles:{font:FT,fontSize:8.6,cellPadding:{top:1.8,bottom:1.8,left:2,right:2},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25},valign:"middle"},
+    headStyles:{fontStyle:"bold",fontSize:7,textColor:[255,255,255],fillColor:P2},
+    columnStyles:{0:{cellWidth:10,halign:"center",fontStyle:"bold"},...(SA?{1:{cellWidth:13,halign:"center",textColor:MUT}}:{}),...(HB?{[SA?2:1]:{cellWidth:12,halign:"center"}}:{}),[cO-1]:{fontStyle:"bold"},[cO]:INTL?{cellWidth:22,cellPadding:{top:1.8,bottom:1.8,left:8.5,right:1}}:{cellWidth:44},[cA]:{cellWidth:30,cellPadding:{top:1.8,bottom:1.8,left:8.5,right:1},fontStyle:"bold",textColor:P1}},
+    didParseCell:z=>{if(z.section==="body"&&z.row.index%2)z.cell.styles.fillColor=[250,250,253]},
+    didDrawCell:z=>{if(z.section!=="body")return;const r=rows[z.row.index];if(!r)return;
+     if(INTL&&z.column.index===cO&&FL[r.ul])try{d.addImage(FL[r.ul],"PNG",z.cell.x+2,z.cell.y+(z.cell.height-3.4)/2,4.5,3.4,"fl_"+r.ul,"FAST")}catch{}
+     if(z.column.index===cA&&AP[r.al])try{d.addImage(AP[r.al].d,"PNG",z.cell.x+1.5,z.cell.y+(z.cell.height-5)/2,5,5,"ap_"+r.al,"FAST")}catch{}},
+    didDrawPage:()=>{if(d.getNumberOfPages()>sayfa){sayfa=d.getNumberOfPages();devam()}}});y=d.lastAutoTable.finalY+8});
+  const n=d.getNumberOfPages();for(let i=1;i<=n;i++){d.setPage(i);serit(H-1.6,1.6);d.setFont(FT,"normal");d.setFontSize(7);d.setTextColor(...MUT);
+   d.text(L("Gymexa Score · Türkiye Cimnastik Federasyonu","Gymexa Score · Turkish Gymnastics Federation")+(kirli?"  ·  "+L("kaydedilmemiş taslak","unsaved draft"):""),M,H-5);d.text(new Date().toLocaleString(ENP?"en-GB":"tr-TR",{dateStyle:"short",timeStyle:"short"})+"   "+i+" / "+n,W-M,H-5,{align:"right"})}
+  const dosya=(L("Cikis_Sirasi_","Start_Order_")+String(katT).replace(/[^\p{L}\p{N}]+/gu,"_")).replace(/_+$/,"")+".pdf";d.save(dosya);
+  try{logAction("start_order_pdf",`[Ritmik] Çıkış sırası PDF: ${kd.name||kat}`,{user:usr,competitionId:comp,discipline:"ritmik",category:kat})}catch{}
+ }catch(er){toast(__T("PDF oluşturulamadı: ")+(er?.message||er),"error")}};
  const ok=(dis,ic,f,t)=>e.jsx("button",{type:"button",className:"sa-ok",disabled:dis,title:t,onClick:ev=>{ev.stopPropagation();f()},children:e.jsx("i",{className:"material-icons-round",children:ic})});
  const sporL=Object.keys(spor).filter(id=>spor[id]&&typeof spor[id]==="object").sort((x,y)=>ad(spor[x]).localeCompare(ad(spor[y]),"tr"));
  return e.jsxs("div",{children:[
@@ -102,6 +145,7 @@ function CikisSira({C,comp,kat,FB,usr,toast,renk}){
     e.jsxs("button",{type:"button",className:"sa-btn",style:{padding:"8px 12px"},onClick:()=>ekleAdim(d.gi),children:[e.jsx("i",{className:"material-icons-round",children:"add"}),__T("Ekle")]})]})]},d.gi))}),
   e.jsxs("div",{className:"sa-foot",children:[e.jsx("span",{className:"sa-note",style:{margin:0,fontWeight:800},children:__T("Kaydedince çıkış listesine, puanlama sırasına ve hakem ekranlarına anında yansır.")}),
    e.jsx("span",{style:{marginLeft:"auto",fontWeight:800,color:kirli?"#B45309":"#94A3B8",fontSize:".85rem"},children:kirli?__T("Kaydedilmemiş değişiklik var"):__T("Değişiklik yok.")}),
+   e.jsxs("button",{type:"button",className:"sa-btn g",disabled:!G.length,onClick:pdfIndir,title:__T("Ekrandaki çıkış sırasını PDF olarak indir"),children:[e.jsx("i",{className:"material-icons-round",children:"picture_as_pdf"}),__T("PDF indir")]}),
    e.jsx("button",{type:"button",className:"sa-btn g",disabled:!kirli||busy,onClick:()=>setGd(null),children:__T("Geri al")}),
    e.jsxs("button",{type:"button",className:"sa-btn",disabled:!kirli||busy,onClick:kaydet,children:[e.jsx("i",{className:"material-icons-round",children:"save"}),busy?__T("Kaydediliyor…"):__T("Kaydet")]})]})]})}
 

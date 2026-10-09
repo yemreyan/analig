@@ -4936,6 +4936,8 @@ const DICT={
   "Yüklenmiş fotoğraf varsa isim ve puan kartının solunda": "Shown left of the name and score cards when a photo is uploaded",
   "Aletler sırayla + genel tasnif": "Apparatus in turn + all-around",
   "Alet dönüş süresi (sn)": "Apparatus rotation (s)",
-  "· çok aletli kategoride her alet bu süre görünür, sonra genel tasnif": "· in multi-apparatus categories each apparatus is shown this long, then the all-around"
+  "· çok aletli kategoride her alet bu süre görünür, sonra genel tasnif": "· in multi-apparatus categories each apparatus is shown this long, then the all-around",
+  "Ekrandaki çıkış sırasını PDF olarak indir": "Download the start order shown as PDF",
+  "Bu kategoride çıkış sırası yok.": "No start order in this category."
 };
 export{DICT};
