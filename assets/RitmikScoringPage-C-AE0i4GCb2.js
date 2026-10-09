@@ -220,7 +220,7 @@ function __ItirazListe({e,ze,la,katAd}){const{currentUser:_u}=Ja()||{},usr=_u?.a
 const __rtArr=v=>Array.isArray(v)?v:Object.values(v||{});
 // Başhakem not işlemi (2026-10-07): hakemin gönderdiği not veritabanında varsa hücre salt-okunur; tıklayınca pencere:
 //  "Notu değiştir" (yeni değer + gerekçe + şifre) → alan yazılır, lockedFields kilitlenir · "Hakeme gönder" (not + şifre) → hakem ekranında alan yeniden açılır
-//  (duzeltmeIzni/<kat>/<sp>/<alet>/<SLOT>=true, lockedFields kalkar, geriGonder/<SLOT>). Şifre: yarışma/komite şifresi ya da herhangi bir kullanıcı şifresi (Kilidi Aç ile aynı).
+//  (duzeltmeIzni/<kat>/<sp>/<alet>/<SLOT>=true, lockedFields kalkar, geriGonder/<SLOT>). Şifre: yarışma/komite şifresi ya da herhangi bir kullanıcı şifresi (Kilidi Aç ile aynı). 2026-10-09: "Hakeme gönder" şifresiz; şifre yalnız "Notu değiştir"de.
 //  Her işlem puanlar/<kat>/<sp>/<alet>/duzeltmeler/<id> = {alan,yol,eski,yeni,tip:bashakem|geri_gonder|hakem,kim,ts,not} → FIG Hakem Karnesi "Not değişiklikleri".
 let __HASH=null,__USR="basHakem",__NIopen=null;
 const __hk=v=>v!=null&&v!=="";
@@ -233,7 +233,7 @@ function __NotIslem({e,fb,la,kat,ath,alet,aletAd}){const[o,setO]=m.useState(null
  if(!o||!ath)return null;
  const ad=[ath.ad,ath.soyad].filter(Boolean).join(" ")||ath.name||"",base=`${fb}/${la}/puanlar/${kat}/${ath.id}/${alet}`,degistir=mod==="degistir";
  const yap=async()=>{setErr("");let n=null;if(degistir){n=parseFloat(String(v).replace(",","."));if(!(n>=0)||o.max&&n>o.max){setErr(__T("Geçersiz değer."));return}n=+n.toFixed(3);if(Math.abs(n-(+o.eski))<1e-9){setErr(__T("Yeni not eskisiyle aynı."));return}}
-  setBusy(!0);try{if(!await __sifreDogrula(fb,la,pw)){setErr(__T("Şifre hatalı."));setBusy(!1);return}
+  setBusy(!0);try{if(degistir&&!await __sifreDogrula(fb,la,pw)){setErr(__T("Şifre hatalı."));setBusy(!1);return}
    const ts=Date.now(),id="dz"+ts.toString(36)+Math.random().toString(36).slice(2,5),U={},gn=nt.trim()||null,es=o.eski==null||o.eski===""?null:+o.eski;
    if(degistir){U[`${base}/${o.yol}`]=n;U[`${base}/lockedFields/${o.lk}`]=!0;U[`${base}/geriGonder/${o.slot}`]=null;U[`${fb}/${la}/hakemUyari/${o.slot}/${kat}__${ath.id}__${alet}`]=null;U[`${base}/duzeltmeler/${id}`]={alan:o.slot,yol:o.yol,eski:es,yeni:n,tip:"bashakem",kim:__USR,ts,not:gn};
     await ua(T(I),U);o.set&&o.set(String(n));try{Sa("score_correction",`[Ritmik] Başhakem notu değiştirdi: ${o.slot} ${es??"—"} → ${n} · ${ad} · ${aletAd||alet}`+(gn?` · ${gn}`:""),{user:__USR,competitionId:la,category:kat,athleteId:ath.id,athleteName:ad,alet,oldValue:es,newValue:n,discipline:"ritmik",data:{alan:o.slot,not:gn}})}catch{}}
@@ -245,11 +245,11 @@ function __NotIslem({e,fb,la,kat,ath,alet,aletAd}){const[o,setO]=m.useState(null
   e.jsxs("div",{className:"rtm-ni-eski",children:[__T("Hakemin notu"),e.jsx("strong",{children:(+o.eski).toFixed(o.max?1:3)})]}),
   e.jsxs("div",{className:"rtm-ni-seg",children:[e.jsxs("button",{type:"button",className:degistir?"on":"",onClick:()=>{setMod("degistir");setErr("")},children:[e.jsx("i",{className:"material-icons-round",children:"edit"}),__T("Notu değiştir")]}),e.jsxs("button",{type:"button",className:!degistir?"on":"",onClick:()=>{setMod("gonder");setErr("")},children:[e.jsx("i",{className:"material-icons-round",children:"reply"}),__T("Hakeme gönder")]})]}),
   degistir?e.jsxs("label",{className:"rtm-ni-f",children:[__T("Yeni not"),e.jsx("input",{type:"number",step:"0.1",min:"0",max:o.max||void 0,value:v,autoFocus:!0,onChange:x=>setV(x.target.value)})]}):e.jsx("p",{className:"rtm-ni-bilgi",children:__RTY?__T("Hakemin ekranında bu not yeniden açılır; hakem yeni notu gönderdiğinde buraya gelir."):__T("Bu panel eski hakem ekranlarını kullanıyor; hakem ekranı yeniden açılmayabilir. Paneller sayfasından yeni hakem ekranlarına geçin.")}),
-  e.jsxs("label",{className:"rtm-ni-f",children:[degistir?__T("Gerekçe (isteğe bağlı)"):__T("Hakeme not (isteğe bağlı)"),e.jsx("input",{type:"text",value:nt,onChange:x=>setNt(x.target.value)})]}),
-  e.jsxs("label",{className:"rtm-ni-f",children:[__T("Şifre"),e.jsx("input",{type:"password",value:pw,autoFocus:!degistir,onChange:x=>setPw(x.target.value),onKeyDown:x=>x.key==="Enter"&&yap()})]}),
+  e.jsxs("label",{className:"rtm-ni-f",children:[degistir?__T("Gerekçe (isteğe bağlı)"):__T("Hakeme not (isteğe bağlı)"),e.jsx("input",{type:"text",value:nt,autoFocus:!degistir,onChange:x=>setNt(x.target.value),onKeyDown:x=>!degistir&&x.key==="Enter"&&yap()})]}),
+  degistir?e.jsxs("label",{className:"rtm-ni-f",children:[__T("Şifre"),e.jsx("input",{type:"password",value:pw,onChange:x=>setPw(x.target.value),onKeyDown:x=>x.key==="Enter"&&yap()})]}):null,
   err?e.jsx("div",{className:"rtm-unlock-error",children:err}):null,
   e.jsx("p",{className:"rtm-ni-not",children:__T("Değişiklik hakem karnesine işlenir (eski → yeni, kim, ne zaman).")}),
-  e.jsxs("div",{className:"rtm-modal-actions",children:[e.jsx("button",{className:"rtm-btn rtm-btn--cancel",disabled:busy,onClick:()=>setO(null),children:__T("İptal")}),e.jsx("button",{className:"rtm-btn rtm-btn--confirm",disabled:busy||!pw,onClick:yap,children:busy?__T("Kontrol…"):degistir?__T("Notu değiştir"):__T("Hakeme gönder")})]})]})})}
+  e.jsxs("div",{className:"rtm-modal-actions",children:[e.jsx("button",{className:"rtm-btn rtm-btn--cancel",disabled:busy,onClick:()=>setO(null),children:__T("İptal")}),e.jsx("button",{className:"rtm-btn rtm-btn--confirm",disabled:busy||degistir&&!pw,onClick:yap,children:busy?__T("Kontrol…"):degistir?__T("Notu değiştir"):__T("Hakeme gönder")})]})]})})}
 // A/E hakem notu canlı eşitleme: hakem notunu (ör. geri gönderme sonrası) değiştirirse, başhakem o hücreye dokunmadıysa yeni not yerel değere alınır
 function __RSync({rec,loc,set}){const prev=m.useRef(null);m.useEffect(()=>{const r=rec||{},p=prev.current;prev.current={a:{...(r.aPanel||{})},e:{...(r.ePanel||{})}};if(!p)return;
  [["a","aPanel"],["e","ePanel"]].forEach(([k,f])=>{const now=r[f]||{},L=loc[k]||{};Object.keys({...now,...p[k]}).forEach(j=>{const nv=now[j],ov=p[k][j];if(nv==null||String(nv)===String(ov))return;const lv=L[j];if(lv==null||lv===""||String(lv)===String(ov))set[k](j,String(nv))})})},[rec]);return null}

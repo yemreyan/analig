@@ -296,13 +296,11 @@
 .rtm-tools .rtm-layout-switch .material-icons-round{font-size:18px}
 .rtm-page--collapsed .rtm-tools{left:16px;top:64px;transform:none;flex-direction:column;gap:6px}
 .rtm-page--collapsed .rtm-tools .rtm-layout-switch{width:40px;height:40px}
-body:has(.rtm-page) #tcf-lang-sw{right:auto!important;bottom:auto!important;left:64px!important;top:23px!important}
-@media(min-width:769px){body:has(.rtm-page.rtm-page--collapsed) #tcf-lang-sw{left:16px!important;top:156px!important;flex-direction:column!important;width:40px;border-radius:14px!important}
-.rtm-page--collapsed .rtm-final-bar{margin-left:84px}
-body:has(.rtm-page.rtm-page--collapsed) #tcf-lang-sw button{padding:7px 0!important;width:100%}}
+@media(min-width:769px){.rtm-page--collapsed .rtm-final-bar{margin-left:84px}
+}
 .rtm-sidebar-inner{padding-bottom:76px}
 @media(max-width:768px){.rtm-tools,.rtm-page--collapsed .rtm-tools{left:auto;right:16px;top:16px;transform:none;flex-direction:row}
-body:has(.rtm-page) #tcf-lang-sw{left:auto!important;right:104px!important;top:23px!important}}
+}
 
 /* ==== KOYU TEMA (2026-10-07) — html.rtm-koyu; dark_gen.py ile üretildi (açık renkler → koyu eşdeğerleri) ==== */
 html.rtm-koyu .rtm-page{--rtm-bg:#0f1117;--rtm-surface:#161b27;--rtm-surface2:#1e2535;--rtm-border:rgba(255,255,255,.09);--rtm-text:#F1F5F9;--rtm-text-sec:#94A3B8;--rtm-primary-light:#3a1530;--rtm-primary-muted:rgba(236,72,153,.18);--rtm-green:#22C55E;--rtm-red:#F87171;--rtm-amber:#FBBF24;--rtm-blue:#60A5FA;color-scheme:dark}
@@ -550,3 +548,5 @@ html.rtm-koyu .rtm-card:has(.rtm-card-label) .rtm-card-title{color:color-mix(in 
 .rtm-pz--cl .rtm-pz-row button{background:#f1f5f9;border-color:#cbd5e1;color:#1e293b}.rtm-pz--cl .rtm-pz-pop small{color:#64748b}.rtm-pz--cl .rtm-pz-row input[type=range]{accent-color:#4a6fa5}
 .rtm-yn-b{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--rtm-border,#cbd5e1);background:var(--rtm-surface2,#f1f5f9);color:inherit;font:inherit;font-weight:800;cursor:pointer;text-align:left}.rtm-yn-b:hover{border-color:var(--rtm-primary,#ec4899)}.rtm-yn-b .material-icons-round{font-size:18px}.rtm-yn-b em{margin-left:auto;font-style:normal;font-weight:600;opacity:.7;font-size:11px}
 .rtm-pz--cl .rtm-yn-b{background:#f1f5f9;border-color:#cbd5e1;color:#1e293b}.rtm-yn-ok{min-width:0!important;white-space:nowrap;font-weight:800;color:#16a34a!important}
+
+/* TR/EN (2026-10-09): kullanıcı isteğiyle sağ alt köşede (varsayılan konum) */
