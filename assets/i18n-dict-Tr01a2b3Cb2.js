@@ -4926,6 +4926,8 @@ const DICT={
   " yeniden yüklenecek. Hakemlerin gönderilmemiş girişleri silinir. Devam edilsin mi?": " will be reloaded. Unsubmitted judge entries will be lost. Continue?",
   "Tüm hakem ekranlarına gönderildi": "Sent to all judge screens",
   "Bu kategoriye gönderildi": "Sent to this category",
-  "Gönderilemedi. Bağlantıyı kontrol edin.": "Could not send. Check the connection."
+  "Gönderilemedi. Bağlantıyı kontrol edin.": "Could not send. Check the connection.",
+  "BAŞHAKEM": "HEAD JUDGE",
+  "Notunuzu yeniden girin": "Re-enter your score"
 };
 export{DICT};
