@@ -133,6 +133,8 @@ const RC={DA:"#7C3AED",DB:"#4F46E5",A:"#EC4899",E:"#10B981"};
 function Numpad({val,set,max}){const press=k=>{let v=val||"";if(k==="⌫")v=v.slice(0,-1);else if(k===".")v.includes(".")||(v=(v||"0")+".");else{const nx=v+k;if(/^\d{0,2}(\.\d{0,3})?$/.test(nx)&&!(max&&parseFloat(nx)>max))v=nx}set(v)};
  return e.jsx("div",{className:"hv-pad",children:["1","2","3","4","5","6","7","8","9",".","0","⌫"].map(k=>e.jsx("button",{type:"button",className:"hv-k"+(k==="."?" fn":"")+(k==="⌫"?" del":""),onClick:()=>press(k),children:k==="⌫"?MI("backspace"):k},k))})}
 
+function Kron({sy,olc0,fmt}){const r=R.useRef(null);R.useEffect(()=>{const cal=!!(sy&&sy.basla&&!sy.bitis);const ciz=()=>{const el=r.current;el&&(el.textContent=fmt(cal?Math.max(0,(Date.now()-sy.basla)/1e3):olc0))};ciz();if(!cal)return;const i=setInterval(ciz,100);return()=>clearInterval(i)},[sy&&sy.basla,sy&&sy.bitis,olc0]);return e.jsx("span",{ref:r})}
+
 function HakemV2({kind,yapi,grup}){
  const q=new URLSearchParams(location.search),comp=q.get("competitionId")||"",lk=q.get("linkId")||q.get("v2link")||"",tok=q.get("token")||"",fixCat=q.get("v2link")&&q.get("catId")||"";
  const sj=kind==="sj",tl=kind==="t"||kind==="l",lf=kind==="l"?((q.get("panelType")||"cizgi1").toLowerCase()==="cizgi2"?"cizgi2":"cizgi1"):"",slot=kind==="t"?"T":kind==="l"?(lf==="cizgi2"?"L2":"L1"):kind==="d"||sj?(q.get("panelType")||"").toUpperCase():(q.get("panelId")||"").toUpperCase(),fixAl=q.get("aletId")||"";
@@ -177,7 +179,7 @@ function HakemV2({kind,yapi,grup}){
  const _gh=grup?.hakemler||{},_bk=String(cat||"").replace(/^final_/,"").split("__")[0],_ha=grup?.hakemAlet||{},_hkm=(_ha[slot]||(tek?_ha[slot+"1"]:null)||{})[_bk]||{},_hx=_hkm[alet],_hkv=Object.values(_hkm).filter(x=>x&&x.ad),_hkt=_hkv.length&&_hkv.every(x=>x.ad===_hkv[0].ad)?_hkv[0]:null,_gx=(_hx&&_hx.ad?_hx:null)||(!alet?_hkt:null)||_gh[slot]||(tek?_gh[slot+"1"]:null),hAdG=hAd||(_gx&&(_gx.ad||_gx.name))||"";
  // süre hakemi kronometresi: çalışırken 0.1 sn'de bir yenilenir; sınırlar / hazırlık / elle fark yerel
  const _sy=rec&&rec.tPanel&&rec.tPanel.sayac,[,setTk]=R.useState(0),[tLim,setTLim]=R.useState(null),[tGec,setTGec]=R.useState(null),[tFark,setTFark]=R.useState(null);
- R.useEffect(()=>{if(kind!=="t"||!_sy||!_sy.basla||_sy.bitis)return;const i=setInterval(()=>setTk(Date.now()),100);return()=>clearInterval(i)},[kind,_sy&&_sy.basla,_sy&&_sy.bitis]);
+ // 2026-10-09: tüm ekranı 0.1 sn'de bir yeniden çizmek tablette donma yapıyordu → yalnız süre rakamı (Kron) kendi içinde güncellenir
  R.useEffect(()=>{setTLim(null);setTGec(null);setTFark(null)},[key]);
  // E ve DA giriş biçimi: 2026-10-08 kullanıcı seçimi denedi, sonra "aynı ekranda görelim" dedi → tuşlar + şerit + tuş takımı birlikte; segm/girisM kullanılmıyor (kod duruyor)
  const _gk="gxGiris:"+(kind==="d"||sj&&sjD?"D":"E"),[girisM,setGirisM]=R.useState(()=>{try{return localStorage.getItem(_gk)||"tus"}catch{return"tus"}});
@@ -328,21 +330,22 @@ function HakemV2({kind,yapi,grup}){
   const lim=tLim||(ts_&&ts_.min!=null?{min:+ts_.min,max:+ts_.max}:{min:grpK?135:75,max:grpK?150:90});
   const olc=cal?Math.max(0,(Date.now()-sy.basla)/1e3):bit?+sy.olculen||0:ts_?+ts_.olculen||0:0;
   const fk=o=>{const t2=Math.round(o);return t2<lim.min?lim.min-t2:t2>lim.max?t2-lim.max:0};
-  const gec=tGec!=null?tGec:!!(ts_&&ts_.gec),otoF=bit||ts_?fk(olc):0,fark=tFark!=null?tFark:ts_&&ts_.fark!=null&&tLim==null?+ts_.fark:otoF;
+  // 2026-10-09 kullanıcı: kesinti OTOMATİK hesaplanmaz — hakem aşılan saniyeyi kendisi girer (+1 sn = 0.05); ölçülen süre yalnız bilgi
+  const gec=tGec!=null?tGec:!!(ts_&&ts_.gec),fark=tFark!=null?tFark:ts_&&ts_.fark!=null?+ts_.fark:0;
   const hesap=r3(fark*.05+(gec?.5:0)),gonderilen=has(mine)?+mine:null,ayni=gonderilen!=null&&Math.abs(gonderilen-hesap)<1e-9;
   const mmss=x=>{const t=Math.max(0,x),m0=Math.floor(t/60),s0=t-m0*60;return m0+":"+(s0<10?"0":"")+s0.toFixed(1)},mm=x=>Math.floor(x/60)+":"+String(Math.round(x%60)).padStart(2,"0");
   const limC=v=>{const p=String(v).trim().match(/^(\d+):(\d{1,2})$/);return p?(+p[1])*60+(+p[2]):/^\d+$/.test(String(v).trim())?+v:null};
   const yaz=async(o,f,g,l,el)=>{const z=Date.now(),d=r3(f*.05+(g?.5:0));await update(ref(db,yol),{"tPanel/sure":{olculen:o,min:l.min,max:l.max,fark:f,gec:!!g,elle:!!el,ts:z}});setVal(String(d));await gonder(d)};
   // elle gönderim (2026-10-09): hakem aşılan saniyeyi kendi sayar (+ her basış 1 sn = 0.05); kronometre çalışıyorsa durdurulur
-  const elleGonder=async()=>{if(busy)return;if(cal){const z=Date.now();try{await update(ref(db,yol),{"tPanel/sayac/bitis":z,"tPanel/sayac/olculen":Math.round((z-sy.basla)/100)/10})}catch{}kuyrukSal()}await yaz(olc,fark,gec,lim,tFark!=null)};
+  const elleGonder=async()=>{if(busy)return;let o0=olc;if(cal){const z=Date.now();o0=Math.round((z-sy.basla)/100)/10;try{await update(ref(db,yol),{"tPanel/sayac/bitis":z,"tPanel/sayac/olculen":o0})}catch{}kuyrukSal()}await yaz(o0,fark,gec,lim,!0)};
   const basla=async()=>{if(!aid||busy)return;setTFark(null);try{await update(ref(db,yol),{"tPanel/sayac":{basla:Date.now(),kim:hAdG||slot}})}catch(x){setErr(String(x?.message||x))}};
   const kuyrukSal=async()=>{try{const q=(await get(ref(db,`${B}/${comp}/yayinKuyruk`))).val()||{},U={};let son=null;Object.entries(q).forEach(([k,x])=>{if(!x||!x.bekle||x.bekle.kat!==cat||String(x.bekle.id)!==String(aid)||x.bekle.alet!==alet)return;const f=x.flash||{};U[`${B}/${comp}/yayinKuyruk/${k}`]=null;f.kategori&&f.id&&f.alet&&(U[`${B}/${comp}/puanlar/${f.kategori}/${f.id}/${f.alet}/yayinBekliyor`]=null);if(!son||(+x.ts||0)>(+son.ts||0))son=x});if(son){U[`${B}/${comp}/flashTrigger`]={...son.flash,timestamp:Date.now()};await update(ref(db),U)}}catch{}};
-  const bitir=async()=>{if(!cal||busy)return;const z=Date.now(),o=Math.round((z-sy.basla)/100)/10;try{await update(ref(db,yol),{"tPanel/sayac/bitis":z,"tPanel/sayac/olculen":o});kuyrukSal();setTFark(null);await yaz(o,fk(o),gec,lim)}catch(x){setErr(String(x?.message||x))}};
+  const bitir=async()=>{if(!cal||busy)return;const z=Date.now(),o=Math.round((z-sy.basla)/100)/10;try{await update(ref(db,yol),{"tPanel/sayac/bitis":z,"tPanel/sayac/olculen":o});kuyrukSal()}catch(x){setErr(String(x?.message||x))}};
   const sifirla=async()=>{if(!await window.__gxConfirm(__T("Süre sıfırlansın mı? Yeniden ölçmek için BAŞLAT'a basın.")))return;setTFark(null);try{await update(ref(db,yol),{"tPanel/sayac":null})}catch{}};
   const big={height:92,borderRadius:20,border:0,fontSize:24,fontWeight:900,letterSpacing:".06em",color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,width:"100%"};
   const sol=e.jsxs("div",{className:"hv-col",children:[athKart,
    e.jsxs("div",{className:"hv-card hv-sec",style:{textAlign:"center"},children:[e.jsxs("h4",{style:{justifyContent:"center"},children:[MI("timer")," ",__T("Rutin süresi")]}),
-    e.jsx("div",{className:"mono",style:{fontSize:"clamp(56px,11vw,96px)",fontWeight:800,lineHeight:1,color:cal?"#22C55E":"var(--tx)",margin:"6px 0 4px"},children:mmss(olc)}),
+    e.jsx("div",{className:"mono",style:{fontSize:"clamp(56px,11vw,96px)",fontWeight:800,lineHeight:1,color:cal?"#22C55E":"var(--tx)",margin:"6px 0 4px"},children:e.jsx(Kron,{sy,olc0:bit?+sy.olculen||0:ts_?+ts_.olculen||0:0,fmt:mmss})}),
     e.jsx("div",{style:{fontSize:13,fontWeight:800,color:cal?"#22C55E":"var(--mut)",letterSpacing:".08em",textTransform:"uppercase",minHeight:18},className:cal?"hv-pulse":"",children:cal?"● "+__T("Süre işliyor"):bit||ts_?__T("Ölçüldü"):__T("Seri başlayınca BAŞLAT")}),
     e.jsx("div",{style:{marginTop:14},children:cal?e.jsxs("button",{type:"button",style:{...big,background:"linear-gradient(135deg,#DC2626,#B91C1C)"},onClick:bitir,disabled:busy,children:[MI("stop_circle",{fontSize:34})," ",__T("BİTİR")]}):!bit&&!ts_?e.jsxs("button",{type:"button",style:{...big,background:"linear-gradient(135deg,#16A34A,#15803D)",opacity:ath?1:.4},onClick:basla,disabled:!ath||busy,children:[MI("play_circle",{fontSize:34})," ",__T("BAŞLAT")]}):e.jsxs("button",{type:"button",className:"hv-btn",style:{width:"100%",justifyContent:"center"},onClick:sifirla,children:[MI("restart_alt")," ",__T("Sıfırla / yeniden ölç")]})})]}),
    e.jsxs("div",{className:"hv-info",children:[MI("rule"),__T("WG: süre sınırı dışında kalan her saniye için 0.05 kesinti; başlangıç pozisyonu için 30 sn'den fazla bekleme 0.50.")]})]});

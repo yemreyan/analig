@@ -4938,6 +4938,9 @@ const DICT={
   "Alet dönüş süresi (sn)": "Apparatus rotation (s)",
   "· çok aletli kategoride her alet bu süre görünür, sonra genel tasnif": "· in multi-apparatus categories each apparatus is shown this long, then the all-around",
   "Ekrandaki çıkış sırasını PDF olarak indir": "Download the start order shown as PDF",
-  "Bu kategoride çıkış sırası yok.": "No start order in this category."
+  "Bu kategoride çıkış sırası yok.": "No start order in this category.",
+  "Sonuç Kitapçığı": "Results Book",
+  "Tüm kategoriler: takım, all-around ve alet sonuçları (yaş sırasıyla)": "All categories: team, all-around and apparatus results (by age group)",
+  "Sonuç kitapçığı oluşturulamadı: ": "Results book could not be created: "
 };
 export{DICT};
