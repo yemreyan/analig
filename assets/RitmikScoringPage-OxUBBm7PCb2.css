@@ -550,3 +550,4 @@ html.rtm-koyu .rtm-card:has(.rtm-card-label) .rtm-card-title{color:color-mix(in 
 .rtm-pz--cl .rtm-yn-b{background:#f1f5f9;border-color:#cbd5e1;color:#1e293b}.rtm-yn-ok{min-width:0!important;white-space:nowrap;font-weight:800;color:#16a34a!important}
 
 /* TR/EN (2026-10-09): kullanıcı isteğiyle sağ alt köşede (varsayılan konum) */
+.cl-d-cell input.rtm-hk,.cl-ae-cell input.rtm-hk{cursor:pointer;background:#F8FAFC;border-style:dashed}.cl-d-cell input.rtm-hk:hover,.cl-ae-cell input.rtm-hk:hover{border-color:#1a5fa8;background:#EFF6FF}.cl-d-cell input.rtm-hk--bek,.cl-ae-cell input.rtm-hk--bek{border-color:#F59E0B;background:#FFFBEB;color:#92400E}
