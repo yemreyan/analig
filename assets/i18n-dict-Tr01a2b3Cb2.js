@@ -4933,6 +4933,9 @@ const DICT={
   "elle": "manual",
   "Süre aşımı yok (0)": "No time fault (0)",
   "Sporcu fotoğrafı": "Athlete photo",
-  "Yüklenmiş fotoğraf varsa isim ve puan kartının solunda": "Shown left of the name and score cards when a photo is uploaded"
+  "Yüklenmiş fotoğraf varsa isim ve puan kartının solunda": "Shown left of the name and score cards when a photo is uploaded",
+  "Aletler sırayla + genel tasnif": "Apparatus in turn + all-around",
+  "Alet dönüş süresi (sn)": "Apparatus rotation (s)",
+  "· çok aletli kategoride her alet bu süre görünür, sonra genel tasnif": "· in multi-apparatus categories each apparatus is shown this long, then the all-around"
 };
 export{DICT};

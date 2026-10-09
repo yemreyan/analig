@@ -152,7 +152,7 @@ const DBG=Q.get("debug")==="1",log=(...a)=>DBG&&console.log("[overlay]",new Date
 const VARS=()=>({dil:"tr",kat:[],olcek:100,kenar:90,tema:"tcf",vurgu:"",arka:"seffaf",
  logo:{tcf:!0,gymexa:!0,etkinlik:!0,ek:null,kose:"yok"},
  alt:{acik:!0,isim:!0,puan:!0,konum:"alt-sol",sure:12,isimSure:0,kulup:!0,ulke:!0,bib:!1,detay:!0,sira:!0},
- tablo:{acik:!1,mod:"puan",konum:"sag",n:8,sure:15,tur:"genel",detay:!0},
+ tablo:{acik:!1,mod:"puan",konum:"sag",n:8,sure:15,tur:"genel",detay:!0,donguSure:10},
  sirada:{acik:!1,mod:"cagri",konum:"sag-ust",n:3},
  podyum:{acik:!1,mod:"otomatik",n:3,sure:20}});
 const birlestir=(d,p)=>{const o={...d};Object.keys(p||{}).forEach(k=>{const v=p[k];if(v===undefined)return;o[k]=v&&typeof v==="object"&&!Array.isArray(v)&&d[k]&&typeof d[k]==="object"&&!Array.isArray(d[k])?{...d[k],...v}:v});return o};
@@ -246,23 +246,33 @@ function puanSonrasi(){scoreUntil=0;ltPuan=!1;lt.classList.remove("puanli");cons
 const elle=()=>{const k=P.kontrol;if(!k||!k.g||k.g==="gizle")return null;if(+k.sure>0&&Date.now()>(+k.ts||0)+k.sure*1000)return null;return k};
 const gKat=()=>{const e=elle();return(e&&e.kat&&D.kats[e.kat]?e.kat:null)||curKat};
 const tabloAlet=k=>brans==="ritmik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.alet)||D.aktifAlet?.[k]||null):brans==="artistik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.aletId)||null):null;
+// ÇOK ALETLİ KATEGORİ (2026-10-09): "genel" modda aletlerin DA/DB/A/E değerleri TOPLANMAZ — aletler sırayla döner (her alet kendi sıralaması ve notları),
+//  tur sonunda genel tasnif (alet toplamları ayrı sütunlarda). Yeni puan gelince tur o aletle başlar. Süre: tablo.donguSure (sn, vars. 10). "alet" modu değişmez.
+const tabloAletler=k=>{const d=D.kats[k]||{};return(brans==="ritmik"||brans==="artistik")&&C.tablo.tur!=="alet"&&Array.isArray(d.aletler)&&d.aletler.length>1?d.aletler:null};
+const aletPuanli=(k,a)=>{const P0=D.puan[k]||{};if(brans==="artistik"){const x=P0[a];return!!x&&Object.values(x).some(v=>v&&(v.durum==="tamamlandi"||v.kilitli===true))}return Object.values(P0).some(p=>p&&p[a]&&(p[a].durum==="tamamlandi"||p[a].kilitli===true))};
+let tbKey="";
+const tabloSec=k=>{const A=tabloAletler(k);if(!A)return{al:tabloAlet(k),aa:!1,key:k};
+ let Ls=A.filter(a=>aletPuanli(k,a));if(!Ls.length)Ls=A.slice();const fa=D.flash&&D.flash.kategori===k?(D.flash.alet||D.flash.aletId):null;
+ if(fa&&Ls.includes(fa)){const i=Ls.indexOf(fa);Ls=Ls.slice(i).concat(Ls.slice(0,i))}Ls=Ls.concat(["__aa"]);
+ const sure=Math.max(4,+C.tablo.donguSure||10)*1e3,t0=(D.flash&&+D.flash.timestamp)||0,ix=Math.floor(Math.max(0,Date.now()-t0)/sure)%Ls.length;
+ return{al:Ls[ix]==="__aa"?null:Ls[ix],aa:Ls[ix]==="__aa",A,key:k+"|"+Ls[ix]}};
 const nrm=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/\s+/g," ").trim();
 const benMi=(g,ft)=>{if(!ft)return!1;if(ft.id)return ft.id===g.key||ft.id===g.id;return g.takim?nrm(g.kulup)===nrm(ft.kulup):nrm(g.ad)===nrm(ft.adSoyad)};
 const adK=g=>{const u=g.ulke;return g.takim?(u&&C.alt.ulke?u+(g.kulup&&g.kulup!==u?" · "+g.kulup:""):g.kulup):g.ad};
 const altK=g=>{const u=g.ulke;return g.takim?g.uyeler.join(", "):(u&&C.alt.ulke?"":(g.kulup||""))};
 const satirHtml=(r,o)=>{const g=r.giris,s=r.s||{},u=g.ulke,ul=u&&C.alt.ulke;
  const rk=`<span class="rk${r.sira&&r.sira<=3&&o.madalya?" m"+r.sira:""}">${r.sira||"—"}</span>`;
- const det=o.detay?(brans==="ritmik"?[s.da,s.db,s.a,s.e]:brans==="artistik"?[s.d,s.e]:[s.d,s.a,s.e]).map(v=>`<span class="dt">${s.yalnizIrm?"":f3(v)}</span>`).join("")+`<span class="dt">${s.pen?"-"+f3(s.pen):""}</span>`:"";
+ const det=o.apps?o.apps.map(a=>{const x=V.sonuc(brans,o.kd,o.rec&&o.rec(g.key),a);return `<span class="dt">${x?(x.irm||f3(x.total)):"—"}</span>`}).join(""):o.detay?(brans==="ritmik"?[s.db,s.da,s.a,s.e]:brans==="artistik"?[s.d,s.e]:[s.d,s.a,s.e]).map(v=>`<span class="dt">${s.yalnizIrm?"":f3(v)}</span>`).join("")+`<span class="dt">${s.pen?"-"+f3(s.pen):""}</span>`:"";
  return `<div class="rw${o.me?" me":""}">${rk}<span class="nm"><div class="n1">${ul?fl(u):""}${esc(UP(adK(g),u))}${!g.takim&&ul?` <span style="opacity:.7">${esc(u)}</span>`:""}</div><div class="n2">${esc(UP(altK(g),u))}</div></span>${det}<span class="sc">${s.yalnizIrm?`<span class="irm">${esc(s.irm)}</span>`:f3(s.total)}</span></div>`};
-function cizTablo(){const k=gKat();if(!k){$("lb").innerHTML="";return}
- const al=tabloAlet(k),S=V.siralama({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k],alet:al}),n=Math.max(3,Math.min(20,+C.tablo.n||8));
- const detay=C.tablo.konum==="orta"&&C.tablo.detay!==!1;
+function cizTablo(){const k=gKat();if(!k){$("lb").innerHTML="";tbKey="";return}
+ const sec=tabloSec(k);tbKey=sec.key;const al=sec.al,S=V.siralama({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k],alet:al}),n=Math.max(3,Math.min(20,+C.tablo.n||8));
+ const detay=C.tablo.konum==="orta"&&C.tablo.detay!==!1,kd=D.kats[k]||{},pv=brans==="artistik"?V.artPivot(D.puan[k]||{}):(D.puan[k]||{}),apps=sec.aa&&detay?(sec.A.filter(x=>aletPuanli(k,x)).length?sec.A.filter(x=>aletPuanli(k,x)):sec.A):null,ox={kd,apps,rec:key=>pv[key]};
  const ft=D.flash&&(!D.flash.kategori||D.flash.kategori===k)?D.flash:null;
  const me=ft?S.satirlar.findIndex(r=>benMi(r.giris,ft)):-1;
- const rows=S.satirlar.slice(0,n).map((r,i)=>satirHtml(r,{me:i===me,madalya:S.tamamlandi,detay}));
- if(me>=n){rows.push(`<div class="rw gap">• • •</div>`);rows.push(satirHtml(S.satirlar[me],{me:!0,detay}))}
- const hd=detay?`<div class="rw hd"><span class="rk">${L().rk}</span><span class="nm"></span>${(brans==="ritmik"?["DA","DB","A","E"]:brans==="artistik"?["D","E"]:["D","A","E"]).map(x=>`<span class="dt">${x}</span>`).join("")}<span class="dt">${L().pen}</span><span class="sc">${L().top}</span></div>`:"";
- $("lb").innerHTML=rows.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(S.tamamlandi?L().sonuc:L().siralama)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())+(al?" — "+V.aletAd(al,EN()):"")))}</div></div></div>${hd}${rows.join("")}</div>`:""}
+ const rows=S.satirlar.slice(0,n).map((r,i)=>satirHtml(r,{me:i===me,madalya:S.tamamlandi,detay,...ox}));
+ if(me>=n){rows.push(`<div class="rw gap">• • •</div>`);rows.push(satirHtml(S.satirlar[me],{me:!0,detay,...ox}))}
+ const hd=detay?`<div class="rw hd"><span class="rk">${L().rk}</span><span class="nm"></span>${apps?apps.map(a=>`<span class="dt">${esc(UP(V.aletAd(a,EN(),k)))}</span>`).join(""):(brans==="ritmik"?["DB","DA","A","E"]:brans==="artistik"?["D","E"]:["D","A","E"]).map(x=>`<span class="dt">${x}</span>`).join("")+`<span class="dt">${L().pen}</span>`}<span class="sc">${L().top}</span></div>`:"";
+ $("lb").innerHTML=rows.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(S.tamamlandi?L().sonuc:L().siralama)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())+(al?" — "+V.aletAd(al,EN(),k):sec.aa?" — "+(EN()?"All-Around":"Genel Tasnif"):"")))}</div></div></div>${hd}${rows.join("")}</div>`:""}
 function cizSirada(){const k=gKat();if(!k){$("nx").innerHTML="";return}
  const ak=V.aktifListe(D.aktif).find(a=>a._kat===k)||null,al=brans==="ritmik"?D.aktifAlet?.[k]||null:brans==="artistik"?(ak&&ak.alet)||null:null;
  const R=V.siradakiler({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k],alet:al,cagrilan:ak,n:Math.max(1,Math.min(8,+C.sirada.n||3))});
@@ -290,6 +300,7 @@ function ciz(){cizTablo();cizSirada();cizPodyum();cizListe()}
 
 /* ---------------- GÖRÜNÜRLÜK (400 ms'de bir) ---------------- */
 function tick(){const now=Date.now(),e=elle(),kap=!!P.kapali;
+ {const k0=gKat();if(k0&&tabloAletler(k0)){const s0=tabloSec(k0);if(s0.key!==tbKey)cizTablo()}}
  if(nameUntil&&now>nameUntil&&!ltPuan){ltOn=!1;nameUntil=0}
  const lst=!kap&&!!e&&e.g==="liste"&&$("sl").innerHTML!=="";
  if(lst&&!slGec&&now>slNext){slGec=!0;slNext=now+SL_SURE;const el=$("sl");el.classList.add("gec");setTimeout(()=>{slSayfa++;cizListe();el.classList.remove("gec");slGec=!1},560)}

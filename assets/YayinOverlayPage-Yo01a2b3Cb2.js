@@ -59,7 +59,7 @@ const Num=({v,mn,mx,st=1,on})=>{const c=x=>on(Math.min(mx,Math.max(mn,Number(x)|
 const PV=()=>({ad:"",dil:"tr",kat:[],olcek:100,kenar:90,tema:"tcf",vurgu:"",arka:"seffaf",
  logo:{tcf:!0,gymexa:!0,etkinlik:!0,ek:null,kose:"yok"},
  alt:{acik:!0,isim:!0,puan:!0,konum:"alt-sol",sure:12,isimSure:0,kulup:!0,ulke:!0,bib:!1,detay:!0,sira:!0,foto:!0},
- tablo:{acik:!1,mod:"puan",konum:"sag",n:8,sure:15,tur:"genel",detay:!0},
+ tablo:{acik:!1,mod:"puan",konum:"sag",n:8,sure:15,tur:"genel",detay:!0,donguSure:10},
  sirada:{acik:!1,mod:"cagri",konum:"sag-ust",n:3},
  podyum:{acik:!1,mod:"otomatik",n:3,sure:20}});
 const ALANLAR=["ad","dil","kat","olcek","kenar","tema","vurgu","arka","logo","alt","tablo","sirada","podyum"];
@@ -182,8 +182,9 @@ export default function YayinOverlayPage(){
     e.jsx(Alan,{t:__T("Ne zaman"),children:e.jsx(Seg,{v:T.tablo.mod,on:v=>degis("tablo","mod",v),ops:[["puan",__T("Puan kartından sonra")],["surekli",__T("Sürekli")],["elle",__T("Yalnız elle")]]})}),
     e.jsx(Alan,{t:__T("Konum"),children:e.jsx(Pos,{v:T.tablo.konum,on:v=>degis("tablo","konum",v),ops:[["sag",__T("Sağ panel")],["sol",__T("Sol panel")],["orta",__T("Ortada büyük")]]})}),
     e.jsxs("div",{className:"yo-row",children:[e.jsx(Alan,{t:__T("Satır sayısı"),children:e.jsx(Num,{v:T.tablo.n,mn:3,mx:20,on:v=>degis("tablo","n",v)})}),T.tablo.mod==="puan"?e.jsx(Alan,{t:__T("Gösterim süresi (sn)"),children:e.jsx(Num,{v:T.tablo.sure,mn:3,mx:120,on:v=>degis("tablo","sure",v)})}):e.jsx("div",{})]}),
-    br==="ritmik"||br==="artistik"?e.jsx(Alan,{t:__T("Sıralama türü"),children:e.jsx(Seg,{v:T.tablo.tur,on:v=>degis("tablo","tur",v),ops:[["genel",__T("Genel (aletler toplamı)")],["alet",__T("Son aletin sıralaması")]]})}):null,
-    T.tablo.konum==="orta"?e.jsx(Tog,{v:T.tablo.detay!==!1,on:v=>degis("tablo","detay",v),t:__T("Not sütunları"),d:br==="ritmik"?"DA · DB · A · E · "+__T("Ceza"):br==="artistik"?"D · E · "+__T("Kesinti"):"D · A · E · "+__T("Ceza")}):null,
+    br==="ritmik"||br==="artistik"?e.jsx(Alan,{t:__T("Sıralama türü"),children:e.jsx(Seg,{v:T.tablo.tur,on:v=>degis("tablo","tur",v),ops:[["genel",__T("Aletler sırayla + genel tasnif")],["alet",__T("Son aletin sıralaması")]]})}):null,
+    (br==="ritmik"||br==="artistik")&&T.tablo.tur!=="alet"?e.jsx(Alan,{t:__T("Alet dönüş süresi (sn)"),a:__T("· çok aletli kategoride her alet bu süre görünür, sonra genel tasnif"),children:e.jsx(Num,{v:T.tablo.donguSure??10,mn:4,mx:60,on:v=>degis("tablo","donguSure",v)})}):null,
+    T.tablo.konum==="orta"?e.jsx(Tog,{v:T.tablo.detay!==!1,on:v=>degis("tablo","detay",v),t:__T("Not sütunları"),d:br==="ritmik"?"DB · DA · A · E · "+__T("Ceza"):br==="artistik"?"D · E · "+__T("Kesinti"):"D · A · E · "+__T("Ceza")}):null,
     e.jsx("p",{className:"yo-note",children:__T("Eşitlikte WG kuralı: E, sonra A, sonra D notu yüksek olan önde. Kategori tamamlanınca başlık \"Sonuçlar\" olur ve ilk üç madalya rengiyle gösterilir.")})]}):null]}):null,
   sekme==="sirada"?e.jsxs("div",{className:"yo-list",children:[
    e.jsx(Tog,{v:T.sirada.acik,on:v=>degis("sirada","acik",v),t:__T("Sıradaki sporcular"),d:__T("Çıkış sırasına göre çağrılan sporcu ve sonraki sporcular")}),
