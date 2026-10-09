@@ -139,7 +139,7 @@ const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomai
 const V=self.GXYV,Q=new URLSearchParams(location.search);
 const comp=Q.get("comp"),demo=Q.get("demo")==="1",pid=Q.get("profil")||"";
 const brans=V.BRANS[Q.get("brans")]?Q.get("brans"):"aerobik",base=V.BRANS[brans];
-if(!comp&&!demo)location.replace("/"+(brans!=="artistik"?brans:"aerobik")+"/yayin-overlay"); // kurulum ekranı uygulama içinde
+if(!comp&&!demo)location.replace(brans==="artistik"?"/artistic/broadcast-overlay":"/"+brans+"/yayin-overlay"); // kurulum ekranı uygulama içinde
 
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const f3=v=>{const n=Number(v);return v!=null&&v!==""&&isFinite(n)?n.toFixed(3):"—"};
@@ -210,7 +210,7 @@ const ulkeKulup=(u,k,il)=>{const a=C.alt;if(u&&a.ulke)return fl(u)+esc([u,a.kulu
 const bibH=b=>C.alt.bib&&b?`<span class="bib">#${esc(b)}</span>`:"";
 const isimGoster=a=>{log("isim",a&&a.ad);if(!C.alt.acik||!C.alt.isim||!a)return;
  lt.classList.remove("puanli");ltPuan=!1;const ad=[a.ad,a.soyad].filter(Boolean).join(" ");
- $("cat").innerHTML=bibH(a.bib)+esc(UP(V.katAd(D.kats,a._kat,EN())+(a.alet&&brans==="ritmik"&&!/__/.test(a._kat)?" — "+V.aletAd(a.alet,EN()):""),a.ulke));
+ $("cat").innerHTML=bibH(a.bib)+esc(UP(V.katAd(D.kats,a._kat,EN())+(a.alet&&(brans==="ritmik"||brans==="artistik")&&!/__/.test(a._kat)?" — "+V.aletAd(a.alet,EN(),a._kat):""),a.ulke));
  $("nm").textContent=UP(ad,a.ulke);fitName(ad);$("cl").innerHTML=ulkeKulup(a.ulke,a.okul||a.kulup,a.il);$("ch").innerHTML="";
  nameUntil=C.alt.isimSure?Date.now()+C.alt.isimSure*1000:0;goster()};
 let tabloUntil=0,podyumUntil=0,podKat=null,podBekle=null,psT=null;
@@ -236,14 +236,14 @@ function puanSonrasi(){scoreUntil=0;ltPuan=!1;lt.classList.remove("puanli");cons
 /* ---------------- SIRALAMA / SIRADAKİ / PODYUM ---------------- */
 const elle=()=>{const k=P.kontrol;if(!k||!k.g||k.g==="gizle")return null;if(+k.sure>0&&Date.now()>(+k.ts||0)+k.sure*1000)return null;return k};
 const gKat=()=>{const e=elle();return(e&&e.kat&&D.kats[e.kat]?e.kat:null)||curKat};
-const tabloAlet=k=>brans==="ritmik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.alet)||D.aktifAlet?.[k]||null):null;
+const tabloAlet=k=>brans==="ritmik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.alet)||D.aktifAlet?.[k]||null):brans==="artistik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.aletId)||null):null;
 const nrm=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/\s+/g," ").trim();
 const benMi=(g,ft)=>{if(!ft)return!1;if(ft.id)return ft.id===g.key||ft.id===g.id;return g.takim?nrm(g.kulup)===nrm(ft.kulup):nrm(g.ad)===nrm(ft.adSoyad)};
 const adK=g=>{const u=g.ulke;return g.takim?(u&&C.alt.ulke?u+(g.kulup&&g.kulup!==u?" · "+g.kulup:""):g.kulup):g.ad};
 const altK=g=>{const u=g.ulke;return g.takim?g.uyeler.join(", "):(u&&C.alt.ulke?"":(g.kulup||""))};
 const satirHtml=(r,o)=>{const g=r.giris,s=r.s||{},u=g.ulke,ul=u&&C.alt.ulke;
  const rk=`<span class="rk${r.sira&&r.sira<=3&&o.madalya?" m"+r.sira:""}">${r.sira||"—"}</span>`;
- const det=o.detay?(brans==="ritmik"?[s.da,s.db,s.a,s.e]:[s.d,s.a,s.e]).map(v=>`<span class="dt">${s.yalnizIrm?"":f3(v)}</span>`).join("")+`<span class="dt">${s.pen?"-"+f3(s.pen):""}</span>`:"";
+ const det=o.detay?(brans==="ritmik"?[s.da,s.db,s.a,s.e]:brans==="artistik"?[s.d,s.e]:[s.d,s.a,s.e]).map(v=>`<span class="dt">${s.yalnizIrm?"":f3(v)}</span>`).join("")+`<span class="dt">${s.pen?"-"+f3(s.pen):""}</span>`:"";
  return `<div class="rw${o.me?" me":""}">${rk}<span class="nm"><div class="n1">${ul?fl(u):""}${esc(UP(adK(g),u))}${!g.takim&&ul?` <span style="opacity:.7">${esc(u)}</span>`:""}</div><div class="n2">${esc(UP(altK(g),u))}</div></span>${det}<span class="sc">${s.yalnizIrm?`<span class="irm">${esc(s.irm)}</span>`:f3(s.total)}</span></div>`};
 function cizTablo(){const k=gKat();if(!k){$("lb").innerHTML="";return}
  const al=tabloAlet(k),S=V.siralama({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k],alet:al}),n=Math.max(3,Math.min(20,+C.tablo.n||8));
@@ -252,10 +252,10 @@ function cizTablo(){const k=gKat();if(!k){$("lb").innerHTML="";return}
  const me=ft?S.satirlar.findIndex(r=>benMi(r.giris,ft)):-1;
  const rows=S.satirlar.slice(0,n).map((r,i)=>satirHtml(r,{me:i===me,madalya:S.tamamlandi,detay}));
  if(me>=n){rows.push(`<div class="rw gap">• • •</div>`);rows.push(satirHtml(S.satirlar[me],{me:!0,detay}))}
- const hd=detay?`<div class="rw hd"><span class="rk">${L().rk}</span><span class="nm"></span>${(brans==="ritmik"?["DA","DB","A","E"]:["D","A","E"]).map(x=>`<span class="dt">${x}</span>`).join("")}<span class="dt">${L().pen}</span><span class="sc">${L().top}</span></div>`:"";
+ const hd=detay?`<div class="rw hd"><span class="rk">${L().rk}</span><span class="nm"></span>${(brans==="ritmik"?["DA","DB","A","E"]:brans==="artistik"?["D","E"]:["D","A","E"]).map(x=>`<span class="dt">${x}</span>`).join("")}<span class="dt">${L().pen}</span><span class="sc">${L().top}</span></div>`:"";
  $("lb").innerHTML=rows.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(S.tamamlandi?L().sonuc:L().siralama)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())+(al?" — "+V.aletAd(al,EN()):"")))}</div></div></div>${hd}${rows.join("")}</div>`:""}
 function cizSirada(){const k=gKat();if(!k){$("nx").innerHTML="";return}
- const al=brans==="ritmik"?D.aktifAlet?.[k]||null:null,ak=V.aktifListe(D.aktif).find(a=>a._kat===k)||null;
+ const ak=V.aktifListe(D.aktif).find(a=>a._kat===k)||null,al=brans==="ritmik"?D.aktifAlet?.[k]||null:brans==="artistik"?(ak&&ak.alet)||null:null;
  const R=V.siradakiler({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k],alet:al,cagrilan:ak,n:Math.max(1,Math.min(8,+C.sirada.n||3))});
  const satir=(g,now,i)=>{const u=g.ulke,ul=u&&C.alt.ulke;
   return `<div class="rw${now?" now":""}"><span class="rk">${now?L().simdi:i}</span><span class="nm"><div class="n1">${ul?fl(u):""}${esc(UP(adK(g),u))}</div><div class="n2">${esc(UP(altK(g),u))}</div></span>${C.alt.bib&&g.bib?`<span class="dt">#${esc(g.bib)}</span>`:""}</div>`};
@@ -335,24 +335,24 @@ if(!demo&&comp){
  onValue(ref(db,`${base}/${comp}/etkinlikLogo`),s=>{const u=s.val();D.evLogo=typeof u==="string"&&u?u:null;ayarUygula()});
  if(pid)onValue(ref(db,`${base}/${comp}/yayinProfilleri/${pid}`),s=>profilUygula(s.val()||{}));
  if(brans==="ritmik")onValue(ref(db,`${base}/${comp}/aktifAlet`),s=>{D.aktifAlet=s.val()||{};ciz()});
- onValue(ref(db,`${base}/${comp}/aktifSporcu`),s=>onAktif(s.val()));
+ onValue(ref(db,`${base}/${comp}/${brans==="artistik"?"aktifSporcuBilgi":"aktifSporcu"}`),s=>onAktif(s.val()));
  onValue(ref(db,`${base}/${comp}/flashTrigger`),s=>onFlash(s.val()));
 }
 
 /* ---------------- ÖNİZLEME (demo, örnek veri) ---------------- */
 if(demo){
- const rit=brans==="ritmik",K="demo",intl=Q.get("intl")!=="0";
- D.kats={[K]:{name:rit?"Büyükler Bireysel":"Büyükler Tek Kadın",aletler:rit?["top"]:undefined}};D.aktifAlet={[K]:"top"};
+ const rit=brans==="ritmik",art=brans==="artistik",K="demo",intl=Q.get("intl")!=="0";
+ D.kats={[K]:{name:rit?"Büyükler Bireysel":art?"Büyükler Kadın":"Büyükler Tek Kadın",aletler:rit?["top"]:art?["yer"]:undefined}};D.aktifAlet={[K]:art?"yer":"top"};
  const kisi=[["Maria","IVANOVA","Levski","BUL"],["Elif","KARABALIK","Manisa Spil GSK","TUR"],["Leyla","ALIYEVA","Ojaq","AZE"],["Ana","POPESCU","CSS Bucuresti","ROU"],["Defne","KAYA","İstanbul RG","TUR"],["Eleni","PAPADOPOULOU","Olympiakos","GRE"],["Mila","JOVANOVIC","Partizan","SRB"],["Zeynep","AKSOY","Ankara GSK","TUR"],["Sara","HOXHA","Tirana","ALB"]];
  D.spor[K]={};D.puan[K]={};kisi.forEach(([a,s,k,u],i)=>{D.spor[K]["d"+i]={ad:a,soyad:s,okul:k,ulke:intl?u:undefined,bib:String(101+i),cikisSirasi:i+1}});
  const pz=[[5.2,4.1,7.8,8.1,0],[4.9,4.0,7.9,7.9,.3],[5.0,3.8,7.6,8.0,0],[4.6,3.9,7.5,7.7,0],[4.4,3.6,7.6,7.6,0],[4.7,3.9,7.7,7.8,.05],[4.0,3.2,7.0,7.3,0],[3.9,3.1,7.1,7.2,0],[3.8,3.0,6.9,7.0,0]];
- const tp=i=>{const [da,db_,a,e,p]=pz[i];return rit?+(da+db_+a+e-p).toFixed(3):+((da/2)+a+e-p).toFixed(3)};
- const yaz=i=>{const [da,db_,a,e,p]=pz[i];D.puan[K]["d"+i]=rit?{top:{durum:"tamamlandi",daScore:da,dbScore:db_,aScore:a,eScore:e,penaltyTotal:p,sonuc:tp(i)}}:{durum:"tamamlandi",dScore:+(da/2).toFixed(2),aScore:a,eScore:e,totalPenalties:p,sonuc:tp(i)}};
+ const tp=i=>{const [da,db_,a,e,p]=pz[i];return art?+(da+e-p).toFixed(3):rit?+(da+db_+a+e-p).toFixed(3):+((da/2)+a+e-p).toFixed(3)};
+ const yaz=i=>{const [da,db_,a,e,p]=pz[i];if(art){(D.puan[K].yer=D.puan[K].yer||{})["d"+i]={durum:"tamamlandi",dScore:da,calc_E:e,neutralDeductions:p,finalScore:tp(i)};return}D.puan[K]["d"+i]=rit?{top:{durum:"tamamlandi",daScore:da,dbScore:db_,aScore:a,eScore:e,penaltyTotal:p,sonuc:tp(i)}}:{durum:"tamamlandi",dScore:+(da/2).toFixed(2),aScore:a,eScore:e,totalPenalties:p,sonuc:tp(i)}};
  const temiz=()=>{D.puan[K]={};for(let i=0;i<5;i++)yaz(i)};temiz();
  const evParam=Q.get("evlogo");if(evParam&&/^(\/|https:|data:image\/)/.test(evParam))D.evLogo=evParam;
- const cagir=i=>{const [a,s,k,u]=kisi[i];shownKey=null;onAktif({[K]:{ad:a,soyad:s,okul:k,ulke:intl?u:undefined,bib:String(101+i),id:"d"+i,alet:"top",ts:Date.now()}})};
+ const cagir=i=>{const [a,s,k,u]=kisi[i];shownKey=null;const _b={ad:a,soyad:s,okul:k,ulke:intl?u:undefined,bib:String(101+i),id:"d"+i,alet:art?"yer":"top",ts:Date.now()};onAktif({[K]:art?{yer:{..._b,aletAd:"Yer"}}:_b})};
  const puanla=i=>{yaz(i);const R=V.siralama({brans,kats:D.kats,kat:K,spor:D.spor[K],puan:D.puan[K]}),me=R.satirlar.find(r=>r.giris.key==="d"+i),[da,db_,a,e,p]=pz[i],[ad,s,k,u]=kisi[i];
-  onFlash(rit?{adSoyad:ad+" "+s,kulup:k,ulke:intl?u:null,bib:String(101+i),id:"d"+i,kategori:K,alet:"top",aletAd:"Top",da,db:db_,a,e,pen:p,total:me.s.total,sira:me.sira,isRitmik:!0,timestamp:Date.now()}
+  onFlash(art?{adSoyad:ad+" "+s,kulup:k,ulke:intl?u:null,bib:String(101+i),id:"d"+i,kategori:K,aletId:"yer",aletAd:"Yer",d:da,e,pen:p,total:me.s.total,sira:me.sira,timestamp:Date.now()}:rit?{adSoyad:ad+" "+s,kulup:k,ulke:intl?u:null,bib:String(101+i),id:"d"+i,kategori:K,alet:"top",aletAd:"Top",da,db:db_,a,e,pen:p,total:me.s.total,sira:me.sira,isRitmik:!0,timestamp:Date.now()}
    :{adSoyad:ad+" "+s,kulup:k,ulke:intl?u:null,bib:String(101+i),id:"d"+i,kategori:K,aletAd:D.kats[K].name,d:+(da/2).toFixed(2),a,e,p,total:me.s.total,sira:me.sira,isAerobik:!0,timestamp:Date.now()})};
  let adim=0,oto=!0,zaman=null;
  const sifirla=()=>{tabloUntil=podyumUntil=0;podBekle=null;podKat=null;ltOn=!1;ltPuan=!1;scoreUntil=0;clearTimeout(psT);lt.classList.remove("puanli");P={...P,kontrol:null};temiz();D.flash=null};

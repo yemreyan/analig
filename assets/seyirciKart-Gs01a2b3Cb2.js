@@ -36,7 +36,7 @@ function IzleyiciSayac({br,comp}){
   e.jsxs("div",{style:{display:"flex",justifyContent:"space-between",fontSize:9.5,color:"#C4B5FD",fontWeight:700,marginTop:2},children:[e.jsx("span",{children:"00"}),e.jsx("span",{children:"06"}),e.jsx("span",{children:"12"}),e.jsx("span",{children:"18"}),e.jsx("span",{children:"23"})]}),
   e.jsx("div",{style:{fontSize:10.5,color:"#E9D5FF",fontWeight:600,marginTop:6},children:__T("Tüm günler, ülke ve cihaz dağılımı, izleme süreleri: Raporlar › Seyirci İstatistikleri. Saatler Türkiye saatidir.")})]})}
 export function SeyirciKart({comp,br,kim}){
- const FBb=br==="ritmik"?"ritmik_yarismalar":br==="aerobik"?"aerobik_yarismalar":null;
+ const FBb=br==="ritmik"?"ritmik_yarismalar":br==="aerobik"?"aerobik_yarismalar":br==="artistik"?"competitions":null;
  const[kod,setKod]=R.useState(null),[kap,setKap]=R.useState(!1),[ok,setOk]=R.useState(""),[qr,setQr]=R.useState(null);
  R.useEffect(()=>{setKod(null);if(!FBb||!comp)return;return onValue(ref(db,`${FBb}/${comp}/kisaLinkler/izle`),s=>setKod(s.val()||null))},[FBb,comp]);
  R.useEffect(()=>{setKap(!1);if(!kod)return;return onValue(ref(db,`criteria/kisaLink/${kod}/kapali`),s=>setKap(!!s.val()))},[kod]);

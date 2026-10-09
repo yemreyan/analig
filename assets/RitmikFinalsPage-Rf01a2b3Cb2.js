@@ -1,4 +1,4 @@
-import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,m as update,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";import{fotoKaydet,fotoSil,dosyaSec,eslestir,fotoYol}from"./fotoYukle-Fy01a2b3Cb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{raImg,raKey,raAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{isIntl,katEN,bayraklarPng}from"./intl-Ul01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,l as get,m as update,o as onValue}from"./vendor-firebase-940mxgRVCb2.js";import{fotoKaydet,fotoSil,dosyaSec,eslestir,fotoYol}from"./fotoYukle-Fy01a2b3Cb2.js";import{R as RC,a as RA}from"./ritmikCriteriaDefaults-CgOlnfQcCb2.js";import{raImg,raKey,raAd,artImg,artAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import"./yayinVeri-Yv01a2b3Cb2.js";import{isIntl,katEN,bayraklarPng}from"./intl-Ul01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // RİTMİK FİNAL OLUŞTUR (2026-10-07 v2)
 //  Her final (kategori × alet / genel tasnif) kendi ayarıyla oluşturulur: finalist sayısı (n), yedek sayısı (y) ve çıkış sırası
@@ -8,19 +8,21 @@ import"./i18n-Tr01a2b3Cb2.js";import{b as usToast,a as usInit,j as e,d as db,u a
 //  Seçimler ve ayarlar yarışmaya kaydedilir: <yarışma>/finalAyar {limit,useAA,fill,sec{"kat|alet":bool},birim{"kat|alet":{n,y,sira}}}
 //  Final kategorisi kaydı eskisiyle aynı (kategoriler/final_*, sporcular/final_* {cikisSirasi,_finalRank,_yedek}, siralama/final_*).
 //  PDF: final çıkış listesi (kategori → alet tabloları), yarışma uluslararası + EN çıktıysa İngilizce.
-const BASE="ritmik_yarismalar",AA="_cm",DEF={n:8,y:2,sira:"sablon"},TOP=8;
+// ARTİSTİK (2026-10-09, /artistic/final-builder): BASE = competitions; yüklerken puanlar sporcu/alet sırasına çevrilir (yayinVeri.artPivot);
+//  genel tasnif puanı yayinVeri.sonuc("artistik") toplamı; alet adları / sembolleri artAd / artImg. Final kayıtları ritmikle aynı biçim.
+let BASE="ritmik_yarismalar",ARTF=!1;const AA="_cm",DEF={n:8,y:2,sira:"sablon"},TOP=8;
 const f3=v=>v==null||isNaN(v)?"—":Number(v).toFixed(3);
 const isFinal=c=>/^final_/.test(c);
 const baseCat=c=>String(c||"").replace(/^final_/,"").split("__")[0];
 const cfg=c=>RC[c]||RC[baseCat(c)]||{};
-const aletTr=a=>RA[a]?.labelTr||RA[a]?.label||a;
+const aletTr=a=>ARTF?(artAd(a,!1,globalThis.__gxKat)||a):RA[a]?.labelTr||RA[a]?.label||a;
 const aletLabel=a=>__T(aletTr(a));
 const num=v=>v==null||v===""||isNaN(v)?null:Number(v);
 const clamp=(v,a,b,d)=>{const n=parseInt(v);return isNaN(n)?d:Math.max(a,Math.min(b,n))};
 const SIRA=[["ters","south","Ters","Elemenin sonuncusu ilk çıkar (WG)"],["duz","north","Düz","Eleme sırası = çıkış sırası"],["sablon","tune","Şablon","Final Çıkış Sırası Şablonu"],["elle","edit_note","Elle","Bu final için sıra eşlemesini elle seç (ör. 1. → 3. çıkar)"]];
 
 function RitmikFinals(){
- const{toast}=usToast();usInit();const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
+ const{toast}=usToast();const _D0=usInit()||{};BASE=_D0.firebasePath||"ritmik_yarismalar";ARTF=BASE==="competitions";const BRT=ARTF?"Artistik":"Ritmik",BRK=ARTF?"artistik":"ritmik";const{currentUser:_lu}=usAuth()||{},_un=_lu?.adSoyad||_lu?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(""),[busy,setBusy]=R.useState(!1),
        [log,setLog]=R.useState(null),[loading,setLoading]=R.useState(!0),
        [tmpl,setTmpl]=R.useState({}),[texp,setTexp]=R.useState(!1),[acik,setAcik]=R.useState({}),
@@ -29,7 +31,7 @@ function RitmikFinals(){
  // sporcu fotoğrafları (yalnız link) — finalist satırında küçük resim; sporcu kartı / canlı skor bunları gösterir
  R.useEffect(()=>{if(!comp){setFotolar({});return}return onValue(ref(db,fotoYol(BASE,comp)),s=>setFotolar(s.val()||{}))},[comp]);
 
- const reload=()=>get(ref(db,BASE)).then(s=>{const v=s.val()||{},o={};Object.entries(v).forEach(([k,c])=>{c&&c.arsivli!==!0&&c.arsivli!=="true"&&(o[k]=c)});setComps(o)}).finally(()=>setLoading(!1));
+ const reload=()=>get(ref(db,BASE)).then(s=>{const v=s.val()||{},o={},GV=self.GXYV;Object.entries(v).forEach(([k,c])=>{if(!c||c.arsivli===!0||c.arsivli==="true")return;if(ARTF&&c.puanlar&&GV){const P={};Object.entries(c.puanlar).forEach(([kt,x])=>{P[kt]=x&&typeof x==="object"?GV.artPivot(x):x});c={...c,puanlar:P}}o[k]=c});setComps(o)}).finally(()=>setLoading(!1));
  R.useEffect(()=>{reload()},[]);
  R.useEffect(()=>{if(comp)return;try{const s2=localStorage.getItem("tcfRtFinalComp");s2&&comps[s2]&&setComp(s2)}catch{}},[comps]);
  R.useEffect(()=>{try{comp&&localStorage.setItem("tcfRtFinalComp",comp)}catch{}},[comp]);
@@ -74,7 +76,7 @@ function RitmikFinals(){
  const rank=(cat,alet)=>{
   const P=partOf(cat),b=bOf(cat,alet),TAKE=b.n+b.y;
   const rows=Object.entries(pun[cat]||{}).map(([id,sc])=>{
-    const s=alet===AA?(Object.values(sc||{}).some(v=>v&&typeof v==="object"&&v.irm)?null:num(sc?.sonuc)):(sc?.[alet]?.irm?null:num(sc?.[alet]?.sonuc));
+    const s=alet===AA?(ARTF?(()=>{const z=self.GXYV&&self.GXYV.sonuc("artistik",cats[cat],sc,null);return z&&!z.yalnizIrm&&z.say>0?z.total:null})():Object.values(sc||{}).some(v=>v&&typeof v==="object"&&v.irm)?null:num(sc?.sonuc)):(sc?.[alet]?.irm?null:ARTF&&!(sc?.[alet]?.durum==="tamamlandi"||sc?.[alet]?.kilitli===!0)?null:num(sc?.[alet]?.sonuc??(ARTF?sc?.[alet]?.finalScore:null)));
     return{id,score:s,club:clubOf(P[id]),qk:INTLc?String(P[id]?.ulke||"").trim()||clubOf(P[id]):clubOf(P[id])}}).filter(r=>r.score!=null)
    .sort((a,b)=>b.score-a.score);
   const cap=Math.max(0,parseInt(limit)||0),used={},pick=[],over=[];
@@ -117,7 +119,7 @@ function RitmikFinals(){
      if(md.isTeam)(md.uyeler||[]).forEach((mm,mi)=>{const{id:_mid,...rest}=mm;newSpor[_mid||row.id+"_"+(mi+1)]={...rest,...ek}});
      else newSpor[row.id]={...md,...ek};
      names.push({rank:it.rank,cs:it.cs,reserve:it.reserve,yed:it.yed,name:nameOf(cat,row.id),club:row.club,score:row.score,quotaFill:!!row.quotaFill})});
-   upd["kategoriler/"+fcat]={name:"🏆 "+catLabel(cat)+" — "+(alet===AA?"Genel Tasnif Finali":aletTr(alet)+" Finali"),
+   upd["kategoriler/"+fcat]={name:"🏆 "+catLabel(cat)+" — "+(alet===AA?"Genel Tasnif Finali":(ARTF?artAd(alet,!1,cat)||alet:aletTr(alet))+" Finali"),
      final:!0,baseCat:cat,alet:alet===AA?null:alet,aletler:alet===AA?aletsOf(cat):[alet],
      tip:cfg(cat).tip||"ferdi",grupMu:isGrp(cat)||null,athleteCount:cfg(cat).athleteCount||null,kulupKotasi:Math.max(0,parseInt(limit)||0)||null,
      finalistSayisi:b.n,yedekSayisi:b.y,finalSira:b.sira,olusturma:Date.now()};
@@ -126,7 +128,7 @@ function RitmikFinals(){
    {const _ord=Object.entries(newSpor).sort((p,q)=>(p[1].cikisSirasi-q[1].cikisSirasi)||((p[1]._yedek?1:0)-(q[1]._yedek?1:0))||String(p[1].ad||"").localeCompare(String(q[1].ad||""),"tr")),_rot={};_ord.forEach(([mid,md],ix)=>{md.sirasi=ix+1;md.rotasyonGrubu=0;_rot[mid]={sirasi:ix+1,ad:md.ad||"",soyad:md.soyad||"",tckn:md.tckn||"",okul:md.okul||"",yarismaTuru:md.yarismaTuru||"ferdi",...(md.grupNo!=null?{grupNo:md.grupNo}:{}),...(md.ulke?{ulke:md.ulke}:{}),...(md.bib!=null&&md.bib!==""?{bib:md.bib}:{}),...(md.kulup?{kulup:md.kulup}:{}),...(alet!==AA?{_alet:alet}:{})}});upd["siralama/"+fcat]=_ord.length?{rotation_0:_rot}:null}
    summary.push({fcat,cat,alet,label:catLabel(cat),aletAd:alet===AA?__T("Genel Tasnif"):aletLabel(alet),names,b})});
   if(!summary.length){toast(__T("Seçili finallerde puanı girilmiş sporcu bulunamadı."),"warning");setBusy(!1);return}
-  try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_create",`[Ritmik] ${summary.length} final oluşturuldu: ${summary.map(x=>x.label+" — "+x.aletAd+" ("+x.b.n+"+"+x.b.y+", "+x.b.sira+")").join(", ")}`.slice(0,480),{user:_un,competitionId:comp,discipline:"ritmik",data:{kulupKotasi:Math.max(0,parseInt(limit)||0),kotaTamamla:fill,finaller:summary.map(x=>({kategori:x.fcat,ad:x.label+" — "+x.aletAd,finalist:x.b.n,yedek:x.b.y,sira:x.b.sira,sporcular:x.names.map(n=>({cikis:n.reserve?n.yed:n.cs,ad:n.name,kulup:n.club,eleme:n.rank,puan:n.score}))}))}});await reload();setLog(summary);
+  try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_create",`[${BRT}] ${summary.length} final oluşturuldu: ${summary.map(x=>x.label+" — "+x.aletAd+" ("+x.b.n+"+"+x.b.y+", "+x.b.sira+")").join(", ")}`.slice(0,480),{user:_un,competitionId:comp,discipline:BRK,data:{kulupKotasi:Math.max(0,parseInt(limit)||0),kotaTamamla:fill,finaller:summary.map(x=>({kategori:x.fcat,ad:x.label+" — "+x.aletAd,finalist:x.b.n,yedek:x.b.y,sira:x.b.sira,sporcular:x.names.map(n=>({cikis:n.reserve?n.yed:n.cs,ad:n.name,kulup:n.club,eleme:n.rank,puan:n.score}))}))}});await reload();setLog(summary);
     toast(summary.length+" "+__T("final oluşturuldu ✓"),"success")}
   catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1)};
@@ -138,7 +140,7 @@ function RitmikFinals(){
   if(!await window.__gxConfirm(keys.size+" "+__T("final kategorisi ve puanları silinsin mi?")))return;
   setBusy(!0);setLog(null);
   keys.forEach(fc=>{upd["kategoriler/"+fc]=null;upd["sporcular/"+fc]=null;upd["puanlar/"+fc]=null;upd["siralama/"+fc]=null});
-  try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_delete",`[Ritmik] ${keys.size} final kategorisi silindi`,{user:_un,competitionId:comp,discipline:"ritmik",data:{silinen:[...keys]}});await reload();toast(keys.size+" "+__T("final kategorisi silindi."),"success")}
+  try{await update(ref(db,BASE+"/"+comp),upd);logAction("final_delete",`[${BRT}] ${keys.size} final kategorisi silindi`,{user:_un,competitionId:comp,discipline:BRK,data:{silinen:[...keys]}});await reload();toast(keys.size+" "+__T("final kategorisi silindi."),"success")}
   catch{toast(__T("Hata oluştu."),"error")}
   setBusy(!1)};
 
@@ -153,7 +155,7 @@ function RitmikFinals(){
   setPdfBusy(!0);toast(__T("PDF hazırlanıyor…"),"info");
   try{const jsPDF=await import("./jspdf.es.min-gArCfqm1Cb2.js").then(z=>z.j?.jsPDF||z.E),atM=await import("./jspdf.plugin.autotable-KFqWVtFsCb2.js"),at=atM.default||atM,d=new jsPDF("portrait","mm","a4");
    let FT="helvetica";try{const{R:r0,B:b0}=await import("./fontTR-Fn01a2b3Cb2.js");d.addFileToVFS("Roboto.ttf",r0);d.addFont("Roboto.ttf","Roboto","normal");d.addFileToVFS("Roboto-Bold.ttf",b0);d.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto"}catch{}
-   const INTL=isIntl(C),EN=INTL&&C.ciktiDili!=="tr",L=(tr,en)=>EN?en:tr,UP=t=>String(t||"").toLocaleUpperCase(EN?"en":"tr-TR"),kA=t=>EN?katEN(String(t||"")):String(t||""),aA=a=>a===AA?L("Genel Tasnif","All-Around"):EN?raAd(a,!0)||aletTr(a):aletTr(a);
+   const INTL=isIntl(C),EN=INTL&&C.ciktiDili!=="tr",L=(tr,en)=>EN?en:tr,UP=t=>String(t||"").toLocaleUpperCase(EN?"en":"tr-TR"),kA=t=>EN?katEN(String(t||"")):String(t||""),aA=a=>a===AA?L("Genel Tasnif","All-Around"):ARTF?(artAd(a,EN,globalThis.__gxKat)||a):EN?raAd(a,!0)||aletTr(a):aletTr(a);
    const img=async u=>{try{const b=await(await fetch(u)).blob();const du=await new Promise(K=>{const O=new FileReader;O.onloadend=()=>K(O.result);O.readAsDataURL(b)});const im=new Image;await new Promise(r=>{im.onload=r;im.onerror=r;im.src=du});return im.naturalWidth?{d:du,r:im.naturalWidth/im.naturalHeight}:null}catch{return null}};
    const tcf=await img("/logo.png"),ev=C.etkinlikLogo?await img(C.etkinlikLogo):null,AP={};await Promise.all(["serbest","ip","cember","top","labut","kurdele"].map(async k=>{const x=await img("/brans/alet/"+k+".png");x&&(AP[k]=x)}));
    const FL=INTL?await bayraklarPng(U.flatMap(([c,a])=>pdfVeri(c,a).rows.map(r=>r.ulke))):{};
@@ -237,7 +239,7 @@ function RitmikFinals(){
   step:{display:"inline-flex",alignItems:"center",border:"1px solid #E2E8F0",borderRadius:10,overflow:"hidden",background:"#fff"},
   stb:{width:26,height:28,border:0,background:"#F8FAFC",cursor:"pointer",fontWeight:900,color:"#475569",fontFamily:"inherit"}};
  const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:18,...st},children:n});
- const AIc=(al,sz)=>{const im=al===AA?null:raImg(al);return im?e.jsx("img",{src:im,alt:"",style:{width:sz||34,height:sz||34,borderRadius:"50%",background:"#fff",boxShadow:"0 0 0 1.5px #FBCFE8",flexShrink:0,objectFit:"contain"}}):e.jsx("span",{style:{width:sz||34,height:sz||34,borderRadius:"50%",display:"grid",placeItems:"center",background:"#EEF2FF",color:"#4F46E5",flexShrink:0},children:MI(al===AA?"functions":"sports_gymnastics",{fontSize:18})})};
+ const AIc=(al,sz)=>{const im=al===AA?null:ARTF?artImg(al,globalThis.__gxKat):raImg(al);return im?e.jsx("img",{src:im,alt:"",style:{width:sz||34,height:sz||34,borderRadius:"50%",background:"#fff",boxShadow:"0 0 0 1.5px #FBCFE8",flexShrink:0,objectFit:"contain"}}):e.jsx("span",{style:{width:sz||34,height:sz||34,borderRadius:"50%",display:"grid",placeItems:"center",background:"#EEF2FF",color:"#4F46E5",flexShrink:0},children:MI(al===AA?"functions":"sports_gymnastics",{fontSize:18})})};
  const tmplOzet=Array.from({length:TOP},(_,i)=>i+1).filter(rk=>tmplCs(rk)!==rk).map(rk=>rk+"→"+tmplCs(rk)).join(" · ");
  const stepper=(v,set,a,b)=>e.jsxs("span",{style:S.step,children:[e.jsx("button",{type:"button",style:S.stb,onClick:()=>set(Math.max(a,v-1)),children:"−"}),e.jsx("b",{style:{minWidth:26,textAlign:"center",fontSize:".88rem"},children:v}),e.jsx("button",{type:"button",style:S.stb,onClick:()=>set(Math.min(b,v+1)),children:"+"})]});
 
@@ -305,7 +307,7 @@ function RitmikFinals(){
   e.jsxs("div",{style:S.top,children:[e.jsx("a",{href:"/rhythmic",title:__T("Geri"),style:S.back,children:MI("arrow_back",{fontSize:20})}),
     e.jsx("div",{style:S.ico,children:MI("emoji_events",{color:"#fff",fontSize:22})}),
     e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.1rem",lineHeight:1.15},children:__T("Final Oluştur")}),
-      e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:__T("Ritmik · elemeden alet ve genel tasnif finallerine")})]}),kayitPill]}),
+      e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:ARTF?__T("Artistik · elemeden alet ve genel tasnif finallerine"):__T("Ritmik · elemeden alet ve genel tasnif finallerine")})]}),kayitPill]}),
   e.jsxs("div",{style:S.in,children:[
    loading?e.jsx("div",{style:S.center,children:__T("Yükleniyor…")}):e.jsxs(e.Fragment,{children:[
     e.jsxs("div",{style:S.card,children:[e.jsxs("div",{style:S.h,children:[e.jsx("span",{style:S.hi,children:MI("event",{fontSize:17})}),__T("Yarışma")]}),

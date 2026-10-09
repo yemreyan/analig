@@ -1,4 +1,4 @@
-import{j as e,d as db,a as usDisc,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{ULKELER,bayrakUrl,katEN}from"./intl-Ul01a2b3Cb2.js";import{raAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import"./yayinVeri-Yv01a2b3Cb2.js";
+import{j as e,d as db,a as usDisc,u as usAuth,l as logAction}from"./main-C2LpyYUGCb2.js";import{r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{ULKELER,bayrakUrl,katEN}from"./intl-Ul01a2b3Cb2.js";import{raAd,artAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import"./yayinVeri-Yv01a2b3Cb2.js";
 
 // BAYRAK EKRANI (2026-10-08) — uluslararası yarışmada ulusal marş çalınırken projeksiyona tam ekran ülke bayrağı.
 //  <yarışma>/bayrakEkrani = {mod: "tek"|"tore"|null, ulke: IOC kodu | null, tore: {baslik, u:[1., 2., 3.]}, ts, kim}
@@ -6,6 +6,7 @@ import{j as e,d as db,a as usDisc,u as usAuth,l as logAction}from"./main-C2LpyYU
 //  Ekran  (/rhythmic/flag-screen?compId=…, giriş istemez): ulke yoksa TCF + yarışma logosu; ulke seçilince o ülkenin bayrağı dalgalanır.
 //  Sonuçtan tören (2026-10-09): kategori + tür (genel tasnif / alet / takım) ya da final seçilir → ilk üç ülke ortak yayın hesabından
 //   (yayinVeri siralama / takimlar — canlı skor ve overlay ile aynı; yayinBekliyor puanlar sayılmaz). Eşitlikte tore.m = madalya sıraları (ör. [1,1,3]).
+//  Artistik (2026-10-09): /artistic/flag-control + /artistic/flag-screen; sonuç yayinVeri.siralama({brans:"artistik"}) (puanlar/<kat>/<alet>/<sporcu>); takım seçeneği yok.
 //  Kontrol (/rhythmic/flag-control): yarışmadaki ülkeler (sporcu ülkeleri) + arama; dokununca ekran anında değişir; "Logolara dön".
 const MI=(n,st)=>e.jsx("span",{className:"material-icons-round",style:{fontSize:20,...st},children:n});
 const UL=Object.fromEntries(ULKELER.map(u=>[u.kod,u]));
@@ -114,13 +115,13 @@ export default function BayrakKontrol(){
  R.useEffect(()=>{if(!C||tYuk.current===comp)return;tYuk.current=comp;const t=C.bayrakEkrani&&C.bayrakEkrani.tore;if(t){setTB(t.baslik||"");setTU([0,1,2].map(i=>(t.u||[])[i]||""));setTM([0,1,2].map(i=>+(t.m||[])[i]||i+1))}else{setTB("");setTU(["","",""]);setTM([1,2,3])}},[C,comp]);
  const kapali=BE.mod==="kapali",durdur=async()=>{if(!comp)return;try{await update(ref(db,`${fp}/${comp}/bayrakEkrani`),kapali?{mod:BE.oncekiMod||null,oncekiMod:null,ts:Date.now(),kim}:{mod:"kapali",oncekiMod:BE.mod||null,ts:Date.now(),kim});try{logAction("flag_screen",kapali?"Bayrak ekranı: devam":"Bayrak ekranı: durduruldu (karartıldı)",{user:kim,competitionId:comp})}catch{}}catch{}};
  // tören başlığı için yarışmanın kategorileri (finaller dahil); uluslararasıda İngilizce
- const enC=!!C&&(C.ciktiDili==="en"||((C.uluslararasi||C.tur==="uluslararasi")&&C.ciktiDili!=="tr")),katS=Object.entries(C&&C.kategoriler||{}).map(([k,z])=>{const ad=String(z&&(z.name||z.ad)||k).replace(/^\s*🏆\s*/u,"").trim(),m=/^final_(.+?)(?:__(.+))?$/.exec(k);let t=ad;if(m){const bz=C.kategoriler[m[1]],ba=String(bz&&(bz.name||bz.ad)||m[1]);t=enC?katEN(ba)+" — "+(m[2]?(raAd(m[2],!0)||m[2])+" Final":"All-Around Final"):ba+" — "+(m[2]?(raAd(m[2],!1)||m[2])+" Finali":"Genel Tasnif Finali")}else if(enC)t=katEN(ad);return{k,t,f:!!m}}).sort((a,b)=>(a.f-b.f)||a.t.localeCompare(b.t,"tr"));
+ const enC=!!C&&(C.ciktiDili==="en"||((C.uluslararasi||C.tur==="uluslararasi")&&C.ciktiDili!=="tr")),katS=Object.entries(C&&C.kategoriler||{}).map(([k,z])=>{const ad=String(z&&(z.name||z.ad)||k).replace(/^\s*🏆\s*/u,"").trim(),m=/^final_(.+?)(?:__(.+))?$/.exec(k);let t=ad;if(m){const bz=C.kategoriler[m[1]],ba=String(bz&&(bz.name||bz.ad)||m[1]);t=enC?katEN(ba)+" — "+(m[2]?((fp==="competitions"?artAd(m[2],!0,m[1]):raAd(m[2],!0))||m[2])+" Final":"All-Around Final"):ba+" — "+(m[2]?((fp==="competitions"?artAd(m[2],!1,m[1]):raAd(m[2],!1))||m[2])+" Finali":"Genel Tasnif Finali")}else if(enC)t=katEN(ad);return{k,t,f:!!m}}).sort((a,b)=>(a.f-b.f)||a.t.localeCompare(b.t,"tr"));
  // ---- sonuçtan tören ----
- const BRN=fp==="aerobik_yarismalar"?"aerobik":"ritmik",intlC=!!C&&!!(C.uluslararasi||C.tur==="uluslararasi"),GV=typeof self!=="undefined"?self.GXYV:null;
+ const BRN=fp==="aerobik_yarismalar"?"aerobik":fp==="competitions"?"artistik":"ritmik",intlC=!!C&&!!(C.uluslararasi||C.tur==="uluslararasi"),GV=typeof self!=="undefined"?self.GXYV:null;
  const srcOps=R.useMemo(()=>{const K=C&&C.kategoriler||{},o=[],baz=katS.filter(x=>!x.f),fin=katS.filter(x=>x.f);
   baz.forEach(x=>{const z=K[x.k]||{},al=Array.isArray(z.aletler)?z.aletler:[],grp=[];
    grp.push({v:x.k+"|aa",t:x.t+" — "+(enC?(z.tip==="takim"?"Final Ranking":"All-Around"):(z.tip==="takim"?"Genel Sıralama":"Genel Tasnif"))});
-   BRN==="ritmik"&&al.length>1&&al.forEach(a=>grp.push({v:x.k+"|al|"+a,t:x.t+" — "+(raAd(a,enC)||a)}));
+   (BRN==="ritmik"||BRN==="artistik")&&al.length>1&&al.forEach(a=>grp.push({v:x.k+"|al|"+a,t:x.t+" — "+((BRN==="artistik"?artAd(a,enC,x.k):raAd(a,enC))||a)}));
    BRN==="ritmik"&&z.tip!=="takim"&&al.length>1&&grp.push({v:x.k+"|takim",t:x.t+" — "+(enC?"Team":"Takım")});
    o.push({g:x.t,l:grp})});
   fin.length&&o.push({g:enC?"Finals":__T("Finaller"),l:fin.map(x=>({v:x.k+"|fin",t:x.t}))});return o},[C&&C.kategoriler,enC,BRN]);

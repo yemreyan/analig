@@ -31,7 +31,8 @@ module.exports = async (req, res) => {
       if (!m) return gonder(res, 404, "text/plain; charset=utf-8", "logo yok", "public, max-age=0, s-maxage=30");
       return gonder(res, 200, m[1], Buffer.from(m[2], "base64"), "public, max-age=60, s-maxage=60");
     }
-    const [isim, kats, aktif, flash, aktifAlet, prof] = await Promise.all([al("isim"), al("kategoriler"), al("aktifSporcu"), al("flashTrigger"), al("aktifAlet"), pid ? al(`yayinProfilleri/${pid}`) : null]);
+    // artistik: çağrılan sporcunun bilgisi aktifSporcuBilgi/<kat>/<alet> (aktifSporcu yalnız id tutar)
+    const [isim, kats, aktif, flash, aktifAlet, prof] = await Promise.all([al("isim"), al("kategoriler"), al(brans === "artistik" ? "aktifSporcuBilgi" : "aktifSporcu"), al("flashTrigger"), al("aktifAlet"), pid ? al(`yayinProfilleri/${pid}`) : null]);
     if (kats == null && isim == null) return gonder(res, 404, "application/json; charset=utf-8", JSON.stringify({ error: "yarisma bulunamadi" }));
     // arşive çekilmiş yarışma yayına veri vermez
     const ars = await al("arsivli");

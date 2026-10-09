@@ -6,8 +6,8 @@
 (function(){
 "use strict";
 var BRANS={aerobik:"aerobik_yarismalar",ritmik:"ritmik_yarismalar",artistik:"competitions"};
-var ALET={cember:"Çember",top:"Top",labut:"Labut",kurdele:"Kurdele",ip:"İp",serbest:"Serbest",grup_seri1:"1. Seri",grup_seri2:"2. Seri"};
-var ALET_EN={cember:"Hoop",top:"Ball",labut:"Clubs",kurdele:"Ribbon",ip:"Rope",serbest:"WA",grup_seri1:"Routine 1",grup_seri2:"Routine 2"};
+var ALET={cember:"Çember",top:"Top",labut:"Labut",kurdele:"Kurdele",ip:"İp",serbest:"Serbest",grup_seri1:"1. Seri",grup_seri2:"2. Seri",yer:"Yer",atlama:"Atlama",asimetrik:"Asimetrik Paralel",denge:"Denge",paralel:"Paralel Bar",barfiks:"Barfiks",halka:"Halka",kulplu:"Kulplu Beygir",mantar:"Mantar"};
+var ALET_EN={cember:"Hoop",top:"Ball",labut:"Clubs",kurdele:"Ribbon",ip:"Rope",serbest:"WA",grup_seri1:"Routine 1",grup_seri2:"Routine 2",yer:"Floor",atlama:"Vault",asimetrik:"Uneven Bars",denge:"Balance Beam",paralel:"Parallel Bars",barfiks:"Horizontal Bar",halka:"Rings",kulplu:"Pommel Horse",mantar:"Mushroom"};
 // IOC → ISO (bayrak) — intl modülündeki listeyle aynı
 var ISO={};"AFG:af,ALB:al,ALG:dz,AND:ad,ANG:ao,ARG:ar,ARM:am,ARU:aw,AUS:au,AUT:at,AZE:az,BAH:bs,BAN:bd,BAR:bb,BEL:be,BEN:bj,BER:bm,BIH:ba,BLR:by,BOL:bo,BOT:bw,BRA:br,BRN:bh,BUL:bg,BUR:bf,CAM:kh,CAN:ca,CHI:cl,CHN:cn,CIV:ci,CMR:cm,COL:co,CRC:cr,CRO:hr,CUB:cu,CYP:cy,CZE:cz,DEN:dk,DOM:do,ECU:ec,EGY:eg,ESA:sv,ESP:es,EST:ee,ETH:et,FIN:fi,FRA:fr,GAB:ga,GBR:gb,GEO:ge,GER:de,GHA:gh,GRE:gr,GUA:gt,HKG:hk,HON:hn,HUN:hu,INA:id,IND:in,IRI:ir,IRL:ie,IRQ:iq,ISL:is,ISR:il,ITA:it,JAM:jm,JOR:jo,JPN:jp,KAZ:kz,KEN:ke,KGZ:kg,KOR:kr,KOS:xk,KSA:sa,KUW:kw,LAT:lv,LBA:ly,LBN:lb,LIE:li,LTU:lt,LUX:lu,MAC:mo,MAD:mg,MAR:ma,MAS:my,MDA:md,MEX:mx,MGL:mn,MKD:mk,MLT:mt,MNE:me,MON:mc,MRI:mu,NAM:na,NCA:ni,NED:nl,NEP:np,NGR:ng,NOR:no,NZL:nz,OMA:om,PAK:pk,PAN:pa,PAR:py,PER:pe,PHI:ph,PLE:ps,POL:pl,POR:pt,PRK:kp,PUR:pr,QAT:qa,ROU:ro,RSA:za,RUS:ru,SEN:sn,SGP:sg,SLO:si,SMR:sm,SRB:rs,SRI:lk,SUI:ch,SVK:sk,SWE:se,SYR:sy,THA:th,TJK:tj,TKM:tm,TPE:tw,TTO:tt,TUN:tn,TUR:tr,UAE:ae,UGA:ug,UKR:ua,URU:uy,USA:us,UZB:uz,VEN:ve,VIE:vn,YEM:ye,ZAM:zm,ZIM:zw".split(",").forEach(function(p){var a=p.split(":");if(a[1])ISO[a[0]]=a[1]});
 var bayrakUrl=function(k){var i=ISO[String(k||"").toUpperCase()];return i?"https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/"+i+".svg":null};
@@ -29,7 +29,9 @@ function katAd(kats,k,en){if(!k)return"";var c=kats&&kats[k],a;
  if(c&&(c.name||c.ad))a=temiz(c.name||c.ad);
  else{var p=String(k).split("__"),cb=kats&&kats[p[0]],bn=cb?temiz(cb.name||cb.ad||p[0]):p[0];a=p[1]?bn+" — "+(ALET[p[1]]||p[1]):bn}
  return en?katEN(a):a}
-function aletAd(a,en){return a?((en?ALET_EN:ALET)[a]||a):""}
+// artistik minik görünümü (i18n __artGor ile aynı kural; veri değişmez): minik kız asimetrik → barfiks, minik erkek kulplu → mantar
+function artGor(a,k){var c=String(k||"").toLocaleLowerCase("tr-TR");if(!/minik/.test(c))return a;if(a==="asimetrik"&&/kiz|kız|kadin|kadın/.test(c))return"barfiks";if(a==="kulplu"&&/erkek/.test(c))return"mantar";return a}
+function aletAd(a,en,kat){if(!a)return"";a=artGor(a,kat);return (en?ALET_EN:ALET)[a]||a}
 function katUygun(filtre,k){return !filtre||!filtre.length||filtre.some(function(f){return k===f||String(k).indexOf(f+"__")===0||String(k).indexOf(f+"/")===0})}
 function isFinal(kats,k){return /^final_/.test(k)||!!(kats&&kats[k]&&kats[k].final===true)}
 
@@ -61,7 +63,17 @@ function girisler(kat,spor,puan){var S=spor||{},E={},sira=0;
  return Object.keys(E).map(function(k){return E[k]}).sort(function(a,b){return (a.start||1e6)-(b.start||1e6)||a._i-b._i})}
 
 // Bir girişin sonucu. ritmik: aletlerin toplamı (alet verilirse yalnız o alet); diğerleri: düz kayıt
+// ARTİSTİK (2026-10-09): puanlar/<kat>/<ALET>/<sporcu> → artPivot ile sporcu/alet sırasına çevrilir; alet kaydı {finalScore|sonuc, dScore|calc_D, calc_E, neutralDeductions|tarafsiz, calc_MissingPen, boardPenalty, durum, kilitli}.
+// Kesin sayılan: durum "tamamlandi" ya da kilitli (Üst Jüri onayı bekleyen "ustJuriBekliyor" sayılmaz). "yarishmadi" → DNS. Eşitlik FIG: E > D.
+// puan zaten sporcu/alet sırasındaysa (Raporlar yüklerken çevirir) yeniden çevrilmez
+var ART_AL={yer:1,atlama:1,asimetrik:1,denge:1,paralel:1,barfiks:1,halka:1,kulplu:1,mantar:1,sirik:1};function artAletMi(puan){return Object.keys(puan||{}).some(function(k){return ART_AL[k]})}
+function artPivot(puan){var P={};Object.keys(puan||{}).forEach(function(al){var a=puan[al];if(!obj(a))return;Object.keys(a).forEach(function(id){if(!obj(a[id]))return;(P[id]=P[id]||{})[al]=a[id]})});return P}
 function sonuc(brans,katDef,p,alet){if(!obj(p))return null;
+ if(brans==="artistik"){var aa=alet?[alet]:(katDef&&Array.isArray(katDef.aletler)&&katDef.aletler.length?katDef.aletler:Object.keys(p).filter(function(k){return obj(p[k])}));
+  var Q={total:0,e:0,a:0,d:0,pen:0,say:0,adet:aa.length,irm:null};
+  aa.forEach(function(k){var x=p[k];if(!obj(x)||x.yayinBekliyor)return;if(x.durum==="yarishmadi"){Q.irm=Q.irm||"DNS";Q.say++;return}if(!(x.durum==="tamamlandi"||x.durum==="gecersiz"||x.kilitli===true))return;Q.say++;
+   Q.total+=num(x.finalScore!=null?x.finalScore:x.sonuc);Q.e+=num(x.calc_E);Q.d+=num(x.dScore!=null?x.dScore:x.calc_D);Q.pen+=num(x.neutralDeductions!=null?x.neutralDeductions:x.tarafsiz)+num(x.calc_MissingPen)+num(x.boardPenalty)});
+  if(!Q.say)return null;["total","e","d","pen"].forEach(function(k){Q[k]=r3(Q[k])});Q.tamam=Q.say>=Q.adet;if(Q.irm&&Q.total===0)Q.yalnizIrm=true;return Q}
  if(brans==="ritmik"){var al=alet?[alet]:(katDef&&Array.isArray(katDef.aletler)&&katDef.aletler.length?katDef.aletler:Object.keys(p).filter(function(k){return obj(p[k])&&("sonuc" in p[k]||"durum" in p[k])}));
   var R={total:0,e:0,a:0,d:0,da:0,db:0,pen:0,say:0,adet:al.length,irm:null};
   al.forEach(function(k){var x=p[k];if(!obj(x)||x.yayinBekliyor)return;if(x.irm){R.irm=R.irm||x.irm;R.say++;return}if(x.durum!=="tamamlandi")return;R.say++;
@@ -75,7 +87,7 @@ function sonuc(brans,katDef,p,alet){if(!obj(p))return null;
  return {total:r3(tot),e:r3(p.eScore),a:r3(p.aScore),d:r3(p.dScore),pen:r3(pen),say:1,adet:1,tamam:true}}
 
 // Anlık sıralama — eşitlikte FIG: E > A > D; eşitler aynı sırayı alır. IRM'ler sona, sırasız.
-function siralama(o){var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat,o.spor,o.puan),rows=[],irm=[];
+function siralama(o){if(o.brans==="artistik"){var sp={};Object.keys(o.spor||{}).forEach(function(k){var a=o.spor[k];sp[k]=obj(a)?Object.assign({},a,{yarismaTuru:"ferdi",grupNo:null}):a});o=Object.assign({},o,{puan:artAletMi(o.puan)?artPivot(o.puan):o.puan,spor:sp})}var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat,o.spor,o.puan),rows=[],irm=[];
  G.forEach(function(g){var s=sonuc(brans,kd,(o.puan||{})[g.key],o.alet);if(!s)return;var r={giris:g,s:s};(s.yalnizIrm?irm:rows).push(r)});
  var k=function(x){return [Math.round(x.s.total*1e3),Math.round(x.s.e*1e3),Math.round(x.s.a*1e3),Math.round(x.s.d*1e3)]};
  rows.sort(function(x,y){var a=k(x),b=k(y);for(var i=0;i<4;i++)if(a[i]!==b[i])return b[i]-a[i];return 0});
@@ -87,7 +99,7 @@ function siralama(o){var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat
 // Takım sıralaması (ritmik ferdi kategori; canlı skor / Sonuçlar / Raporlar ile aynı kural, 2026-10-08):
 //  takım = uluslararasıda ülke içindeki takım ("TUR Team 1" ≠ "TUR Team 2"), değilse kulüp; her takımdan toplamı en iyi N sporcu
 //  (genç 3, diğerleri 4), her alette bu sporcuların en iyi 2 notu; en az 2 puanlı sporcusu olmayan takım girmez; takım kesintisi düşülür.
-function takimAdi(a,intl){if(!intl)return String(a.okul||a.kulup||a.il||"").trim();var u=String(a.ulke||"").trim().toUpperCase();if(!u)return String(a.okul||a.kulup||"").trim();
+function takimAdi(a,intl){if(!intl)return String(a.okul||a.kulup||"").trim();var u=String(a.ulke||"").trim().toUpperCase();if(!u)return String(a.okul||a.kulup||"").trim();
  var h=String(a.takim||"").trim()||((String(a.kulup||a.okul||"").match(/\b(team|tak[ıi]m)\s*\d+\b/i)||[])[0]||"");if(!h)return u;var n=(h.match(/\d+/)||[""])[0];return n?u+" Team "+n:u+" "+h}
 function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletler)?kd.aletler:[],N=/genc/i.test(String(o.kat))?3:4,T={},ded={};
  Object.keys(o.spor||{}).forEach(function(id){var a=o.spor[id];if(!obj(a))return;var ad=takimAdi(a,o.intl);if(!ad)return;
@@ -103,8 +115,8 @@ function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletle
  return rows}
 
 // Sıradaki sporcular: çıkış sırasına göre, çağrılan sporcudan sonra, henüz puanı olmayanlar
-function siradakiler(o){var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat,o.spor,o.puan),al=o.alet||null;
- var bitti=function(g){var p=(o.puan||{})[g.key];if(brans==="ritmik"){if(obj(p)&&Object.keys(p).some(function(k){return obj(p[k])&&p[k].yayinBekliyor}))return true;if(!al)return !!(sonuc(brans,kd,p)||{}).tamam;var x=p&&p[al];return obj(x)&&(x.durum==="tamamlandi"||!!x.irm)}return !!sonuc(brans,kd,p)};
+function siradakiler(o){if(o.brans==="artistik"){var sp={};Object.keys(o.spor||{}).forEach(function(k){var a=o.spor[k];sp[k]=obj(a)?Object.assign({},a,{yarismaTuru:"ferdi",grupNo:null}):a});o=Object.assign({},o,{puan:artAletMi(o.puan)?artPivot(o.puan):o.puan,spor:sp})}var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat,o.spor,o.puan),al=o.alet||null;
+ var bitti=function(g){var p=(o.puan||{})[g.key];if(brans==="ritmik"||brans==="artistik"){if(obj(p)&&Object.keys(p).some(function(k){return obj(p[k])&&p[k].yayinBekliyor}))return true;if(!al)return !!(sonuc(brans,kd,p)||{}).tamam;var x=p&&p[al];return obj(x)&&(x.durum==="tamamlandi"||x.kilitli===true||x.durum==="yarishmadi"||!!x.irm)}return !!sonuc(brans,kd,p)};
  var cagri=o.cagrilan&&o.cagrilan._kat===o.kat?String(o.cagrilan.id||""):"";
  var i=cagri?G.findIndex(function(g){return g.key===cagri||g.id===cagri}):-1;
  var sonra=(i>=0?G.slice(i+1).concat(G.slice(0,i)):G).filter(function(g){return !bitti(g)&&g.key!==cagri});
@@ -120,8 +132,8 @@ function satir(g,s,en,o){o=o||{};var r={rank:s&&s.sira!=null?s.sira:null,name:g.
 // TV veri paketi (veri linki tek çağrıda bunu döndürür)
 // Son puanın cezası: ritmik pen (toplam) · aerobik başhakem (p) + çizgi (l) + süre (t) · artistik tarafsız kesinti (pen / p)
 function penF(ft){if(ft.isRitmik)return num(ft.pen);if(ft.isAerobik||ft.l!=null||ft.t!=null)return num(ft.p)+num(ft.l)+num(ft.t);return num(ft.p!=null?ft.p:ft.pen)}
-function paket(o){var en=o.dil==="en",kats=o.kats||{},kat=o.kat,kd=kats[kat]||{},rit=o.brans==="ritmik";
- var al=rit?((o.tur==="alet"&&o.flash&&o.flash.kategori===kat&&o.flash.alet)||null):null;
+function paket(o){var en=o.dil==="en",kats=o.kats||{},kat=o.kat,kd=kats[kat]||{},rit=o.brans==="ritmik",art=o.brans==="artistik";
+ var al=rit||art?((o.tur==="alet"&&o.flash&&o.flash.kategori===kat&&(o.flash.alet||o.flash.aletId))||null):null;
  var S=kat?siralama({brans:o.brans,kats:kats,kat:kat,spor:o.spor,puan:o.puan,alet:al}):{satirlar:[],tamamlandi:false,girisSayisi:0};
  var aktifAlet=rit&&o.aktifAlet?o.aktifAlet[kat]||null:null;
  var ak=aktifListe(o.aktif).filter(function(a){return katUygun(o.filtre,a._kat)})[0]||null;
@@ -130,9 +142,9 @@ function paket(o){var en=o.dil==="en",kats=o.kats||{},kat=o.kat,kd=kats[kat]||{}
  var n=Math.max(1,o.n||10);
  return {
   competition:{id:o.comp,name:o.isim||"",discipline:o.brans},
-  category:kat?{id:kat,name:katAd(kats,kat,en),final:isFinal(kats,kat),apparatus:al?aletAd(al,en):(rit&&aktifAlet?aletAd(aktifAlet,en):""),ranking:al?"apparatus":"overall",entries:S.girisSayisi,complete:S.tamamlandi}:null,
-  current:ak?{name:[ak.ad,ak.soyad].filter(Boolean).join(" "),club:ak.okul||ak.kulup||"",city:ak.il||"",noc:ak.ulke||"",flag:ak.ulke?bayrakUrl(ak.ulke):null,bib:ak.bib||"",category:katAd(kats,ak._kat,en),categoryId:ak._kat,apparatus:aletAd(ak.alet||"",en),calledAt:ak.ts?new Date(ak.ts).toISOString():""}:null,
-  lastScore:ft?{name:ft.adSoyad||"",club:ft.kulup||"",noc:ft.ulke||"",flag:ft.ulke?bayrakUrl(ft.ulke):null,bib:ft.bib||"",category:ft.kategori?katAd(kats,ft.kategori,en):(en?katEN(temiz(ft.aletAd)):temiz(ft.aletAd)),categoryId:ft.kategori||"",apparatus:ft.alet?aletAd(ft.alet,en):"",
+  category:kat?{id:kat,name:katAd(kats,kat,en),final:isFinal(kats,kat),apparatus:al?aletAd(al,en,kat):(rit&&aktifAlet?aletAd(aktifAlet,en):""),ranking:al?"apparatus":"overall",entries:S.girisSayisi,complete:S.tamamlandi}:null,
+  current:ak?{name:[ak.ad,ak.soyad].filter(Boolean).join(" "),club:ak.okul||ak.kulup||"",city:ak.il||"",noc:ak.ulke||"",flag:ak.ulke?bayrakUrl(ak.ulke):null,bib:ak.bib||"",category:katAd(kats,ak._kat,en),categoryId:ak._kat,apparatus:aletAd(ak.alet||"",en,ak._kat),calledAt:ak.ts?new Date(ak.ts).toISOString():""}:null,
+  lastScore:ft?{name:ft.adSoyad||"",club:ft.kulup||"",noc:ft.ulke||"",flag:ft.ulke?bayrakUrl(ft.ulke):null,bib:ft.bib||"",category:ft.kategori?katAd(kats,ft.kategori,en):(en?katEN(temiz(ft.aletAd)):temiz(ft.aletAd)),categoryId:ft.kategori||"",apparatus:ft.alet||ft.aletId?aletAd(ft.alet||ft.aletId,en,ft.kategori):"",
    total:f3(ft.total),d:ft.isRitmik?f3(num(ft.da)+num(ft.db)):f3(ft.d),da:ft.isRitmik?f3(ft.da):"",db:ft.isRitmik?f3(ft.db):"",a:f3(ft.a),e:f3(ft.e),pen:penF(ft)>0?f3(penF(ft)):"",penCJP:ft.isAerobik?f3(ft.p):"",penLine:ft.isAerobik?f3(ft.l):"",penTime:ft.isAerobik?f3(ft.t):"",rank:num(ft.sira)>0?num(ft.sira):null,inquiry:ft.itiraz||"",previousTotal:ft.oncekiTotal!=null?f3(ft.oncekiTotal):"",publishedAt:ft.timestamp?new Date(ft.timestamp).toISOString():""}:null,
   standings:S.satirlar.slice(0,n).map(function(s){return satir(s.giris,s,en,{ritmik:rit})}),
   upNext:(N.sonraki||[]).map(function(g,i){var r=satir(g,null,en);r.order=i+1;return r}),
@@ -148,6 +160,6 @@ function csv(rows){rows=(rows||[]).filter(obj);if(!rows.length)return "";var col
  return cols.join(",")+"\n"+rows.map(function(r){return cols.map(function(c){return q(r[c])}).join(",")}).join("\n")+"\n"}
 
 var X={BRANS:BRANS,ALET:ALET,ALET_EN:ALET_EN,bayrakUrl:bayrakUrl,katEN:katEN,katAd:katAd,aletAd:aletAd,katUygun:katUygun,isFinal:isFinal,aktifListe:aktifListe,guncelKat:guncelKat,
- girisler:girisler,sonuc:sonuc,siralama:siralama,siradakiler:siradakiler,takimlar:takimlar,takimAdi:takimAdi,bayrakUrl:bayrakUrl,satir:satir,paket:paket,xml:xml,csv:csv,f3:f3,num:num,anahtar:anahtar};
+ girisler:girisler,sonuc:sonuc,artPivot:artPivot,artGor:artGor,siralama:siralama,siradakiler:siradakiler,takimlar:takimlar,takimAdi:takimAdi,bayrakUrl:bayrakUrl,satir:satir,paket:paket,xml:xml,csv:csv,f3:f3,num:num,anahtar:anahtar};
 if(typeof module!=="undefined"&&module.exports)module.exports=X;else (typeof self!=="undefined"?self:this).GXYV=X;
 })();

@@ -99,6 +99,14 @@ function useAktifKategori(base,comp,catParam,linkId,alet){
   });
  },[base,comp,tek,raw,tumu,anahtar,_al,kAnahtar]);
 
+ // Uzaktan yenileme (2026-10-09): başhakem <yarışma>/hakemYenile={ts,kim,kat?} yazar; değer değişince sayfa önbelleksiz yeniden yüklenir.
+ // Açılışta okunan değer taban alınır (cihaz saatleri karşılaştırılmaz, döngü olmaz). kat verilmişse yalnız o kategoriyi kapsayan ekranlar yenilenir.
+ const kapsamR=R.useRef(null);kapsamR.current={kume,tumu};
+ R.useEffect(()=>{if(!comp)return;let ilk=!0,taban=null;
+  return onValue(ref(db,`${base}/${comp}/hakemYenile`),s=>{const v=s.val(),t=v&&v.ts||null;if(ilk){ilk=!1;taban=t;return}if(!t||t===taban)return;taban=t;
+   const K=kapsamR.current||{kume:[],tumu:!1},k=v.kat;if(k&&!K.tumu&&!K.kume.some(x=>x===k||norm(x)===norm(k)))return;
+   try{const u=new URL(location.href);u.searchParams.set("_r",String(t));location.replace(u.toString())}catch{location.reload()}});
+ },[base,comp]);
  return{aktif,kume,tumu,grupAd,yok,coklu:!tek,kisitli,alet:kisitli?aktifAl:"",kisit,izinAl,son:enYeni.current};
 }
 // "final_genc_kiz__cember" -> "Genc Kiz — Cember Finali"

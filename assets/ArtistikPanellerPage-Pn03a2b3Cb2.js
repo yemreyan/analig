@@ -1,6 +1,7 @@
-import"./i18n-Tr01a2b3Cb2.js";import{u as useAuth,b as usToast,j as e,d as db,l as logAction}from"./main-C2LpyYUGCb2.js";import{u as useNav,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update}from"./vendor-firebase-940mxgRVCb2.js";import{f as filterComps}from"./useFilteredCompetitions-B7FB6qIvCb2.js";import{GXP_CSS,aletSirala}from"./ArtistikNotSilmePage-Ns01a2b3Cb2.js";import{artImg,artAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{g as yeniToken}from"./epanelToken-BoF3UjP2Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
+import"./i18n-Tr01a2b3Cb2.js";import{u as useAuth,b as usToast,j as e,d as db,l as logAction}from"./main-C2LpyYUGCb2.js";import{u as useNav,r as R}from"./vendor-react-Cxw6bqwhCb2.js";import{k as ref,o as onValue,m as update,l as fbGet}from"./vendor-firebase-940mxgRVCb2.js";import{f as filterComps}from"./useFilteredCompetitions-B7FB6qIvCb2.js";import{GXP_CSS,aletSirala}from"./ArtistikNotSilmePage-Ns01a2b3Cb2.js";import{artImg,artAd}from"./ritmikAlet-Ra01a2b3Cb2.js";import{g as yeniToken}from"./epanelToken-BoF3UjP2Cb2.js";import{SeyirciKart}from"./seyirciKart-Gs01a2b3Cb2.js";import"./modulepreload-polyfill-B5Qt9EMXCb2.js";
 
 // ARTİSTİK — PANELLER (2026-10-09, /artistic/panels · pageKey "paneller")
+//  Seyirci sitesi kartı (seyirciKart, br "artistik" → competitions; gymexascore.net kısa link, api/izle artistik)
 //  1. bölüm: ÜST JÜRİ — competitions/<y>/ustJuriAyar {acik, mod:"tek"|"alet", token, ts, kim}
 //   acik: başhakem notu Üst Jüri onayına gider (ScoringPage) · mod: tüm aletler için tek ekran ya da her alete ayrı ekran (link)
 //   Link: /artistic/superior-jury?competitionId=&token=[&catId=&aletId=] — "Linkleri yenile" eski linkleri geçersiz kılar.
@@ -27,7 +28,7 @@ function UstJuriKart({comp,C,kim}){
  const yaz=async(U,log)=>{try{await update(ref(db,`${FB}/${comp}/ustJuriAyar`),{...U,ts:Date.now(),kim});log&&logAction("ust_juri_ayar",log,{user:kim,competitionId:comp})}catch(er){toast(__T("Kaydedilemedi")+": "+(er?.message||er),"error")}};
  // token yoksa oluştur
  // yalnız ustJuriAyar okunduktan sonra (yüklenmeden üretirse her açılışta dağıtılmış linkler bozulur)
- R.useEffect(()=>{if(comp&&C&&"ustJuriAyar"in C&&!A.token)update(ref(db,`${FB}/${comp}/ustJuriAyar`),{token:yeniToken()}).catch(()=>{})},[comp,C&&"ustJuriAyar"in C,A.token]);
+ R.useEffect(()=>{if(comp&&C&&C.isim&&"ustJuriAyar"in C&&!A.token)update(ref(db,`${FB}/${comp}/ustJuriAyar`),{token:yeniToken()}).catch(()=>{})},[comp,C&&"ustJuriAyar"in C,A.token]);
  const kats=Object.entries(C&&C.kategoriler||{}).filter(([k,v])=>v&&!/^final_/.test(k)).sort((a,b)=>String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),"tr")),fins=Object.entries(C&&C.kategoriler||{}).filter(([k])=>/^final_/.test(k));
  const url=(k,a)=>`${location.origin}/artistic/superior-jury?competitionId=${encodeURIComponent(comp)}&token=${A.token||""}${k?"&catId="+encodeURIComponent(k):""}${a?"&aletId="+encodeURIComponent(a):""}`;
  const kopya=async u=>{try{await navigator.clipboard.writeText(u);setOk(u);setTimeout(()=>setOk(""),1600)}catch{await window.__gxPrompt(__T("Linki kopyalayın:"),u)}};
@@ -46,14 +47,43 @@ function UstJuriKart({comp,C,kim}){
   e.jsx("div",{className:"pn-not",children:__T("Linki açan kişi giriş yapmadan Üst Jüri ekranını görür; linki yalnız Üst Jüri üyeleriyle paylaşın. Onay modu açıkken başhakem ekranında onay bekleyen / geri gönderilen notlar şerit olarak görünür.")}),
   qr?e.jsx("div",{className:"pn-qr",onClick:()=>setQr(null),children:e.jsxs("div",{children:[e.jsx("img",{src:qr.d,alt:"QR"}),e.jsx("b",{style:{display:"block",marginTop:8},children:qr.t}),e.jsx("span",{style:{fontSize:".8rem",color:"#64748B"},children:__T("Kapatmak için dokunun")})]})}):null]})}
 
+// HAKEM ATAMA (2026-10-09): kategori × alet × koltuk → competitions/<y>/hakemler/<kat>/<alet>/<koltuk> = {name, id, ulke, il}
+//  koltuklar: d1 d2 e1–e4 (+ t: yer/denge, l: yer). E hakem ekranı adı buradan gösterir (hakemler[kat][alet][panelId]); Raporlar › Hakem Sapma Analizi kim().
+//  Havuz: referees (disiplin artistik / brans WAG–MAG); kız kategorisinde WAG, erkekte MAG önerilir; havuzda olmayan ad serbest yazılabilir.
+const KOLTUK=al=>["d1","d2","e1","e2","e3","e4",...(al==="yer"||al==="denge"?["t"]:[]),...(al==="yer"?["l"]:[])];
+const KOLTUK_AD={d1:"D1",d2:"D2",e1:"E1",e2:"E2",e3:"E3",e4:"E4",t:"Zaman (T)",l:"Çizgi (L)"};
+function HakemAtamaKart({comp,C,kim}){
+ const{toast}=usToast(),[havuz,setHavuz]=R.useState(null),[hk,setHk]=R.useState({}),[ac,setAc]=R.useState("");
+ R.useEffect(()=>{fbGet(ref(db,"referees")).then(sn=>{const v=sn.val()||{};setHavuz(Object.entries(v).filter(([,h])=>h&&h.adSoyad&&(h.disiplin==="artistik"||h.brans==="WAG"||h.brans==="MAG")).map(([id,h])=>({id,ad:String(h.adSoyad).trim(),br:h.brans||"",il:h.il||"",ulke:h.ulke||""})).sort((a,b)=>a.ad.localeCompare(b.ad,"tr")))}).catch(()=>setHavuz([]))},[]);
+ R.useEffect(()=>onValue(ref(db,`${FB}/${comp}/hakemler`),sn=>setHk(sn.val()||{})),[comp]);
+ const kz=k=>/kiz|kız|kadin|kadın|women/i.test(String(k)+" "+String(C.kategoriler?.[k]?.name||""));
+ const kats=Object.entries(C.kategoriler||{}).filter(([,v])=>v&&Array.isArray(v.aletler)&&v.aletler.length).sort((a,b)=>(/^final_/.test(a[0])-/^final_/.test(b[0]))||String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),"tr"));
+ const adOf=x=>x==null?"":typeof x==="object"?String(x.name||x.ad||""):String(x);
+ const kaydet=async(k,al,pos,val)=>{const t=String(val||"").trim(),eski=adOf(hk?.[k]?.[al]?.[pos]);if(t===eski)return;
+  const h=t&&havuz?havuz.find(x=>x.ad.toLocaleUpperCase("tr-TR")===t.toLocaleUpperCase("tr-TR")):null,v=t?(h?{name:h.ad,id:h.id,ulke:h.ulke||null,il:h.il||null}:{name:t}):null;
+  try{await update(ref(db),{[`${FB}/${comp}/hakemler/${k}/${al}/${pos}`]:v});logAction("hakem_atama",`Hakem ataması: ${C.kategoriler?.[k]?.name||k} · ${artAd(al,!1,k)} · ${KOLTUK_AD[pos]||pos} → ${t||"(boş)"}`,{user:kim,competitionId:comp,category:k,alet:al})}catch(er){toast(__T("Kaydedilemedi")+": "+(er?.message||er),"error")}};
+ const sayac=k=>{let n=0,t=0;(C.kategoriler[k].aletler||[]).forEach(al=>KOLTUK(al).forEach(p=>{t++;adOf(hk?.[k]?.[al]?.[p])&&n++}));return[n,t]};
+ const inp={width:"100%",minWidth:120,padding:"6px 8px",borderRadius:8,border:"1px solid #E2E8F0",font:"inherit",fontWeight:700,fontSize:".82rem",boxSizing:"border-box"};
+ return e.jsxs("div",{className:"gxp-card",style:{marginBottom:14},children:[
+  e.jsxs("div",{className:"pn-h",children:[e.jsx("span",{className:"ic",style:{background:"#4F46E5"},children:MI("how_to_reg",{fontSize:22,verticalAlign:0})}),e.jsx("h2",{children:__T("Hakem Atama")}),e.jsx("span",{style:{marginLeft:"auto",fontSize:".78rem",color:"#64748B",fontWeight:700},children:havuz?havuz.length+" "+__T("artistik hakem havuzda"):__T("Havuz yükleniyor…")})]}),
+  e.jsx("div",{className:"pn-not",style:{marginTop:0,marginBottom:10},children:__T("Kategori ve alet bazında koltuklara hakem yazın; havuzdan öneri gelir (kız kategorisinde WAG, erkekte MAG). Hakem ekranları ve Raporlar › Hakem Sapma Analizi bu adları kullanır. Alanı boşaltmak atamayı kaldırır.")}),
+  e.jsx("datalist",{id:"arHkWAG",children:(havuz||[]).filter(h=>h.br!=="MAG").map(h=>e.jsx("option",{value:h.ad},h.id))}),e.jsx("datalist",{id:"arHkMAG",children:(havuz||[]).filter(h=>h.br!=="WAG").map(h=>e.jsx("option",{value:h.ad},h.id))}),
+  kats.length?kats.map(([k,v])=>{const al=aletSirala(v.aletler),[n,t]=sayac(k),on=ac===k,rows=[...new Set(al.flatMap(KOLTUK))];
+   return e.jsxs("div",{style:{border:"1px solid #EEF0F4",borderRadius:12,marginBottom:8,overflow:"hidden"},children:[
+    e.jsxs("button",{type:"button",onClick:()=>setAc(on?"":k),style:{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:on?"#EEF2FF":"#fff",border:0,cursor:"pointer",font:"inherit",textAlign:"left"},children:[MI(on?"expand_less":"expand_more",{fontSize:20,verticalAlign:0}),e.jsx("b",{style:{flex:1},children:String(v.name||k).replace(/^\s*🏆\s*/u,"")}),e.jsx("span",{style:{fontSize:".75rem",fontWeight:800,color:n===t?"#15803D":n?"#B45309":"#94A3B8"},children:n+" / "+t+" "+__T("koltuk")})]}),
+    on?e.jsx("div",{style:{overflowX:"auto",padding:"4px 12px 12px"},children:e.jsxs("table",{style:{borderCollapse:"collapse",width:"100%"},children:[
+     e.jsx("thead",{children:e.jsxs("tr",{children:[e.jsx("th",{}),...al.map(a=>e.jsx("th",{style:{padding:"6px",fontSize:".72rem",fontWeight:900,color:"#475569",textTransform:"uppercase"},children:e.jsxs("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:3},children:[artImg(a,k)?e.jsx("img",{src:artImg(a,k),alt:"",style:{width:30,height:30,objectFit:"contain"}}):null,artAd(a,!1,k)]})},a))]})}),
+     e.jsx("tbody",{children:rows.map(pos=>e.jsxs("tr",{children:[e.jsx("td",{style:{padding:"4px 8px",fontWeight:900,fontSize:".8rem",whiteSpace:"nowrap",color:"#334155"},children:KOLTUK_AD[pos]}),...al.map(a=>e.jsx("td",{style:{padding:"3px 4px"},children:KOLTUK(a).includes(pos)?e.jsx("input",{list:kz(k)?"arHkWAG":"arHkMAG",defaultValue:adOf(hk?.[k]?.[a]?.[pos]),placeholder:"—",onBlur:ev=>kaydet(k,a,pos,ev.target.value),onKeyDown:ev=>{ev.key==="Enter"&&ev.target.blur()},style:{...inp,background:adOf(hk?.[k]?.[a]?.[pos])?"#F0FDF4":"#fff"}},k+a+pos+adOf(hk?.[k]?.[a]?.[pos])):null},a))]},pos))})]})}):null]},k)}):e.jsx("div",{style:{color:"#94A3B8",fontWeight:700},children:__T("Bu yarışmada aleti tanımlı kategori yok.")})]})}
+
 export default function ArtistikPaneller(){
  const nav=useNav(),{currentUser:user}=useAuth()||{},kim=user?.adSoyad||user?.kullaniciAdi||"";
  const[comps,setComps]=R.useState({}),[comp,setComp]=R.useState(()=>{try{return localStorage.getItem("gxArPanComp")||""}catch{return""}}),[C,setC]=R.useState(null);
  R.useEffect(()=>onValue(ref(db,FB),s=>setComps(filterComps(s.val()||{},user)||{}),{onlyOnce:!0}),[user]);
  R.useEffect(()=>{try{localStorage.setItem("gxArPanComp",comp)}catch{}setC(null);if(!comp)return;const st={},u=["isim","kategoriler","ustJuriAyar"].map(k=>onValue(ref(db,`${FB}/${comp}/${k}`),s=>{st[k]=s.val();setC({...st})}));return()=>u.forEach(f=>f())},[comp]);
+ R.useEffect(()=>{if(comp&&Object.keys(comps).length&&!comps[comp])setComp("")},[comps,comp]);
  const compList=R.useMemo(()=>Object.entries(comps).filter(([,c])=>c&&c.isim&&c.arsivli!==!0).sort((a,b)=>String(b[1].baslangicTarihi||"").localeCompare(String(a[1].baslangicTarihi||""))),[comps]);
  return e.jsxs("div",{className:"gxp",style:{"--gxp-c":"#DB2777"},children:[e.jsx("style",{children:CSS}),
-  e.jsxs("div",{className:"gxp-hdr",children:[e.jsx("button",{type:"button",className:"gxp-back",onClick:()=>nav("/artistic"),title:__T("Geri"),children:MI("arrow_back",{fontSize:22,verticalAlign:0})}),e.jsx("div",{className:"gxp-ic",children:MI("view_module",{fontSize:26,verticalAlign:0})}),e.jsxs("div",{className:"gxp-tt",children:[e.jsx("h1",{children:__T("Paneller")}),e.jsx("p",{children:__T("Üst Jüri onayı, ekran düzeni ve linkler")})]}),
+  e.jsxs("div",{className:"gxp-hdr",children:[e.jsx("button",{type:"button",className:"gxp-back",onClick:()=>nav("/artistic"),title:__T("Geri"),children:MI("arrow_back",{fontSize:22,verticalAlign:0})}),e.jsx("div",{className:"gxp-ic",children:MI("view_module",{fontSize:26,verticalAlign:0})}),e.jsxs("div",{className:"gxp-tt",children:[e.jsx("h1",{children:__T("Paneller")}),e.jsx("p",{children:__T("Seyirci sitesi, Üst Jüri onayı ve hakem atama")})]}),
    e.jsx("div",{className:"gxp-sel",children:e.jsxs("select",{value:comp,onChange:ev=>setComp(ev.target.value),children:[e.jsx("option",{value:"",children:__T("— Yarışma seçin —")}),compList.map(([id,c])=>e.jsx("option",{value:id,children:c.isim},id))]})})]}),
   !comp?e.jsx("div",{className:"gxp-card",children:e.jsxs("div",{className:"gxp-empty",children:[MI("sports_gymnastics",{fontSize:46,display:"block",color:"#CBD5E1",margin:"0 auto 8px"}),__T("Yarışma seçin")]})}):!C||!("ustJuriAyar"in C&&"kategoriler"in C)?e.jsx("div",{className:"gxp-card",children:e.jsx("div",{className:"gxp-empty",children:__T("Yükleniyor…")})}):
-  e.jsx(UstJuriKart,{comp,C,kim})]})}
+  e.jsxs(e.Fragment,{children:[e.jsx(SeyirciKart,{comp,br:"artistik",kim}),e.jsx(UstJuriKart,{comp,C,kim}),e.jsx(HakemAtamaKart,{comp,C,kim})]})]})}
