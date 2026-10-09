@@ -52,6 +52,9 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:transparent
 .name.uzun{font-size:calc(36*var(--s))}.name.cokuzun{font-size:calc(27*var(--s))}
 .club{font-size:calc(25*var(--s));font-weight:600;color:var(--mu);margin-top:calc(6*var(--s));text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .club:empty{display:none}
+/* sporcu fotoğrafı (2026-10-09): criteria/sporcuFoto/<base>/<yarışma>/<sporcu> — alt bandın solunda; profilde alt.foto:false ile kapanır */
+.ft{display:none;width:calc(150*var(--s));background:var(--b1);overflow:hidden;flex-shrink:0}.ft.var{display:block}.ft img{width:100%;height:100%;min-height:calc(150*var(--s));object-fit:cover;object-position:50% 18%;display:block;animation:ftIn .5s ease both}
+@keyframes ftIn{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:none}}
 .score{display:none;background:var(--pn);color:var(--pt);padding:calc(12*var(--s)) calc(30*var(--s));flex-direction:column;align-items:center;justify-content:center;min-width:calc(250*var(--s))}
 .lt.puanli .score{display:flex}
 .slbl{font-size:calc(18*var(--s));font-weight:800;letter-spacing:.12em;color:var(--pm)}
@@ -133,7 +136,7 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:transparent
 <div id="app"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
 const V=self.GXYV,Q=new URLSearchParams(location.search);
@@ -179,7 +182,7 @@ document.getElementById("app").innerHTML=`<div class="stage M" id="st">
  <div class="gfx lb" id="lb"></div>
  <div class="gfx pd" id="pd"></div>
  <div class="gfx sl" id="sl"></div>
- <div class="gfx lt" id="lt"><div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
+ <div class="gfx lt" id="lt"><div class="ft" id="ft"></div><div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
   <div class="score"><div class="slbl" id="sl"></div><div class="stot" id="tot"></div><div class="rank" id="rk"></div></div></div></div>`;
 const $=id=>document.getElementById(id),st=$("st"),lt=$("lt");
 
@@ -208,10 +211,16 @@ const fitName=t=>{$("nm").className="name"+(t.length>46?" cokuzun":t.length>28?"
 const goster=()=>{lt.classList.remove("on");void lt.offsetWidth;ltOn=!0;tick()};
 const ulkeKulup=(u,k,il)=>{const a=C.alt;if(u&&a.ulke)return fl(u)+esc([u,a.kulup&&k&&k!==u?UP(k,u):""].filter(Boolean).join("  •  "));return a.kulup?esc(UP([k,il].filter(Boolean).join("  •  "))):""};
 const bibH=b=>C.alt.bib&&b?`<span class="bib">#${esc(b)}</span>`:"";
+// sporcu fotoğrafı: bir kez okunur, bellekte tutulur (puan/isim kartında anında); 3 sn'de gelmezse fotoğrafsız gösterilir
+const FOTO={};let fotoTok=0;
+const fotoAl=id=>{if(!db||!id||String(id).includes("::"))return Promise.resolve(null);const k=base+"/"+comp+"/"+id;if(FOTO[k])return Promise.resolve(FOTO[k]);
+ return Promise.race([get(ref(db,`criteria/sporcuFoto/${k}`)).then(s=>{const v=s.val(),u=v&&(v.url||(typeof v==="string"?v:null))||null;u&&(FOTO[k]=u);return u}),new Promise(r=>setTimeout(()=>r(null),3000))]).catch(()=>null)};
+const fotoGoster=id=>{const tk=++fotoTok,el=$("ft");el.classList.remove("var");el.innerHTML="";if(C.alt.foto===!1)return;
+ fotoAl(id).then(u=>{if(tk!==fotoTok||!u)return;el.innerHTML=`<img src="${esc(u)}" alt="">`;el.classList.add("var")})};
 const isimGoster=a=>{log("isim",a&&a.ad);if(!C.alt.acik||!C.alt.isim||!a)return;
  lt.classList.remove("puanli");ltPuan=!1;const ad=[a.ad,a.soyad].filter(Boolean).join(" ");
  $("cat").innerHTML=bibH(a.bib)+esc(UP(V.katAd(D.kats,a._kat,EN())+(a.alet&&(brans==="ritmik"||brans==="artistik")&&!/__/.test(a._kat)?" — "+V.aletAd(a.alet,EN(),a._kat):""),a.ulke));
- $("nm").textContent=UP(ad,a.ulke);fitName(ad);$("cl").innerHTML=ulkeKulup(a.ulke,a.okul||a.kulup,a.il);$("ch").innerHTML="";
+ $("nm").textContent=UP(ad,a.ulke);fitName(ad);$("cl").innerHTML=ulkeKulup(a.ulke,a.okul||a.kulup,a.il);$("ch").innerHTML="";fotoGoster(a.id);
  nameUntil=C.alt.isimSure?Date.now()+C.alt.isimSure*1000:0;goster()};
 let tabloUntil=0,podyumUntil=0,podKat=null,podBekle=null,psT=null;
 const puanGoster=t=>{log("puan",t.adSoyad,t.total);clearTimeout(psT);
@@ -219,9 +228,9 @@ const puanGoster=t=>{log("puan",t.adSoyad,t.total);clearTimeout(psT);
  lt.classList.add("puanli");ltPuan=!0;
  const an=String(t.aletAd||"").replace(/^\s*🏆\s*/u,""),kn=t.kategori&&D.kats[t.kategori]?V.katAd(D.kats,t.kategori,EN()):(EN()?V.katEN(an):an);
  $("cat").innerHTML=bibH(t.bib)+esc(UP(t.alet&&t.kategori?kn+" — "+V.aletAd(t.alet,EN()):kn,t.ulke));
- const ad=t.adSoyad||"";$("nm").textContent=UP(ad,t.ulke);fitName(ad);$("cl").innerHTML=ulkeKulup(t.ulke,t.kulup,"");
+ const ad=t.adSoyad||"";$("nm").textContent=UP(ad,t.ulke);fitName(ad);$("cl").innerHTML=ulkeKulup(t.ulke,t.kulup,"");fotoGoster(t.id);
  const c=[];if(C.alt.detay){
-  if(t.isRitmik){[["DA",t.da],["DB",t.db],["A",t.a],["E",t.e]].forEach(([k,v])=>v!=null&&c.push(`<span class="chip"><b>${k}</b>${f3(v)}</span>`));if(+t.pen>0)c.push(`<span class="chip ded"><b>${L().ksn}</b>-${f3(t.pen)}</span>`)}
+  if(t.isRitmik){[["DB",t.db],["DA",t.da],["A",t.a],["E",t.e]].forEach(([k,v])=>v!=null&&c.push(`<span class="chip"><b>${k}</b>${f3(v)}</span>`));if(+t.pen>0)c.push(`<span class="chip ded"><b>${L().ksn}</b>-${f3(t.pen)}</span>`)}
   else{[["E",t.e],["A",t.a],["D",t.d]].forEach(([k,v])=>v!=null&&c.push(`<span class="chip"><b>${k}</b>${f3(v)}</span>`));const ded=+(t.p??t.pen??0);if(ded>0)c.push(`<span class="chip ded"><b>${L().ksn}</b>-${f3(ded)}</span>`)}}
  $("ch").innerHTML=c.join("");$("tot").textContent=f3(t.total);
  const r=parseInt(t.sira);$("rk").style.display=C.alt.sira&&r>0?"":"none";$("rk").textContent=r>0?L().sira(r):"";

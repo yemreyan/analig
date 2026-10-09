@@ -4931,6 +4931,8 @@ const DICT={
   "Notunuzu yeniden girin": "Re-enter your score",
   "Aşılan süre": "Time over",
   "elle": "manual",
-  "Süre aşımı yok (0)": "No time fault (0)"
+  "Süre aşımı yok (0)": "No time fault (0)",
+  "Sporcu fotoğrafı": "Athlete photo",
+  "Yüklenmiş fotoğraf varsa isim ve puan kartının solunda": "Shown left of the name and score cards when a photo is uploaded"
 };
 export{DICT};

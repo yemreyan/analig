@@ -58,7 +58,7 @@ const Num=({v,mn,mx,st=1,on})=>{const c=x=>on(Math.min(mx,Math.max(mn,Number(x)|
 // Overlay (?profil=) ve TV veri linki (/api/yayin?profil=) bu kaydı CANLI okur: kaydedince kanaldaki yayın anında değişir.
 const PV=()=>({ad:"",dil:"tr",kat:[],olcek:100,kenar:90,tema:"tcf",vurgu:"",arka:"seffaf",
  logo:{tcf:!0,gymexa:!0,etkinlik:!0,ek:null,kose:"yok"},
- alt:{acik:!0,isim:!0,puan:!0,konum:"alt-sol",sure:12,isimSure:0,kulup:!0,ulke:!0,bib:!1,detay:!0,sira:!0},
+ alt:{acik:!0,isim:!0,puan:!0,konum:"alt-sol",sure:12,isimSure:0,kulup:!0,ulke:!0,bib:!1,detay:!0,sira:!0,foto:!0},
  tablo:{acik:!1,mod:"puan",konum:"sag",n:8,sure:15,tur:"genel",detay:!0},
  sirada:{acik:!1,mod:"cagri",konum:"sag-ust",n:3},
  podyum:{acik:!1,mod:"otomatik",n:3,sure:20}});
@@ -173,7 +173,8 @@ export default function YayinOverlayPage(){
     e.jsxs("div",{className:"yo-row",children:[e.jsx(Alan,{t:__T("Puan süresi (sn)"),children:e.jsx(Num,{v:T.alt.sure,mn:3,mx:120,on:v=>degis("alt","sure",v)})}),e.jsx(Alan,{t:__T("İsim süresi"),a:__T("· 0 = sürekli"),children:e.jsx(Num,{v:T.alt.isimSure,mn:0,mx:600,on:v=>degis("alt","isimSure",v)})})]}),
     e.jsx("label",{className:"yo-f",children:__T("Gösterilecek bilgiler")}),
     e.jsxs("div",{className:"yo-row",children:[e.jsx(Tog,{v:T.alt.kulup,on:v=>degis("alt","kulup",v),t:__T("Kulüp / il")}),e.jsx(Tog,{v:T.alt.ulke,on:v=>degis("alt","ulke",v),t:__T("Ülke + bayrak")})]}),
-    e.jsxs("div",{className:"yo-row",children:[e.jsx(Tog,{v:T.alt.bib,on:v=>degis("alt","bib",v),t:__T("Göğüs no (BIB)")}),e.jsx(Tog,{v:T.alt.detay,on:v=>degis("alt","detay",v),t:__T("Not detayları"),d:br==="ritmik"?"DA · DB · A · E":br==="artistik"?"D · E":"E · A · D"})]}),
+    e.jsxs("div",{className:"yo-row",children:[e.jsx(Tog,{v:T.alt.bib,on:v=>degis("alt","bib",v),t:__T("Göğüs no (BIB)")}),e.jsx(Tog,{v:T.alt.detay,on:v=>degis("alt","detay",v),t:__T("Not detayları"),d:br==="ritmik"?"DB · DA · A · E":br==="artistik"?"D · E":"E · A · D"})]}),
+    e.jsx(Tog,{v:T.alt.foto!==!1,on:v=>degis("alt","foto",v),t:__T("Sporcu fotoğrafı"),d:__T("Yüklenmiş fotoğraf varsa isim ve puan kartının solunda")}),
     e.jsx(Tog,{v:T.alt.sira,on:v=>degis("alt","sira",v),t:__T("Anlık sıra")})]}):null]}):null,
   sekme==="tablo"?e.jsxs("div",{className:"yo-list",children:[
    e.jsx(Tog,{v:T.tablo.acik,on:v=>degis("tablo","acik",v),t:__T("Anlık sıralama tablosu"),d:__T("Güncel kategorinin sıralaması; yeni puanla güncellenir, son puan alan vurgulanır")}),
