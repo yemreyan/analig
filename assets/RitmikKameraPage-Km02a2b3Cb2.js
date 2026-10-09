@@ -39,6 +39,9 @@ const tr=s=>(s||"").replace(/ı/g,"i").replace(/İ/g,"I").replace(/ş/g,"s").rep
 let stream=null, recorder=null, chunks=[], curCat="", curAth="", curName="", curAd="", curSoyad="", curOkul="", curIl="", mimeExt="webm";
 // Kayıt/yükleme durumu Video Arşivi için: <yarışma>/kameraYukleme/<rid> {cam,ad,alet,kat,durum: kayitta|yukleniyor|bitti|hata|indirildi, ilerleme, boyutMB, sureSn, ...}
 let curRid="";const KY=rid=>ref(db,`${BASE}/${comp}/kameraYukleme/${rid}`),kyYaz=(rid,v)=>{if(!rid)return;try{_fb_update(KY(rid),{...v,guncel:Date.now()}).catch(()=>{})}catch(e){}};
+// Nabız (2026-10-09): "guncel" yalnız durum değişince yazılıyordu → 90 sn'yi geçen kayıt / ilerleme bildirmeyen Drive yüklemesi Video sayfasında
+// "Kameradan 1,5 dk'dır haber yok" uyarısı veriyordu. Kayıtta ve yüklemede olan her rid için 20 sn'de bir guncel yazılır.
+const kyAktif=new Set();setInterval(()=>{const n=Date.now();curRid&&recState==="recording"&&kyAktif.add(curRid);kyAktif.forEach(r=>{try{_fb_update(KY(r),{guncel:n}).catch(()=>{})}catch(e){}})},2e4);
 const ACILIS=Date.now(); // kamera açılmadan 2 dk'dan eski çağrı (ör. sayfa yenilendi) kayda başlatılmaz
 let wantCat="", wantData=null, curKey="", doneKey="", curAlet="", aktifAlet={}, recT0=0, stopWatch=null;
 const keyOf=(c,a)=>a?(c+"/"+(a.id||"")+"/"+(a.alet||aktifAlet[c]||"")+"@"+(a.ts||0)):"";
@@ -85,7 +88,7 @@ let upN=0,upT=null;
 function upDurum(t){const b=$("upBox");if(!b)return;clearTimeout(upT);if(upN>0){b.innerHTML=`<div class="kam-rec kam-rec--saving">☁️ ${upN} video buluta yükleniyor…</div>`;return}if(!t){b.innerHTML="";return}b.innerHTML=`<div class="kam-rec ${t[0]}">${t[1]}</div>`;upT=setTimeout(()=>{if(!upN)b.innerHTML=""},4000)}
 function uploadRec(blob,pid,J,CW,meta,attempt){
   attempt=attempt||1; if(attempt===1){upN++;meta.yuk0=Date.now()} upDurum();
-  const rid=meta.rid;kyYaz(rid,{durum:"yukleniyor",ilerleme:0,deneme:attempt,boyutMB:Math.round(blob.size/1048576*10)/10,sureSn:meta.sureSn||null,yukBasla:meta.yuk0,mesaj:null});
+  const rid=meta.rid;kyAktif.add(rid);kyYaz(rid,{durum:"yukleniyor",ilerleme:0,deneme:attempt,boyutMB:Math.round(blob.size/1048576*10)/10,sureSn:meta.sureSn||null,yukBasla:meta.yuk0,mesaj:null});
   let sonP=0,sonT=0;const ilerle=p=>{const n=Date.now();if(p-sonP>=.05||n-sonT>2500||p>=1){sonP=p;sonT=n;kyYaz(rid,{ilerleme:Math.round(p*1000)/1000})}};
   // Google Drive (video-depo) ayarlıysa oraya, değilse eski Cloudinary hesabına yüklenir
   const cldYukle=()=>{ const c=new FormData(); c.append("file",blob); c.append("upload_preset",PRESET); c.append("public_id",pid);
@@ -94,9 +97,9 @@ function uploadRec(blob,pid,J,CW,meta,attempt){
   const gdAd=`${meta.name||"Sporcu"} - ${ALAD[meta.alet]||meta.alet||""} - KAM ${CW} - ${new Date(meta.ts||Date.now()).toISOString().slice(0,16).replace("T","_")}.${mimeExt}`.replace(/[/\\:*?"<>|]/g,"-");
   (window.gxDrive?window.gxDrive.hazir():Promise.resolve(false))
     .then(dr=>dr?window.gxDrive.yukle(blob,{name:gdAd,base:BASE,comp,kat:J.split("/").slice(-3)[0]},ilerle).then(u=>({secure_url:u.url,public_id:"gdrive:"+u.id})):cldYukle())
-    .then(u=>{ const sn=Math.round((Date.now()-(meta.yuk0||Date.now()))/1e3),mb=Math.round(blob.size/1048576*10)/10,{yuk0,...m2}=meta; set(ref(db,`${J}/videoUrl${CW}`),u.secure_url); set(ref(db,`${J}/videoPath${CW}`),u.public_id||""); set(ref(db,`${J}/videoBilgi${CW==="A"?"":CW}`),{...m2,rid:null,yuklemeSn:sn,boyutMB:mb,sureSn:meta.sureSn||null}); kyYaz(rid,{durum:"bitti",ilerleme:1,yuklemeSn:sn,url:u.secure_url,bitti:Date.now(),yol:J}); upN=Math.max(0,upN-1); upDurum(["kam-rec--ok",`✅ Buluta yüklendi · ${meta.name||""} · ${mb} MB · ${sn} sn`]); })
+    .then(u=>{ const sn=Math.round((Date.now()-(meta.yuk0||Date.now()))/1e3),mb=Math.round(blob.size/1048576*10)/10,{yuk0,...m2}=meta; set(ref(db,`${J}/videoUrl${CW}`),u.secure_url); set(ref(db,`${J}/videoPath${CW}`),u.public_id||""); set(ref(db,`${J}/videoBilgi${CW==="A"?"":CW}`),{...m2,rid:null,yuklemeSn:sn,boyutMB:mb,sureSn:meta.sureSn||null}); kyAktif.delete(rid);kyYaz(rid,{durum:"bitti",ilerleme:1,yuklemeSn:sn,url:u.secure_url,bitti:Date.now(),yol:J}); upN=Math.max(0,upN-1); upDurum(["kam-rec--ok",`✅ Buluta yüklendi · ${meta.name||""} · ${mb} MB · ${sn} sn`]); })
     .catch(e=>{ if(attempt<3){ kyYaz(rid,{durum:"yukleniyor",mesaj:"yeniden deneniyor ("+(attempt+1)+"/3) · "+(e?.message||"ağ hatası")}); setTimeout(()=>uploadRec(blob,pid,J,CW,meta,attempt+1),1500*attempt); }
-      else { kyYaz(rid,{durum:"hata",mesaj:(e?.message||"ağ hatası")+" · kamerada kuyrukta — dokununca yeniden yüklenir"}); upN=Math.max(0,upN-1); failedUploads.push({blob,pid,J,CW,meta}); renderFailed(); upDurum(["kam-rec--error","⚠️ Yüklenemedi · "+(e?.message||"ağ hatası")+" · kuyrukta"]); } });
+      else { kyAktif.delete(rid);kyYaz(rid,{durum:"hata",mesaj:(e?.message||"ağ hatası")+" · kamerada kuyrukta — dokununca yeniden yüklenir"}); upN=Math.max(0,upN-1); failedUploads.push({blob,pid,J,CW,meta}); renderFailed(); upDurum(["kam-rec--error","⚠️ Yüklenemedi · "+(e?.message||"ağ hatası")+" · kuyrukta"]); } });
 }
 // yerel indirme garantisi: her kayıt son 6 kayıt listesinde kalıcı indirme linki olur
 // (tarayıcı ardışık otomatik indirmeleri engellese bile operatör elle indirebilir)
@@ -109,7 +112,7 @@ function onStop(mime){
   const nm=curName||"Sporcu", CW=cam.toUpperCase(), dt=new Date().toISOString().slice(0,16).replace("T","_");
   const fn=`${nm} - ${ALAD[curAlet]||curAlet||"Alet"} - KAM ${CW} - ${dt}.${mimeExt}`.replace(/[/\\:*?"<>|]/g,"-");
   if(blob.size>0){const url=URL.createObjectURL(blob);addRec(`${nm} · KAM ${CW}`,fn,url);try{const a=document.createElement("a");a.href=url;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);}catch(e){}}
-  const z=curAth,rid=curRid,sureSn=recT0?Math.round((Date.now()-recT0)/1e3):null,mb=Math.round(blob.size/1048576*10)/10;curRid="";
+  const z=curAth,rid=curRid;kyAktif.delete(rid);const sureSn=recT0?Math.round((Date.now()-recT0)/1e3):null,mb=Math.round(blob.size/1048576*10)/10;curRid="";
   if(blob.size===0)kyYaz(rid,{durum:"hata",mesaj:"boş kayıt — akış alınamadı",sureSn});else if(!(z&&comp&&curCat&&curAlet))kyYaz(rid,{durum:"indirildi",boyutMB:mb,sureSn,bitti:Date.now()});
   if(z&&comp&&curCat&&curAlet&&blob.size>0){ /* 2026-10-08: KAM B de Drive'a yüklenir (videoUrlB); yerel indirme yedek olarak sürer */
     const pid=`${BASE}/${comp}/${curCat}/${tr(nm)}-${curAlet}-kam${cam}-${z}`, J=`${BASE}/${comp}/puanlar/${curCat}/${z}/${curAlet}`, meta={ad:curAd,soyad:curSoyad,okul:curOkul,il:curIl,name:nm,alet:curAlet,cam:CW,ts:Date.now(),sureSn,rid};
