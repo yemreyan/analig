@@ -716,3 +716,39 @@ body.sb-rt-from .sb-flash-visible .sb-flash-card{transform:none}
 .sbp-l{display:grid!important;grid-template-rows:repeat(var(--nr,6),minmax(0,1fr))}
 .sbp-r i{white-space:nowrap}
 .sbp-k .sbx-ilr{margin:0 0 .5em}
+
+/* ===== Ritmik puan kartı üst bandı: 3 sütun — solda foto (yoksa büyük bayrak), ortada isim / ülke / sıra, sağda alet + kategori ===== */
+.sb-flash-card .sf-header.has-foto.sf-rt3{display:grid;grid-template-columns:clamp(130px,16vw,300px) minmax(0,1fr) clamp(170px,21vw,400px);grid-template-areas:"ft tag yan" "ft nm yan" "ft cl yan" "ft rk yan";column-gap:clamp(16px,2.4vw,48px);row-gap:.3rem;align-items:center;justify-items:center;text-align:center;padding-left:clamp(14px,2.2vw,40px);padding-right:clamp(14px,2.2vw,40px)}
+.sb-flash-card .sf-rt3 .sf-foto{grid-area:ft;position:relative!important;right:auto!important;left:auto!important;top:auto!important;transform:none!important;justify-self:center;align-self:center}
+.sb-flash-card .sf-rt3 img.sf-foto:not(.logo){height:clamp(150px,28vh,320px);width:auto;aspect-ratio:4/5;border-radius:24px;object-fit:cover;object-position:50% 18%}
+.sb-flash-card .sf-rt3 img.sf-foto.logo{width:clamp(110px,13vw,230px);height:auto;aspect-ratio:1}
+.sb-flash-card .sf-rt3 .sf-new-score-tag{grid-area:tag;margin:0 auto .2rem}
+.sb-flash-card .sf-rt3 .sf-athlete{grid-area:nm;text-align:center;margin:0}
+.sb-flash-card .sf-rt3 .sf-club{grid-area:cl;margin:0;justify-content:center}
+.sb-flash-card .sf-rt3 .sf-sira-badge{grid-area:rk}
+.sb-flash-card .sf-rt3>.sf-apparatus{display:none}
+.sf-ft-bayrak{display:flex;align-items:center;justify-content:center;width:auto!important;height:auto!important;aspect-ratio:auto!important;background:none!important;box-shadow:none!important;border-radius:0!important;padding:0!important;animation:sfFotoIn2 .6s cubic-bezier(.2,.8,.2,1) both}
+.sf-ft-bayrak .gx-ulke{flex-direction:column!important;gap:.35em!important;font-size:clamp(1.4rem,2.8vw,3.4rem)!important;color:#fff!important;letter-spacing:.12em!important}
+.sf-ft-bayrak .gx-ulke img{width:clamp(120px,14vw,270px)!important;height:auto!important;aspect-ratio:4/3;border-radius:clamp(10px,1vw,18px)!important;object-fit:cover;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 1.6vh 4vh rgba(0,0,0,.4)!important}
+.sf-yan{grid-area:yan;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.2vh,16px);width:100%}
+.sf-yan>div{display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:clamp(10px,1.6vh,22px) 12px;border-radius:clamp(14px,1.4vw,24px);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sf-yan small{font-size:clamp(.6rem,.9vw,1rem);font-weight:900;letter-spacing:.2em;color:rgba(255,255,255,.72)}
+.sf-yan b{font-weight:900;letter-spacing:.06em;color:#fff;line-height:1.1;text-align:center;font-size:clamp(1.1rem,2.1vw,2.6rem)}
+.sf-yan-al img{width:clamp(64px,8.5vw,150px);height:clamp(64px,8.5vw,150px);border-radius:50%;background:#fff;padding:clamp(6px,.7vw,12px);object-fit:contain;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 1vh 2.6vh rgba(0,0,0,.35);animation:sfFotoIn2 .7s cubic-bezier(.2,.8,.2,1) .15s both}
+.sf-yan-kt b{font-size:clamp(1rem,1.7vw,2.1rem)}
+@media (max-width:700px){.sb-flash-card .sf-header.has-foto.sf-rt3{grid-template-columns:minmax(0,1fr);grid-template-areas:"ft" "tag" "nm" "cl" "rk" "yan"}.sf-yan{flex-direction:row}.sf-yan>div{flex:1}}
+.sb-flash-card .sf-rt3 .sf-club{display:none}
+.sf-ft-al{display:flex!important;flex-direction:column;align-items:center;gap:.6rem;width:auto!important;height:auto!important;aspect-ratio:auto!important;background:none!important;box-shadow:none!important;border-radius:0!important;padding:0!important;animation:sfFotoIn2 .6s cubic-bezier(.2,.8,.2,1) both}
+.sf-ft-al img{width:clamp(110px,12vw,230px);height:clamp(110px,12vw,230px);border-radius:50%;background:#fff;padding:clamp(10px,1vw,18px);object-fit:contain;box-shadow:0 0 0 5px rgba(255,255,255,.4),0 1.6vh 4vh rgba(0,0,0,.4)}
+.sf-ft-al b{font-weight:900;letter-spacing:.16em;color:#fff;font-size:clamp(1rem,1.8vw,2.3rem)}
+.sf-yan-ul .gx-ulke{flex-direction:column!important;gap:.3em!important;font-size:clamp(1.3rem,2.4vw,3rem)!important;color:#fff!important;letter-spacing:.14em!important;font-weight:900!important}
+.sf-yan-ul .gx-ulke img{width:clamp(90px,9vw,180px)!important;height:auto!important;aspect-ratio:4/3;border-radius:clamp(8px,.8vw,14px)!important;object-fit:cover;box-shadow:0 0 0 3px rgba(255,255,255,.85),0 1vh 2.6vh rgba(0,0,0,.35)!important}
+.sf-yan-ul b{font-size:clamp(.95rem,1.5vw,1.9rem)!important;color:rgba(255,255,255,.9)!important;letter-spacing:.1em!important}
+.sb-flash-card .sf-header.has-foto.sf-rt3{grid-template-areas:"ft tag yan" "ft nm yan" "ft rk yan";align-content:center}
+.sb-flash-card .sf-rt3 .sf-sira-badge{margin:.4rem auto 0!important}
+@media (max-width:700px){.sb-flash-card .sf-header.has-foto.sf-rt3{grid-template-areas:"ft" "tag" "nm" "rk" "yan"}}
+.sf-yan{display:grid!important;grid-template-columns:1fr 1fr;align-content:center}
+.sf-yan>.sf-yan-ul{grid-column:1 / -1}
+.sf-yan>.sf-yan-kt:nth-child(2),.sf-yan>.sf-yan-al:last-child{grid-column:1 / -1}
+.sf-yan-al img{width:clamp(48px,5.5vw,100px)!important;height:clamp(48px,5.5vw,100px)!important}
+.sf-yan-al b,.sf-yan-kt b{font-size:clamp(.85rem,1.35vw,1.7rem)!important}
