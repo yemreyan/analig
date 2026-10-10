@@ -86,7 +86,8 @@ r.useEffect(()=>{/* yayın modu: sıralama listesi taşarsa yavaşça aşağı-y
  //      ana panel hedef {kisi,takim,sure,flash,sira,cats,ts} gönderir → ekran yayını kapatmadan uygular, uygulandi=ts yazar.
  const _sidR=r.useRef(null);if(!_sidR.current){try{_sidR.current=sessionStorage.getItem("sb_sid")}catch{}if(!_sidR.current){_sidR.current="e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);try{sessionStorage.setItem("sb_sid",_sidR.current)}catch{}}}
  const _hdTs=r.useRef(0);
- r.useEffect(()=>{if(!O||!v)return;const yol=`${L}/${v}/canliEkranlar/${_sidR.current}`,R0=be(pe,yol);let ad="";try{ad=localStorage.getItem("sb_ekranAd")||""}catch{}_hdTs.current=0;
+ r.useEffect(()=>{if(!O||!v||new URLSearchParams(location.search).get("onizle")==="1")return; // önizleme (Ekran Yönetimi) yayındaki ekranlara yazılmaz
+  const yol=`${L}/${v}/canliEkranlar/${_sidR.current}`,R0=be(pe,yol);let ad="";try{ad=localStorage.getItem("sb_ekranAd")||""}catch{}_hdTs.current=0;
   _upd(R0,{ad:ad||null,basla:Date.now(),ts:Date.now(),url:location.pathname+location.search,cihaz:((navigator.userAgent.match(/\(([^)]+)\)/)||[])[1]||"").slice(0,60),hedef:null,uygulandi:null}).catch(()=>{});
   const hb=setInterval(()=>{_upd(R0,{ts:Date.now()}).catch(()=>{})},15e3);
   const u1=Fe(be(pe,yol+"/hedef"),sn=>{const h=sn.val();if(!h||!h.ts||h.ts===_hdTs.current)return;_hdTs.current=h.ts;if(h.yenile){const _cs=Array.isArray(h.cats)?h.cats:[],_u=location.pathname+"?compId="+encodeURIComponent(v)+(_cs.length?"&catIds="+encodeURIComponent(_cs.join(",")):"")+"&autoLive=1";_upd(R0,{uygulandi:h.ts,hedef:null}).catch(()=>{}).finally(()=>setTimeout(()=>location.replace(_u),300));return}
