@@ -551,3 +551,31 @@ html.rtm-koyu .rtm-card:has(.rtm-card-label) .rtm-card-title{color:color-mix(in 
 
 /* TR/EN (2026-10-09): kullanıcı isteğiyle sağ alt köşede (varsayılan konum) */
 .cl-d-cell input.rtm-hk,.cl-ae-cell input.rtm-hk{cursor:pointer;background:#F8FAFC;border-style:dashed}.cl-d-cell input.rtm-hk:hover,.cl-ae-cell input.rtm-hk:hover{border-color:#1a5fa8;background:#EFF6FF}.cl-d-cell input.rtm-hk--bek,.cl-ae-cell input.rtm-hk--bek{border-color:#F59E0B;background:#FFFBEB;color:#92400E}
+
+/* A / E panel kesintisi satırı (2026-10-10) */
+.rtm-pk-row{border-bottom:1px solid var(--rtm-border,#E5E7EB)}
+.rtm-pk-row--a .rtm-sub-label{color:#4F46E5}.rtm-pk-row--e .rtm-sub-label{color:#16A34A}
+.rtm-pk-val{font-weight:800;font-variant-numeric:tabular-nums;cursor:default;pointer-events:none}
+.rtm-pk-row--a .rtm-pk-val{color:#3730A3;background:#EEF2FF!important;border-color:#C7D2FE!important}
+.rtm-pk-row--e .rtm-pk-val{color:#166534;background:#F0FDF4!important;border-color:#BBF7D0!important}
+.rtm-pk-val--bos{color:#94A3B8!important}
+.rtm-pk-n{margin-left:auto;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:#FFF7ED;color:#C2410C}
+.rtm-pk-n--tam{background:#F1F5F9;color:#475569}
+html.rtm-koyu .rtm-pk-row--a .rtm-pk-val{color:#A5B4FC}html.rtm-koyu .rtm-pk-row--e .rtm-pk-val{color:#86EFAC}
+html.rtm-koyu .rtm-pk-n{background:rgba(255,255,255,.08);color:#FDBA74}html.rtm-koyu .rtm-pk-n--tam{color:#CBD5E1}
+.rtm-pk-ek{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto;min-width:0}
+.rtm-pk-ek .rtm-pk-n{margin-left:0}
+.rtm-pk-ek .rtm-fig-chip,.rtm-pk-ek .rtm-gap-badge,.rtm-pk-ek .rtm-fig-apply{align-self:center;margin:0!important}
+/* Üst satır: kilit + IRM + itiraz + panel geçiş (2026-10-10) */
+.rtm-ust-satir{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.rtm-ust-satir>.rtm-locked-banner{flex:0 1 auto;margin:0}
+.rtm-ust-satir>.rtm-it{flex:1 1 360px;margin:0}
+.rtm-ust-satir>button{margin:0!important;align-self:center}
+.rtm-ust-satir>:not(.rtm-locked-banner):not(.rtm-it):not(button){flex:1 1 100%}
+/* Ceza kartı daraltılabilir */
+.rtm-ceza-ac{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;border:1px solid var(--rtm-border,#E5E7EB);background:#fff;color:#B91C1C;cursor:pointer;padding:0;flex:none}
+.rtm-ceza-ac .material-icons-round{font-size:20px}
+.rtm-ceza--kapali .rtm-card-header{border-bottom:0}
+.rtm-ceza-ozet{padding:8px 16px 10px}.rtm-ceza-ozet:empty{display:none}
+.rtm-ceza-ozet .rtm-sure-t{margin:0}
+html.rtm-koyu .rtm-ceza-ac{background:#161b27;border-color:rgba(255,255,255,.12);color:#f87171}

@@ -122,6 +122,50 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:transparent
 .pod.p2 .md,.pod.p2 .blk{background:#c9d1db}.pod.p2 .blk{height:calc(120*var(--s))}
 .pod.p3 .md,.pod.p3 .blk{background:#d08a4a}.pod.p3 .blk{height:calc(85*var(--s))}
 .pdl{padding:calc(6*var(--s)) 0;border-top:1px solid var(--ln)}
+/* ---------- SPORCU TANITIMI (kontrol: Sporcu Tanıtımı → "yayın overlay'ine de yansıt") ---------- */
+.tn{left:50%;bottom:var(--mm);width:calc(1300*var(--s));transform:translate(-50%,calc(50*var(--s)))}
+.tn.on{transform:translate(-50%,0)}
+.tn.liste,.tn.baslik{top:50%;bottom:auto;transform:translate(-50%,calc(-50% + 40*var(--s)))}.tn.liste.on,.tn.baslik.on{transform:translate(-50%,-50%)}
+.tn.liste{width:calc(980*var(--s))}
+.tnk{position:relative;display:flex;align-items:stretch;background:linear-gradient(120deg,var(--b1),var(--b2));color:var(--tx);border-radius:var(--r);overflow:hidden;border-top:calc(6*var(--s)) solid var(--ac);min-height:calc(300*var(--s))}
+.tnf{position:relative;width:calc(250*var(--s));flex:none;overflow:hidden;background:#0b1020}
+.tnf .f,.tnf video,.tnf iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%;border:0}
+.tnf.sin .sw{position:absolute;inset:0;animation:tnSw 3.6s ease-in-out 1s infinite;transform-origin:50% 92%}
+.tnf.sin .f{animation:tnKen 14s ease-in-out infinite alternate}
+.tnf.sin::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 36%,rgba(255,255,255,.3) 50%,transparent 64%);transform:translateX(-135%);animation:tnPr 5.5s ease-in-out 1.2s infinite}
+@keyframes tnKen{from{transform:scale(1.08)}to{transform:scale(1.2) translate(-2%,-3%)}}
+@keyframes tnSw{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.5deg)}75%{transform:rotate(1.5deg)}}
+@keyframes tnPr{0%{transform:translateX(-135%)}38%,100%{transform:translateX(135%)}}
+.tnel{position:absolute;right:calc(8*var(--s));bottom:calc(10*var(--s));font-size:calc(64*var(--s));line-height:1;transform-origin:70% 85%;animation:tnElG .5s 1s cubic-bezier(.3,1.6,.5,1) both,tnEl 1.9s 1.5s ease-in-out infinite;filter:drop-shadow(0 calc(6*var(--s)) calc(10*var(--s)) rgba(0,0,0,.5));z-index:2}
+@keyframes tnElG{from{transform:scale(0) rotate(-35deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes tnEl{0%,62%,100%{transform:rotate(0)}10%{transform:rotate(18deg)}20%{transform:rotate(-10deg)}30%{transform:rotate(18deg)}40%{transform:rotate(-6deg)}50%{transform:rotate(10deg)}}
+.tnai{position:absolute;top:calc(8*var(--s));left:calc(8*var(--s));font-size:calc(14*var(--s));font-weight:800;letter-spacing:.12em;padding:calc(3*var(--s)) calc(8*var(--s));border-radius:calc(6*var(--s));background:rgba(0,0,0,.55);color:#e9d5ff;z-index:2}
+.tnbg{position:absolute;inset:0;display:flex}
+.tnb{flex:1;min-width:0;padding:calc(24*var(--s)) calc(34*var(--s));display:flex;flex-direction:column;justify-content:center;gap:calc(8*var(--s));position:relative;z-index:1}
+.tnl{display:flex;align-items:center;gap:calc(14*var(--s));font-size:calc(19*var(--s));font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.tnl .cp{background:var(--hl);color:#1f1300;padding:calc(4*var(--s)) calc(12*var(--s));border-radius:99px;letter-spacing:.24em}
+.tnl .sy{color:var(--mu);font-variant-numeric:tabular-nums}
+.tnl .kt{color:var(--hl);overflow:hidden;text-overflow:ellipsis}
+.tna{font-size:calc(34*var(--s));font-weight:600;line-height:1.1;animation:tnUp .7s .25s both}
+.tns{font-size:calc(70*var(--s));font-weight:800;line-height:1;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:tnUp .7s .38s both}
+.tns.u{font-size:calc(54*var(--s))}.tns.cu{font-size:calc(42*var(--s))}
+.tnu{display:flex;align-items:center;gap:calc(16*var(--s));flex-wrap:wrap;margin-top:calc(4*var(--s));animation:tnUp .7s .5s both}
+.tnu b{font-size:calc(32*var(--s));font-weight:800;letter-spacing:.05em}
+.tnu .kl{font-size:calc(22*var(--s));color:var(--mu);font-weight:700}
+.tnu .el{font-size:calc(20*var(--s));font-weight:800;color:var(--hl);border:1px solid var(--chb);background:var(--ch);padding:calc(4*var(--s)) calc(12*var(--s));border-radius:calc(8*var(--s))}
+@keyframes tnUp{from{opacity:0;transform:translateY(calc(16*var(--s)))}to{opacity:1;transform:none}}
+.tnbay{position:relative;display:inline-flex;height:calc(50*var(--s));aspect-ratio:4/3;flex:none;filter:drop-shadow(0 calc(4*var(--s)) calc(8*var(--s)) rgba(0,0,0,.4))}
+.tnbg .tnbay{height:100%;width:100%;aspect-ratio:auto}
+.tnbay i{flex:1;height:100%;background-repeat:no-repeat;animation:tnDl 2.6s ease-in-out infinite;margin-right:-1px}
+@keyframes tnDl{0%,100%{transform:translateY(-3%)}50%{transform:translateY(3%)}}
+.tnn{position:absolute;right:calc(24*var(--s));bottom:calc(-30*var(--s));font-size:calc(200*var(--s));font-weight:800;line-height:1;color:transparent;-webkit-text-stroke:calc(2*var(--s)) var(--ln);pointer-events:none}
+.tnh{padding:calc(36*var(--s)) calc(50*var(--s));text-align:center;display:flex;flex-direction:column;align-items:center;gap:calc(14*var(--s))}
+.tnh .k1{font-size:calc(20*var(--s));font-weight:800;letter-spacing:.5em;color:var(--mu);text-transform:uppercase}
+.tnh .t{font-size:calc(58*var(--s));font-weight:800;line-height:1.05;text-transform:uppercase;color:var(--hl)}
+.tnh .bl{display:flex;gap:calc(18*var(--s));flex-wrap:wrap;justify-content:center;margin-top:calc(6*var(--s))}
+.tnh .bl span{display:flex;flex-direction:column;align-items:center;gap:calc(6*var(--s));font-size:calc(16*var(--s));font-weight:800;letter-spacing:.14em;color:var(--mu);animation:tnUp .5s both}
+.tnh .bl img{height:calc(44*var(--s));aspect-ratio:4/3;object-fit:cover;border-radius:calc(4*var(--s))}
+.tn .rw .ph2{width:calc(44*var(--s));height:calc(44*var(--s));border-radius:50%;object-fit:cover;object-position:50% 20%;flex:none}
 /* köşe logosu */
 .kose{display:flex;gap:calc(12*var(--s));align-items:center;background:rgba(255,255,255,.94);border-radius:calc(12*var(--s));padding:calc(8*var(--s)) calc(14*var(--s));filter:drop-shadow(0 calc(4*var(--s)) calc(12*var(--s)) rgba(0,0,0,.3))}
 .kose img{height:calc(64*var(--s));width:auto;max-width:calc(170*var(--s));object-fit:contain}
@@ -183,6 +227,7 @@ document.getElementById("app").innerHTML=`<div class="stage M" id="st">
  <div class="gfx lb" id="lb"></div>
  <div class="gfx pd" id="pd"></div>
  <div class="gfx sl" id="sl"></div>
+ <div class="gfx tn" id="tn"></div>
  <div class="gfx lt" id="lt"><div class="ft" id="ft"></div><div class="body"><div class="cat" id="cat"></div><div class="name" id="nm"></div><div class="club" id="cl"></div><div class="chips" id="ch"></div></div>
   <div class="score"><div class="slbl" id="sl"></div><div class="stot" id="tot"></div><div class="rank" id="rk"></div></div></div></div>`;
 const $=id=>document.getElementById(id),st=$("st"),lt=$("lt");
@@ -304,8 +349,44 @@ function cizListe(){const e=elle();if(!(e&&e.g==="liste")){$("sl").innerHTML="";
  $("sl").innerHTML=G.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(L().liste)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())))}${sayfa>1?` · ${p+1}/${sayfa}`:""}</div></div></div><div class="rws">${rows}</div></div>`:""}
 function ciz(){cizTablo();cizSirada();cizPodyum();cizListe()}
 
+/* ---------------- SPORCU TANITIMI ----------------
+   <yarışma>/sporcuTanitim (Sporcu Tanıtımı ekranı) — overlay:true iken sporcu kartı / başlık / finalist listesi; açıkken diğer grafikler gizlenir.
+   Klip: criteria/sporcuTanitimMedya/<base>/<yarışma>/<id>/{video|ai}.url — fotoğraf alt bantla aynı önbellekten. */
+var TN={v:!1,k:"",T:null};const TNM={};
+const tnMedya=(id,sl)=>{const k=id+"/"+sl;if(k in TNM)return Promise.resolve(TNM[k]);return Promise.race([get(ref(db,`criteria/sporcuTanitimMedya/${base}/${comp}/${id}/${sl}`)).then(s=>{const v=s.val();TNM[k]=v&&v.url||null;return TNM[k]}),new Promise(r=>setTimeout(()=>r(null),3500))]).catch(()=>null)};
+const tnOynat=u=>{const s=String(u||"");let m;if(/^data:image\//.test(s)||/\.(gif|webp|png|jpe?g)(\?|#|$)/i.test(s))return`<img class="f" src="${esc(s)}" alt="">`;
+ if(m=/^gdrive:(.+)$/.exec(s)||/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{10,})/.exec(s))return`<iframe src="https://drive.google.com/file/d/${esc(m[1])}/preview" allow="autoplay"></iframe>`;
+ if(m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/.exec(s))return`<iframe src="https://www.youtube.com/embed/${esc(m[1])}?autoplay=1&mute=1&loop=1&playlist=${esc(m[1])}&controls=0&modestbranding=1&rel=0&playsinline=1" allow="autoplay"></iframe>`;
+ return`<video src="${esc(s)}" autoplay muted loop playsinline></video>`};
+const tnBay=u=>{const b=u&&V.bayrakUrl(u);if(!b)return"";let s="";for(let i=0;i<24;i++)s+=`<i style="background-image:url(${b});background-size:2400% 100%;background-position:${(i/23*100).toFixed(2)}% 0;animation-delay:${(-(i/24)*2.6).toFixed(2)}s"></i>`;return`<span class="tnbay">${s}</span>`};
+const tnOrd=n=>{const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+function onTanitim(v){const T=v||{},s=T.sahne||"logo",Ls=Array.isArray(T.liste)?T.liste.filter(Boolean):[],it=s==="sporcu"?Ls[T.i]||null:null,mod=T.mod||"sinematik",sl=mod==="ai"?"ai":mod==="video"?"video":null,kv=!!(it&&sl&&(sl==="ai"?it.ma:it.mv));
+ const on=!!T.overlay&&!!((s==="sporcu"&&it)||((s==="baslik"||s==="liste")&&Ls.length));
+ const k=on?[s,it&&it.id,kv?sl:"",T.baslik,Ls.length,T.el,T.eleme,C.dil].join("|"):"";TN.T=T;
+ if(k===TN.k){TN.v=on;tick();return}
+ const tk=TN.k=k,el=$("tn"),gorunur=el.classList.contains("on");if(!on){TN.v=!1;tick();return}
+ const fin=!/^tum\|/.test(T.kaynak||""),lab=EN()?(fin?"Finalist":"Athlete"):(fin?"Finalist":"Sporcu"),labN=EN()?(fin?"Finalists":"Athletes"):(fin?"Finalistler":"Sporcular");
+ const ul=x=>x&&(EN()?x.ue:x.un)||x&&x.ulke||"";
+ const ciz=(foto,klip)=>{if(TN.k!==tk)return;let html="";
+  if(s==="sporcu"){const u=it.ulke,soy=it.tk?it.soy||"":UP(it.soy||"",u),n=soy.length,sin=!klip;
+   const fr=klip?tnOynat(klip):foto?`<div class="sw"><img class="f" src="${esc(foto)}" alt=""></div>`:`<div class="tnbg">${tnBay(u)}</div>`;
+   html=`<div class="tnk"><div class="tnf${sin?" sin":""}">${fr}${klip&&sl==="ai"?'<span class="tnai">AI</span>':""}${sin&&T.el!==!1?'<span class="tnel">👋</span>':""}</div>
+    <div class="tnb"><div class="tnl"><span class="cp">${esc(UP(lab))}</span>${Ls.length>1?`<span class="sy">${(+T.i||0)+1} / ${Ls.length}</span>`:""}${T.baslik?`<span class="kt">${esc(UP(T.baslik))}</span>`:""}</div>
+     ${it.ad?`<div class="tna">${esc(it.ad)}</div>`:""}<div class="tns${n>26?" cu":n>16?" u":""}">${esc(soy||it.ad||"")}</div>
+     <div class="tnu">${u?tnBay(u)+`<b>${esc(UP(ul(it),u))}</b>`:""}${it.kulup&&it.kulup!==u&&it.kulup!==ul(it)?`<span class="kl">${esc(it.kulup)}</span>`:""}${T.eleme!==!1&&it.es?`<span class="el">${esc(EN()?"Qualified "+tnOrd(+it.es):"Elemede "+it.es+".")}${it.ep!=null?" · "+f3(it.ep):""}</span>`:""}</div></div>
+    <div class="tnn">${String(it.no||(+T.i||0)+1).padStart(2,"0")}</div></div>`}
+  else if(s==="baslik"){const us=[...new Set(Ls.map(x=>x.ulke).filter(Boolean))];
+   html=`<div class="pnl"><div class="tnh"><div class="k1">${esc(EN()?"Introducing":"Tanıtım")}</div><div class="t">${esc(UP(T.baslik||""))}</div><div class="k1">${esc(UP(labN))} · ${Ls.length}</div>${us.length?`<div class="bl">${us.map((u,i)=>V.bayrakUrl(u)?`<span style="animation-delay:${(.3+i*.1).toFixed(2)}s"><img src="${V.bayrakUrl(u)}" alt="">${esc(u)}</span>`:"").join("")}</div>`:""}</div></div>`}
+  else{const rows=Ls.slice(0,12).map((x,i)=>{const f=FOTO[base+"/"+comp+"/"+x.id];return`<div class="rw"><span class="rk">${x.no||i+1}</span>${f?`<img class="ph2" src="${esc(f)}" alt="">`:""}<span class="nm"><div class="n1">${x.ulke?fl(x.ulke):""}${esc(UP([x.ad,x.soy].filter(Boolean).join(" "),x.ulke))}</div><div class="n2">${esc(UP(ul(x)||x.kulup||"",x.ulke))}</div></span></div>`}).join("");
+   html=`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(labN)}</div><div class="t2">${esc(UP(T.baslik||""))}</div></div></div><div class="rws">${rows}</div></div>`}
+  const koy=()=>{if(TN.k!==tk)return;el.innerHTML=html;el.className="gfx tn "+s;TN.v=!0;tick()};
+  if(gorunur){TN.v=!1;tick();setTimeout(koy,480)}else koy()};
+ if(s==="sporcu")Promise.all([C.alt.foto===!1?null:fotoAl(it.id),kv?tnMedya(it.id,sl):null]).then(([f,m])=>ciz(f,m));
+ else if(s==="liste")Promise.all(Ls.slice(0,12).map(x=>fotoAl(x.id))).then(()=>ciz());
+ else ciz()}
+
 /* ---------------- GÖRÜNÜRLÜK (400 ms'de bir) ---------------- */
-function tick(){const now=Date.now(),e=elle(),kap=!!P.kapali;
+function tick(){const now=Date.now(),e=elle(),kap0=!!P.kapali,tnV=!kap0&&!!(TN&&TN.v),kap=kap0||tnV;
  {const k0=gKat();if(k0&&tabloAletler(k0)){const s0=tabloSec(k0);if(s0.key!==tbKey)cizTablo()}}
  if(nameUntil&&now>nameUntil&&!ltPuan){ltOn=!1;nameUntil=0}
  const lst=!kap&&!!e&&e.g==="liste"&&$("sl").innerHTML!=="";
@@ -319,7 +400,7 @@ function tick(){const now=Date.now(),e=elle(),kap=!!P.kapali;
  const set=(el,v)=>{if(el.classList.contains("on")!==v)el.classList.toggle("on",v)};
  const lc="gfx lb "+(["sag","sol","orta"].includes(C.tablo.konum)?C.tablo.konum:"sag")+(tab?" on":"");if($("lb").className!==lc)$("lb").className=lc;
  const nc="gfx nx "+(["sag-ust","sol-ust","sag-alt"].includes(C.sirada.konum)?C.sirada.konum:"sag-ust")+(nx?" on":"");if($("nx").className!==nc)$("nx").className=nc;
- set($("pd"),pod);set($("sl"),lst);set(lt,ltV);set($("kose"),!kap&&!!C.logo.kose&&C.logo.kose!=="yok"&&!pod)}
+ set($("pd"),pod);set($("tn"),tnV);set($("sl"),lst);set(lt,ltV);set($("kose"),!kap&&!!C.logo.kose&&C.logo.kose!=="yok"&&!pod)}
 setInterval(tick,400);
 
 /* ---------------- OLAYLAR ---------------- */
@@ -354,7 +435,7 @@ function katGuncelle(){curKat=V.guncelKat({kats:D.kats,aktif:D.aktif,flash:D.fla
 let cekTs=0; // "ekrandan çek": otomatik açılmış grafiği hemen kaldırır (sonraki tetikte yeniden gelir)
 function cekUygula(){const k=P.kontrol;if(!k||k.g!=="cek"||k.ts===cekTs)return;cekTs=k.ts;const h=k.hedef;
  if(h==="tablo")tabloUntil=0;if(h==="podyum"){podyumUntil=0;podBekle=null}if(h==="alt"||h==="sirada"){ltOn=!1;nameUntil=0;scoreUntil=0;ltPuan=!1;lt.classList.remove("puanli")}}
-function profilUygula(p){P=p||{};if(!onizle)cekUygula();if(onizle)P={...P,kontrol:onK,kapali:null};C=birlestir(VARS(),{...P,kontrol:undefined,kapali:undefined});C.kat=Array.isArray(P.kat)?P.kat:[];if(onizle){C.alt={...C.alt,acik:!1};C.tablo={...C.tablo,acik:!1};C.sirada={...C.sirada,acik:!1};C.podyum={...C.podyum,acik:!1}}ayarUygula();katGuncelle();ciz();tick()}
+function profilUygula(p){P=p||{};if(!onizle)cekUygula();if(onizle)P={...P,kontrol:onK,kapali:null};C=birlestir(VARS(),{...P,kontrol:undefined,kapali:undefined});C.kat=Array.isArray(P.kat)?P.kat:[];if(onizle){C.alt={...C.alt,acik:!1};C.tablo={...C.tablo,acik:!1};C.sirada={...C.sirada,acik:!1};C.podyum={...C.podyum,acik:!1}}ayarUygula();katGuncelle();ciz();tick();if(TN&&TN.T)onTanitim(TN.T)}
 if(onizle&&!demo)window.addEventListener("message",ev=>{if(ev.origin!==location.origin)return;const m=ev.data||{};if("gxKontrol" in m){onK=m.gxKontrol||null;P={...P,kontrol:onK};katGuncelle();ciz();tick()}});
 if(!demo&&comp){
  db=getDatabase(initializeApp(firebaseConfig));
@@ -367,6 +448,7 @@ if(!demo&&comp){
  if(brans==="ritmik")onValue(ref(db,`${base}/${comp}/aktifAlet`),s=>{D.aktifAlet=s.val()||{};ciz()});
  onValue(ref(db,`${base}/${comp}/${brans==="artistik"?"aktifSporcuBilgi":"aktifSporcu"}`),s=>onAktif(s.val()));
  onValue(ref(db,`${base}/${comp}/flashTrigger`),s=>onFlash(s.val()));
+ if(brans==="ritmik")onValue(ref(db,`${base}/${comp}/sporcuTanitim`),s=>onTanitim(s.val()));
  if(onizle){profilUygula(P);try{parent!==window&&parent.postMessage({gxOnizleHazir:!0},location.origin)}catch(e){}}
 }
 
