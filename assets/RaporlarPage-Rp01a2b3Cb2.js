@@ -54,7 +54,7 @@ function sonucHesapla(C,opt){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular
  return out}
 
 // Takım sıralaması (Sonuçlar sayfasındaki hesapla aynı)
-function takimHesapla(C,k,intl){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular?.[k]||{},pun=C.puanlar?.[k]||{},al=katAletleri(kats,k),T={},N=String(k).toLowerCase().includes("genc")?3:4;
+function takimHesapla(C,k,intl){const Y=V(),kats=C.kategoriler||{},spor=C.sporcular?.[k]||{},pun=C.puanlar?.[k]||{},al=katAletleri(kats,k),T={},N=intl?1e9:String(k).toLowerCase().includes("genc")?3:4;
  Object.entries(spor).forEach(([id,a])=>{if(!a||typeof a!=="object")return;const ok=intl?(takimAdi(a,C)||String(a.okul||a.kulup||"")):String(a.okul||a.kulup||""),il=intl?"":String(a.il||"");if(!ok.trim())return;
   const key=ok.trim().toLocaleUpperCase("tr-TR")+"|"+il.toLocaleUpperCase("tr-TR"),t=T[key]||(T[key]={ad:ok.trim(),il,ulke:intl?(sporcuUlke(a,C)||ok.trim()):(a.ulke||""),kulup:ok.trim(),uyeler:[]});
   const m={ad:[a.ad,a.soyad].filter(Boolean).join(" "),total:0,ap:{}};al.forEach(x=>{const z=Y.sonuc("ritmik",kats[k],pun[id],x);const v=z&&!z.yalnizIrm?num(z.total):0;m.ap[x]=v;m.total+=v});t.uyeler.push(m)});
@@ -957,4 +957,4 @@ function Raporlar(){
    e.jsxs("div",{style:{flex:1,minWidth:0},children:[e.jsx("div",{style:{fontWeight:900,fontSize:"1.1rem",lineHeight:1.15},children:__T("Raporlar")}),
     e.jsx("div",{style:{fontSize:".78rem",color:"#64748B",fontWeight:700},children:__T(BRAD)+" · "+__T("yarışma seçin, raporu oluşturun, PDF / Excel indirin")})]})]}),
   e.jsxs("div",{className:"rp-in",style:S.in,children:[sol,e.jsxs("div",{style:{minWidth:0},children:[katalog,secenek,yuk?e.jsx("div",{style:{...S.card,color:"#64748B",fontWeight:700},children:__T("Yükleniyor…")}):onizleme]})]})]})}
-export{Raporlar as default};
+export{Raporlar as default,finalAdayHesapla};

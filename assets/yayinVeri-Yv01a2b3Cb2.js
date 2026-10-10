@@ -103,7 +103,7 @@ function takimAdi(a,intl){if(!intl)return String(a.okul||a.kulup||"").trim();var
  var h=String(a.takim||"").trim()||((String(a.kulup||a.okul||"").match(/\b(team|tak[ıi]m)\s*\d+\b/i)||[])[0]||"");if(!h)return u;var n=(h.match(/\d+/)||[""])[0];return n?u+" Team "+n:u+" "+h}
 // o.hepsi (seyirci sitesi, 2026-10-09): takım olarak kayıtlı TÜM takımlar (puanı olmasa da); uluslararasıda "Team N"/takim alanı olmayan sporcu (ör. tek sporcu ALB) takım sayılmaz,
 //  ulusalda kategoride yarismaTuru "takim" işaretli sporcu varsa yalnız onlar.
-function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletler)?kd.aletler:[],N=/genc/i.test(String(o.kat))?3:4,T={},ded={};
+function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletler)?kd.aletler:[],N=o.intl?1e9:/genc/i.test(String(o.kat))?3:4,T={},ded={};
  var tkmMi=function(a){return /tak[ıi]m|team/i.test(String(a.yarismaTuru||a.katilimTuru||""))},isaretli=o.hepsi&&!o.intl&&Object.keys(o.spor||{}).some(function(id){return obj(o.spor[id])&&tkmMi(o.spor[id])});
  Object.keys(o.spor||{}).forEach(function(id){var a=o.spor[id];if(!obj(a))return;var ad=takimAdi(a,o.intl);if(!ad)return;
   if(o.hepsi&&o.intl&&!(String(a.takim||"").trim()||/\b(team|tak[ıi]m)\s*\d+\b/i.test(String(a.kulup||a.okul||""))))return;if(isaretli&&!tkmMi(a))return;
