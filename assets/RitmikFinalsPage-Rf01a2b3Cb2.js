@@ -51,7 +51,8 @@ function RitmikFinals(){
   _zT.current=setTimeout(()=>{update(ref(db,BASE+"/"+c2),{finalCikisSablonu:sbFb(tmpl),finalAyar:A}).then(()=>setKayit("kaydedildi")).catch(()=>setKayit("hata"))},700)},[tmpl,sel,birim,limit,useAA,fill]);
 
  const C=comps[comp]||{},cats=C.kategoriler||{},spor=C.sporcular||{},pun=C.puanlar||{},INTLc=isIntl(C);
- const realCats=Object.keys(cats).filter(c=>!isFinal(c)).sort((a,b)=>String(cfg(a).group||"").localeCompare(String(cfg(b).group||""),"tr")||String(cats[a]?.name||a).localeCompare(String(cats[b]?.name||b),"tr"));
+ const _yasI=c=>{const k=String(c).replace(/^final_/,""),n=String(cats[c]?.name||cfg(c).group||"").toLocaleLowerCase("tr-TR"),L=[["minik","minik"],["kucuk","küçük"],["yildiz","yıldız"],["genc","genç"],["buyuk","büyük"]];for(let i=0;i<L.length;i++)if(k.startsWith(L[i][0])||n.includes(L[i][1]))return i;return 9};
+ const realCats=Object.keys(cats).filter(c=>!isFinal(c)).sort((a,b)=>(_yasI(a)-_yasI(b))||String(cfg(a).group||"").localeCompare(String(cfg(b).group||""),"tr")||String(cats[a]?.name||a).localeCompare(String(cats[b]?.name||b),"tr")); // yaş sırası: Minik/Küçük → Yıldız → Genç → Büyük
  const finalCats=Object.keys(cats).filter(isFinal);
  const catLabel=c=>cats[c]?.name||cfg(c).label||c;
  const aletsOf=c=>{const a=cats[c]?.aletler;if(Array.isArray(a)&&a.length)return a.map(x=>typeof x=="object"?x.id||x.value:x);if(a&&typeof a=="object")return Object.keys(a);return cfg(c).aletler||[]};
@@ -91,8 +92,11 @@ function RitmikFinals(){
  const usedVals=Array.from({length:TOP},(_,i)=>tmplCs(i+1));
  const dupWarn=new Set(usedVals).size!==usedVals.length;
  // plan: çıkış sırasına dizili satırlar
- const plan=(cat,alet)=>{const{list,excluded,b}=rank(cat,alet);const rows=list.map((row,ix)=>({row,rank:ix+1,cs:csOf(b,ix+1),reserve:ix+1>b.n,yed:ix+1>b.n?"R"+(ix+1-b.n):null}))
-   .sort((x,y)=>(x.reserve?1e3+x.rank:x.cs)-(y.reserve?1e3+y.rank:y.cs));const csl=rows.filter(x=>!x.reserve).map(x=>x.cs);return{rows,excluded,b,dup:new Set(csl).size!==csl.length}};
+ // 2026-10-10: finalist sayısı ayarlanan n'den azsa (ör. 8 yerine 6) ters/elle/şablon sıra 3..8 gibi numara veriyordu → çıkış no'ları sırayı koruyarak 1..m'ye sıkıştırılır
+ const plan=(cat,alet)=>{const{list,excluded,b}=rank(cat,alet);const rows=list.map((row,ix)=>({row,rank:ix+1,cs:csOf(b,ix+1),reserve:ix+1>b.n,yed:ix+1>b.n?"R"+(ix+1-b.n):null}));
+   const csl=rows.filter(x=>!x.reserve).map(x=>x.cs),dup=new Set(csl).size!==csl.length;
+   rows.filter(x=>!x.reserve).sort((x,y)=>(x.cs-y.cs)||(x.rank-y.rank)).forEach((x,i)=>{x.cs=i+1});
+   rows.sort((x,y)=>(x.reserve?1e3+x.rank:x.cs)-(y.reserve?1e3+y.rank:y.cs));return{rows,excluded,b,dup}};
 
  const isSel=(cat,alet)=>sel[key(cat,alet)]!==!1;
  const toggle=(cat,alet)=>setSel(o=>({...o,[key(cat,alet)]:!isSel(cat,alet)}));
@@ -148,7 +152,7 @@ function RitmikFinals(){
  // Oluşturulmuş finalde kayıtlı sıra, oluşturulmamışsa ekrandaki plan kullanılır.
  const pdfVeri=(cat,alet)=>{const fc=alet===AA?"final_"+cat:"final_"+cat+"__"+alet,fs=spor[fc];
   if(cats[fc]&&fs&&!isGrp(cat)){const rows=Object.entries(fs).filter(([,m])=>m&&typeof m==="object").map(([id,m])=>({no:m._yedek||String(m.cikisSirasi||""),yedek:!!m._yedek,rank:m._finalRank,ad:m.ad||"",soyad:m.soyad||"",kulup:m.kulup||m.okul||"",ulke:m.ulke||"",bib:m.bib,score:alet===AA?num(pun[cat]?.[id]?.sonuc):num(pun[cat]?.[id]?.[alet]?.sonuc),s:m.cikisSirasi||0}))
-    .sort((a,b)=>(a.yedek?1e3+a.rank:a.s)-(b.yedek?1e3+b.rank:b.s));return{rows,olustu:!0}}
+    .sort((a,b)=>(a.yedek?1e3+a.rank:a.s)-(b.yedek?1e3+b.rank:b.s));{let i=0;rows.forEach(r=>{if(!r.yedek)r.no=String(++i)})}return{rows,olustu:!0}}
   const{rows}=plan(cat,alet),P=partOf(cat);
   return{rows:rows.map(it=>{const m=P[it.row.id]||{};return{no:it.reserve?it.yed:String(it.cs),yedek:it.reserve,rank:it.rank,ad:m.isTeam?m.ad:m.ad||"",soyad:m.isTeam?"":m.soyad||"",kulup:m.kulup||m.okul||it.row.club||"",ulke:m.ulke||"",bib:m.bib,score:it.row.score}}),olustu:!1}};
  const pdfAl=async()=>{if(pdfBusy||!comp)return;const U=units.filter(([c,a])=>isSel(c,a)&&pdfVeri(c,a).rows.length);if(!U.length){toast(__T("PDF için seçili ve sporcusu olan final yok."),"warning");return}
@@ -196,12 +200,12 @@ function RitmikFinals(){
      if(!olustu){const t=L("ÖNİZLEME — final henüz oluşturulmadı","PREVIEW — final not created yet");d.setFont(FT,"bold");d.setFontSize(6.8);const w=d.getTextWidth(t)+5;d.setFillColor(254,243,199);d.roundedRect(W-M-w-2,y+1,w,4.6,1.2,1.2,"F");d.setTextColor(180,83,9);d.text(t,W-M-2-w/2,y+4.3,{align:"center"})}
      y+=8.5;
      const HB=rows.some(r=>r.bib!=null&&r.bib!=="");
-     const kolon=[L("ÇIKIŞ","START"),L("SPORCU","GYMNAST"),INTL?L("ÜLKE","NOC"):L("KULÜP","CLUB"),...(INTL?[L("TAKIM","TEAM")]:[]),...(HB?["BIB"]:[]),L("ELEME SIRASI","QUAL. RANK"),L("ELEME PUANI","QUAL. SCORE")];
-     const ulkeCol=2,qr=kolon.length-2,qs=kolon.length-1;
-     const ciz=(L0,yedekMi)=>{at(d,{startY:y,margin:{left:M,right:M,top:18,bottom:12},head:[kolon],body:L0.map(r=>[yedekMi?r.no:String(r.no),[UP(r.soyad),r.ad].filter(Boolean).join(" "),INTL?(r.ulke||""):UP(r.kulup),...(INTL?[r.kulup||""]:[]),...(HB?[r.bib!=null?String(r.bib):""]:[]),r.rank?String(r.rank)+".":"",f3(r.score)]),theme:"plain",
+     const kolon=[L("ÇIKIŞ","START"),L("SPORCU","GYMNAST"),INTL?L("ÜLKE","NOC"):L("KULÜP","CLUB"),...(INTL?[L("TAKIM","TEAM")]:[]),...(HB?["BIB"]:[])];
+     const ulkeCol=2,qr=-1,qs=-1;
+     const ciz=(L0,yedekMi)=>{at(d,{startY:y,margin:{left:M,right:M,top:18,bottom:12},head:[kolon],body:L0.map(r=>[yedekMi?r.no:String(r.no),[UP(r.soyad),r.ad].filter(Boolean).join(" "),INTL?(r.ulke||""):UP(r.kulup),...(INTL?[r.kulup||""]:[]),...(HB?[r.bib!=null?String(r.bib):""]:[])]),theme:"plain",
        styles:{font:FT,fontSize:8.6,cellPadding:{top:2,bottom:2,left:2,right:2},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25},valign:"middle",minCellHeight:7},
        headStyles:{fontStyle:"bold",fontSize:6.8,textColor:MUT,fillColor:[255,255,255],lineWidth:{bottom:.4},lineColor:[226,232,240],minCellHeight:5},
-       columnStyles:{0:{cellWidth:15,halign:"center",fontStyle:"bold"},1:{fontStyle:"bold"},[ulkeCol]:INTL?{cellWidth:22,cellPadding:{top:2,bottom:2,left:8.5,right:1}}:{cellWidth:56},[qr]:{cellWidth:22,halign:"center"},[qs]:{cellWidth:24,halign:"right",fontStyle:"bold"}},
+       columnStyles:{0:{cellWidth:15,halign:"center",fontStyle:"bold"},1:{fontStyle:"bold"},[ulkeCol]:INTL?{cellWidth:22,cellPadding:{top:2,bottom:2,left:8.5,right:1}}:{cellWidth:56}},
        didParseCell:z=>{if(z.section!=="body")return;const r=L0[z.row.index];if(yedekMi){z.cell.styles.textColor=[107,33,168];z.cell.styles.fillColor=[250,245,255]}else if(z.row.index%2)z.cell.styles.fillColor=[250,250,253];
         if(z.column.index===0)z.cell.text=[""];if(z.column.index===qr&&r&&r.rank>=1&&r.rank<=3&&!yedekMi){z.cell.styles.textColor=MED[r.rank-1];z.cell.styles.fontStyle="bold"}},
        didDrawCell:z=>{if(z.section!=="body")return;const r=L0[z.row.index];if(!r)return;
