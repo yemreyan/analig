@@ -17,7 +17,7 @@ const KISA_EN={serbest:"WA",ip:"Rope",cember:"Hoop",top:"Ball",labut:"Clubs",kur
 export async function sonucKitapcigiPdf({base,compId,toast}){
  const Y=V();if(!Y)throw new Error("yayinVeri yüklenmedi");
  const al=async p=>(await get(ref(db,`${base}/${compId}/${p}`))).val();
- const [C,kats,sporAll,puanAll,tded,fAyar]=await Promise.all([get(ref(db,`${base}/${compId}`)).then(s=>{const v=s.val()||{};return{isim:v.isim,il:v.il,baslangicTarihi:v.baslangicTarihi,bitisTarihi:v.bitisTarihi,etkinlikLogo:v.etkinlikLogo,ciktiDili:v.ciktiDili,tur:v.tur,uluslararasi:v.uluslararasi}}),al("kategoriler"),al("sporcular"),al("puanlar"),al("teamDeductions"),al("finalAyar")]);
+ const [C,kats,sporAll,puanAll,tded,fAyar]=await Promise.all([get(ref(db,`${base}/${compId}`)).then(s=>{const v=s.val()||{};return{isim:v.isim,il:v.il,baslangicTarihi:v.baslangicTarihi,bitisTarihi:v.bitisTarihi,etkinlikLogo:v.etkinlikLogo,ciktiDili:v.ciktiDili,tur:v.tur,uluslararasi:v.uluslararasi,countryTeam:v.countryTeam,countryTeamGizle:v.countryTeamGizle}}),al("kategoriler"),al("sporcular"),al("puanlar"),al("teamDeductions"),al("finalAyar")]);
  const K=kats||{},INTL=isIntl(C)||C.uluslararasi===!0,EN=C.ciktiDili==="en"||(INTL&&C.ciktiDili!=="tr");
  const L=(tr,en)=>EN?en:tr,UPx=t=>String(t||"").toLocaleUpperCase(EN?"en":"tr-TR");
  const yas=k=>{const i=SIRA.findIndex(x=>String(k).replace(/^final_/,"").startsWith(x));return i<0?9:i};
@@ -95,6 +95,16 @@ export async function sonucKitapcigiPdf({base,compId,toast}){
    tablo(head,rows.map(r=>{const g=r.giris,s=r.s,irm=s.yalnizIrm;return[String(r.sira||"–"),g.ad,INTL?nocCell(g.ulke):UPx(g.kulup),irm?"":f3(s.db),irm?"":(a==="serbest"?"—":f3(s.da)),irm?"":f3(s.a),irm?"":f3(s.e),s.pen?"-"+f3(s.pen):"",irm?(s.irm||""):f3(s.total),QS.has(String(g.key))?"Q":""]}),
     {rk:i=>rows[i]?.sira,flagCol:INTL?2:null,flag:i=>rows[i]?.giris?.ulke,cols:{0:{cellWidth:10,halign:"center",fontStyle:"bold"},1:{fontStyle:"bold"},2:NOCW,3:{halign:"right",cellWidth:14},4:{halign:"right",cellWidth:14},5:{halign:"right",cellWidth:14},6:{halign:"right",cellWidth:14},7:{halign:"right",cellWidth:13,textColor:[220,38,38]},8:{halign:"right",fontStyle:"bold",cellWidth:18},9:{halign:"center",fontStyle:"bold",cellWidth:8,textColor:P1}}})}
  }
+ // COUNTRY TEAM (2026-10-10): yarışmada açıksa (countryTeam) kitapçığın sonunda — Finaller › Country Team ile aynı hesap (yayinVeri.countryTeam).
+ //  Sıralamaya yalnız her kategoride takımı olan ülkeler girer; eksikler "–" ile en altta (countryTeamGizle → hiç yazılmaz) ve dipnotta eksik kategorileri.
+ if(C.countryTeam===!0&&INTL&&Y.countryTeam){const R=Y.countryTeam({kats:K,spor:sporAll||{},puan:puanAll||{},kesintiler:tded||{}}),RW=R.rows.filter(r=>C.countryTeamGizle!==!0||r.tam);
+  if(R.kol.length&&RW.length){const kA=k=>EN&&katEN?katEN(katAd(k)):katAd(k);katBas="COUNTRY TEAM";yeniSayfa();katBand("COUNTRY TEAM");
+   bolum(L("HER KATEGORİDE EN İYİ TAKIMIN PUANI","BEST TEAM SCORE IN EACH CATEGORY"),null,RW.filter(r=>r.tam).length+" "+L("ülke","countries"));
+   const nk=R.kol.length,cw=Math.min(30,Math.max(20,(W-2*M-11-30-21)/nk)),head=[L("SIRA","RK"),L("ÜLKE","NOC"),...R.kol.map(x=>UPx(kA(x.k))),L("TOPLAM","TOTAL")];
+   tablo(head,RW.map(r=>[r.rank?String(r.rank):"–",r.kod,...R.kol.map(x=>{const v=r.k[x.k];return v?f3(v.s)+"\n"+v.t:"—"}),f3(r.top)]),
+    {fs:8.6,flagCol:1,flag:i=>RW[i]?.kod,cols:{0:{cellWidth:11,halign:"center",fontStyle:"bold"},1:{cellWidth:30,fontStyle:"bold",cellPadding:{top:1.6,bottom:1.6,left:7.2,right:1}},...Object.fromEntries(R.kol.map((x,i)=>[2+i,{halign:"center",cellWidth:cw}])),[2+nk]:{halign:"right",fontStyle:"bold",cellWidth:21}},
+     parse:z=>{const r=RW[z.row.index];if(r&&!r.tam){z.cell.styles.textColor=[148,163,184]}if(z.column.index>=2&&z.column.index<2+nk&&String(z.cell.raw||"").includes("\n"))z.cell.styles.fontSize=7.4}});
+   const ek=RW.filter(r=>!r.tam);if(ek.length){if(y>H-30)yeniSayfa();d.setFont(FT,"normal");d.setFontSize(7.6);d.setTextColor(...MUT);const ln=d.splitTextToSize(L("– Sıralamaya girmez (her kategoride takımı yok): ","– Not ranked (no team in every category): ")+ek.map(r=>r.kod+" ("+L("eksik: ","missing: ")+r.eksik.map(kA).join(", ")+")").join(" · "),W-2*M);d.text(ln,M,y);y+=ln.length*3.6+4}}}
  const n=d.getNumberOfPages();for(let i=1;i<=n;i++){d.setPage(i);serit(H-1.6,1.6);d.setFont(FT,"normal");d.setFontSize(7);d.setTextColor(...MUT);
   d.text(L("Gymexa Score · Türkiye Cimnastik Federasyonu","Gymexa Score · Turkish Gymnastics Federation"),M,H-5);d.text(new Date().toLocaleString(EN?"en-GB":"tr-TR",{dateStyle:"short",timeStyle:"short"})+"   "+i+" / "+n,W-M,H-5,{align:"right"})}
  const dosya=(L("Sonuc_Kitapcigi_","Results_Book_")+String(ad1).replace(/[^\p{L}\p{N}]+/gu,"_")).replace(/_+$/,"").slice(0,90)+".pdf";

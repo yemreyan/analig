@@ -118,6 +118,18 @@ function takimlar(o){var kd=o.kats&&o.kats[o.kat]||{},al=Array.isArray(kd.aletle
  rows.forEach(function(r,i){r.sira=i&&Math.round(rows[i-1].total*1e3)===Math.round(r.total*1e3)?rows[i-1].sira:i+1});
  return rows}
 
+// Country Team (2026-10-10, uluslararası): her ülkenin her kategorideki EN İYİ takımının net puanı toplanır (takimlar ile aynı hesap, takım cezası düşülmüş).
+//  Tam sayılmak için ülkenin HER kategoride (puanı olan takım sıralaması olan kategoriler) puanlı takımı olmalı; eksik ülkeler sıralamaya girmez (rank null), listenin sonunda.
+//  Dönüş: {kol:[{k}], rows:[{kod, k:{<kat>:{s,t}}, top, n, tam, eksik:[kat], rank}]}
+function countryTeam(o){var K=o.kats||{},SA=o.spor||{},PA=o.puan||{},kol=[],U={},SR=["kucuk","minik","yildiz","genc","buyuk"],yas=function(k){for(var i=0;i<SR.length;i++)if(String(k).indexOf(SR[i])===0)return i;return 9};
+ Object.keys(K).filter(function(k){var z=K[k];return obj(z)&&!isFinal(K,k)&&!(/grup/.test(k)||z.tip==="grup"||z.tip==="takim"||z.grupMu===true)}).sort(function(a,b){return yas(a)-yas(b)||String(a).localeCompare(String(b))}).forEach(function(k){
+  var T=takimlar({kats:K,kat:k,spor:SA[k]||{},puan:PA[k]||{},intl:true,kesintiler:o.kesintiler,hepsi:true}).filter(function(t){return t.total>0&&t.ulke});if(!T.length)return;
+  kol.push({k:k});T.forEach(function(t){var c=U[t.ulke]||(U[t.ulke]={kod:t.ulke,k:{}}),p=c.k[k];if(!p||t.total>p.s)c.k[k]={s:t.total,t:t.ad}})});
+ var rows=Object.keys(U).map(function(u){var c=U[u],eks=[],top=0;kol.forEach(function(x){var v=c.k[x.k];if(!v)eks.push(x.k);else top+=v.s});return{kod:u,k:c.k,top:r3(top),n:Object.keys(c.k).length,tam:!eks.length,eksik:eks}});
+ rows.sort(function(a,b){return (b.tam-a.tam)||(b.top-a.top)||(b.n-a.n)||String(a.kod).localeCompare(String(b.kod))});
+ var pv=null,rk=0,i=0;rows.forEach(function(r){if(!r.tam){r.rank=null;return}i++;if(r.top!==pv)rk=i;pv=r.top;r.rank=rk});
+ return{kol:kol,rows:rows}}
+
 // Sıradaki sporcular: çıkış sırasına göre, çağrılan sporcudan sonra, henüz puanı olmayanlar
 function siradakiler(o){if(o.brans==="artistik"){var sp={};Object.keys(o.spor||{}).forEach(function(k){var a=o.spor[k];sp[k]=obj(a)?Object.assign({},a,{yarismaTuru:"ferdi",grupNo:null}):a});o=Object.assign({},o,{puan:artAletMi(o.puan)?artPivot(o.puan):o.puan,spor:sp})}var brans=o.brans,kd=o.kats&&o.kats[o.kat],G=girisler(o.kat,o.spor,o.puan),al=o.alet||null;
  var bitti=function(g){var p=(o.puan||{})[g.key];if(brans==="ritmik"||brans==="artistik"){if(obj(p)&&Object.keys(p).some(function(k){return obj(p[k])&&p[k].yayinBekliyor}))return true;if(!al)return !!(sonuc(brans,kd,p)||{}).tamam;var x=p&&p[al];return obj(x)&&(x.durum==="tamamlandi"||x.kilitli===true||x.durum==="yarishmadi"||!!x.irm)}return !!sonuc(brans,kd,p)};
@@ -164,6 +176,6 @@ function csv(rows){rows=(rows||[]).filter(obj);if(!rows.length)return "";var col
  return cols.join(",")+"\n"+rows.map(function(r){return cols.map(function(c){return q(r[c])}).join(",")}).join("\n")+"\n"}
 
 var X={BRANS:BRANS,ALET:ALET,ALET_EN:ALET_EN,bayrakUrl:bayrakUrl,katEN:katEN,katAd:katAd,aletAd:aletAd,katUygun:katUygun,isFinal:isFinal,aktifListe:aktifListe,guncelKat:guncelKat,
- girisler:girisler,sonuc:sonuc,artPivot:artPivot,artGor:artGor,siralama:siralama,siradakiler:siradakiler,takimlar:takimlar,takimAdi:takimAdi,bayrakUrl:bayrakUrl,satir:satir,paket:paket,xml:xml,csv:csv,f3:f3,num:num,anahtar:anahtar};
+ girisler:girisler,sonuc:sonuc,artPivot:artPivot,artGor:artGor,siralama:siralama,siradakiler:siradakiler,takimlar:takimlar,countryTeam:countryTeam,takimAdi:takimAdi,bayrakUrl:bayrakUrl,satir:satir,paket:paket,xml:xml,csv:csv,f3:f3,num:num,anahtar:anahtar};
 if(typeof module!=="undefined"&&module.exports)module.exports=X;else (typeof self!=="undefined"?self:this).GXYV=X;
 })();
