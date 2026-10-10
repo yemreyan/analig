@@ -63,6 +63,11 @@ const CSS=`.gxb{position:fixed;inset:0;overflow:hidden;background:radial-gradien
 .gxb-madalya.m2{--m1:#F8FAFC;--m2:#94A3B8;--m3:#475569;--gl:rgba(226,232,240,.28)}
 .gxb-madalya.m3{--m1:#FED7AA;--m2:#C2410C;--m3:#7C2D12;--gl:rgba(251,146,60,.28)}
 @keyframes gxbBelir{from{opacity:0;transform:translateX(-50%) scale(.6)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.gxb-tuval{position:absolute;left:0;top:-10%;width:100%;height:120%;display:block}
+.gxb-tek{position:relative;width:min(74vw,calc(62vh*4/3));aspect-ratio:4/3;margin-left:2.4vw;filter:drop-shadow(0 4vh 5vh rgba(0,0,0,.55))}
+.gxb-tek-direk{position:absolute;left:-1.25vw;top:-5vh;width:1vw;min-width:8px;height:calc(100% + 70vh);border-radius:6px 6px 0 0;background:linear-gradient(90deg,#4B5563,#F3F4F6 35%,#D1D5DB 55%,#374151);box-shadow:0 0 22px rgba(0,0,0,.6)}
+.gxb-tek-direk::before{content:"";position:absolute;left:50%;top:0;width:2.3vw;min-width:16px;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-72%);background:radial-gradient(circle at 35% 30%,#FFF7E0,#F5D27A 40%,#B7791F 85%);box-shadow:0 0 18px rgba(245,210,122,.55)}
+.gxb-tek-isik{position:absolute;left:50%;top:50%;width:150%;height:160%;transform:translate(-50%,-50%);background:radial-gradient(ellipse 50% 45% at 50% 45%,rgba(167,139,250,.22),transparent 70%);z-index:-1;pointer-events:none}
 .gxb-kapali{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .8s ease;z-index:5}
 .gxb-kapali.on{opacity:1}
 .gxb-tam{z-index:6;position:absolute;right:20px;bottom:20px;display:flex;gap:8px;opacity:0;transition:opacity .3s}
@@ -71,6 +76,28 @@ const CSS=`.gxb{position:fixed;inset:0;overflow:hidden;background:radial-gradien
 `;
 
 function useComp(base,comp){const[C,setC]=R.useState(null);R.useEffect(()=>{setC(null);if(!base||!comp)return;const st={},u=["isim","etkinlikLogo","ciktiDili","uluslararasi","tur","bayrakEkrani","kategoriler"].map(k=>onValue(ref(db,`${base}/${comp}/${k}`),s=>{st[k]=s.val();setC({...st})}));return()=>u.forEach(f=>f())},[base,comp]);return C}
+
+// DALGALANAN BAYRAK (2026-10-10): şeritli CSS yerine tek parça kumaş — tuvalde sütun sütun çizilir; direk tarafı sabit, dalga uca doğru büyür,
+//  iki katmanlı rüzgâr, kıvrımlarda ışık/gölge (eğim), direk dibinde kumaş gölgesi; ilk açılışta direkten açılır. SVG bir kez 1280×960 tampona basılır.
+const BTAMP={};
+const bayrakTampon=u=>BTAMP[u]||(BTAMP[u]=new Promise(ok=>{const b=bayrakUrl(u);if(!b)return ok(null);const im=new Image;im.onload=()=>{try{const c=document.createElement("canvas");c.width=1280;c.height=960;c.getContext("2d").drawImage(im,0,0,1280,960);ok(c)}catch{ok(null)}};im.onerror=()=>{delete BTAMP[u];ok(null)};im.src=b}));
+function DalgaBayrak({u,k,acil}){const cv=R.useRef(null);
+ R.useEffect(()=>{const c=cv.current;if(!c||!u)return;let raf=0,src=null,W=0,H=0,dpr=1,canli=!0;bayrakTampon(u).then(t=>{canli&&(src=t)});
+  const boyut=()=>{const r=c.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);W=Math.max(2,Math.round(r.width*dpr));H=Math.max(2,Math.round(r.height*dpr));c.width=W;c.height=H};boyut();const ro=new ResizeObserver(boyut);ro.observe(c);
+  const az=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches,t0=performance.now(),ofs=(k||0)*.9;
+  const ciz=now=>{raf=requestAnimationFrame(ciz);if(!src||!W)return;const x=c.getContext("2d"),ts=(now-t0)/1e3,t=az?0:ts+ofs,ac=acil===!1?1:Math.min(1,ts/1.6),ea=1-Math.pow(1-ac,3);
+   const pad=H*(.1/1.2),fh=H-2*pad,fw=W*(.22+.78*ea),N=Math.max(24,Math.ceil(W/(3*dpr))),sw=fw/N,amp=fh*(.05+.06*(1-ea)),Y=new Array(N+1),S=new Array(N+1),L=new Array(N+1);
+   for(let i=0;i<=N;i++){const p=i/N,e=Math.pow(p,.8),a=p*Math.PI*2*1.1-t*2.4,b=p*Math.PI*2*2.6-t*3.7+1.3,g=p*Math.PI*2*.45-t*.9;
+    Y[i]=(Math.sin(a)+Math.sin(b)*.3+Math.sin(g)*.35)*amp*e;S[i]=1-.045*e*(1+Math.cos(a));L[i]=(Math.cos(a)+Math.cos(b)*.35+Math.cos(g)*.2)*e}
+   x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,W,H);x.globalCompositeOperation="source-over";x.imageSmoothingQuality="high";
+   for(let i=0;i<N;i++){const h=fh*S[i],y=pad+Y[i]+(fh-h)/2;x.drawImage(src,1280*i/N,0,1280/N+.5,960,i*sw,y,sw+.8,h)}
+   x.globalCompositeOperation="source-atop";
+   {const gA=x.createLinearGradient(0,0,fw,0),gK=x.createLinearGradient(0,0,fw,0),M=Math.min(N,96);for(let j=0;j<=M;j++){const i=Math.round(j/M*N),v=L[i],a=Math.min(.42,Math.abs(v)*.32),p=j/M;gA.addColorStop(p,"rgba(255,255,255,"+(v>0?a*.75:0).toFixed(3)+")");gK.addColorStop(p,"rgba(0,0,0,"+(v<0?a:0).toFixed(3)+")")}x.fillStyle=gA;x.fillRect(0,0,fw+1,H);x.fillStyle=gK;x.fillRect(0,0,fw+1,H)}
+   let g=x.createLinearGradient(0,0,fw*.07,0);g.addColorStop(0,"rgba(0,0,0,.32)");g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.fillRect(0,0,fw*.07,H);
+   g=x.createLinearGradient(0,pad,0,H-pad);g.addColorStop(0,"rgba(255,255,255,.12)");g.addColorStop(.45,"rgba(255,255,255,0)");g.addColorStop(1,"rgba(0,0,0,.16)");x.fillStyle=g;x.fillRect(0,0,W,H);
+   x.globalCompositeOperation="source-over"};
+  raf=requestAnimationFrame(ciz);return()=>{canli=!1;cancelAnimationFrame(raf);ro.disconnect()}},[u,k,acil]);
+ return e.jsx("canvas",{ref:cv,className:"gxb-tuval","aria-label":u})}
 
 // ---- PROJEKSİYON EKRANI ----
 export function BayrakEkran(){
@@ -84,7 +111,7 @@ export function BayrakEkran(){
  const[gos,setGos]=R.useState(null);R.useEffect(()=>{if((gos?JSON.stringify(gos):"")===hk)return;setGos(null);if(!hedef)return;const t=setTimeout(()=>setGos(hedef),gos?500:60);return()=>clearTimeout(t)},[hk]);
  const tam=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch{}};
  const evL=C&&C.etkinlikLogo||null,tek=gos&&gos.t==="tek"?gos.u:null,bf=tek?bayrakUrl(tek):null;
- const Bayrak=(u,k)=>{const b=u?bayrakUrl(u):null;return b?e.jsxs("div",{className:"gxb-bayrak",children:[...[...Array(SERIT)].map((_,i)=>e.jsx("i",{style:{backgroundImage:`url(${b})`,backgroundSize:`${SERIT*100}% 100%`,backgroundPosition:`${i/(SERIT-1)*100}% 0`,animationDelay:`${-(i/SERIT)*2.6-(k||0)*.7}s`,"--a":`${(.15+i/SERIT*3.4).toFixed(2)}%`}},i)),e.jsx("div",{className:"gxb-golge"},"g"),e.jsx("div",{className:"gxb-isik"},"s")]}):e.jsx("div",{className:"gxb-bayrak"})};
+ const Bayrak=(u,k)=>{const b=u?bayrakUrl(u):null;return b?e.jsx("div",{className:"gxb-bayrak",children:e.jsx(DalgaBayrak,{u,k,acil:!1})}):e.jsx("div",{className:"gxb-bayrak"})};
  const kose=[e.jsx("div",{className:"gxb-kose sol",children:e.jsx("img",{src:"/logo.png",alt:"TCF"})},"ks"),evL?e.jsx("div",{className:"gxb-kose sag",children:e.jsx("img",{src:evL,alt:""})},"kg"):null];
  if(!comp)return e.jsx("div",{style:{minHeight:"100vh",display:"grid",placeItems:"center",background:"#0B0F1E",color:"#94A3B8",fontFamily:"system-ui",fontWeight:700},children:__T("Yarışma seçilmedi")});
  return e.jsxs("div",{className:"gxb"+(imlec?" imlec":""),"data-gx-hide":"1",onDoubleClick:tam,children:[e.jsx("style",{children:CSS}),
@@ -93,7 +120,7 @@ export function BayrakEkran(){
    C&&C.isim?e.jsx("div",{className:"gxb-ad",children:C.isim}):null]}),
   // bayrak sahnesi
   e.jsxs("div",{className:"gxb-sahne"+(tek?"":" gizli"),children:[...kose,
-   bf?e.jsxs("div",{className:"gxb-bayrak",children:[...[...Array(SERIT)].map((_,i)=>e.jsx("i",{style:{backgroundImage:`url(${bf})`,backgroundSize:`${SERIT*100}% 100%`,backgroundPosition:`${i/(SERIT-1)*100}% 0`,animationDelay:`${-(i/SERIT)*2.6}s`}},i)),e.jsx("div",{className:"gxb-golge"},"g"),e.jsx("div",{className:"gxb-isik"},"s")]}):null,
+   bf?e.jsxs("div",{className:"gxb-tek",children:[e.jsx("div",{className:"gxb-tek-isik"}),e.jsx("div",{className:"gxb-tek-direk"}),e.jsx(DalgaBayrak,{u:tek},tek)]},tek):null,
    tek?e.jsx("div",{className:"gxb-ulke",children:ulAd(tek,en)}):null]}),
   // tören sahnesi: direkler 2 — 1 — 3 (1. en yüksekte), bayraklar direğe çekilir
   e.jsxs("div",{className:"gxb-sahne tore"+(gos&&gos.t==="tore"?"":" gizli"),children:[...kose,
