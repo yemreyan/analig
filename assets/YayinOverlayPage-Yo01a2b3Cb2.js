@@ -44,6 +44,48 @@ const CSS=GXP_CSS+`
 .yo-ek{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px dashed #CBD5E1;border-radius:12px;background:#F8FAFC}.yo-ek>div{flex:1 1 200px;display:flex;flex-direction:column}.yo-ek b{font-size:.88rem;font-weight:800}.yo-ek small{font-size:.76rem;color:#64748B;font-weight:600}
 .yo-save{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid #F1F5F9}.yo-save .yo-note{margin-right:auto!important}
 .yo-profs{display:flex;flex-wrap:wrap;gap:8px}.yo-prof{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E5E7EB;background:#fff;border-radius:12px;padding:9px 14px;font:inherit;font-weight:800;font-size:.88rem;color:#334155;cursor:pointer}.yo-prof i{font-size:18px;color:#94A3B8}.yo-prof small{font-size:.7rem;color:#B91C1C;font-weight:800}.yo-prof.on{border-color:var(--gxp-c);background:color-mix(in srgb,var(--gxp-c) 8%,#fff);color:#0F172A}.yo-prof.on i{color:var(--gxp-c)}
+.yo-grid>.ym{grid-column:1 / -1}
+.ym-ekr{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}@media(max-width:820px){.ym-ekr{grid-template-columns:1fr}}
+.ym-et{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:.74rem;font-weight:900;letter-spacing:.1em;color:#1D4ED8}.ym-et i{font-size:18px}.ym-et small{margin-left:auto;font-size:.74rem;letter-spacing:0;color:#64748B;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ym-et.kanal{color:#B91C1C}.ym-et .dot{width:9px;height:9px;border-radius:50%;background:#DC2626;animation:akNb 1.4s ease-in-out infinite}
+.ym-ust{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}.ym-ust label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-radius:12px;border:1.5px solid #E5E7EB;background:#F8FAFC;font-weight:800;font-size:.84rem;color:#334155}.ym-ust label>i{color:#64748B}.ym-ust small{color:#94A3B8;font-weight:700}
+.ym-bas,.ym-r{display:grid;grid-template-columns:minmax(190px,1.2fr) minmax(260px,2fr) minmax(150px,.9fr) minmax(300px,1.6fr) 120px;gap:10px;align-items:center}
+.ym-bas{padding:0 12px 6px;font-size:.68rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#94A3B8}
+.ym-r{padding:10px 12px;border-radius:14px;border:1.5px solid #E5E7EB;background:#fff;margin-bottom:8px}.ym-r.on{border-color:#DC2626;box-shadow:0 0 0 3px rgba(220,38,38,.12)}.ym-r.kap{background:#F8FAFC}
+.ym-ad{display:flex;align-items:center;gap:10px;min-width:0}.ym-ad>i{font-size:26px;color:var(--gxp-c)}.ym-ad b{display:block;font-weight:900;font-size:.92rem}.ym-ad small{display:block;font-size:.72rem;color:#64748B;font-weight:700;line-height:1.3}
+.ym-mod{display:flex;flex-wrap:wrap;gap:4px}.ym-mod button{border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 10px;font:inherit;font-weight:800;font-size:.76rem;color:#475569;cursor:pointer}.ym-mod button.on{background:#0F172A;border-color:#0F172A;color:#fff}
+.ym-al select{width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:10px;font:inherit;font-weight:800;font-size:.8rem;background:#fff}
+.ym-btn{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.ym-btn button{display:inline-flex;align-items:center;justify-content:center;gap:4px;border:none;border-radius:10px;padding:9px 8px;font:inherit;font-weight:900;font-size:.78rem;cursor:pointer;white-space:nowrap}.ym-btn button i{font-size:18px}
+.ym-btn .pv{background:#EFF6FF;color:#1D4ED8}.ym-btn .pv.on{background:#2563EB;color:#fff}.ym-btn .go{background:#16A34A;color:#fff}.ym-btn .st{background:#FEE2E2;color:#B91C1C}.ym-btn button:disabled{opacity:.35;cursor:default}
+.ym-dur{justify-self:start;font-size:.68rem;font-weight:900;letter-spacing:.04em;padding:4px 9px;border-radius:999px;white-space:nowrap}.ym-dur.on{background:#DC2626;color:#fff}.ym-dur.ot{background:#DCFCE7;color:#166534}.ym-dur.bk{background:#FEF3C7;color:#92400E}.ym-dur.of{background:#F1F5F9;color:#94A3B8}.ym-dur.kr{background:#0F172A;color:#fff}
+.ym-alt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+@media(max-width:1180px){.ym-bas{display:none}.ym-r{grid-template-columns:1fr 1fr}.ym-ad{grid-column:1 / -1}.ym-btn{grid-column:1 / -1}}
+.ak-durum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 14px}@media(max-width:720px){.ak-durum{grid-template-columns:1fr}}
+.ak-d{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1.5px solid #E5E7EB;background:#F8FAFC}.ak-d>i{font-size:24px;color:#94A3B8}
+.ak-d small{display:block;font-size:.66rem;font-weight:900;letter-spacing:.1em;color:#64748B}.ak-d b{display:block;font-size:.9rem;font-weight:900;color:#0F172A}
+.ak-d.on{border-color:#DC2626;background:#FEF2F2}.ak-d.on>i{color:#DC2626;animation:akNb 1.4s ease-in-out infinite}.ak-d.on small{color:#B91C1C}
+.ak-d.pv.on{border-color:#2563EB;background:#EFF6FF}.ak-d.pv.on>i{color:#2563EB;animation:none}.ak-d.pv.on small{color:#1D4ED8}
+@keyframes akNb{50%{opacity:.35}}
+.ak-adim{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-weight:900;font-size:.9rem;color:#0F172A}.ak-no{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--gxp-c);color:#fff;font-size:.8rem}
+.ak-kat{display:flex;flex-wrap:wrap;gap:6px}.ak-kat button{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E5E7EB;background:#fff;border-radius:12px;padding:9px 14px;font:inherit;font-weight:900;font-size:.88rem;color:#334155;cursor:pointer}.ak-kat button i{font-size:18px;color:#F59E0B}
+.ak-kat button.on{background:var(--gxp-c);border-color:var(--gxp-c);color:#fff}.ak-kat button.on i{color:#fff}
+.ak-g{margin-top:10px}.ak-gt{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}.ak-gt b{font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#475569}.ak-gt small{font-size:.74rem;color:#94A3B8;font-weight:700}
+.ak-gb{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.ak-b{position:relative;display:flex;align-items:center;gap:10px;border:1.5px solid #E5E7EB;background:#fff;border-radius:14px;padding:10px 12px;font:inherit;text-align:left;cursor:pointer;color:#0F172A;transition:border-color .12s,box-shadow .12s,transform .12s}
+.ak-b:hover{border-color:#94A3B8;transform:translateY(-1px)}
+.ak-b img{width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid #E5E7EB;padding:3px;object-fit:contain;flex-shrink:0}.ak-b>i{font-size:26px;color:var(--gxp-c);flex-shrink:0}
+.ak-b span{min-width:0}.ak-b b{display:block;font-weight:900;font-size:.9rem;line-height:1.15}.ak-b small{display:block;font-size:.72rem;color:#64748B;font-weight:700}
+.ak-b em{position:absolute;top:-8px;right:8px;font-style:normal;font-size:.6rem;font-weight:900;letter-spacing:.08em;padding:2px 7px;border-radius:999px;background:#DC2626;color:#fff}.ak-b em.pv{background:#2563EB}
+.ak-b.sec{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.18);background:#EFF6FF}
+.ak-b.yay{border-color:#DC2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
+.ak-b.tp{background:#F8FAFC;border-style:dashed}
+.ak-pv{margin-top:14px}.ak-pv-et{margin-top:6px;font-size:.72rem;font-weight:900;letter-spacing:.08em;color:#2563EB}
+.ak-yayin{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}.ak-yayin .ak-sure{grid-column:1 / -1}@media(max-width:520px){.ak-yayin{grid-template-columns:1fr}}
+.ak-sure{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:14px;border:1.5px solid #E5E7EB;background:#F8FAFC;font-weight:800;font-size:.82rem;color:#334155}.ak-sure>i{color:#64748B}.ak-sure small{color:#94A3B8;font-weight:700}
+.ak-go,.ak-stop{display:flex;align-items:center;gap:12px;min-width:0;border:none;border-radius:16px;padding:14px 18px;font:inherit;cursor:pointer;color:#fff;text-align:left}
+.ak-go{background:linear-gradient(135deg,#16A34A,#15803D);box-shadow:0 10px 24px -12px #16A34A}.ak-stop{background:linear-gradient(135deg,#DC2626,#B91C1C);box-shadow:0 10px 24px -12px #DC2626}
+.ak-go i,.ak-stop i{font-size:30px}.ak-go b,.ak-stop b{display:block;font-size:1.05rem;font-weight:900;letter-spacing:.04em}.ak-go small,.ak-stop small{display:block;font-size:.74rem;font-weight:700;opacity:.9}
+.ak-go:disabled,.ak-stop:disabled{opacity:.4;cursor:default;box-shadow:none}
 .yo-ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.yo-ctl button{display:flex;align-items:center;gap:8px;border:1.5px solid #E5E7EB;background:#fff;border-radius:12px;padding:11px 12px;font:inherit;font-weight:800;font-size:.84rem;color:#1E293B;cursor:pointer;text-align:left}.yo-ctl button i{font-size:20px;color:var(--gxp-c)}.yo-ctl button.on{border-color:#16A34A;background:#F0FDF4}.yo-ctl button.gz{grid-column:1/-1;justify-content:center;color:#475569}.yo-ctl button:disabled{opacity:.45;cursor:default}
 .yo-kp{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding:12px;border:1.5px dashed #CBD5E1;border-radius:12px;background:#F8FAFC}.yo-kp>b{font-size:.88rem;font-weight:800}.yo-btn.g.on{background:color-mix(in srgb,var(--gxp-c) 10%,#fff)}
 .yo-btn.kr{background:#DC2626}.yo-btn.g.kr{background:#fff;color:#DC2626;border-color:#FCA5A5}
@@ -75,8 +117,8 @@ export default function YayinOverlayPage(){
  const[renk,ikon]=RENK[br]||RENK.aerobik;
  const[comps,setComps]=R.useState(null),[comp,setComp]=R.useState("");
  const[profs,setProfs]=R.useState({}),[pid,setPid]=R.useState(""),[tas,setTas]=R.useState(null),[sekme,setSekme]=R.useState("genel");
- const[veri,setVeri]=R.useState("hepsi"),[fmt,setFmt]=R.useState("json"),[ok,setOk]=R.useState(""),[kKat,setKKat]=R.useState(""),[kSure,setKSure]=R.useState(0),[pvG,setPvG]=R.useState("oto"),[kpAc,setKpAc]=R.useState(!1),[kpKay,setKpKay]=R.useState(""),[kpSec,setKpSec]=R.useState([]);
- const frame=R.useRef(null);
+ const[veri,setVeri]=R.useState("hepsi"),[fmt,setFmt]=R.useState("json"),[ok,setOk]=R.useState(""),[kKat,setKKat]=R.useState(""),[akSec,setAkSec]=R.useState(null),[akAlet,setAkAlet]=R.useState({}),[kSure,setKSure]=R.useState(0),[pvG,setPvG]=R.useState("oto"),[kpAc,setKpAc]=R.useState(!1),[kpKay,setKpKay]=R.useState(""),[kpSec,setKpSec]=R.useState([]);
+ const frame=R.useRef(null),pframe=R.useRef(null);
  R.useEffect(()=>onValue(ref(db,FB),s=>setComps(filterComps(s.val()||{},user)||{})),[FB,user]);
  const list=R.useMemo(()=>Object.entries(comps||{}).filter(([,c])=>c&&c.arsivli!==!0&&c.arsivli!=="true").map(([k,c])=>({k,ad:c.isim||c.name||k,t:c.baslangicTarihi||c.tarih||""})).sort((a,b)=>String(b.t).localeCompare(String(a.t))),[comps]);
  R.useEffect(()=>{if(!comp&&list.length===1)setComp(list[0].k)},[list,comp]);
@@ -117,19 +159,20 @@ export default function YayinOverlayPage(){
    try{logAction("broadcast_profile",`Yayın profili kopyalandı (${sec.length}): ${sec.map(x=>x.ad).join(", ")} ← ${comps?.[kpKay]?.isim||kpKay}`,{user:usr,competitionId:comp,discipline:br})}catch{}
    setKpAc(!1);setKpKay("");if(son){setPid(son[0]);setTas(norm(son[1]));setSekme("genel")}}catch{toast(__T("Kaydedilemedi."),"error")}};
  // canlı kontrol (anında yazılır)
- const kontrol=async g=>{const o=g==="gizle"?{g:"gizle",ts:Date.now(),kim:usr}:{g,kat:kKat||null,sure:+kSure||0,ts:Date.now(),kim:usr};
+ const kontrol=async(g,al)=>{const o=g==="gizle"?{g:"gizle",ts:Date.now(),kim:usr}:{g,kat:kKat||null,alet:al||null,sure:+kSure||0,ts:Date.now(),kim:usr};
   if(await yaz(pid+"/kontrol",o)){setOk(g==="gizle"?__T("Elle gösterim kapatıldı"):__T("Kanala gönderildi ✓"));setTimeout(()=>setOk(""),2500)}};
  const kapat=async v=>{if(v&&!await window.__gxConfirm(__T("Yayın dışı: bu profildeki tüm grafikler kanaldan kaldırılır. Devam edilsin mi?")))return;await yaz(pid+"/kapali",v?!0:null,v?__T("Yayın dışı — grafikler gizlendi."):__T("Grafikler yeniden yayında."))};
  // önizleme
  const gonder=R.useCallback(()=>{try{frame.current?.contentWindow?.postMessage({gxProfil:tas||norm({}),evLogo},location.origin)}catch{}},[tas,evLogo]);
  R.useEffect(()=>{const t=setTimeout(gonder,150);return()=>clearTimeout(t)},[gonder]);
  R.useEffect(()=>{const f=ev=>{if(ev.origin===location.origin&&ev.data?.gxOverlayHazir)gonder()};window.addEventListener("message",f);return()=>window.removeEventListener("message",f)},[gonder]);
+ R.useEffect(()=>{const f=ev=>{if(ev.origin===location.origin&&ev.data?.gxOnizleHazir){try{pframe.current?.contentWindow?.postMessage({gxKontrol:akSec?{g:akSec.g,kat:kKat||null,alet:akSec.alet||null,ts:Date.now()}:null},location.origin)}catch{}}};window.addEventListener("message",f);return()=>window.removeEventListener("message",f)},[akSec,kKat]);
  const pvGoster=g=>{setPvG(g);try{frame.current?.contentWindow?.postMessage({gxGoster:g},location.origin)}catch{}};
  // linkler
  const O=location.origin,ovUrl=comp&&pid?`${O}/broadcast-overlay.html?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}`:"";
  const apiUrl=comp&&pid?`${O}/api/yayin?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}${veri!=="hepsi"?"&veri="+veri:""}${fmt!=="json"?"&format="+fmt:""}`:"";
  const kopyala=async u=>{if(!u)return;try{await navigator.clipboard.writeText(u);setOk(__T("Kopyalandı ✓"))}catch{await window.__gxPrompt(__T("Linki kopyalayın:"),u)}setTimeout(()=>setOk(""),2500)};
- const prev=`${O}/yayin-overlay.html?demo=1&brans=${br}${intl?"":"&intl=0"}`;
+ const prev=`${O}/yayin-overlay.html?demo=1&brans=${br}${intl?"":"&intl=0"}`,pvLive=comp&&pid?`${O}/yayin-overlay.html?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}&onizle=1`:"";
  // kategori filtresi
  const isFin=k=>/^final_/.test(k)||kats[k]?.final===!0,katAdi=k=>String(kats[k]?.name||kats[k]?.ad||k).replace(/^\s*\u{1F3C6}\s*/u,"").replace(/^final\s*[—–-]\s*/i,"");
  const ks=Object.keys(kats).sort((a,b)=>katAdi(a).localeCompare(katAdi(b),"tr")),fin=ks.filter(isFin),dig=ks.filter(k=>!isFin(k));
@@ -182,8 +225,9 @@ export default function YayinOverlayPage(){
     e.jsx(Alan,{t:__T("Ne zaman"),children:e.jsx(Seg,{v:T.tablo.mod,on:v=>degis("tablo","mod",v),ops:[["puan",__T("Puan kartından sonra")],["surekli",__T("Sürekli")],["elle",__T("Yalnız elle")]]})}),
     e.jsx(Alan,{t:__T("Konum"),children:e.jsx(Pos,{v:T.tablo.konum,on:v=>degis("tablo","konum",v),ops:[["sag",__T("Sağ panel")],["sol",__T("Sol panel")],["orta",__T("Ortada büyük")]]})}),
     e.jsxs("div",{className:"yo-row",children:[e.jsx(Alan,{t:__T("Satır sayısı"),children:e.jsx(Num,{v:T.tablo.n,mn:3,mx:20,on:v=>degis("tablo","n",v)})}),T.tablo.mod==="puan"?e.jsx(Alan,{t:__T("Gösterim süresi (sn)"),children:e.jsx(Num,{v:T.tablo.sure,mn:3,mx:120,on:v=>degis("tablo","sure",v)})}):e.jsx("div",{})]}),
-    br==="ritmik"||br==="artistik"?e.jsx(Alan,{t:__T("Sıralama türü"),children:e.jsx(Seg,{v:T.tablo.tur,on:v=>degis("tablo","tur",v),ops:[["genel",__T("Aletler sırayla + genel tasnif")],["alet",__T("Son aletin sıralaması")]]})}):null,
-    (br==="ritmik"||br==="artistik")&&T.tablo.tur!=="alet"?e.jsx(Alan,{t:__T("Alet dönüş süresi (sn)"),a:__T("· çok aletli kategoride her alet bu süre görünür, sonra genel tasnif"),children:e.jsx(Num,{v:T.tablo.donguSure??10,mn:4,mx:60,on:v=>degis("tablo","donguSure",v)})}):null,
+    br==="ritmik"||br==="artistik"?e.jsx(Alan,{t:__T("Sıralama türü"),children:e.jsx(Seg,{v:T.tablo.tur,on:v=>degis("tablo","tur",v),ops:[["genel",__T("Aletler sırayla")],["alet",__T("Son aletin sıralaması")]]})}):null,
+    (br==="ritmik"||br==="artistik")&&T.tablo.tur!=="alet"?e.jsx(Tog,{v:T.tablo.aa===!0,on:v=>degis("tablo","aa",v),t:__T("Genel tasnif (alet toplamı) de dönsün"),d:__T("Kapalıyken yalnız aletlerin kendi sıralamaları gösterilir")}):null,
+    (br==="ritmik"||br==="artistik")&&T.tablo.tur!=="alet"?e.jsx(Alan,{t:__T("Alet dönüş süresi (sn)"),a:__T("· çok aletli kategoride her alet bu süre görünür"),children:e.jsx(Num,{v:T.tablo.donguSure??10,mn:4,mx:60,on:v=>degis("tablo","donguSure",v)})}):null,
     T.tablo.konum==="orta"?e.jsx(Tog,{v:T.tablo.detay!==!1,on:v=>degis("tablo","detay",v),t:__T("Not sütunları"),d:br==="ritmik"?"DB · DA · A · E · "+__T("Ceza"):br==="artistik"?"D · E · "+__T("Kesinti"):"D · A · E · "+__T("Ceza")}):null,
     e.jsx("p",{className:"yo-note",children:__T("Eşitlikte WG kuralı: E, sonra A, sonra D notu yüksek olan önde. Kategori tamamlanınca başlık \"Sonuçlar\" olur ve ilk üç madalya rengiyle gösterilir.")})]}):null]}):null,
   sekme==="sirada"?e.jsxs("div",{className:"yo-list",children:[
@@ -196,6 +240,7 @@ export default function YayinOverlayPage(){
    e.jsx(Tog,{v:T.podyum.acik,on:v=>degis("podyum","acik",v),t:__T("Podyum / final sonuçları"),d:__T("İlk üç madalya renkleriyle; isterseniz ilk 8")}),
    T.podyum.acik?e.jsxs(e.Fragment,{children:[
     e.jsx(Alan,{t:__T("Ne zaman"),children:e.jsx(Seg,{v:T.podyum.mod,on:v=>degis("podyum","mod",v),ops:[["otomatik",__T("Kategori bitince otomatik")],["elle",__T("Yalnız elle")]]})}),
+    br==="ritmik"||br==="artistik"?e.jsx(Tog,{v:T.podyum.aa===!0,on:v=>degis("podyum","aa",v),t:__T("Otomatik podyumda genel tasnif (alet toplamı)"),d:__T("Kapalıyken çok aletli kategoride son puanlanan aletin podyumu gösterilir")}):null,
     e.jsxs("div",{className:"yo-row",children:[e.jsx(Alan,{t:__T("Gösterilecek"),children:e.jsx(Seg,{v:String(T.podyum.n),on:v=>degis("podyum","n",+v),ops:[["3",__T("İlk 3")],["5",__T("İlk 5")],["8",__T("İlk 8")]]})}),T.podyum.mod==="otomatik"?e.jsx(Alan,{t:__T("Gösterim süresi (sn)"),children:e.jsx(Num,{v:T.podyum.sure,mn:5,mx:180,on:v=>degis("podyum","sure",v)})}):e.jsx("div",{})]})]}):null]}):null,
   e.jsxs("div",{className:"yo-save",children:[e.jsx("span",{className:"yo-note",style:{margin:0},children:kirli?__T("Kaydedince bu profili kullanan kanallarda anında uygulanır."):__T("Değişiklik yok.")}),
    e.jsx("button",{type:"button",className:"yo-btn g",disabled:!kirli,onClick:()=>setTas(kayitli),children:__T("Geri al")}),
@@ -232,23 +277,55 @@ export default function YayinOverlayPage(){
    e.jsxs("button",{type:"button",className:"yo-btn"+(tvK?" g":""),onClick:tvOlustur,children:[I(tvK?"autorenew":"add_link"),tvK?__T("Yeni link"):__T("TV linki oluştur")]}),ok?e.jsx("span",{className:"yo-ok",children:ok}):null]}),
   e.jsx("p",{className:"yo-note",children:__T("Veri linki profilin kategori filtresine, diline ve satır sayısına uyar; 1–2 saniyede bir okunabilir. Alanlar: name, club, noc, flag, bib, total, d/da/db, a, e, pen, rank. Logolar logos alanında görsel linki olarak gelir.")})]}):null;
 
- const canli=pid?e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"settings_remote",renk:"#EA580C",t:__T("Canlı kontrol"),sag:P.kapali?e.jsx("span",{className:"yo-kirli",children:__T("YAYIN DIŞI")}):kAktif?e.jsx("span",{className:"yo-live",children:durumG[kc.g]||kc.g}):__T("Otomatik")}),
-  e.jsx("p",{className:"yo-note",style:{marginTop:0},children:__T("Bu düğmeler kaydetmeden, bu profili kullanan kanallarda anında uygulanır.")}),
-  e.jsxs("div",{className:"yo-row",children:[e.jsx(Alan,{t:__T("Kategori"),children:e.jsxs("select",{className:"yo-sel",value:kKat,onChange:ev=>setKKat(ev.target.value),children:[e.jsx("option",{value:"",children:__T("Güncel (otomatik)")}),ks.map(k=>e.jsx("option",{value:k,children:katAdi(k)},k))]})}),
-   e.jsx(Alan,{t:__T("Süre (sn)"),a:__T("· 0 = kapatana kadar"),children:e.jsx(Num,{v:kSure,mn:0,mx:600,st:5,on:setKSure})})]}),
-  e.jsxs("div",{className:"yo-ctl",children:[e.jsxs("button",{type:"button",onClick:()=>kontrol("siralama"),className:kAktif&&kc.g==="siralama"?"on":"",children:[I("leaderboard"),__T("Sıralamayı göster")]}),
-   e.jsxs("button",{type:"button",onClick:()=>kontrol("sirada"),className:kAktif&&kc.g==="sirada"?"on":"",children:[I("queue"),__T("Sıradakileri göster")]}),
-   e.jsxs("button",{type:"button",onClick:()=>kontrol("podyum"),className:kAktif&&kc.g==="podyum"?"on":"",children:[I("emoji_events"),__T("Podyumu göster")]}),
-   e.jsxs("button",{type:"button",onClick:()=>kontrol("liste"),className:kAktif&&kc.g==="liste"?"on":"",title:__T("Kategorinin sporcuları çıkış sırasıyla 12'şerli sayfalar hâlinde döner; Elle gösterimi bitir diyene kadar sürer."),children:[I("format_list_numbered"),__T("Başlangıç listesi (döngü)")]}),
-   e.jsxs("button",{type:"button",onClick:()=>kontrol("alt-gizle"),className:kAktif&&kc.g==="alt-gizle"?"on":"",children:[I("subtitles_off"),__T("Alt bandı gizle")]}),
-   e.jsxs("button",{type:"button",className:"gz",onClick:()=>kontrol("gizle"),disabled:!kAktif,children:[I("close"),__T("Elle gösterimi bitir")]})]}),
-  e.jsxs("div",{className:"yo-btns",children:[P.kapali?e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>kapat(!1),children:[I("play_arrow"),__T("Yayına geri al")]}):e.jsxs("button",{type:"button",className:"yo-btn kr",onClick:()=>kapat(!0),children:[I("block"),__T("Yayın dışı (tümünü gizle)")]}),ok?e.jsx("span",{className:"yo-ok",children:ok}):null]})]}):null;
-
+ // ---- YAYIN MASASI (2026-10-10): her grafik bir satır — mod (otomatik / sürekli / manuel / kapalı) · alet · Önizle · Ekrana ver · Ekrandan çek ----
+ //  Üstte iki ekran: KANALDA (gerçek overlay linki, salt okuma) ve ÖNİZLEME (?onizle=1, kanala gitmez).
+ //  Mod değişikliği profile anında yazılır (kanalda hemen geçerli). "Ekrana ver" → kontrol {g,kat,alet,sure}; "Ekrandan çek" → manuel ise gizle,
+ //  otomatik açılmışsa kontrol {g:"cek",hedef} (overlay grafiği hemen kaldırır, sonraki tetikte yine gelir); sürekli moddaysa manuele alınır.
+ const ALAD={serbest:"Serbest (WA)",ip:"İp",cember:"Çember",top:"Top",labut:"Labut",kurdele:"Kurdele",grup_seri1:"1. Seri",grup_seri2:"2. Seri",atlama:"Atlama",asimetrik:"Asimetrik",denge:"Denge",yer:"Yer",kulplu:"Kulplu Beygir",mantar:"Mantar",halka:"Halka",paralel:"Paralel",barfiks:"Barfiks"},ALEN={serbest:"Free (WA)",ip:"Rope",cember:"Hoop",top:"Ball",labut:"Clubs",kurdele:"Ribbon",grup_seri1:"Routine 1",grup_seri2:"Routine 2",atlama:"Vault",asimetrik:"Uneven Bars",denge:"Beam",yer:"Floor",kulplu:"Pommel Horse",mantar:"Pommel",halka:"Rings",paralel:"Parallel Bars",barfiks:"High Bar"};
+ const enU=document.documentElement.lang==="en",alAd=a=>a==="__aa"?(enU?"All-Around (total)":"Genel tasnif (toplam)"):(enU?ALEN[a]:ALAD[a])||a;
+ const akAl=k=>{const a=kats[k]?.aletler;return(Array.isArray(a)?a:a&&typeof a==="object"?Object.keys(a).filter(x=>a[x]):[]).map(x=>typeof x==="object"?x.id||x.value:x).filter(Boolean)};
+ const tumAl=[...new Set((kKat?[kKat]:ks).flatMap(akAl))],cokAl=tumAl.length>1;
+ const GAD={siralama:__T("Sıralama tablosu"),sirada:__T("Sıradaki sporcular"),podyum:__T("Podyum"),liste:__T("Başlangıç listesi"),"alt-gizle":__T("Alt bant gizli")};
+ const itAd=it=>!it?"":(GAD[it.g]||it.g)+(it.alet?" · "+alAd(it.alet):"")+(it.kat?" · "+katAdi(it.kat):"");
+ const pvKontrol=it=>{try{pframe.current?.contentWindow?.postMessage({gxKontrol:it?{g:it.g,kat:kKat||null,alet:it.alet||null,ts:Date.now()}:null},location.origin)}catch{}};
+ const pvSec=it=>{setAkSec(it);pvKontrol(it)};
+ const modYaz=async(grp,patch,msg)=>{const U={};Object.entries(patch).forEach(([k,v])=>{U[`${FB}/${comp}/yayinProfilleri/${pid}/${grp}/${k}`]=v});try{await update(ref(db),U);!kirli&&setTas(t=>t?{...t,[grp]:{...(t[grp]||{}),...patch}}:t);setOk(msg||__T("Kanala uygulandı ✓"));setTimeout(()=>setOk(""),2500)}catch{toast(__T("Kaydedilemedi."),"error")}};
+ const cek=async(h,g,surekli)=>{if(surekli){await modYaz(h==="tablo"?"tablo":"sirada",{mod:"elle"},__T("Sürekli gösterim kapatıldı — manuele alındı"));if(kAktif&&kc.g===g)await kontrol("gizle");return}
+  if(kAktif&&g&&kc.g===g){await kontrol("gizle");return}if(await yaz(pid+"/kontrol",{g:"cek",hedef:h,ts:Date.now(),kim:usr})){setOk(__T("Ekrandan çekildi ✓"));setTimeout(()=>setOk(""),2500)}};
+ const PR=P||{},mAlt=PR.alt?.acik===!1?"kapali":"oto",mTab=!PR.tablo?.acik?"kapali":PR.tablo.mod||"puan",mSir=!PR.sirada?.acik?"kapali":PR.sirada.mod||"cagri",mPod=!PR.podyum?.acik?"kapali":PR.podyum.mod||"otomatik";
+ const SAT=[
+  {h:"alt",ic:"subtitles",t:__T("Alt bant"),d:__T("Çağrılan sporcunun adı; puan gelince puan kartı"),mod:mAlt,mods:[["oto",__T("Otomatik")],["kapali",__T("Kapalı")]],setMod:v=>modYaz("alt",{acik:v!=="kapali"}),g:null},
+  {h:"tablo",ic:"leaderboard",t:__T("Sıralama tablosu"),d:__T("Kategorinin / aletin anlık sıralaması"),mod:mTab,mods:[["puan",__T("Otomatik · puandan sonra")],["surekli",__T("Sürekli ekranda")],["elle",__T("Manuel")],["kapali",__T("Kapalı")]],setMod:v=>modYaz("tablo",v==="kapali"?{acik:!1}:{acik:!0,mod:v}),g:"siralama",al:!0},
+  {h:"sirada",ic:"queue",t:__T("Sıradaki sporcular"),d:__T("Çağrılan sporcu ve sonraki sporcular"),mod:mSir,mods:[["cagri",__T("Otomatik · çağrıda")],["surekli",__T("Sürekli ekranda")],["elle",__T("Manuel")],["kapali",__T("Kapalı")]],setMod:v=>modYaz("sirada",v==="kapali"?{acik:!1}:{acik:!0,mod:v}),g:"sirada"},
+  {h:"podyum",ic:"emoji_events",t:__T("Podyum"),d:__T("İlk üç, madalya renkleriyle"),mod:mPod,mods:[["otomatik",__T("Otomatik · kategori bitince")],["elle",__T("Manuel")],["kapali",__T("Kapalı")]],setMod:v=>modYaz("podyum",v==="kapali"?{acik:!1}:{acik:!0,mod:v}),g:"podyum",al:!0},
+  {h:"liste",ic:"format_list_numbered",t:__T("Başlangıç listesi"),d:__T("Kategorinin sporcuları çıkış sırasıyla, 12'şerli sayfalar"),mod:"elle",mods:[["elle",__T("Yalnız manuel")]],setMod:()=>{},g:"liste"}];
+ const satirEl=x=>{const al=x.al?akAlet[x.g]||"":"",it={g:x.g,alet:al||null},ekranda=kAktif&&x.g&&kc.g===x.g,pv=akSec&&x.g&&akSec.g===x.g&&(akSec.alet||null)===(al||null),kap=x.mod==="kapali";
+  const durum=P.kapali?[__T("YAYIN DIŞI"),"kr"]:ekranda?[__T("EKRANDA · manuel"),"on"]:kap?[__T("Kapalı"),"of"]:x.mod==="surekli"?[__T("Sürekli ekranda"),"on"]:x.mod==="elle"?[__T("Bekliyor · manuel"),"bk"]:[__T("Otomatik"),"ot"];
+  return e.jsxs("div",{className:"ym-r"+(ekranda?" on":"")+(kap?" kap":""),children:[
+   e.jsxs("div",{className:"ym-ad",children:[I(x.ic),e.jsxs("span",{children:[e.jsx("b",{children:x.t}),e.jsx("small",{children:x.d})]})]}),
+   e.jsx("div",{className:"ym-mod",children:x.mods.map(([k,t])=>e.jsx("button",{type:"button",className:x.mod===k?"on":"",onClick:()=>x.mod!==k&&x.setMod(k),children:t},k))}),
+   e.jsx("div",{className:"ym-al",children:x.al?e.jsxs("select",{value:al,onChange:ev=>{const v=ev.target.value;setAkAlet(o=>({...o,[x.g]:v}));pv&&pvSec({g:x.g,alet:v||null})},children:[e.jsx("option",{value:"",children:x.g==="podyum"?__T("Alet: son puanlanan"):__T("Alet: otomatik (sırayla)")}),...tumAl.map(a=>e.jsx("option",{value:a,children:alAd(a)},a)),cokAl?e.jsx("option",{value:"__aa",children:alAd("__aa")}):null]}):null}),
+   e.jsxs("div",{className:"ym-btn",children:[x.g?e.jsxs("button",{type:"button",className:"pv"+(pv?" on":""),onClick:()=>pvSec(it),children:[I("visibility"),__T("Önizle")]}):e.jsx("span",{}),
+    x.g?e.jsxs("button",{type:"button",className:"go",disabled:!!P.kapali,onClick:()=>kontrol(x.g,al||null),children:[I("play_arrow"),__T("Ekrana ver")]}):e.jsx("span",{}),
+    e.jsxs("button",{type:"button",className:"st",disabled:!!P.kapali||kap&&!ekranda,onClick:()=>cek(x.h,x.g,x.mod==="surekli"),children:[I("stop"),__T("Ekrandan çek")]})]}),
+   e.jsx("span",{className:"ym-dur "+durum[1],children:durum[0]})]},x.h)};
+ const ovLive=comp&&pid?`${O}/yayin-overlay.html?comp=${encodeURIComponent(comp)}&brans=${br}&profil=${pid}`:"";
+ const canli=pid?e.jsxs("div",{className:"gxp-card ym",children:[e.jsx(Bas,{ic:"settings_remote",renk:"#EA580C",t:__T("Yayın masası")+" — "+(PR.ad||""),sag:P.kapali?e.jsx("span",{className:"yo-kirli",children:__T("YAYIN DIŞI")}):kAktif?e.jsx("span",{className:"yo-live",children:itAd(kc)}):__T("Otomatik akış")}),
+  e.jsxs("div",{className:"ym-ekr",children:[
+   e.jsxs("div",{children:[e.jsxs("div",{className:"ym-et kanal",children:[e.jsx("span",{className:"dot"}),__T("KANALDA ŞU AN")]}),e.jsx("div",{className:"yo-prev",children:e.jsx("iframe",{src:ovLive,title:__T("kanal görüntüsü")})})]}),
+   e.jsxs("div",{children:[e.jsxs("div",{className:"ym-et",children:[I("visibility"),__T("ÖNİZLEME"),e.jsx("small",{children:akSec?itAd({...akSec,kat:kKat||null}):__T("satırlardan Önizle'ye basın")})]}),e.jsx("div",{className:"yo-prev",children:e.jsx("iframe",{ref:pframe,src:pvLive,title:__T("önizleme")})})]})]}),
+  e.jsxs("div",{className:"ym-ust",children:[e.jsxs("label",{children:[I("category"),e.jsx("span",{children:__T("Kategori")}),e.jsxs("select",{className:"yo-sel",value:kKat,onChange:ev=>{setKKat(ev.target.value);setAkSec(null);pvKontrol(null)},children:[e.jsx("option",{value:"",children:__T("Otomatik (yarışan kategori)")}),ks.map(k=>e.jsx("option",{value:k,children:katAdi(k)},k))]})]}),
+   e.jsxs("label",{children:[I("timer"),e.jsx("span",{children:__T("Manuel gösterim süresi (sn)")}),e.jsx(Num,{v:kSure,mn:0,mx:600,st:5,on:setKSure}),e.jsx("small",{children:+kSure>0?"":__T("0 = ekrandan çekene kadar")})]})]}),
+  e.jsxs("div",{className:"ym-bas",children:[e.jsx("span",{children:__T("Grafik")}),e.jsx("span",{children:__T("Ne zaman görünsün?")}),e.jsx("span",{children:__T("Alet")}),e.jsx("span",{children:__T("İşlem")}),e.jsx("span",{children:__T("Durum")})]}),
+  ...SAT.map(satirEl),
+  e.jsxs("div",{className:"ym-alt",children:[P.kapali?e.jsxs("button",{type:"button",className:"yo-btn",onClick:()=>kapat(!1),children:[I("play_arrow"),__T("Yayına dön (grafikleri geri aç)")]}):e.jsxs("button",{type:"button",className:"yo-btn kr",onClick:()=>kapat(!0),children:[I("block"),__T("Tüm grafikleri gizle (yayın dışı)")]}),
+   kAktif?e.jsxs("button",{type:"button",className:"yo-btn g",onClick:()=>kontrol("gizle"),children:[I("autorenew"),__T("Manuel gösterimi bitir — otomatiğe dön")]}):null,ok?e.jsx("span",{className:"yo-ok",children:ok}):null]}),
+  e.jsx("p",{className:"yo-note",children:__T("Otomatik: grafik kurala göre kendiliğinden gelir ve süresi dolunca gider. Sürekli: hep ekranda. Manuel: yalnız 'Ekrana ver' ile gelir. Kapalı: hiç görünmez. 'Ekrandan çek' o an ekrandaki grafiği hemen kaldırır. Aletlerin toplamı (genel tasnif) yalnız alet listesinden açıkça seçilirse gösterilir.")})]}):null;
  return e.jsxs("div",{className:"gxp",style:{"--gxp-c":renk},children:[e.jsx("style",{children:CSS}),
   e.jsxs("div",{className:"gxp-hdr",children:[e.jsx("button",{type:"button",className:"gxp-back",onClick:()=>nav(RP||"/"),title:__T("Geri"),children:I("arrow_back")}),e.jsx("div",{className:"gxp-ic",children:I("live_tv")}),e.jsxs("div",{className:"gxp-tt",children:[e.jsx("h1",{children:__T("Yayın Overlay")}),e.jsx("p",{children:__T("TV ve internet yayını için grafikler, kanal profilleri ve canlı veri linki")})]}),
    e.jsx("div",{className:"gxp-sel",children:e.jsxs("select",{value:comp,onChange:async ev=>{const v=ev.target.value;if(kirli&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(v)},children:[e.jsx("option",{value:"",children:comps===null?__T("Yükleniyor…"):__T("— Yarışma seçin —")}),list.map(x=>e.jsx("option",{value:x.k,children:x.ad},x.k))]})})]}),
   !comp?e.jsx("div",{className:"gxp-card",children:e.jsxs("div",{className:"gxp-empty",children:[I("live_tv"),__T("Önce yarışma seçin.")]})}):
-  e.jsxs("div",{className:"yo-grid",children:[e.jsxs("div",{className:"yo-col",children:[
+  e.jsxs("div",{className:"yo-grid",children:[canli,e.jsxs("div",{className:"yo-col",children:[
    e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"tv",renk:"#2563EB",t:__T("Yayın profilleri"),sag:plist.length?String(plist.length):null}),
     plist.length?e.jsx("div",{className:"yo-profs",children:plist.map(p=>e.jsxs("button",{type:"button",className:"yo-prof"+(p.k===pid?" on":""),onClick:()=>sec(p.k),children:[I(profs[p.k]?.kapali?"tv_off":"tv"),e.jsx("span",{children:p.ad}),profs[p.k]?.kapali?e.jsx("small",{children:__T("yayın dışı")}):null]},p.k))}):
      e.jsx("p",{className:"yo-note",style:{marginTop:0},children:__T("Her kanal ya da ekran için ayrı profil oluşturun (ör. TRT Spor, YouTube, Salon ekranı). Her profilin kendi logoları, grafikleri ve linki olur.")}),
@@ -262,8 +339,8 @@ export default function YayinOverlayPage(){
     e.jsx("p",{className:"yo-note",children:__T("Daha önce verilmiş profilsiz overlay linkleri aynen çalışmaya devam eder.")})]}),
    editor]}),
   e.jsxs("div",{className:"yo-col",children:[
-   e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"visibility",renk:"#0EA5E9",t:__T("Önizleme"),sag:__T("örnek veriyle")}),
+   e.jsxs("div",{className:"gxp-card",children:[e.jsx(Bas,{ic:"palette",renk:"#0EA5E9",t:__T("Görünüm önizlemesi"),sag:__T("örnek veriyle")}),
     e.jsx("div",{className:"yo-prev",children:e.jsx("iframe",{ref:frame,src:prev,title:__T("önizleme"),onLoad:gonder})}),
     e.jsx("div",{className:"yo-tools",style:{marginTop:10},children:[["oto",__T("Döngü")],["isim",__T("İsim")],["puan",__T("Puan")],["tablo",__T("Sıralama")],["sirada",__T("Sıradaki")],["podyum",__T("Podyum")]].map(([k,t])=>e.jsx("button",{type:"button",className:pvG===k?"on":"",onClick:()=>pvGoster(k),children:t},k))}),
     e.jsx("p",{className:"yo-note",children:pid?__T("Önizleme kaydedilmemiş değişiklikleri de gösterir."):__T("Varsayılan görünüm. Profil seçince profilin ayarlarıyla gösterilir.")})]}),
-   durumKart,linkler,canli]})]})]})}
+   durumKart,linkler]})]})]})}

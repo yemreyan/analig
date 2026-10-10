@@ -140,7 +140,8 @@ import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebase
 
 const firebaseConfig={apiKey:"AIzaSyDRcNy7IwpKhpYgRlaoo5BD8FL4myhklYY",authDomain:"analig.firebaseapp.com",databaseURL:"https://analig-default-rtdb.firebaseio.com",projectId:"analig",storageBucket:"analig.firebasestorage.app",messagingSenderId:"724523220392",appId:"1:724523220392:web:5141cbdb98d5c85f9cb19d"};
 const V=self.GXYV,Q=new URLSearchParams(location.search);
-const comp=Q.get("comp"),demo=Q.get("demo")==="1",pid=Q.get("profil")||"";
+const comp=Q.get("comp"),demo=Q.get("demo")==="1",pid=Q.get("profil")||"",onizle=Q.get("onizle")==="1"; // onizle: gerçek veri, grafik yalnız kontrol sayfasından (postMessage) seçilir, kanala yazılmaz
+let onK=null;
 const brans=V.BRANS[Q.get("brans")]?Q.get("brans"):"aerobik",base=V.BRANS[brans];
 if(!comp&&!demo)location.replace(brans==="artistik"?"/artistic/broadcast-overlay":"/"+brans+"/yayin-overlay"); // kurulum ekranı uygulama içinde
 
@@ -243,7 +244,7 @@ function puanSonrasi(){scoreUntil=0;ltPuan=!1;lt.classList.remove("puanli");cons
  ciz();tick()}
 
 /* ---------------- SIRALAMA / SIRADAKİ / PODYUM ---------------- */
-const elle=()=>{const k=P.kontrol;if(!k||!k.g||k.g==="gizle")return null;if(+k.sure>0&&Date.now()>(+k.ts||0)+k.sure*1000)return null;return k};
+const elle=()=>{const k=P.kontrol;if(!k||!k.g||k.g==="gizle"||k.g==="cek")return null;if(+k.sure>0&&Date.now()>(+k.ts||0)+k.sure*1000)return null;return k};
 const gKat=()=>{const e=elle();return(e&&e.kat&&D.kats[e.kat]?e.kat:null)||curKat};
 const tabloAlet=k=>brans==="ritmik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.alet)||D.aktifAlet?.[k]||null):brans==="artistik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kategori===k&&D.flash.aletId)||null):null;
 // ÇOK ALETLİ KATEGORİ (2026-10-09): "genel" modda aletlerin DA/DB/A/E değerleri TOPLANMAZ — aletler sırayla döner (her alet kendi sıralaması ve notları),
@@ -251,9 +252,11 @@ const tabloAlet=k=>brans==="ritmik"&&C.tablo.tur==="alet"?((D.flash&&D.flash.kat
 const tabloAletler=k=>{const d=D.kats[k]||{};return(brans==="ritmik"||brans==="artistik")&&C.tablo.tur!=="alet"&&Array.isArray(d.aletler)&&d.aletler.length>1?d.aletler:null};
 const aletPuanli=(k,a)=>{const P0=D.puan[k]||{};if(brans==="artistik"){const x=P0[a];return!!x&&Object.values(x).some(v=>v&&(v.durum==="tamamlandi"||v.kilitli===true))}return Object.values(P0).some(p=>p&&p[a]&&(p[a].durum==="tamamlandi"||p[a].kilitli===true))};
 let tbKey="";
-const tabloSec=k=>{const A=tabloAletler(k);if(!A)return{al:tabloAlet(k),aa:!1,key:k};
+const tabloSec=k=>{const e0=elle();if(e0&&e0.g==="siralama"&&e0.alet){const A0=tabloAletler(k)||(D.kats[k]?.aletler)||[];return{al:e0.alet==="__aa"?null:e0.alet,aa:e0.alet==="__aa",A:A0.length?A0:[e0.alet],key:k+"|elle|"+e0.alet}}
+ const A=tabloAletler(k);if(!A)return{al:tabloAlet(k),aa:!1,key:k};
  let Ls=A.filter(a=>aletPuanli(k,a));if(!Ls.length)Ls=A.slice();const fa=D.flash&&D.flash.kategori===k?(D.flash.alet||D.flash.aletId):null;
- if(fa&&Ls.includes(fa)){const i=Ls.indexOf(fa);Ls=Ls.slice(i).concat(Ls.slice(0,i))}Ls=Ls.concat(["__aa"]);
+ if(fa&&Ls.includes(fa)){const i=Ls.indexOf(fa);Ls=Ls.slice(i).concat(Ls.slice(0,i))}if(C.tablo.aa===true)Ls=Ls.concat(["__aa"]); // 2026-10-10: genel tasnif (alet toplamı) yalnız profilde açıkça istenirse
+
  const sure=Math.max(4,+C.tablo.donguSure||10)*1e3,t0=(D.flash&&+D.flash.timestamp)||0,ix=Math.floor(Math.max(0,Date.now()-t0)/sure)%Ls.length;
  return{al:Ls[ix]==="__aa"?null:Ls[ix],aa:Ls[ix]==="__aa",A,key:k+"|"+Ls[ix]}};
 const nrm=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/\s+/g," ").trim();
@@ -281,13 +284,16 @@ function cizSirada(){const k=gKat();if(!k){$("nx").innerHTML="";return}
  const rows=(R.simdi?[satir(R.simdi,!0)]:[]).concat(R.sonraki.map((g,i)=>satir(g,!1,i+1)));
  $("nx").innerHTML=rows.length?`<div class="pnl"><div class="ph"><div class="tt"><div class="t1">${esc(L().sirada)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())+(al?" — "+V.aletAd(al,EN()):"")))}</div></div></div>${rows.join("")}</div>`:""}
 function cizPodyum(){const e=elle(),k=(e&&e.g==="podyum"?gKat():podKat)||gKat();if(!k){$("pd").innerHTML="";return}
- const S=V.siralama({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k]}),n=Math.max(3,Math.min(8,+C.podyum.n||3));
+ const ca=(brans==="ritmik"||brans==="artistik")&&Array.isArray(D.kats[k]?.aletler)&&D.kats[k].aletler.length>1,
+  pa=e&&e.g==="podyum"&&e.alet?(e.alet==="__aa"?null:e.alet):ca&&C.podyum.aa!==true?((D.flash&&D.flash.kategori===k&&(D.flash.alet||D.flash.aletId))||null):null;
+ if(ca&&!pa&&!(e&&e.g==="podyum"&&e.alet==="__aa")&&C.podyum.aa!==true){$("pd").innerHTML="";return}
+ const S=V.siralama({brans,kats:D.kats,kat:k,spor:D.spor[k],puan:D.puan[k],alet:pa}),n=Math.max(3,Math.min(8,+C.podyum.n||3));
  const ust=S.satirlar.filter(r=>r.sira&&r.sira<=3),ord={2:0,1:1,3:2};
  const kol=r=>{const g=r.giris,u=g.ulke,ul=u&&C.alt.ulke,alt=g.takim?g.uyeler.join(", "):(ul?u+(g.kulup&&g.kulup!==u?" · "+g.kulup:""):g.kulup);
   return `<div class="pod p${r.sira}"><div class="md">${r.sira}</div><div class="pn">${ul?fl(u):""}${esc(UP(g.takim?(ul?u:g.kulup):g.ad,u))}</div><div class="pc">${esc(UP(alt||"",u))}</div><div class="ps">${f3(r.s.total)}</div><div class="blk"></div></div>`};
  const pods=`<div class="pods">${ust.slice().sort((a,b)=>ord[a.sira]-ord[b.sira]).map(kol).join("")}</div>`;
  const liste=n>3?S.satirlar.filter(r=>r.sira>3&&r.sira<=n).map(r=>satirHtml(r,{})).join(""):"";
- $("pd").innerHTML=ust.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(L().podyum)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())))}</div></div></div>${pods}${liste?`<div class="pdl">${liste}</div>`:""}</div>`:""}
+ $("pd").innerHTML=ust.length?`<div class="pnl"><div class="ph"><div class="hl">${basLogo()}</div><div class="tt"><div class="t1">${esc(L().podyum)}</div><div class="t2">${esc(UP(V.katAd(D.kats,k,EN())+(pa?" — "+V.aletAd(pa,EN(),k):ca?" — "+(EN()?"All-Around":"Genel Tasnif"):"")))}</div></div></div>${pods}${liste?`<div class="pdl">${liste}</div>`:""}</div>`:""}
 // Başlangıç listesi (2026-10-08): Canlı kontrol › "Başlangıç listesi" — kategorinin sporcuları çıkış sırasıyla, 12'şerli sayfalar,
 // 9 sn'de bir yumuşak geçişle sonraki sayfa, sona gelince başa döner; "Elle gösterimi bitir" diyene kadar sürer. Açıkken diğer grafikler gizlenir.
 let slSayfa=0,slNext=0,slKat=null,slGec=!1;const SL_N=12,SL_SURE=9000;
@@ -345,7 +351,11 @@ function katGuncelle(){curKat=V.guncelKat({kats:D.kats,aktif:D.aktif,flash:D.fla
  katAbone.forEach(u=>u());katAbone=[];lazim.split("|").filter(Boolean).forEach(kk=>{
   katAbone.push(onValue(ref(db,`${base}/${comp}/sporcular/${kk}`),s=>{D.spor[kk]=s.val()||{};onPuan(kk)}));
   katAbone.push(onValue(ref(db,`${base}/${comp}/puanlar/${kk}`),s=>{D.puan[kk]=s.val()||{};onPuan(kk)}))})}
-function profilUygula(p){P=p||{};C=birlestir(VARS(),{...P,kontrol:undefined,kapali:undefined});C.kat=Array.isArray(P.kat)?P.kat:[];ayarUygula();katGuncelle();ciz();tick()}
+let cekTs=0; // "ekrandan çek": otomatik açılmış grafiği hemen kaldırır (sonraki tetikte yeniden gelir)
+function cekUygula(){const k=P.kontrol;if(!k||k.g!=="cek"||k.ts===cekTs)return;cekTs=k.ts;const h=k.hedef;
+ if(h==="tablo")tabloUntil=0;if(h==="podyum"){podyumUntil=0;podBekle=null}if(h==="alt"||h==="sirada"){ltOn=!1;nameUntil=0;scoreUntil=0;ltPuan=!1;lt.classList.remove("puanli")}}
+function profilUygula(p){P=p||{};if(!onizle)cekUygula();if(onizle)P={...P,kontrol:onK,kapali:null};C=birlestir(VARS(),{...P,kontrol:undefined,kapali:undefined});C.kat=Array.isArray(P.kat)?P.kat:[];if(onizle){C.alt={...C.alt,acik:!1};C.tablo={...C.tablo,acik:!1};C.sirada={...C.sirada,acik:!1};C.podyum={...C.podyum,acik:!1}}ayarUygula();katGuncelle();ciz();tick()}
+if(onizle&&!demo)window.addEventListener("message",ev=>{if(ev.origin!==location.origin)return;const m=ev.data||{};if("gxKontrol" in m){onK=m.gxKontrol||null;P={...P,kontrol:onK};katGuncelle();ciz();tick()}});
 if(!demo&&comp){
  db=getDatabase(initializeApp(firebaseConfig));
  ayarUygula();
@@ -357,6 +367,7 @@ if(!demo&&comp){
  if(brans==="ritmik")onValue(ref(db,`${base}/${comp}/aktifAlet`),s=>{D.aktifAlet=s.val()||{};ciz()});
  onValue(ref(db,`${base}/${comp}/${brans==="artistik"?"aktifSporcuBilgi":"aktifSporcu"}`),s=>onAktif(s.val()));
  onValue(ref(db,`${base}/${comp}/flashTrigger`),s=>onFlash(s.val()));
+ if(onizle){profilUygula(P);try{parent!==window&&parent.postMessage({gxOnizleHazir:!0},location.origin)}catch(e){}}
 }
 
 /* ---------------- ÖNİZLEME (demo, örnek veri) ---------------- */
