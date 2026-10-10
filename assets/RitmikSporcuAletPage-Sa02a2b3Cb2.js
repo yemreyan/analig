@@ -30,7 +30,8 @@ const CSS=GXP_CSS+`
 .sa-mini{border:1px solid #E5E7EB;background:#fff;border-radius:9px;padding:5px 8px;font:inherit;font-weight:800;font-size:.74rem;color:#475569;cursor:pointer;display:inline-flex;align-items:center;gap:3px}.sa-mini i{font-size:15px}
 .sa-foot{position:sticky;bottom:0;margin-top:14px;background:#fff;border:1px solid #EEF0F4;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 -6px 20px -12px rgba(15,23,42,.25)}
 .sa-foot label{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:.84rem;color:#334155;cursor:pointer}
-.sa-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;font-size:.88rem;cursor:pointer;background:var(--gxp-c);color:#fff}.sa-btn.g{background:#fff;color:#475569;border:1px solid #E5E7EB}.sa-btn:disabled{opacity:.45;cursor:default}.sa-btn i{font-size:18px}
+.sa-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;font-size:.88rem;cursor:pointer;background:var(--gxp-c);color:#fff}.sa-btn.g{background:#fff;color:#475569;border:1px solid #E5E7EB}
+.sa-gp{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}.sa-gp .sa-in{padding:8px 10px}.sa-btn:disabled{opacity:.45;cursor:default}.sa-btn i{font-size:18px}
 .sa-note{font-size:.8rem;font-weight:600;color:#64748B;line-height:1.5;margin:6px 0 0}
 .sa-gc{display:flex;gap:4px;flex-wrap:wrap;min-width:220px}.sa-ch{display:inline-flex;align-items:center;gap:4px;border:1.5px solid #E5E7EB;background:#fff;border-radius:10px;padding:3px 8px 3px 4px;font:inherit;font-size:.74rem;font-weight:800;color:#94A3B8;cursor:pointer}.sa-ch img{width:20px;height:20px;object-fit:contain;opacity:.45}.sa-ch i{font-size:16px}.sa-ch.on{border-color:var(--gxp-c);background:color-mix(in srgb,var(--gxp-c) 10%,#fff);color:#1E293B}.sa-ch.on img{opacity:1}.sa-ch b{background:var(--gxp-c);color:#fff;border-radius:999px;font-size:.66rem;padding:0 5px}.sa-ch.bs{opacity:.45;text-decoration:line-through}.sa-ch.yk:not(.on){border-style:dashed}.sa-ch.kl{cursor:not-allowed}
 .sa-sum b{margin-right:4px}
@@ -47,6 +48,85 @@ const CSS=GXP_CSS+`
 .sa-ekle{display:flex;gap:6px;flex-wrap:wrap}.sa-ekle .sa-in{flex:1 1 140px;padding:7px 10px;font-size:.8rem}
 .sa-warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:9px 12px;font-size:.82rem;font-weight:700;margin-bottom:12px}`;
 
+// GÜNLÜK ÇIKIŞ LİSTESİ PDF: kayıtlı cikisListesi'nden, seçilen gün(ler)de TÜM kategoriler saat sırasıyla (blok saati + adım×3 dk).
+//  gi=null → tüm günler (her gün yeni sayfa). Ara blokları ayraç satırı, grup (takım) blokları takım satırı olarak.
+const _sdk=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||"");return m?+m[1]*60+ +m[2]:null},_dks=v=>v==null?"":String(Math.floor(v/60)%24).padStart(2,"0")+":"+String(v%60).padStart(2,"0");
+async function gunlukPdf({C,comp,gi,usr,toast}){
+ const cl=C?.cikisListesi,GUN=arr(cl?.gunler).map((g,i)=>({g,i})).filter(x=>x.g&&(gi==null||x.i===gi));
+ if(!GUN.length||!GUN.some(x=>arr(x.g.bloklar).some(b=>b&&b.tip!=="ara"))){toast(__T("Çıkış listesi boş."),"warning");return}
+ toast(__T("PDF hazırlanıyor…"),"info");try{
+  const jsPDF=await import("./jspdf.es.min-gArCfqm1Cb2.js").then(z=>z.j?.jsPDF||z.E),atM=await import("./jspdf.plugin.autotable-KFqWVtFsCb2.js"),at=atM.default||atM,d=new jsPDF("portrait","mm","a4");
+  let FT="helvetica";try{const{R:r0,B:b0}=await import("./fontTR-Fn01a2b3Cb2.js");d.addFileToVFS("Roboto.ttf",r0);d.addFont("Roboto.ttf","Roboto","normal");d.addFileToVFS("Roboto-Bold.ttf",b0);d.addFont("Roboto-Bold.ttf","Roboto","bold");FT="Roboto"}catch{}
+  const IM=await import("./intl-Ul01a2b3Cb2.js"),INTL=C?.tur==="uluslararasi"||C?.uluslararasi===!0,ENP=C?.ciktiDili==="en"||(INTL&&C?.ciktiDili!=="tr");
+  const L=(tr,en)=>ENP?en:tr,UPx=t=>String(t||"").toLocaleUpperCase(ENP?"en":"tr-TR"),aA=a=>ENP?({serbest:"WA",ip:"Rope",cember:"Hoop",top:"Ball",labut:"Clubs",kurdele:"Ribbon",grup_seri1:"Routine 1",grup_seri2:"Routine 2"}[a]||a):(ALL[a]||(raAd?raAd(a,!1):a));
+  const SP=C?.sporcular||{},KD=C?.kategoriler||{},sp=(k,id)=>{const a=SP[k]?.[id];return a&&typeof a==="object"?a:null};
+  const katT=k=>{const n=String(KD[k]?.name||k).replace(/^\s*\u{1F3C6}\s*/u,"");return ENP&&IM.katEN?IM.katEN(n):n};
+  const adS=a=>[a?.ad,a?.soyad].filter(Boolean).join(" ")||a?.adSoyad||"";
+  const ulk=a=>INTL?String((IM.sporcuUlke?IM.sporcuUlke(a,C):a?.ulke)||a?.ulke||""):String(a?.okul||a?.kulup||a?.il||"").trim();
+  const tkm=a=>{const t=String(a?.okul||a?.kulup||"").trim();return INTL&&t&&t!==ulk(a)?t:""};
+  const gKey=(k,ok,gn)=>String(k+"::"+String(ok||"").trim()+"::"+gn).trim().replace(/[.#$[\]/]/g,"-").slice(0,60);
+  const takim=(k,g)=>{const u=[];let ok="",bib="";Object.values(SP[k]||{}).forEach(a=>{if(!a||typeof a!=="object")return;const o=String(a.okul||a.kulup||"").trim();if(gKey(k,o,a.grupNo??1)!==g)return;ok=o;a.bib&&!bib&&(bib=String(a.bib));u.push(adS(a))});return{ok,bib,ad:u.join(" · ")}};
+  const gB=t=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(t||""));if(!m)return"";return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString(ENP?"en-GB":"tr-TR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).toLocaleUpperCase(ENP?"en":"tr-TR")};
+  // gün → zaman sıralı satırlar
+  const GL=GUN.map(({g,i})=>{let son=null;const bl=arr(g.bloklar).filter(Boolean).map((b,o)=>{if(b.tip==="ara"){const s0=_sdk(b.bas)??son,s1=_sdk(b.bit);son=s1??s0;return{b,o,bas:s0}}
+    const s0=_sdk(b.saat)??son,ad=[];
+    if(b.tip==="takim")arr(b.rows).forEach(r=>{const t=takim(b.kat,r?.g);ad.push({tk:1,kat:b.kat,ad:t.ad||String(r?.g||""),bib:t.bib,ul:INTL?t.ok:"",ok:t.ok,tm:"",al:arr(b.egz).join(" · ")})});
+    else{const k=arr(b.aletler).length||1;for(let ri=0;ri<k;ri++)arr(b.rows).forEach(r=>{const x=arr(r?.r)[ri];if(!x||!x.a)return;const kk=x.kat||b.kat,a=sp(kk,x.a);ad.push({kat:kk,ad:a?adS(a):x.a,bib:a?.bib!=null&&a.bib!==""?String(a.bib):"",ul:INTL?ulk(a):"",ok:a?ulk(a):(r.k||""),tm:a?tkm(a):"",al:x.al||arr(b.aletler)[ri]||""})})}
+    ad.forEach((x,j)=>{x.dk=s0==null?null:s0+j*3});son=s0==null?son:s0+ad.length*3;return{b,o,bas:s0,ad}});
+   bl.sort((x,y)=>(x.bas??1e9)-(y.bas??1e9)||x.o-y.o);return{t:g.tarih||"",i,bl}});
+  const tumAd=GL.flatMap(g=>g.bl.flatMap(b=>b.ad||[]));
+  const tcfImg=async u=>{try{const b=await(await fetch(u)).blob();const du=await new Promise(K=>{const O=new FileReader;O.onloadend=()=>K(O.result);O.readAsDataURL(b)});const im=new Image;await new Promise(r=>{im.onload=r;im.onerror=r;im.src=du});return im.naturalWidth?{d:du,r:im.naturalWidth/im.naturalHeight}:null}catch{return null}};
+  const tcf=await tcfImg("/logo.png"),ev=C?.etkinlikLogo?await tcfImg(C.etkinlikLogo):null,AP={};await Promise.all(["serbest","ip","cember","top","labut","kurdele"].map(async k=>{const x=await tcfImg("/brans/alet/"+k+".png");x&&(AP[k]=x)}));
+  const FL=INTL&&IM.bayraklarPng?await IM.bayraklarPng([...new Set(tumAd.map(x=>x.ul).filter(Boolean))]).catch(()=>({})):{};
+  const HB=tumAd.some(x=>x.bib),TK=tumAd.some(x=>x.tm);
+  const W=210,H=297,M=12,P1=[236,72,153],P2=[139,92,246],INK=[15,23,42],MUT=[100,116,139],ay=cl?.ayar||{};
+  const ad1=ay.ust1||C?.isim||"",tarih=[C?.baslangicTarihi,C?.bitisTarihi].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).map(t=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(t);return m?m[3]+"."+m[2]+"."+m[1]:t}).join(" – "),alt2=[ay.ust2||tarih,ay.ust3||C?.il||""].filter(Boolean).join("  ·  ");
+  const serit=(yy,h)=>{const n=60;for(let i=0;i<n;i++){const t=i/(n-1);d.setFillColor(P1[0]+(P2[0]-P1[0])*t,P1[1]+(P2[1]-P1[1])*t,P1[2]+(P2[2]-P1[2])*t);d.rect(i*W/n,yy,W/n+.3,h,"F")}};
+  let y=0,sayfa=1,gunAd="";const baslik=L("GÜNLÜK ÇIKIŞ LİSTESİ","DAILY START LIST");
+  serit(0,3);let lx=M;const lh=16;if(tcf){const w=lh*tcf.r;d.addImage(tcf.d,"PNG",lx,8,w,lh,"tcf","FAST");lx+=w+4}if(ev){const w=Math.min(34,lh*ev.r);d.addImage(ev.d,"PNG",W-M-w,8,w,lh,"ev","FAST")}
+  d.setTextColor(...INK);d.setFont(FT,"bold");d.setFontSize(12.5);d.text(UPx(ad1),lx,13.5,{maxWidth:W-lx-M-(ev?38:0)});d.setFont(FT,"normal");d.setFontSize(8.5);d.setTextColor(...MUT);d.text(alt2,lx,19);
+  d.setFont(FT,"bold");d.setFontSize(10);d.setTextColor(...P1);d.text(baslik,lx,25);d.setDrawColor(226,232,240);d.setLineWidth(.3);d.line(M,30,W-M,30);y=35;
+  const devam=()=>{serit(0,3);d.setFont(FT,"bold");d.setFontSize(7.5);d.setTextColor(...MUT);d.text(UPx(ad1)+"  ·  "+baslik+(gunAd?"  ·  "+gunAd:""),M,10,{maxWidth:W-2*M});d.setDrawColor(226,232,240);d.setLineWidth(.3);d.line(M,13,W-M,13)};
+  const yeniSayfa=()=>{d.addPage();sayfa++;devam();y=18};
+  const head=[L("SAAT","TIME"),L("NO","NO"),...(HB?["BIB"]:[]),L("SPORCU","GYMNAST"),INTL?L("ÜLKE","NOC"):L("KULÜP","CLUB"),...(TK?[L("TAKIM","TEAM")]:[]),L("KATEGORİ","CATEGORY"),L("ALET","APPARATUS")];
+  const cS=HB?3:2,cO=cS+1,cK=head.length-2,cA=head.length-1,NC=head.length;
+  GL.forEach((g,ix)=>{gunAd=gB(g.t);if(ix)yeniSayfa();
+   const n0=g.bl.reduce((s,b)=>s+(b.ad?b.ad.length:0),0),ilk=g.bl.find(b=>b.bas!=null&&b.ad);
+   d.setFillColor(...P2);d.roundedRect(M,y,W-2*M,9,2,2,"F");d.setFont(FT,"bold");d.setFontSize(10);d.setTextColor(255,255,255);d.text(gunAd||L("GÜN","DAY")+" "+(g.i+1),M+4,y+6.2);
+   d.setFont(FT,"normal");d.setFontSize(8);d.text(n0+" "+L("çıkış","routines")+(ilk?"  ·  "+_dks(ilk.bas):""),W-M-4,y+6.2,{align:"right"});y+=13;
+   const body=[],meta=[];let no=0;
+   g.bl.forEach(B=>{const b=B.b;
+    if(b.tip==="ara"){body.push([{content:UPx(b.metin||L("ARA","BREAK"))+(b.bas?"   "+b.bas+(b.bit?" – "+b.bit:""):""),colSpan:NC}]);meta.push({t:"ara"});return}
+    if(!B.ad.length)return;
+    const als=[...new Set(B.ad.map(x=>x.tk?"":x.al).filter(Boolean))],kts=[...new Set(B.ad.map(x=>x.kat))],bit=B.bas!=null?_dks(B.bas+B.ad.length*3):"";
+    body.push([{content:(B.bas!=null?_dks(B.bas)+(bit?" – "+bit:"")+"     ":"")+kts.map(k=>UPx(katT(k))).join(" + ")+(als.length?"  ·  "+als.map(a=>UPx(aA(a))).join(" / "):"")+"  ·  "+B.ad.length+" "+(B.ad[0].tk?L("grup","groups"):L("sporcu","gymnasts")),colSpan:NC}]);meta.push({t:"blk"});
+    B.ad.forEach(x=>{no++;body.push([_dks(x.dk),String(no),...(HB?[x.bib]:[]),UPx(x.ad),INTL?x.ok:UPx(x.ok),...(TK?[x.tm]:[]),katT(x.kat),x.tk?x.al:UPx(aA(x.al))]);meta.push({t:"s",x})})});
+   at(d,{startY:y,margin:{left:M,right:M,top:18,bottom:12},head:[head],body,theme:"plain",
+    styles:{font:FT,fontSize:8.2,cellPadding:{top:1.6,bottom:1.6,left:1.8,right:1.8},textColor:INK,lineColor:[238,240,244],lineWidth:{bottom:.25},valign:"middle"},
+    headStyles:{fontStyle:"bold",fontSize:6.8,textColor:[255,255,255],fillColor:P2},
+    columnStyles:{0:{cellWidth:12,halign:"center",fontStyle:"bold",textColor:P1},1:{cellWidth:9,halign:"center",textColor:MUT},...(HB?{2:{cellWidth:11,halign:"center"}}:{}),[cS]:{fontStyle:"bold"},[cO]:INTL?{cellWidth:20,cellPadding:{top:1.6,bottom:1.6,left:8,right:1}}:{cellWidth:40},...(TK?{[cO+1]:{cellWidth:24,fontSize:7.4}}:{}),[cK]:{cellWidth:22,fontSize:7.4,textColor:MUT},[cA]:{cellWidth:24,cellPadding:{top:1.6,bottom:1.6,left:8,right:1},fontStyle:"bold",textColor:P1,fontSize:7.6}},
+    didParseCell:z=>{if(z.section!=="body")return;const m=meta[z.row.index];if(!m)return;
+     if(m.t==="blk")Object.assign(z.cell.styles,{fillColor:[253,242,248],textColor:P1,fontStyle:"bold",fontSize:8.4,halign:"left",cellPadding:{top:2.4,bottom:2.4,left:4,right:2}});
+     else if(m.t==="ara")Object.assign(z.cell.styles,{fillColor:[241,245,249],textColor:MUT,fontStyle:"bold",halign:"center",cellPadding:{top:2.2,bottom:2.2,left:2,right:2}});
+     else if(z.row.index%2)z.cell.styles.fillColor=[250,250,253]},
+    didDrawCell:z=>{if(z.section!=="body")return;const m=meta[z.row.index];if(!m)return;
+     if(m.t==="blk"&&z.column.index===0){d.setFillColor(...P1);d.rect(z.cell.x,z.cell.y,1.4,z.cell.height,"F");return}
+     if(m.t!=="s")return;const x=m.x;
+     if(INTL&&z.column.index===cO&&FL[x.ul])try{d.addImage(FL[x.ul],"PNG",z.cell.x+2,z.cell.y+(z.cell.height-3.2)/2,4.3,3.2,"fl_"+x.ul,"FAST")}catch{}
+     if(z.column.index===cA&&!x.tk&&AP[x.al])try{d.addImage(AP[x.al].d,"PNG",z.cell.x+1.5,z.cell.y+(z.cell.height-4.8)/2,4.8,4.8,"ap_"+x.al,"FAST")}catch{}},
+    didDrawPage:()=>{if(d.getNumberOfPages()>sayfa){sayfa=d.getNumberOfPages();devam()}}});y=d.lastAutoTable.finalY+8});
+  const n=d.getNumberOfPages();for(let i=1;i<=n;i++){d.setPage(i);serit(H-1.6,1.6);d.setFont(FT,"normal");d.setFontSize(7);d.setTextColor(...MUT);
+   d.text(L("Gymexa Score · Türkiye Cimnastik Federasyonu","Gymexa Score · Turkish Gymnastics Federation")+"  ·  "+L("saatler tahminidir (çıkış başına 3 dk)","times are estimated (3 min per routine)"),M,H-5);d.text(new Date().toLocaleString(ENP?"en-GB":"tr-TR",{dateStyle:"short",timeStyle:"short"})+"   "+i+" / "+n,W-M,H-5,{align:"right"})}
+  const tt=gi==null?"":(GL[0]?.t||"Gun"+(gi+1));d.save((L("Gunluk_Cikis_Listesi","Daily_Start_List")+(tt?"_"+tt:""))+".pdf");
+  try{logAction("daily_start_list_pdf",`[Ritmik] Günlük çıkış listesi PDF: ${gi==null?"tüm günler":(GL[0]?.t||gi+1)}`,{user:usr,competitionId:comp,discipline:"ritmik"})}catch{}
+ }catch(er){toast(__T("PDF oluşturulamadı: ")+(er?.message||er),"error")}}
+function GunPdf({C,comp,usr,toast}){
+ const gl=arr(C?.cikisListesi?.gunler).map((g,i)=>({t:g?.tarih||"",i,n:arr(g?.bloklar).filter(b=>b&&b.tip!=="ara").length})).filter(x=>x.n);
+ const bugun=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10),[sec,setSec]=R.useState(()=>{const b=gl.find(x=>x.t===bugun);return b?String(b.i):""}),[busy,setBusy]=R.useState(!1);
+ if(!gl.length)return null;
+ const et=x=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(x.t);return m?new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString(__EN()?"en-GB":"tr-TR",{weekday:"short",day:"numeric",month:"short"}):__T("Gün")+" "+(x.i+1)};
+ return e.jsxs("div",{className:"sa-gp",children:[gl.length>1?e.jsxs("select",{className:"sa-in",value:sec,onChange:ev=>setSec(ev.target.value),children:[e.jsx("option",{value:"",children:__T("Tüm günler")}),gl.map(x=>e.jsx("option",{value:String(x.i),children:et(x)},x.i))]}):null,
+  e.jsxs("button",{type:"button",className:"sa-btn g",disabled:busy,title:__T("Seçilen günün tüm kategorilerini saat sırasıyla PDF olarak indir (kayıtlı çıkış listesi)"),onClick:async()=>{setBusy(!0);try{await gunlukPdf({C,comp,gi:sec===""?(gl.length>1?null:gl[0].i):+sec,usr,toast})}finally{setBusy(!1)}},children:[e.jsx("i",{className:"material-icons-round",children:"picture_as_pdf"}),busy?__T("Hazırlanıyor…"):__T("Günlük çıkış listesi")]})]})}
 // ÇIKIŞ SIRASI — AKIŞ: her gün TEK sıralı liste; her adım = sporcu + alet (ör. 1 Iva·Top, 2 Petra·Çember…). Başhakem sırayla çağırdıkça adımın aleti açılır.
 // Kayıt: o günün bu kategoriye ait blokları tek blokta birleşir {tip:"grup",kat,saat,aletler:[ilk adım aleti],rows:[{k,r:[{a,al}]}]} — satır başına alet serbest.
 // siralama/<kat>: gün başına bir rotasyon (sporcu ilk göründüğü sırayla); _alet yalnız o gündeki tüm adımlar aynı aletse. Sporcu aletler[] = adım sırası.
@@ -272,7 +352,7 @@ export default function RitmikSporcuAletPage(){
    e.jsx("div",{className:"gxp-sel",children:e.jsxs("select",{value:comp,onChange:async ev=>{const v=ev.target.value;if(degisen.length&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setComp(v)},children:[e.jsx("option",{value:"",children:comps===null?__T("Yükleniyor…"):__T("— Yarışma seçin —")}),list.map(x=>e.jsx("option",{value:x.k,children:x.ad},x.k))]})})]}),
   !C?e.jsxs("div",{className:"gxp-card gxp-empty",children:[e.jsx("i",{className:"material-icons-round",children:"low_priority"}),__T("Önce yarışma seçin.")]}):
   e.jsxs("div",{className:"gxp-card",children:[
-   e.jsx("div",{className:"sa-bar",children:e.jsx("div",{className:"sa-kats",children:katL.map(k=>e.jsx("button",{type:"button",className:kat===k?"on":"",onClick:async()=>{if(k===kat)return;if(degisen.length&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setKat(k)},children:String(kats[k]?.name||k).replace(/^\s*\u{1F3C6}\s*/u,"")},k))})}),
+   e.jsxs("div",{className:"sa-bar",children:[e.jsx("div",{className:"sa-kats",children:katL.map(k=>e.jsx("button",{type:"button",className:kat===k?"on":"",onClick:async()=>{if(k===kat)return;if(degisen.length&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setKat(k)},children:String(kats[k]?.name||k).replace(/^\s*\u{1F3C6}\s*/u,"")},k))}),e.jsx(GunPdf,{C,comp,usr,toast},comp)]}),
    !kat?e.jsx("p",{className:"sa-note",children:__T("Bireysel kategori yok.")}):tekAletli&&gor2==="cikis"?e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"sa-vw",children:[["alet",__T("Sporcu aletleri"),"low_priority"],["cikis",__T("Çıkış sırası"),"swap_vert"]].map(([k,t,ic])=>e.jsxs("button",{type:"button",className:gor2===k?"on":"",onClick:()=>setGor2(k),children:[e.jsx("i",{className:"material-icons-round",children:ic}),t]},k))}),e.jsx(CikisSira,{C,comp,kat,FB,usr,toast,renk},comp+"|"+kat)]}):e.jsxs(e.Fragment,{children:[tekAletli?e.jsx("div",{className:"sa-vw",children:[["alet",__T("Sporcu aletleri"),"low_priority"],["cikis",__T("Çıkış sırası"),"swap_vert"]].map(([k,t,ic])=>e.jsxs("button",{type:"button",className:gor2===k?"on":"",onClick:async()=>{if(k==="cikis"&&degisen.length&&!await window.__gxConfirm(__T("Kaydedilmemiş değişiklikler kaybolacak. Devam edilsin mi?")))return;setTas({});setTg({});setGor2(k)},children:[e.jsx("i",{className:"material-icons-round",children:ic}),t]},k))}):null,
     gunMod?e.jsx("div",{className:"sa-sum",children:gunSay.map(({g,o})=>e.jsxs("span",{children:[e.jsx("b",{style:{color:renk},children:gunEt(g)}),Object.keys(o).sort((x,y)=>gunSira(g.t,x)-gunSira(g.t,y)).map(a=>(raAd?raAd(a,__EN()):ALL[a]||a)+" "+o[a]).join(" · ")||"—"]},g.t))}):e.jsx("div",{className:"sa-sum",children:AL.map(a=>e.jsxs("span",{children:[raImg(a)?e.jsx("img",{src:raImg(a),alt:""}):null,(raAd?raAd(a,__EN()):ALL[a]||a)+": "+(sayim[a]||0)]},a))}),
     bloklar.length&&!tekAletli?e.jsx("div",{className:"sa-warn",children:__T("Bu kategorinin çıkış listesinde birden çok aletli gruplar var; değişiklik yalnız sporcu kaydına yazılır, çıkış listesini Program sayfasından düzenleyin.")}):null,

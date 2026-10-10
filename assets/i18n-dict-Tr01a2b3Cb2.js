@@ -1039,7 +1039,7 @@ const DICT={
  "Hazır kuruluma dön":"Reset to default setup",
  "Hazır kuruluma dönüldü.":"Reset to the default setup.",
  "Hazırlanıyor...":"Preparing...",
- "Hazırlanıyor…":"Preparing…",
+ "Hazırlanıyor…":"Preparing…","Tüm günler":"All days","Günlük çıkış listesi":"Daily start list","Çıkış listesi boş.":"Start list is empty.","Seçilen günün tüm kategorilerini saat sırasıyla PDF olarak indir (kayıtlı çıkış listesi)":"Download all categories of the selected day in time order as PDF (saved start list)",
  "HD + cezalar":"HD + penalties",
  "HD Kesinti":"HD deduction",
  "Hedef":"Target",
